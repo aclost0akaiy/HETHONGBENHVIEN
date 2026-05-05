@@ -1,0 +1,59 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Gửi Thông Báo";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Gửi Thông Báo Bệnh Nhân</h2>
+            <p class="text-muted mb-0">Gửi thông báo nhắc nhở, kết quả qua SMS hoặc Email.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="glass-card p-4">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn Bệnh Nhân</label>
+                        <select class="form-select">
+                            <option>Tất cả bệnh nhân hôm nay</option>
+                            <option>Bệnh nhân chờ kết quả</option>
+                            <option>Nhập mã bệnh nhân cụ thể...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hình Thức Gửi</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="sms" checked>
+                                <label class="form-check-label" for="sms"><i class="fa-solid fa-comment-sms text-primary me-1"></i> SMS</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="email">
+                                <label class="form-check-label" for="email"><i class="fa-solid fa-envelope text-danger me-1"></i> Email</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="app">
+                                <label class="form-check-label" for="app"><i class="fa-solid fa-mobile-screen text-success me-1"></i> Ứng Dụng</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiêu Đề (Nội Bộ / Email)</label>
+                        <input type="text" class="form-control" placeholder="VD: Nhắc nhở lịch tái khám">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nội Dung Thông Báo</label>
+                        <textarea class="form-control" rows="5" placeholder="Nhập nội dung cần gửi..."></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary px-4 me-2"><i class="fa-solid fa-eraser me-2"></i>Nhập Lại</button>
+                        <button type="button" class="btn btn-primary px-4"><i class="fa-solid fa-paper-plane me-2"></i>Gửi Thông Báo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

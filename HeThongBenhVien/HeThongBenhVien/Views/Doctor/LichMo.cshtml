@@ -1,0 +1,57 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Lịch Mổ";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Danh Sách Lịch Mổ / Phẫu Thuật</h2>
+            <p class="text-muted mb-0">Quản lý các ca phẫu thuật, thủ thuật trong ngày.</p>
+        </div>
+        <div>
+            <button class="btn btn-dark rounded-pill px-4"><i class="fa-solid fa-plus me-2"></i> Đăng Ký Ca Mổ</button>
+        </div>
+    </div>
+
+    <div class="glass-card p-0 overflow-hidden">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-dark text-white">
+                <tr>
+                    <th class="ps-4 py-3 border-0">Phòng Mổ</th>
+                    <th class="py-3 border-0">Thời Gian</th>
+                    <th class="py-3 border-0">Bệnh Nhân</th>
+                    <th class="py-3 border-0">Phẫu Thuật Viên</th>
+                    <th class="py-3 border-0">Chẩn Đoán / Tên Phẫu Thuật</th>
+                    <th class="pe-4 py-3 border-0">Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="ps-4 fw-bold">Phòng Mổ SỐ 1</td>
+                    <td>08:00 - 10:30</td>
+                    <td>Trần Văn Nam (45T)</td>
+                    <td><span class="badge bg-light text-dark border">BS. Nguyễn Văn A</span></td>
+                    <td>Viêm ruột thừa cấp / Mổ nội soi cắt ruột thừa</td>
+                    <td class="pe-4"><span class="badge bg-success rounded-pill px-3">Đang diễn ra <i class="fa-solid fa-spinner fa-spin ms-1"></i></span></td>
+                </tr>
+                <tr>
+                    <td class="ps-4 fw-bold">Phòng Mổ SỐ 2</td>
+                    <td>13:00 - 15:00</td>
+                    <td>Lê Thị Hoa (30T)</td>
+                    <td><span class="badge bg-light text-dark border">BS. Trần Đức B</span></td>
+                    <td>Sỏi túi mật / Phẫu thuật cắt túi mật nội soi</td>
+                    <td class="pe-4"><span class="badge bg-warning text-dark rounded-pill px-3">Sắp diễn ra</span></td>
+                </tr>
+                <tr class="bg-light">
+                    <td class="ps-4 fw-bold text-muted">Phòng Mổ SỐ 1</td>
+                    <td class="text-muted">16:00 - 18:00</td>
+                    <td class="text-muted">Phạm Đức C (60T)</td>
+                    <td><span class="badge bg-light text-dark border">BS. Lê C</span></td>
+                    <td class="text-muted">Thoát vị đĩa đệm / Vi phẫu thuật</td>
+                    <td class="pe-4"><span class="badge bg-secondary rounded-pill px-3">Chờ xếp lịch</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

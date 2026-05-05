@@ -1,0 +1,69 @@
+@model HeThongBenhVien.Models.LoginViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Đăng Nhập Hệ Thống";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm border-0" style="border-radius: 1rem; overflow: hidden;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-hospital-user text-primary mb-3" style="font-size: 3.5rem;"></i>
+                        <h4 class="font-weight-bold mb-1" style="color: #0f172a;">Đăng Nhập</h4>
+                        <p class="text-muted small">Hệ Thống Quản Lý Bệnh Viện</p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger py-2 px-3 small" role="alert">
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0 list-unstyled" })
+                        </div>
+                    }
+
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label fw-bold text-dark small mb-1">Tài khoản</label>
+                            <input asp-for="Username" class="form-control form-control-lg" placeholder="admin hoặc doctor" style="font-size: 0.95rem; padding: 0.75rem 1rem;" />
+                            <span asp-validation-for="Username" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label fw-bold text-dark small mb-1">Mật khẩu</label>
+                            <input asp-for="Password" class="form-control form-control-lg" placeholder="***" style="font-size: 0.95rem; padding: 0.75rem 1rem;" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4 d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" id="rememberMe" />
+                                <label asp-for="RememberMe" class="form-check-label small text-muted user-select-none" for="rememberMe">Ghi nhớ đăng nhập</label>
+                            </div>
+                            <a href="#" class="small text-decoration-none text-primary">Quên mật khẩu?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 mb-3 shadow-sm" style="border-radius: 0.75rem; font-weight: 600; letter-spacing: 0.5px; background-color: #0ea5e9; border: none;">
+                            ĐĂNG NHẬP
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 text-muted small bg-white rounded-3 shadow-sm p-3 border">
+                <p class="mb-2 fw-bold text-dark">Tài khoản mẫu:</p>
+                <div class="d-flex justify-content-center gap-4">
+                    <span><b>Admin:</b> admin / 123</span>
+                    <span><b>Bác sĩ:</b> doctor / 123</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+    .form-control:focus {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
+    }
+</style>

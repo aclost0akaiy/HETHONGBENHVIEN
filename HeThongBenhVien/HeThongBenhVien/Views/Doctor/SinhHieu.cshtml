@@ -1,0 +1,81 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Sinh Hiệu";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Bảng Mạch Nhiệt - Sinh Hiệu</h2>
+            <p class="text-muted mb-0">Theo dõi thông số sinh tồn của bệnh nhân.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Vitals Cards -->
+        <div class="col-md-3 mb-4">
+            <div class="glass-card p-4 text-center border-bottom border-4 border-danger h-100">
+                <i class="fa-solid fa-heart-pulse text-danger fs-1 mb-2"></i>
+                <h6 class="text-muted mb-1">Mạch</h6>
+                <h2 class="fw-bold text-dark m-0">85 <span class="fs-6 text-muted fw-normal">l/p</span></h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="glass-card p-4 text-center border-bottom border-4 border-warning h-100">
+                <i class="fa-solid fa-temperature-half text-warning fs-1 mb-2"></i>
+                <h6 class="text-muted mb-1">Nhiệt độ</h6>
+                <h2 class="fw-bold text-dark m-0">37.2 <span class="fs-6 text-muted fw-normal">°C</span></h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="glass-card p-4 text-center border-bottom border-4 border-primary h-100">
+                <i class="fa-solid fa-droplet text-primary fs-1 mb-2"></i>
+                <h6 class="text-muted mb-1">Huyết áp</h6>
+                <h2 class="fw-bold text-dark m-0">120/80 <span class="fs-6 text-muted fw-normal">mmHg</span></h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="glass-card p-4 text-center border-bottom border-4 border-info h-100">
+                <i class="fa-solid fa-lungs text-info fs-1 mb-2"></i>
+                <h6 class="text-muted mb-1">Nhịp thở & SpO2</h6>
+                <h2 class="fw-bold text-dark m-0">98 <span class="fs-6 text-muted fw-normal">%</span></h2>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold mb-3">Lịch sử đo sinh hiệu</h5>
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Mạch</th>
+                            <th>Nhiệt độ</th>
+                            <th>Huyết áp</th>
+                            <th>SpO2</th>
+                            <th>Điều dưỡng đo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>14:00 02/05/2026</td>
+                            <td>85</td>
+                            <td>37.2</td>
+                            <td>120/80</td>
+                            <td>98%</td>
+                            <td>ĐD. Trần Anh</td>
+                        </tr>
+                        <tr>
+                            <td>08:00 02/05/2026</td>
+                            <td>88</td>
+                            <td class="text-danger fw-bold">38.5</td>
+                            <td>130/85</td>
+                            <td>97%</td>
+                            <td>ĐD. Lê Mai</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

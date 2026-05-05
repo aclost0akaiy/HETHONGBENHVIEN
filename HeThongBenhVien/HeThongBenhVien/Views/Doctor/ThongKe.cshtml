@@ -1,0 +1,84 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Thống Kê Khám Bệnh";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Báo Cáo Thống Kê</h2>
+            <p class="text-muted mb-0">Hiệu suất và tổng quan bệnh nhân trong tháng.</p>
+        </div>
+        <select class="form-select w-auto rounded-pill px-4">
+            <option>Tháng này</option>
+            <option>Tháng trước</option>
+            <option>Quý này</option>
+        </select>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <h6 class="text-muted fw-bold">Tổng BN Đã Khám</h6>
+                <div class="d-flex justify-content-between align-items-end mt-3">
+                    <h1 class="display-5 fw-bold text-primary m-0">342</h1>
+                    <span class="text-success fw-bold"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+                </div>
+                <div class="progress mt-3" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <h6 class="text-muted fw-bold">Tổng Doanh Thu Phụ Trách</h6>
+                <div class="d-flex justify-content-between align-items-end mt-3">
+                    <h2 class="fw-bold text-success m-0">125.4M <span class="fs-6 text-muted">VNĐ</span></h2>
+                    <span class="text-success fw-bold"><i class="fa-solid fa-arrow-trend-up"></i> +5%</span>
+                </div>
+                <div class="progress mt-3" style="height: 6px;">
+                    <div class="progress-bar bg-success" style="width: 60%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100 bg-primary bg-opacity-10 border-0">
+                <h6 class="text-primary fw-bold">Chỉ Số Đánh Giá (Rating)</h6>
+                <div class="text-center mt-2">
+                    <h1 class="display-4 fw-bold text-primary m-0">4.9<span class="fs-4 text-muted">/5</span></h1>
+                    <div class="text-warning fs-5">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card p-4">
+        <h5 class="fw-bold mb-4">Phân Bố Bệnh Lý Tháng 5/2026</h5>
+        <div class="d-flex align-items-center mb-3">
+            <div class="w-25 text-muted fw-bold">Tim mạch</div>
+            <div class="w-75">
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar bg-danger" style="width: 45%">45%</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="w-25 text-muted fw-bold">Nội tiết</div>
+            <div class="w-75">
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar bg-info" style="width: 30%">30%</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="w-25 text-muted fw-bold">Tiêu hóa</div>
+            <div class="w-75">
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar bg-warning" style="width: 25%">25%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

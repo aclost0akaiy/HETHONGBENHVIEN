@@ -1,0 +1,55 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Quản lý Lịch Hẹn";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Quản Lý Lịch Hẹn</h2>
+            <p class="text-muted mb-0">Lịch trình làm việc và các ca khám trong tuần.</p>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
+            <i class="fa-solid fa-plus me-2"></i> Thêm Lịch Hẹn Mới
+        </button>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle" style="min-width: 800px;">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 10%;">Thời gian</th>
+                        <th style="width: 15%;">Thứ 2</th>
+                        <th style="width: 15%;">Thứ 3</th>
+                        <th style="width: 15%;">Thứ 4</th>
+                        <th style="width: 15%;">Thứ 5</th>
+                        <th style="width: 15%;">Thứ 6</th>
+                        <th style="width: 15%;">Thứ 7</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-muted">08:00 - 09:00</td>
+                        <td><div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary">Khám Tổng Quát<br><small>BN: Trần Văn B</small></div></td>
+                        <td></td>
+                        <td><div class="p-2 bg-warning bg-opacity-10 text-warning rounded border border-warning">Tái khám<br><small>BN: Lê Thị C</small></div></td>
+                        <td></td>
+                        <td><div class="p-2 bg-danger bg-opacity-10 text-danger rounded border border-danger">Khám Tim Mạch<br><small>BN: Phạm Văn D</small></div></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-muted">09:00 - 10:00</td>
+                        <td></td>
+                        <td><div class="p-2 bg-success bg-opacity-10 text-success rounded border border-success">Đọc kết quả<br><small>BN: Nguyễn Văn E</small></div></td>
+                        <td></td>
+                        <td><div class="p-2 bg-info bg-opacity-10 text-info rounded border border-info">Khám Tổng Quát<br><small>BN: Đỗ Thị F</small></div></td>
+                        <td></td>
+                        <td><div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary">Hội chẩn<br><small>Khoa Nội</small></div></td>
+                    </tr>
+                    <!-- More rows can be dynamically rendered -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

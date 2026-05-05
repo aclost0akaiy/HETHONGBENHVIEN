@@ -1,0 +1,58 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Hẹn Tái Khám";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Danh Sách Bệnh Nhân Hẹn Tái Khám</h2>
+            <p class="text-muted mb-0">Theo dõi ngày bệnh nhân cần quay lại kiểm tra.</p>
+        </div>
+        <div class="input-group w-25">
+            <input type="date" class="form-control" value="2026-05-02">
+            <button class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc</button>
+        </div>
+    </div>
+
+    <div class="glass-card p-0 overflow-hidden">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3">Mã BN</th>
+                    <th class="py-3">Họ và Tên</th>
+                    <th class="py-3">Ngày Tái Khám</th>
+                    <th class="py-3">Lý Do / Chẩn Đoán Cũ</th>
+                    <th class="py-3">Trạng Thái Nhắc Nhở</th>
+                    <th class="pe-4 py-3">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="ps-4 fw-bold">BN89231</td>
+                    <td><div class="fw-bold text-dark">Đỗ Minh Tuấn</div></td>
+                    <td><span class="text-danger fw-bold"><i class="fa-regular fa-clock me-1"></i> Hôm nay</span></td>
+                    <td>Tái khám sau mổ nội soi sỏi thận</td>
+                    <td><span class="badge bg-success rounded-pill"><i class="fa-solid fa-check"></i> Đã gửi SMS</span></td>
+                    <td class="pe-4"><button class="btn btn-sm btn-primary">Xác nhận đến</button></td>
+                </tr>
+                <tr>
+                    <td class="ps-4 fw-bold">BN45211</td>
+                    <td><div class="fw-bold text-dark">Trần Thị Bé</div></td>
+                    <td><span class="text-warning fw-bold text-dark"><i class="fa-regular fa-calendar me-1"></i> Ngày mai (03/05)</span></td>
+                    <td>Tái khám huyết áp định kỳ</td>
+                    <td><span class="badge bg-secondary rounded-pill">Chưa gửi SMS</span></td>
+                    <td class="pe-4"><button class="btn btn-sm btn-outline-primary">Gửi SMS</button></td>
+                </tr>
+                 <tr>
+                    <td class="ps-4 fw-bold">BN11234</td>
+                    <td><div class="fw-bold text-dark">Lê Tuấn Anh</div></td>
+                    <td><span class="text-danger fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> Quá hạn (3 ngày)</span></td>
+                    <td>Kiểm tra chức năng gan</td>
+                    <td><span class="badge bg-danger rounded-pill">Chưa phản hồi</span></td>
+                    <td class="pe-4"><button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-phone"></i> Gọi điện</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

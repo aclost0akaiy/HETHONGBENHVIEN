@@ -1,0 +1,76 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Chỉ Định Xét Nghiệm";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chỉ Định Dịch Vụ Cận Lâm Sàng</h2>
+            <p class="text-muted mb-0">Tạo phiếu yêu cầu xét nghiệm, siêu âm, X-Quang.</p>
+        </div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="row">
+            <div class="col-md-4 border-end">
+                <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-vial me-2"></i>Xét Nghiệm Máu</h6>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="test1" checked>
+                    <label class="form-check-label" for="test1">Công thức máu toàn phần (CBC)</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="test2" checked>
+                    <label class="form-check-label" for="test2">Sinh hóa máu (Đường huyết, Ure, Creatinin)</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="test3">
+                    <label class="form-check-label" for="test3">Men gan (AST, ALT)</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="test4">
+                    <label class="form-check-label" for="test4">Bộ mỡ máu (Lipid Profile)</label>
+                </div>
+            </div>
+            <div class="col-md-4 border-end">
+                <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-x-ray me-2"></i>Chẩn Đoán Hình Ảnh</h6>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="img1">
+                    <label class="form-check-label" for="img1">Siêu âm ổ bụng tổng quát</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="img2" checked>
+                    <label class="form-check-label" for="img2">X-Quang ngực thẳng</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="img3">
+                    <label class="form-check-label" for="img3">Chụp CT Scanner Sọ não</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="img4">
+                    <label class="form-check-label" for="img4">MRI Cột sống</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold text-warning mb-3"><i class="fa-solid fa-microscope me-2"></i>Xét Nghiệm Khác</h6>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="other1" checked>
+                    <label class="form-check-label" for="other1">Tổng phân tích nước tiểu</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="other2">
+                    <label class="form-check-label" for="other2">Xét nghiệm vi sinh</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="other3">
+                    <label class="form-check-label" for="other3">Tầm soát ung thư</label>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="m-0 text-dark">Tổng cộng: <span class="text-danger fw-bold">4 dịch vụ</span> đã chọn</h5>
+            <button class="btn btn-primary px-5 py-2"><i class="fa-solid fa-paper-plane me-2"></i>Gửi Yêu Cầu</button>
+        </div>
+    </div>
+</div>

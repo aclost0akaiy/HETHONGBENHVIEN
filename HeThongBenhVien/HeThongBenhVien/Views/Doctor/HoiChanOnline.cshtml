@@ -1,0 +1,82 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Hội Chẩn Online";
+}
+
+<div class="container-fluid p-0 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;"><i class="fa-solid fa-video text-success me-2 blink"></i>Phòng Hội Chẩn Trực Tuyến</h2>
+            <p class="text-muted mb-0">Kết nối liên viện - Ca lâm sàng: Khối u gan phức tạp.</p>
+        </div>
+        <button class="btn btn-danger px-4 rounded-pill fw-bold"><i class="fa-solid fa-phone-slash me-2"></i> Kết Thúc Cuộc Gọi</button>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="glass-card p-2 bg-dark position-relative rounded-4 overflow-hidden" style="min-height: 500px; display: flex; align-items: center; justify-content: center;">
+                <div class="text-white text-center">
+                    <i class="fa-solid fa-user-doctor fs-1 mb-3 text-secondary"></i>
+                    <h4 class="fw-bold">Camera GS.TS Lê Văn X - Viện K Trung Ương</h4>
+                    <p class="text-muted">Đang trình bày kết quả sinh thiết...</p>
+                </div>
+                
+                <!-- PIP Camera -->
+                <div class="position-absolute bottom-0 end-0 m-3 bg-secondary rounded-3 border border-2 border-white overflow-hidden shadow-lg" style="width: 200px; height: 150px; display: flex; align-items: center; justify-content: center;">
+                     <div class="text-white text-center">
+                        <i class="fa-regular fa-user fs-3 mb-1"></i>
+                        <div style="font-size: 12px;">Bạn (BS. Nguyễn Văn A)</div>
+                     </div>
+                </div>
+                
+                <!-- Controls overlay -->
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-3">
+                    <button class="btn btn-light rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-microphone"></i></button>
+                    <button class="btn btn-light rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-video"></i></button>
+                    <button class="btn btn-primary rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-display"></i></button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card h-100 d-flex flex-column">
+                <div class="p-3 border-bottom d-flex justify-content-between">
+                    <h6 class="fw-bold m-0"><i class="fa-solid fa-users me-2"></i>Thành Viên (4)</h6>
+                    <span class="badge bg-success rounded-pill">01:25:40</span>
+                </div>
+                <div class="p-3 flex-grow-1 overflow-auto">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">GS</div>
+                        <div>
+                            <div class="fw-bold">GS.TS Lê Văn X <span class="badge bg-secondary ms-1" style="font-size: 10px;">Chủ tọa</span></div>
+                            <small class="text-muted">Viện K Trung Ương</small>
+                        </div>
+                        <i class="fa-solid fa-microphone text-success ms-auto"></i>
+                    </div>
+                     <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">NA</div>
+                        <div>
+                            <div class="fw-bold">Bạn (BS. Nguyễn Văn A)</div>
+                            <small class="text-muted">Khoa Nội - Bệnh viện Tỉnh</small>
+                        </div>
+                        <i class="fa-solid fa-microphone-slash text-danger ms-auto"></i>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">BS</div>
+                        <div>
+                            <div class="fw-bold">BS.CKII Trần B</div>
+                            <small class="text-muted">Khoa Chẩn đoán hình ảnh</small>
+                        </div>
+                        <i class="fa-solid fa-microphone-slash text-danger ms-auto"></i>
+                    </div>
+                </div>
+                <div class="p-3 border-top">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Nhập tin nhắn...">
+                        <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

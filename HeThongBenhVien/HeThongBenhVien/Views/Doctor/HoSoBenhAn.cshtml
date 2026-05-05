@@ -1,0 +1,348 @@
+@model IEnumerable<HeThongBenhVien.Models.MedicalRecord>
+
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Hồ Sơ Bệnh Án Điện Tử";
+}
+
+<div class="container-fluid p-0">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">
+                <i class="fa-solid fa-file-medical text-primary me-2"></i>Hồ Sơ Bệnh Án Điện Tử
+            </h2>
+            <p class="text-muted mb-0">Quản lý và tra cứu hồ sơ bệnh án của tất cả bệnh nhân.</p>
+        </div>
+        <div>
+            <form action="@Url.Action("HoSoBenhAn", "Doctor")" method="get" class="d-flex">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" name="searchString" class="form-control search-input" placeholder="Tên BN, Mã BN, Chẩn đoán..." value="@ViewData["SearchString"]">
+                    <button type="submit" class="btn btn-primary search-btn">Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="glass-card stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-primary" style="font-size: 0.8rem;">Tổng Hồ Sơ</p>
+                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count()</h3>
+                    </div>
+                    <div class="icon-circle bg-primary-light text-primary">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="glass-card stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-success" style="font-size: 0.8rem;">Hồ Sơ Hôm Nay</p>
+                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count(m => m.CreatedAt.Date == DateTime.Today)</h3>
+                    </div>
+                    <div class="icon-circle bg-success-light text-success">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="glass-card stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-warning" style="font-size: 0.8rem;">Đang Điều Trị</p>
+                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count(m => m.Appointment?.Status == 4)</h3>
+                    </div>
+                    <div class="icon-circle bg-warning-light text-warning">
+                        <i class="fa-solid fa-bed-pulse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMR List -->
+    @if (!Model.Any())
+    {
+        <div class="glass-card text-center p-5 empty-state">
+            <div class="empty-icon mx-auto mb-4">
+                <i class="fa-solid fa-folder-open text-muted"></i>
+            </div>
+            <h4 class="text-gray-800 fw-bold mb-2">Không tìm thấy hồ sơ</h4>
+            <p class="text-muted mb-4">Hiện tại không có hồ sơ bệnh án nào phù hợp với tìm kiếm của bạn.</p>
+            @if (!string.IsNullOrEmpty(ViewData["SearchString"]?.ToString()))
+            {
+                <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+                    <i class="fa-solid fa-rotate-left me-2"></i>Xem tất cả hồ sơ
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                string initials = "BN";
+                if (!string.IsNullOrEmpty(item.Appointment?.Patient?.FullName))
+                {
+                    var words = item.Appointment.Patient.FullName.Trim().Split(' ');
+                    if (words.Length > 1) {
+                        initials = $"{words[0][0]}{words[words.Length-1][0]}".ToUpper();
+                    } else {
+                        initials = item.Appointment.Patient.FullName.Substring(0, 1).ToUpper();
+                    }
+                }
+
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="emr-card glass-card h-100">
+                        <div class="emr-header p-3 border-bottom d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="patient-avatar">
+                                    @initials
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">@item.Appointment?.Patient?.FullName</h6>
+                                    <span class="text-muted small">@item.Appointment?.Patient?.PatientCode • @item.Appointment?.Patient?.Gender • @item.Appointment?.Patient?.Age Tuổi</span>
+                                </div>
+                            </div>
+                            <div class="record-date text-end">
+                                <div class="date-badge">
+                                    <span class="d-block fw-bold">@item.CreatedAt.ToString("dd")</span>
+                                    <span class="small">Th @item.CreatedAt.ToString("MM")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="emr-body p-4">
+                            <div class="mb-3">
+                                <span class="badge bg-primary bg-opacity-10 text-primary mb-2 rounded-pill px-3 py-2">
+                                    <i class="fa-solid fa-stethoscope me-1"></i> Chẩn đoán
+                                </span>
+                                <p class="text-dark fw-medium mb-0 ms-1 line-clamp-2">@item.Diagnosis</p>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small d-block mb-1"><i class="fa-solid fa-clipboard-list me-1"></i>Triệu chứng:</span>
+                                <p class="text-secondary small mb-0 ms-1 line-clamp-2">@item.Symptoms</p>
+                            </div>
+                        </div>
+                        <div class="emr-footer p-3 border-top bg-light bg-opacity-50 d-flex justify-content-between align-items-center rounded-bottom">
+                            @if (item.Appointment?.Status == 4)
+                            {
+                                <form action="@Url.Action("HoanThanhDieuTri", "Doctor")" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">
+                                        <i class="fa-solid fa-check me-1"></i> Hoàn thành ĐT
+                                    </button>
+                                </form>
+                            }
+                            else if (item.Appointment?.Status == 5)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border border-success border-opacity-25">
+                                    <i class="fa-solid fa-check-circle me-1"></i> Đã hoàn thành
+                                </span>
+                            }
+                            else
+                            {
+                                <div></div>
+                            }
+                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-4 action-btn shadow-sm">
+                                Xem Chi Tiết <i class="fa-solid fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 30px;
+            padding: 5px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            color: #94a3b8;
+        }
+
+        .search-input {
+            border: none;
+            padding-left: 45px;
+            border-radius: 30px;
+            box-shadow: none;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+        .search-btn {
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-weight: 500;
+        }
+
+        .bg-primary-light { background: rgba(14, 165, 233, 0.1); }
+        .bg-success-light { background: rgba(16, 185, 129, 0.1); }
+        .bg-warning-light { background: rgba(245, 158, 11, 0.1); }
+
+        .stat-card {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:nth-child(1) { border-left-color: #0ea5e9; }
+        .stat-card:nth-child(2) { border-left-color: #10b981; }
+        .stat-card:nth-child(3) { border-left-color: #f59e0b; }
+
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .emr-card {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .emr-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #bae6fd;
+        }
+
+        .emr-card:hover .action-btn {
+            background-color: #0284c7;
+            transform: translateX(5px);
+        }
+
+        .action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .patient-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #0369a1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .date-badge {
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .date-badge span:first-child {
+            font-size: 16px;
+            color: #0f172a;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .empty-state {
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Add subtle animations on load
+        $(document).ready(function() {
+            $('.emr-card').each(function(i) {
+                $(this).css({
+                    'opacity': '0',
+                    'transform': 'translateY(20px)'
+                });
+                
+                setTimeout(() => {
+                    $(this).css({
+                        'transition': 'all 0.5s ease',
+                        'opacity': '1',
+                        'transform': 'translateY(0)'
+                    });
+                }, 100 * i);
+            });
+            
+            // Remove transition inline style after animation to not conflict with hover
+            setTimeout(() => {
+                $('.emr-card').css('transition', '');
+            }, 100 * $('.emr-card').length + 500);
+        });
+    </script>
+}

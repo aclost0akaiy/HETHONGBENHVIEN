@@ -1,0 +1,70 @@
+@model HeThongBenhVien.Models.Patient
+
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Chỉnh Sửa Bệnh Nhân";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chỉnh Sửa Bệnh Nhân</h2>
+            <p class="text-muted mb-0">Cập nhật thông tin chi tiết của bệnh nhân.</p>
+        </div>
+        <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-outline-secondary px-4 py-2" style="border-radius: 10px; font-weight: 500;">
+            <i class="fa-solid fa-arrow-left me-2"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9">
+            <div class="glass-card p-4 border-top border-4 border-primary">
+                <form asp-action="EditPatient" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PatientCode" class="form-label fw-bold text-secondary">Mã Bệnh Nhân</label>
+                            <input asp-for="PatientCode" class="form-control bg-light border-0" placeholder="VD: BN001" readonly />
+                            <span class="text-muted small">Không thể thay đổi mã bệnh nhân.</span>
+                            <span asp-validation-for="PatientCode" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold text-secondary">Họ và Tên</label>
+                            <input asp-for="FullName" class="form-control bg-light border-0" placeholder="Nhập họ và tên" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Gender" class="form-label fw-bold text-secondary">Giới tính</label>
+                            <select asp-for="Gender" class="form-select bg-light border-0">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Age" class="form-label fw-bold text-secondary">Tuổi</label>
+                            <input asp-for="Age" type="number" class="form-control bg-light border-0" placeholder="Nhập tuổi" min="0" max="150" />
+                            <span asp-validation-for="Age" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end border-top pt-4 mt-2">
+                        <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm rounded-pill fw-bold">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Lưu Thay Đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

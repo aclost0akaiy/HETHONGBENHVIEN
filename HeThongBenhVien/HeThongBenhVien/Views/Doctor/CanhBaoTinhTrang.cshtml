@@ -1,0 +1,44 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Cảnh Báo Khẩn Cấp";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Cảnh Báo Tình Trạng Bệnh Nhân</h2>
+            <p class="text-muted mb-0">Hệ thống giám sát và báo động đỏ.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger border-0 glass-card bg-danger bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #dc3545 !important;">
+                <i class="fa-solid fa-triangle-exclamation fs-1 text-danger me-4 blink"></i>
+                <div>
+                    <h4 class="fw-bold text-danger mb-1">Báo Động Code Blue - Phòng Hồi Sức Tích Cực (ICU 1)</h4>
+                    <p class="m-0 text-dark">Bệnh nhân <strong class="text-danger">Trần Anh Tú (Giường 05)</strong> có dấu hiệu ngưng tim ngưng thở. Mạch < 40 l/p, SpO2 < 85%. Yêu cầu hỗ trợ khẩn cấp!</p>
+                </div>
+                <button class="btn btn-danger ms-auto px-4 fw-bold">Xác Nhận Đã Nhận</button>
+            </div>
+
+            <div class="alert alert-warning border-0 glass-card bg-warning bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #ffc107 !important;">
+                <i class="fa-solid fa-bell fs-1 text-warning me-4"></i>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Cảnh Báo Sinh Hiệu - Khoa Nội Tiêu Hóa</h5>
+                    <p class="m-0 text-dark">Bệnh nhân <strong>Lê Thị Mai (Giường 12)</strong>: Nhiệt độ tăng cao 39.5°C liên tục trong 2 giờ qua.</p>
+                </div>
+                <button class="btn btn-outline-warning text-dark border-warning ms-auto px-4 fw-bold">Xem Hồ Sơ</button>
+            </div>
+
+            <div class="alert alert-info border-0 glass-card bg-info bg-opacity-10 d-flex align-items-center" style="border-left: 5px solid #0dcaf0 !important;">
+                <i class="fa-solid fa-flask-vial fs-1 text-info me-4"></i>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Kết quả XN Bất thường</h5>
+                    <p class="m-0 text-dark">Bệnh nhân <strong>Nguyễn Văn Hùng</strong>: Chỉ số Men gan (AST, ALT) vượt ngưỡng báo động (> 1000 U/L).</p>
+                </div>
+                <button class="btn btn-outline-info text-dark border-info ms-auto px-4 fw-bold">Xem Kết Quả</button>
+            </div>
+        </div>
+    </div>
+</div>

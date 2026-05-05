@@ -1,0 +1,408 @@
+@using HeThongBenhVien.Models
+@model DoctorDashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Dashboard Bác sĩ";
+}
+
+<div class="container-fluid p-0">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chào buổi sáng, BS. Nguyễn Văn A!</h2>
+            <p class="text-muted mb-0">Dưới đây là tổng quan lịch trình và công việc của bạn trong ngày hôm nay.</p>
+        </div>
+        <div>
+            <button class="btn btn-primary px-4 py-2" style="border-radius: 10px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
+                <i class="fa-solid fa-plus me-2"></i> Khám Bệnh Nhân Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.8rem;">Bệnh nhân hôm nay</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.TodayPatientsCount</div>
+                    </div>
+                    <div class="icon-circle" style="background: rgba(14, 165, 233, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0ea5e9; font-size: 20px;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-muted">
+                    <span class="text-success"><i class="fa-solid fa-arrow-trend-up"></i> +3</span> so với hôm qua
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1" style="font-size: 0.8rem;">Đã khám xong</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.CompletedPatientsCount</div>
+                    </div>
+                    <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px;">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-muted">
+                    <span class="text-success">50%</span> tiến độ ngày
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="font-size: 0.8rem;">Đang chờ kết quả</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.WaitingResultsCount</div>
+                    </div>
+                    <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 20px;">
+                        <i class="fa-solid fa-flask-vial"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-muted">
+                    <span>Cập nhật 5 phút trước</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-danger">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="font-size: 0.8rem;">Ca Cấp cứu / Ưu tiên</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.EmergencyCount</div>
+                    </div>
+                    <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 20px;">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-danger font-weight-bold">
+                    <i class="fa-solid fa-circle-exclamation blink"></i> Yêu cầu xử lý ngay
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Patient Queue -->
+        <div class="col-xl-8 col-lg-7 mb-4">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                    <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Danh sách chờ khám tiếp theo</h6>
+                    <a href="#" class="text-decoration-none" style="color: #0ea5e9; font-size: 14px; font-weight: 500;">Xem tất cả</a>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4 border-0">STT</th>
+                                    <th class="border-0">Bệnh nhân</th>
+                                    <th class="border-0">Lý do khám</th>
+                                    <th class="border-0">Thời gian</th>
+                                    <th class="border-0">Trạng thái</th>
+                                    <th class="pe-4 border-0 text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int stt = 1; }
+                                @foreach (var item in Model.UpcomingAppointments)
+                                {
+                                    string nameParts = item.Patient?.FullName?.Trim() ?? "Unknown";
+                                    string initials = "UK";
+                                    if (!string.IsNullOrEmpty(nameParts))
+                                    {
+                                        var words = nameParts.Split(' ');
+                                        if (words.Length > 1) {
+                                            initials = $"{words[0][0]}{words[words.Length-1][0]}".ToUpper();
+                                        } else {
+                                            initials = nameParts.Substring(0, 1).ToUpper();
+                                        }
+                                    }
+
+                                    string statusBadgeClass = item.Status switch
+                                    {
+                                        0 => "bg-secondary",
+                                        1 => "bg-warning text-dark",
+                                        2 => "bg-primary",
+                                        3 => "bg-info text-dark",
+                                        4 => "bg-success",
+                                        _ => "bg-secondary"
+                                    };
+
+                                    string statusText = item.Status switch
+                                    {
+                                        0 => "Chưa đến",
+                                        1 => "Đang chờ",
+                                        2 => "Đang khám",
+                                        3 => "Có KQ XN",
+                                        4 => "Đã khám xong",
+                                        _ => "Không xác định"
+                                    };
+
+                                    <tr>
+                                        <td class="ps-4 font-weight-bold text-primary">@(stt.ToString("D2"))</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; color: #64748b; font-weight: bold;">@initials</div>
+                                                <div>
+                                                    <div style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
+                                                    <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.PatientCode</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Reason</td>
+                                        <td>@item.AppointmentTime.ToString("hh:mm tt")</td>
+                                        <td><span class="badge @statusBadgeClass rounded-pill">@statusText</span></td>
+                                        <td class="pe-4 text-end">
+                                            @if (item.Status == 1 || item.Status == 3)
+                                            {
+                                                <a href="@Url.Action("KhamBenh", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-3">Khám ngay</a>
+                                            }
+                                            else
+                                            {
+                                                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                            }
+                                        </td>
+                                    </tr>
+                                    stt++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Menu (Matrix of 15 functionalities) -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="glass-card h-100">
+                <div class="p-4 border-bottom">
+                    <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Hệ sinh thái Quản lý Bệnh nhân</h6>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <!-- Func 1 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("DanhSach", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">DS Bệnh Nhân</div>
+                            </a>
+                        </div>
+                        <!-- Func 2 -->
+                        <div class="col-4 text-center">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#addAppointmentModal" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Tiếp nhận Mới</div>
+                            </a>
+                        </div>
+                        <!-- Func 3 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichHen", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Hẹn</div>
+                            </a>
+                        </div>
+                        <!-- Func 4 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-notes-medical"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hồ Sơ BA</div>
+                            </a>
+                        </div>
+                        <!-- Func 5 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("KeDonThuoc", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-pills"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Kê Đơn Thuốc</div>
+                            </a>
+                        </div>
+                        <!-- Func 6 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("ChiDinhXetNghiem", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-flask"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Chỉ Định XN</div>
+                            </a>
+                        </div>
+                        <!-- Func 7 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("KetQuaCanLamSang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-microscope"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Kết Quả CLS</div>
+                            </a>
+                        </div>
+                        <!-- Func 8 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("SinhHieu", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Sinh Hiệu</div>
+                            </a>
+                        </div>
+                        <!-- Func 9 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichSuKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Sử Khám</div>
+                            </a>
+                        </div>
+                        <!-- Func 10 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichMo", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-dark bg-opacity-10 text-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-scalpel"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Mổ</div>
+                            </a>
+                        </div>
+                        <!-- Func 11 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("ThongKe", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Thống Kê</div>
+                            </a>
+                        </div>
+                        <!-- Func 12 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("CanhBaoTinhTrang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Cảnh Báo TT</div>
+                            </a>
+                        </div>
+                         <!-- Func 13 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HenTaiKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hẹn Tái Khám</div>
+                            </a>
+                        </div>
+                         <!-- Func 14 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("QuanLyGiuong", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-bed"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">QL Giường</div>
+                            </a>
+                        </div>
+                         <!-- Func 15 -->
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HoiChanOnline", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-video"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hội Chẩn Online</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Khám Bệnh Nhân Mới -->
+    <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header border-0 bg-primary bg-opacity-10" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title fw-bold text-primary" id="addAppointmentModalLabel"><i class="fa-solid fa-notes-medical me-2"></i>Khám Bệnh Nhân Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="CreateAppointment" asp-controller="Doctor" method="post">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-secondary">Tên bệnh nhân</label>
+                                <input type="text" class="form-control" name="PatientName" placeholder="Nhập tên bệnh nhân" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Giới tính</label>
+                                <select class="form-select" name="Gender" required>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Tuổi</label>
+                                <input type="number" class="form-control" name="Age" placeholder="Nhập tuổi" min="0" max="150" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-secondary">Lý do khám</label>
+                                <input type="text" class="form-control" name="Reason" placeholder="Nhập lý do khám" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Thời gian khám</label>
+                                <input type="datetime-local" class="form-control" name="AppointmentTime" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Trạng thái</label>
+                                <select class="form-select" name="Status">
+                                    <option value="0">Chưa đến</option>
+                                    <option value="1" selected>Đang chờ</option>
+                                    <option value="2">Đang khám</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 8px;">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary px-4" style="border-radius: 8px;"><i class="fa-solid fa-plus me-2"></i>Tạo Lịch Khám</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .menu-item-box:hover {
+            background-color: #f8fafc;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // JS approach to replace 
+            setInterval(function() {
+                $('.blink').fadeTo(750, 0).fadeTo(750, 1);
+            }, 1500);
+        });
+    </script>
+}

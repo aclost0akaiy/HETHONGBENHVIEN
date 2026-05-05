@@ -1,0 +1,63 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Cài Đặt Tài Khoản";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Cài Đặt Tài Khoản</h2>
+            <p class="text-muted mb-0">Quản lý thông tin cá nhân và mật khẩu.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="glass-card p-4 text-center h-100">
+                <div class="position-relative d-inline-block mb-3">
+                    <img src="https://ui-avatars.com/api/?name=BS+Nguyễn+Văn+A&background=0ea5e9&color=fff&size=120" class="rounded-circle border border-3 border-primary" alt="Profile">
+                    <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" style="width: 30px; height: 30px;"><i class="fa-solid fa-camera"></i></button>
+                </div>
+                <h5 class="fw-bold text-dark">BS. Nguyễn Văn A</h5>
+                <p class="text-muted mb-3">Chuyên khoa Nội Tim Mạch</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary"><i class="fa-solid fa-shield-halved me-2"></i>Đổi Mật Khẩu</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mb-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4 border-bottom pb-2">Thông Tin Cá Nhân</h5>
+                <form>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Họ và Tên</label>
+                            <input type="text" class="form-control" value="BS. Nguyễn Văn A">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Chuyên Khoa</label>
+                            <input type="text" class="form-control" value="Nội Tim Mạch" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Số Điện Thoại</label>
+                            <input type="text" class="form-control" value="0987654321">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Email Liên Hệ</label>
+                            <input type="email" class="form-control" value="bs.nguyenvana@medicare.com">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold">Mô tả ngắn</label>
+                        <textarea class="form-control" rows="3">Bác sĩ chuyên khoa II, có hơn 15 năm kinh nghiệm trong lĩnh vực nội tim mạch.</textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary px-4"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

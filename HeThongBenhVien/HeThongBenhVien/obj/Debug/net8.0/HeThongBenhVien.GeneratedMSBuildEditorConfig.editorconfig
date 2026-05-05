@@ -1,0 +1,137 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = HeThongBenhVien
+build_property.RootNamespace = HeThongBenhVien
+build_property.ProjectDir = G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CaiDat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENhaURhdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CanhBaoTinhTrang.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENhbmhCYW9UaW5oVHJhbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiDinhXetNghiem.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaURpbmhYZXROZ2hpZW0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiTietBenhAn.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaVRpZXRCZW5oQW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/DanhSach.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhbmhTYWNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhc2hib2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/EditPatient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEVkaXRQYXRpZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HenTaiKham.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhlblRhaUtoYW0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoiChanOnline.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhvaUNoYW5PbmxpbmUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoSoBenhAn.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhvU29CZW5oQW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuoc.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtlRG9uVGh1b2MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KetQuaCanLamSang.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtldFF1YUNhbkxhbVNhbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KhamBenh.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtoYW1CZW5oLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichHen.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hIZW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichMo.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hNby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichSuKham.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hTdUtoYW0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/QuanLyGiuong.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFF1YW5MeUdpdW9uZy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/SinhHieu.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFNpbmhIaWV1LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongBao.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nQmFvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongKe.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nS2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Shared/_DoctorLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Eb2N0b3JMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Nâng Cao C\#/HeThongBenhVien/HeThongBenhVien/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-hglkk17lt3
