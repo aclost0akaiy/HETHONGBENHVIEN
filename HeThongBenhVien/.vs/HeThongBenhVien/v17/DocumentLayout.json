@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "G:\\N\u00E2ng Cao C#\\HeThongBenhVien\\",
+  "WorkspaceRootPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|g:\\n\u00E2ng cao c#\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "appsettings.json",
-              "DocumentMoniker": "G:\\N\u00E2ng Cao C#\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
+              "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeDocumentMoniker": "HeThongBenhVien\\appsettings.json",
-              "ToolTip": "G:\\N\u00E2ng Cao C#\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
+              "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeToolTip": "HeThongBenhVien\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAACeAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-05-03T12:08:52.358Z",
               "EditorCaption": ""
