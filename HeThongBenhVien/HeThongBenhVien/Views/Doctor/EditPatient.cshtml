@@ -52,6 +52,21 @@
                             <input asp-for="Age" type="number" class="form-control bg-light border-0" placeholder="Nhập tuổi" min="0" max="150" />
                             <span asp-validation-for="Age" class="text-danger small"></span>
                         </div>
+                        
+                        @if (ViewBag.HasAppointment != null && (bool)ViewBag.HasAppointment)
+                        {
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Trạng thái Khám</label>
+                                <select name="AppointmentStatus" class="form-select bg-light border-0">
+                                    <option value="0" selected="@(ViewBag.LatestAppointmentStatus == 0 ? "selected" : null)">Chưa đến</option>
+                                    <option value="1" selected="@(ViewBag.LatestAppointmentStatus == 1 ? "selected" : null)">Chờ khám</option>
+                                    <option value="2" selected="@(ViewBag.LatestAppointmentStatus == 2 ? "selected" : null)">Đang khám</option>
+                                    <option value="4" selected="@(ViewBag.LatestAppointmentStatus == 4 ? "selected" : null)">Chờ xác nhận (Đã khám)</option>
+                                    <option value="5" selected="@(ViewBag.LatestAppointmentStatus == 5 ? "selected" : null)">Hoàn thành điều trị</option>
+                                    <option value="8" selected="@(ViewBag.LatestAppointmentStatus == 8 ? "selected" : null)">Hẹn tái khám</option>
+                                </select>
+                            </div>
+                        }
                     </div>
 
                     <div class="d-flex justify-content-end border-top pt-4 mt-2">

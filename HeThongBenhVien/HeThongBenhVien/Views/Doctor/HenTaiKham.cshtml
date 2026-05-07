@@ -1,3 +1,4 @@
+@model IEnumerable<HeThongBenhVien.Models.Appointment>
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Hẹn Tái Khám";
@@ -10,7 +11,7 @@
             <p class="text-muted mb-0">Theo dõi ngày bệnh nhân cần quay lại kiểm tra.</p>
         </div>
         <div class="input-group w-25">
-            <input type="date" class="form-control" value="2026-05-02">
+            <input type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")">
             <button class="btn btn-primary"><i class="fa-solid fa-filter"></i> Lọc</button>
         </div>
     </div>
@@ -21,37 +22,41 @@
                 <tr>
                     <th class="ps-4 py-3">Mã BN</th>
                     <th class="py-3">Họ và Tên</th>
-                    <th class="py-3">Ngày Tái Khám</th>
-                    <th class="py-3">Lý Do / Chẩn Đoán Cũ</th>
+                    <th class="py-3">Ngày Tái Khám (Dự kiến)</th>
+                    <th class="py-3">Lý Do Khám Cũ</th>
                     <th class="py-3">Trạng Thái Nhắc Nhở</th>
                     <th class="pe-4 py-3">Hành Động</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="ps-4 fw-bold">BN89231</td>
-                    <td><div class="fw-bold text-dark">Đỗ Minh Tuấn</div></td>
-                    <td><span class="text-danger fw-bold"><i class="fa-regular fa-clock me-1"></i> Hôm nay</span></td>
-                    <td>Tái khám sau mổ nội soi sỏi thận</td>
-                    <td><span class="badge bg-success rounded-pill"><i class="fa-solid fa-check"></i> Đã gửi SMS</span></td>
-                    <td class="pe-4"><button class="btn btn-sm btn-primary">Xác nhận đến</button></td>
-                </tr>
-                <tr>
-                    <td class="ps-4 fw-bold">BN45211</td>
-                    <td><div class="fw-bold text-dark">Trần Thị Bé</div></td>
-                    <td><span class="text-warning fw-bold text-dark"><i class="fa-regular fa-calendar me-1"></i> Ngày mai (03/05)</span></td>
-                    <td>Tái khám huyết áp định kỳ</td>
-                    <td><span class="badge bg-secondary rounded-pill">Chưa gửi SMS</span></td>
-                    <td class="pe-4"><button class="btn btn-sm btn-outline-primary">Gửi SMS</button></td>
-                </tr>
-                 <tr>
-                    <td class="ps-4 fw-bold">BN11234</td>
-                    <td><div class="fw-bold text-dark">Lê Tuấn Anh</div></td>
-                    <td><span class="text-danger fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> Quá hạn (3 ngày)</span></td>
-                    <td>Kiểm tra chức năng gan</td>
-                    <td><span class="badge bg-danger rounded-pill">Chưa phản hồi</span></td>
-                    <td class="pe-4"><button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-phone"></i> Gọi điện</button></td>
-                </tr>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold">@item.Patient?.PatientCode</td>
+                        <td><div class="fw-bold text-dark">@item.Patient?.FullName</div></td>
+                        <td>
+                            @if(item.AppointmentTime.Date < DateTime.Today) {
+                                <span class="text-danger fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> Quá hạn</span>
+                            } else if (item.AppointmentTime.Date == DateTime.Today) {
+                                <span class="text-warning fw-bold text-dark"><i class="fa-regular fa-clock me-1"></i> Hôm nay</span>
+                            } else {
+                                <span class="text-primary fw-bold"><i class="fa-regular fa-calendar me-1"></i> @item.AppointmentTime.ToString("dd/MM/yyyy")</span>
+                            }
+                        </td>
+                        <td>@item.Reason</td>
+                        <td><span class="badge bg-secondary rounded-pill">Chưa gửi SMS</span></td>
+                        <td class="pe-4">
+                            <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-bell me-1"></i> Gửi SMS</button>
+                            <a href="@Url.Action("EditPatient", "Doctor", new { id = item.PatientId })" class="btn btn-sm btn-info text-white ms-1"><i class="fa-solid fa-pen-to-square"></i> Cập nhật</a>
+                        </td>
+                    </tr>
+                }
+                @if(!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Không có bệnh nhân hẹn tái khám.</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>

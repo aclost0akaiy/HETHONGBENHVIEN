@@ -30,21 +30,26 @@ namespace HeThongBenhVien.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            var today = System.DateTime.Today;
+            var allAppointmentsQuery = _context.Appointments;
 
-            var appointments = await _context.Appointments
+            var unexaminedCount = await allAppointmentsQuery.CountAsync(a => a.Status != 4 && a.Status != 5);
+            var completedCount = await allAppointmentsQuery.CountAsync(a => a.Status == 4 || a.Status == 5);
+            var waitingCount = await allAppointmentsQuery.CountAsync(a => a.Status == 1);
+            var emergencyCount = await allAppointmentsQuery.CountAsync(a => a.Status == 6 || (a.Reason != null && (a.Reason.Contains("cấp cứu") || a.Reason.Contains("thắt ngực"))));
+
+            var upcomingAppointments = await _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.AppointmentTime.Date >= today)
+                .Where(a => a.Status != 4 && a.Status != 5)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
             var viewModel = new DoctorDashboardViewModel
             {
-                TodayPatientsCount = appointments.Count(a => a.AppointmentTime.Date == today),
-                CompletedPatientsCount = appointments.Count(a => (a.Status == 4 || a.Status == 5) && a.AppointmentTime.Date == today),
-                WaitingResultsCount = appointments.Count(a => a.Status == 3 && a.AppointmentTime.Date == today),
-                EmergencyCount = appointments.Count(a => (a.Reason.Contains("cấp cứu", System.StringComparison.OrdinalIgnoreCase) || a.Reason.Contains("thắt ngực", System.StringComparison.OrdinalIgnoreCase)) && a.AppointmentTime.Date == today),
-                UpcomingAppointments = appointments.Where(a => a.Status != 4 && a.Status != 5).ToList()
+                TodayPatientsCount = unexaminedCount,
+                CompletedPatientsCount = completedCount,
+                WaitingResultsCount = waitingCount,
+                EmergencyCount = emergencyCount,
+                UpcomingAppointments = upcomingAppointments
             };
 
             return View(viewModel);
@@ -122,18 +127,42 @@ namespace HeThongBenhVien.Controllers
         {
             var patient = await _context.Patients.FindAsync(id);
             if (patient == null) return NotFound();
+
+            var latestAppointment = await _context.Appointments
+                .Where(a => a.PatientId == id)
+                .OrderByDescending(a => a.AppointmentTime)
+                .FirstOrDefaultAsync();
+
+            ViewBag.LatestAppointmentStatus = latestAppointment?.Status ?? 0;
+            ViewBag.HasAppointment = latestAppointment != null;
+
             return View(patient);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPatient(int id, Patient model)
+        public async Task<IActionResult> EditPatient(int id, Patient model, int? AppointmentStatus)
         {
             if (id != model.Id) return NotFound();
             
             if (ModelState.IsValid)
             {
                 _context.Update(model);
+
+                if (AppointmentStatus.HasValue)
+                {
+                    var latestAppointment = await _context.Appointments
+                        .Where(a => a.PatientId == id)
+                        .OrderByDescending(a => a.AppointmentTime)
+                        .FirstOrDefaultAsync();
+                        
+                    if (latestAppointment != null)
+                    {
+                        latestAppointment.Status = AppointmentStatus.Value;
+                        _context.Update(latestAppointment);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(DanhSach));
             }
@@ -163,16 +192,17 @@ namespace HeThongBenhVien.Controllers
             {
                 _context.MedicalRecords.Add(model);
                 
-                // Cập nhật trạng thái lịch khám thành Đã khám xong (4)
+                // Cập nhật trạng thái lịch khám thành Chờ xác nhận (7) thay vì 4
                 var appointment = await _context.Appointments.FindAsync(model.AppointmentId);
                 if (appointment != null)
                 {
-                    appointment.Status = 4;
+                    appointment.Status = 7;
                     _context.Appointments.Update(appointment);
                 }
 
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(HoSoBenhAn));
+                // Sửa redirect: chuyển đến trang ChiTietBenhAn để bác sĩ có thể ấn các nút chức năng (Kê đơn, Xét nghiệm, Xác nhận)
+                return RedirectToAction(nameof(ChiTietBenhAn), new { id = model.Id });
             }
 
             // Nếu lỗi, nạp lại thông tin bệnh nhân
@@ -191,6 +221,14 @@ namespace HeThongBenhVien.Controllers
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (record == null) return NotFound();
+
+            ViewBag.Prescription = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .FirstOrDefaultAsync(p => p.MedicalRecordId == id);
+
+            ViewBag.LabTests = await _context.LabTests
+                .Where(t => t.MedicalRecordId == id)
+                .ToListAsync();
 
             return View(record);
         }
@@ -232,17 +270,164 @@ namespace HeThongBenhVien.Controllers
 
             return RedirectToAction(nameof(HoSoBenhAn));
         }
+        [HttpPost]
+        public async Task<IActionResult> XacNhanHoSo(int id)
+        {
+            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
+            if (record != null && record.Appointment != null)
+            {
+                record.Appointment.Status = 5; // Hoàn thành điều trị
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(HoSoBenhAn));
+        }
+
+        public async Task<IActionResult> KeDonThuoc(int? id)
+        {
+            if (id.HasValue)
+            {
+                var record = await _context.MedicalRecords.FindAsync(id.Value);
+                if (record != null)
+                {
+                    var existingPrescription = await _context.Prescriptions.FirstOrDefaultAsync(p => p.MedicalRecordId == id.Value);
+                    if (existingPrescription == null)
+                    {
+                        var prescription = new Prescription { MedicalRecordId = id.Value, Status = "Đã kê đơn" };
+                        _context.Prescriptions.Add(prescription);
+                        await _context.SaveChangesAsync();
+                        
+                        record.Notes += "\n[KEDONTHUOC]";
+                        await _context.SaveChangesAsync();
+                    }
+                    return View("KeDonThuocForm", await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).Include(p => p.PrescriptionDetails).FirstOrDefaultAsync(p => p.MedicalRecordId == id.Value));
+                }
+            }
+            var prescriptions = await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).ToListAsync();
+            return View(prescriptions);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage)
+        {
+            var detail = new PrescriptionDetail
+            {
+                PrescriptionId = prescriptionId,
+                MedicineName = medicineName,
+                Quantity = quantity,
+                Unit = unit,
+                DosageInstruction = dosage
+            };
+            _context.PrescriptionDetails.Add(detail);
+            await _context.SaveChangesAsync();
+            var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
+            return RedirectToAction(nameof(KeDonThuoc), new { id = prescription?.MedicalRecordId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ChiDinhXetNghiem(int? id)
+        {
+            if (id.HasValue)
+            {
+                var record = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).FirstOrDefaultAsync(m => m.Id == id.Value);
+                return View("ChiDinhXetNghiemForm", record);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LuuChiDinhXetNghiem(int id, string[] loaiXetNghiem)
+        {
+            var record = await _context.MedicalRecords.FindAsync(id);
+            if (record != null)
+            {
+                if(loaiXetNghiem != null)
+                {
+                    foreach(var test in loaiXetNghiem)
+                    {
+                        var labTest = new LabTest { MedicalRecordId = id, TestName = test, Status = "Chờ xét nghiệm" };
+                        _context.LabTests.Add(labTest);
+                    }
+                }
+                record.Notes += "\n[XETNGHIEM_PENDING]";
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(KetQuaCanLamSang));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CapNhatKetQuaXetNghiem(int id, string ketQua)
+        {
+            var test = await _context.LabTests.Include(t => t.MedicalRecord).FirstOrDefaultAsync(t => t.Id == id);
+            if (test != null)
+            {
+                test.Result = ketQua;
+                test.Status = "Đã có kết quả";
+                test.CompletedAt = System.DateTime.Now;
+                
+                // Cập nhật Notes của MedicalRecord để hiển thị ở ChiTietBenhAn
+                if (test.MedicalRecord != null) {
+                    test.MedicalRecord.Notes = test.MedicalRecord.Notes.Replace("[XETNGHIEM_PENDING]", "[XETNGHIEM_DONE]");
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(KetQuaCanLamSang));
+        }
+
+        public async Task<IActionResult> KetQuaCanLamSang()
+        {
+            var tests = await _context.LabTests
+                .Include(t => t.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+            return View(tests);
+        }
+
+        public async Task<IActionResult> LichMo(int? id)
+        {
+            if (id.HasValue)
+            {
+                var record = await _context.MedicalRecords.FindAsync(id.Value);
+                if (record != null && !record.Notes.Contains("[PHAUTHUAT]"))
+                {
+                    record.Notes += "\n[PHAUTHUAT]";
+                    await _context.SaveChangesAsync();
+                }
+            }
+            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[PHAUTHUAT]")).ToListAsync();
+            return View(records);
+        }
+
+        public async Task<IActionResult> QuanLyGiuong(int? id)
+        {
+            if (id.HasValue)
+            {
+                var record = await _context.MedicalRecords.FindAsync(id.Value);
+                if (record != null && !record.Notes.Contains("[NHAPVIEN]"))
+                {
+                    record.Notes += "\n[NHAPVIEN]";
+                    await _context.SaveChangesAsync();
+                }
+            }
+            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[NHAPVIEN]")).ToListAsync();
+            return View(records);
+        }
+
         public IActionResult LichHen() { return View(); }
-        public IActionResult KeDonThuoc() { return View(); }
-        public IActionResult ChiDinhXetNghiem() { return View(); }
-        public IActionResult KetQuaCanLamSang() { return View(); }
         public IActionResult SinhHieu() { return View(); }
         public IActionResult LichSuKham() { return View(); }
-        public IActionResult LichMo() { return View(); }
         public IActionResult ThongKe() { return View(); }
         public IActionResult CanhBaoTinhTrang() { return View(); }
-        public IActionResult HenTaiKham() { return View(); }
-        public IActionResult QuanLyGiuong() { return View(); }
+        
+        public async Task<IActionResult> HenTaiKham() 
+        { 
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == 8)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+            return View(appointments); 
+        }
+        
         public IActionResult HoiChanOnline() { return View(); }
         public IActionResult ThongBao() { return View(); }
         public IActionResult CaiDat() { return View(); }

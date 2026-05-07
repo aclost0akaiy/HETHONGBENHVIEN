@@ -59,19 +59,99 @@
                 <div class="bg-warning bg-opacity-10 p-4 rounded-3 mb-4 border border-warning border-opacity-25">
                     <span class="text-warning small fw-bold text-uppercase d-block mb-2"><i class="fa-solid fa-pills me-1"></i> Hướng điều trị / Đơn thuốc</span>
                     <div class="text-dark" style="white-space: pre-wrap;">@Model.TreatmentPlan</div>
+                    
+                    @if (ViewBag.Prescription != null && ViewBag.Prescription.PrescriptionDetails != null)
+                    {
+                        var details = ViewBag.Prescription.PrescriptionDetails as ICollection<HeThongBenhVien.Models.PrescriptionDetail>;
+                        if (details != null && details.Count > 0)
+                        {
+                            <hr class="border-warning opacity-25">
+                            <h6 class="fw-bold text-dark mt-3 mb-2"><i class="fa-solid fa-prescription-bottle-medical text-warning me-2"></i>Toa thuốc đã kê:</h6>
+                            <ul class="list-group list-group-flush bg-transparent">
+                            @foreach(var item in details)
+                            {
+                                <li class="list-group-item bg-transparent px-0 border-0 py-1">
+                                    <span class="fw-semibold">@item.MedicineName</span> - 
+                                    SL: <span class="text-primary">@item.Quantity @item.Unit</span> 
+                                    <br/><small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Cách dùng: @item.DosageInstruction</small>
+                                </li>
+                            }
+                            </ul>
+                        }
+                    }
                 </div>
+
+                @if (ViewBag.LabTests != null)
+                {
+                    var tests = ViewBag.LabTests as ICollection<HeThongBenhVien.Models.LabTest>;
+                    if (tests != null && tests.Count > 0)
+                    {
+                        <div class="bg-info bg-opacity-10 p-4 rounded-3 mb-4 border border-info border-opacity-25">
+                            <span class="text-info small fw-bold text-uppercase d-block mb-2"><i class="fa-solid fa-vial-circle-check me-1"></i> Cận Lâm Sàng / Xét Nghiệm</span>
+                            <ul class="list-group list-group-flush bg-transparent">
+                            @foreach(var test in tests)
+                            {
+                                <li class="list-group-item bg-transparent px-0 border-info border-opacity-25 py-2" style="border-bottom: 1px dashed rgba(13, 202, 240, 0.25);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold text-dark">@test.TestName</span>
+                                        @if(string.IsNullOrEmpty(test.Result)) {
+                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-regular fa-clock me-1"></i>Chờ kết quả</span>
+                                        } else {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i>Đã có KQ</span>
+                                        }
+                                    </div>
+                                    @if(!string.IsNullOrEmpty(test.Result)) {
+                                        <div class="mt-2 text-dark bg-white p-2 rounded border border-light">
+                                            <strong>Kết quả:</strong> @test.Result
+                                        </div>
+                                    }
+                                </li>
+                            }
+                            </ul>
+                        </div>
+                    }
+                }
 
                 @if(!string.IsNullOrEmpty(Model.Notes))
                 {
+                    string displayNotes = Model.Notes
+                        .Replace("[KEDONTHUOC]", "✓ Đã chuyển sang Kê đơn thuốc")
+                        .Replace("[XETNGHIEM_PENDING]", "⌛ Đang chờ kết quả Xét nghiệm")
+                        .Replace("[XETNGHIEM_DONE]", "✓ Đã có kết quả Xét nghiệm")
+                        .Replace("[PHAUTHUAT]", "✓ Đã chuyển sang Lịch Mổ / Phẫu thuật")
+                        .Replace("[NHAPVIEN]", "✓ Đã Nhập viện nội trú");
+
                     <div class="bg-light p-4 rounded-3 border border-light">
-                        <span class="text-muted small fw-bold text-uppercase d-block mb-2">Ghi chú & Lời dặn</span>
-                        <div class="text-dark fst-italic">@Model.Notes</div>
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-2">Ghi chú & Lời dặn / Trạng thái xử lý</span>
+                        <div class="text-dark fw-medium" style="white-space: pre-wrap;">@displayNotes</div>
                     </div>
                 }
 
-                <div class="text-end mt-5 pt-3 border-top">
-                    <button class="btn btn-primary px-4 py-2" onclick="window.print()">
-                        <i class="fa-solid fa-print me-2"></i> In Hồ Sơ
+                <div class="text-end mt-5 pt-3 border-top d-flex justify-content-end gap-2 flex-wrap">
+                    @if (Model.Appointment?.Status == 7)
+                    {
+                        <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = Model.Id })" class="btn btn-warning text-dark px-3 py-2 fw-bold">
+                            <i class="fa-solid fa-pills me-1"></i> Kê đơn thuốc
+                        </a>
+                        <a href="@Url.Action("ChiDinhXetNghiem", "Doctor", new { id = Model.Id })" class="btn btn-info text-dark px-3 py-2 fw-bold">
+                            <i class="fa-solid fa-vial me-1"></i> Xét nghiệm
+                        </a>
+                        <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn btn-danger px-3 py-2 fw-bold">
+                            <i class="fa-solid fa-scalpel me-1"></i> Phẫu thuật
+                        </a>
+                        <a href="@Url.Action("QuanLyGiuong", "Doctor", new { id = Model.Id })" class="btn btn-secondary px-3 py-2 fw-bold">
+                            <i class="fa-solid fa-bed me-1"></i> Nhập viện
+                        </a>
+                        <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
+                                <i class="fa-solid fa-check-double me-1"></i> Xác nhận
+                            </button>
+                        </form>
+                    }
+                    
+                    <button class="btn btn-primary px-4 py-2 fw-bold ms-3" onclick="window.print()">
+                        <i class="fa-solid fa-print me-1"></i> In Hồ Sơ
                     </button>
                 </div>
             </div>

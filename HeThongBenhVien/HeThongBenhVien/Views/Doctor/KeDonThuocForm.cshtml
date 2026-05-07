@@ -1,0 +1,90 @@
+@model HeThongBenhVien.Models.Prescription
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Kê Đơn Thuốc";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Kê Đơn Thuốc</h2>
+            <p class="text-muted mb-0">Hệ thống cấp phát và quản lý toa thuốc điện tử.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-pills me-2"></i>Thêm Thuốc Vào Đơn</h5>
+                <form asp-action="LuuToaThuoc" asp-controller="Doctor" method="post">
+                    <input type="hidden" name="prescriptionId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label text-secondary fw-semibold">Tên Thuốc</label>
+                        <input type="text" name="medicineName" class="form-control" placeholder="Nhập tên thuốc hoặc mã thuốc" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary fw-semibold">Số lượng</label>
+                            <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary fw-semibold">Đơn vị</label>
+                            <select name="unit" class="form-select">
+                                <option>Viên</option>
+                                <option>Vỉ</option>
+                                <option>Hộp</option>
+                                <option>Lọ</option>
+                                <option>Ống</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary fw-semibold">Liều dùng</label>
+                        <input type="text" name="dosage" class="form-control" placeholder="VD: Sáng 1 viên, tối 1 viên sau ăn" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-plus me-2"></i>Thêm vào toa</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8 mb-4">
+            <div class="glass-card p-4 h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <h5 class="fw-bold text-dark">Toa Thuốc Hiện Tại</h5>
+                    <span class="badge bg-danger rounded-pill px-3 py-2">Bệnh nhân: @Model.MedicalRecord?.Appointment?.Patient?.FullName</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên Thuốc</th>
+                                <th>SL</th>
+                                <th>Đơn vị</th>
+                                <th>Liều dùng & Cách dùng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.PrescriptionDetails)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@detail.MedicineName</td>
+                                    <td>@detail.Quantity</td>
+                                    <td>@detail.Unit</td>
+                                    <td>@detail.DosageInstruction</td>
+                                </tr>
+                            }
+                            @if (!Model.PrescriptionDetails.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Chưa có thuốc nào trong toa.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end mt-4">
+                    <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = Model.MedicalRecordId })" class="btn btn-primary px-4 ms-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Toa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

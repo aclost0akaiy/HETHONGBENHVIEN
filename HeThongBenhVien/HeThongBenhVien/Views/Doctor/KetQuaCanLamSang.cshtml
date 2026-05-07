@@ -1,3 +1,4 @@
+@model IEnumerable<HeThongBenhVien.Models.LabTest>
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Kết Quả Cận Lâm Sàng";
@@ -6,12 +7,8 @@
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Kết Quả Xét Nghiệm</h2>
-            <p class="text-muted mb-0">Trả kết quả từ hệ thống LIS/PACS trung tâm.</p>
-        </div>
-        <div class="input-group w-25">
-            <input type="text" class="form-control" placeholder="Nhập mã bệnh nhân...">
-            <button class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Cập Nhật Kết Quả Xét Nghiệm</h2>
+            <p class="text-muted mb-0">Nhập kết quả xét nghiệm cho các bệnh nhân đang chờ.</p>
         </div>
     </div>
 
@@ -19,47 +16,57 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th class="ps-4 py-3">Loại Xét Nghiệm</th>
-                    <th class="py-3">Chỉ Số</th>
+                    <th class="ps-4 py-3">Bệnh Nhân</th>
+                    <th class="py-3">Tên Xét Nghiệm</th>
+                    <th class="py-3">Trạng Thái</th>
                     <th class="py-3">Kết Quả</th>
-                    <th class="py-3">Đơn Vị</th>
-                    <th class="py-3">Trị Số Bình Thường</th>
-                    <th class="pe-4 py-3">Đánh Giá</th>
+                    <th class="py-3">Hành Động</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="ps-4 fw-bold text-primary">Huyết Học</td>
-                    <td>Bạch Cầu (WBC)</td>
-                    <td class="fw-bold">7.5</td>
-                    <td>G/L</td>
-                    <td>4.0 - 10.0</td>
-                    <td><span class="badge bg-success rounded-pill px-2">Bình Thường</span></td>
-                </tr>
-                <tr>
-                    <td class="ps-4 fw-bold text-primary">Huyết Học</td>
-                    <td>Hồng Cầu (RBC)</td>
-                    <td class="fw-bold text-danger">3.1 <i class="fa-solid fa-arrow-down"></i></td>
-                    <td>T/L</td>
-                    <td>3.8 - 5.8</td>
-                    <td><span class="badge bg-danger rounded-pill px-2">Thấp</span></td>
-                </tr>
-                <tr class="bg-light">
-                    <td class="ps-4 fw-bold text-success">Sinh Hóa</td>
-                    <td>Glucose Máu</td>
-                    <td class="fw-bold text-danger">7.8 <i class="fa-solid fa-arrow-up"></i></td>
-                    <td>mmol/L</td>
-                    <td>3.9 - 6.4</td>
-                    <td><span class="badge bg-warning text-dark rounded-pill px-2">Cao</span></td>
-                </tr>
-                 <tr class="bg-light">
-                    <td class="ps-4 fw-bold text-success">Sinh Hóa</td>
-                    <td>Creatinin</td>
-                    <td class="fw-bold">80.5</td>
-                    <td>umol/L</td>
-                    <td>53.0 - 120.0</td>
-                    <td><span class="badge bg-success rounded-pill px-2">Bình Thường</span></td>
-                </tr>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold">
+                            @item.MedicalRecord?.Appointment?.Patient?.FullName <br />
+                            <small class="text-muted">Mã BN: @item.MedicalRecord?.Appointment?.Patient?.PatientCode</small>
+                        </td>
+                        <td>@item.TestName</td>
+                        <td>
+                            @if (item.Status == "Đã có kết quả")
+                            {
+                                <span class="badge bg-success rounded-pill px-3 py-2">Đã có kết quả</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Chờ xét nghiệm</span>
+                            }
+                        </td>
+                        <td class="fw-bold">
+                            @item.Result
+                        </td>
+                        <td>
+                            @if (item.Status == "Đã có kết quả")
+                            {
+                                <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem Hồ Sơ</a>
+                            }
+                            else
+                            {
+                                <form asp-action="CapNhatKetQuaXetNghiem" asp-controller="Doctor" method="post" class="d-flex gap-2 m-0">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="text" name="ketQua" class="form-control form-control-sm" placeholder="Nhập kết quả..." required />
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Cập nhật</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Không có bệnh nhân chờ xét nghiệm.</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>

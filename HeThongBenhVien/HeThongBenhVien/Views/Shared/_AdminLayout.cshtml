@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1; /* Indigo for Admin to differentiate from Doctor's sky blue */
+            --primary-dark: #4f46e5;
+            --secondary-color: #f8fafc;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --bg-color: #f1f5f9;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: #1e1e2d; /* Dark theme sidebar for admin */
+            color: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: #151521;
+        }
+
+        .sidebar-header i {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-right: 12px;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .nav-section-title {
+            padding: 15px 20px 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #6b7280;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu li a:hover, .sidebar-menu li.active a {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar-menu li.active a {
+            font-weight: 600;
+        }
+
+        .sidebar-menu li a i {
+            width: 24px;
+            font-size: 16px;
+            margin-right: 10px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        #main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            height: 70px;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 999;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 14px;
+            background: #f8fafc;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: #ffffff;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-icon {
+            position: relative;
+            color: var(--text-light);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-icon:hover {
+            color: var(--primary-color);
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background: var(--danger-color);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 10px;
+            border: 2px solid #ffffff;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .profile-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        .profile-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-text .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .profile-text .role {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 30px;
+            flex: 1;
+        }
+
+        /* Card Styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        /* Responsive */
+        .sidebar-hidden {
+            transform: translateX(-100%) !important;
+        }
+        
+        .main-content-expanded {
+            margin-left: 0 !important;
+        }
+        
+        /* Custom scrollbar for dark sidebar */
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #1e1e2d;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #474761;
+            border-radius: 10px;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h3>Admin Portal</h3>
+        </div>
+
+        <ul class="sidebar-menu pb-4">
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <a href="@Url.Action("Dashboard", "Admin")">
+                    <i class="fa-solid fa-gauge-high"></i> Bảng điều khiển
+                </a>
+            </li>
+
+            <div class="nav-section-title">Hệ thống & Người dùng</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTaiKhoan" ? "active" : "")">
+                <a href="@Url.Action("QuanLyTaiKhoan", "Admin")"><i class="fa-solid fa-users-gear"></i> Quản lý tài khoản</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNhanSu" ? "active" : "")">
+                <a href="@Url.Action("QuanLyNhanSu", "Admin")"><i class="fa-solid fa-user-doctor"></i> Quản lý nhân sự</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoaPhong" ? "active" : "")">
+                <a href="@Url.Action("QuanLyKhoaPhong", "Admin")"><i class="fa-solid fa-hospital-user"></i> Quản lý khoa phòng</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyLichLamViec" ? "active" : "")">
+                <a href="@Url.Action("QuanLyLichLamViec", "Admin")"><i class="fa-solid fa-calendar-days"></i> Lịch làm việc</a>
+            </li>
+
+            <div class="nav-section-title">Danh mục chuyên môn</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyDichVu" ? "active" : "")">
+                <a href="@Url.Action("QuanLyDichVu", "Admin")"><i class="fa-solid fa-stethoscope"></i> Dịch vụ khám chữa bệnh</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyGia" ? "active" : "")">
+                <a href="@Url.Action("QuanLyGia", "Admin")"><i class="fa-solid fa-money-bill-wave"></i> Bảng giá viện phí</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoDuoc" ? "active" : "")">
+                <a href="@Url.Action("QuanLyKhoDuoc", "Admin")"><i class="fa-solid fa-pills"></i> Quản lý kho dược</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyThietBi" ? "active" : "")">
+                <a href="@Url.Action("QuanLyThietBi", "Admin")"><i class="fa-solid fa-microscope"></i> Thiết bị y tế</a>
+            </li>
+
+            <div class="nav-section-title">Báo cáo & Phân tích</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "ThongKeDoanhThu" ? "active" : "")">
+                <a href="@Url.Action("ThongKeDoanhThu", "Admin")"><i class="fa-solid fa-chart-line"></i> Thống kê doanh thu</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "BaoCaoHoatDong" ? "active" : "")">
+                <a href="@Url.Action("BaoCaoHoatDong", "Admin")"><i class="fa-solid fa-chart-pie"></i> Báo cáo hoạt động</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhGiaChatLuong" ? "active" : "")">
+                <a href="@Url.Action("DanhGiaChatLuong", "Admin")"><i class="fa-solid fa-star"></i> Đánh giá chất lượng</a>
+            </li>
+
+            <div class="nav-section-title">Cài đặt</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" ? "active" : "")">
+                <a href="@Url.Action("CauHinhHeThong", "Admin")"><i class="fa-solid fa-gears"></i> Cấu hình hệ thống</a>
+            </li>
+            <li>
+                <a href="#"><i class="fa-solid fa-database"></i> Sao lưu dữ liệu</a>
+            </li>
+            <li>
+                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hệ thống</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light d-lg-none" id="sidebarToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="search-bar d-none d-md-block m-0">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm kiếm nhanh module...">
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="nav-icon">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="badge-count bg-primary">3</span>
+                </div>
+                <div class="profile-info dropdown">
+                    <div data-bs-toggle="dropdown" aria-expanded="false" class="d-flex align-items-center gap-2" style="cursor: pointer;">
+                        @{
+                            var fullName = User.FindFirst("FullName")?.Value ?? "Administrator";
+                            var userNameUrl = System.Net.WebUtility.UrlEncode(fullName);
+                        }
+                        <img src="https://ui-avatars.com/api/?name=@userNameUrl&background=6366f1&color=fff" alt="Admin Profile">
+                        <div class="profile-text">
+                            <span class="name">@fullName</span>
+                            <span class="role text-primary fw-bold">Quản trị viên</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-muted" style="font-size: 12px;"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-gear me-2 text-muted"></i>Cài đặt</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function checkWindowSize() {
+                if ($(window).width() < 992) {
+                    $('#sidebar').addClass('sidebar-hidden');
+                    $('#main-content').addClass('main-content-expanded');
+                } else {
+                    $('#sidebar').removeClass('sidebar-hidden');
+                    $('#main-content').removeClass('main-content-expanded');
+                }
+            }
+
+            checkWindowSize();
+
+            $(window).resize(function() {
+                checkWindowSize();
+            });
+
+            $('#sidebarToggle').click(function() {
+                $('#sidebar').toggleClass('sidebar-hidden');
+                $('#main-content').toggleClass('main-content-expanded');
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

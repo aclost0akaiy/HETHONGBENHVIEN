@@ -26,7 +26,7 @@
             <div class="glass-card hover-card p-4 h-100 border-start border-4 border-primary">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.8rem;">Bệnh nhân hôm nay</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.8rem;">Tổng bệnh nhân chưa khám</div>
                         <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.TodayPatientsCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(14, 165, 233, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0ea5e9; font-size: 20px;">
@@ -60,7 +60,7 @@
             <div class="glass-card hover-card p-4 h-100 border-start border-4 border-warning">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="font-size: 0.8rem;">Đang chờ kết quả</div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái chờ khám</div>
                         <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.WaitingResultsCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 20px;">
@@ -77,7 +77,7 @@
             <div class="glass-card hover-card p-4 h-100 border-start border-4 border-danger">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="font-size: 0.8rem;">Ca Cấp cứu / Ưu tiên</div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái ưu tiên</div>
                         <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.EmergencyCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 20px;">
@@ -136,6 +136,7 @@
                                         2 => "bg-primary",
                                         3 => "bg-info text-dark",
                                         4 => "bg-success",
+                                        6 => "bg-danger",
                                         _ => "bg-secondary"
                                     };
 
@@ -146,6 +147,7 @@
                                         2 => "Đang khám",
                                         3 => "Có KQ XN",
                                         4 => "Đã khám xong",
+                                        6 => "Ưu tiên",
                                         _ => "Không xác định"
                                     };
 
@@ -164,7 +166,7 @@
                                         <td>@item.AppointmentTime.ToString("hh:mm tt")</td>
                                         <td><span class="badge @statusBadgeClass rounded-pill">@statusText</span></td>
                                         <td class="pe-4 text-end">
-                                            @if (item.Status == 1 || item.Status == 3)
+                                            @if (item.Status == 1 || item.Status == 2 || item.Status == 3 || item.Status == 6)
                                             {
                                                 <a href="@Url.Action("KhamBenh", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-3">Khám ngay</a>
                                             }
@@ -372,6 +374,7 @@
                                     <option value="0">Chưa đến</option>
                                     <option value="1" selected>Đang chờ</option>
                                     <option value="2">Đang khám</option>
+                                    <option value="6">Ưu tiên</option>
                                 </select>
                             </div>
                         </div>

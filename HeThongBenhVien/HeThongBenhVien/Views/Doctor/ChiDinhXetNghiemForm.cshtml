@@ -1,0 +1,56 @@
+@model HeThongBenhVien.Models.MedicalRecord
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Chỉ Định Xét Nghiệm";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chỉ Định Dịch Vụ Cận Lâm Sàng</h2>
+            <p class="text-muted mb-0">Tạo phiếu yêu cầu xét nghiệm, siêu âm, X-Quang cho bệnh nhân @(Model?.Appointment?.Patient?.FullName).</p>
+        </div>
+    </div>
+
+    <form asp-action="LuuChiDinhXetNghiem" asp-controller="Doctor" method="post">
+        <input type="hidden" name="id" value="@Model?.Id" />
+        <div class="glass-card p-4">
+            <div class="row">
+                <div class="col-md-4 border-end">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-vial me-2"></i>Xét Nghiệm Máu</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="loaiXetNghiem" value="CBC" id="test1" checked>
+                        <label class="form-check-label" for="test1">Công thức máu toàn phần (CBC)</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="loaiXetNghiem" value="SinhHoa" id="test2" checked>
+                        <label class="form-check-label" for="test2">Sinh hóa máu (Đường huyết, Ure, Creatinin)</label>
+                    </div>
+                </div>
+                <div class="col-md-4 border-end">
+                    <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-x-ray me-2"></i>Chẩn Đoán Hình Ảnh</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="loaiXetNghiem" value="SieuAm" id="img1">
+                        <label class="form-check-label" for="img1">Siêu âm ổ bụng tổng quát</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="loaiXetNghiem" value="XQuang" id="img2" checked>
+                        <label class="form-check-label" for="img2">X-Quang ngực thẳng</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-warning mb-3"><i class="fa-solid fa-microscope me-2"></i>Xét Nghiệm Khác</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="loaiXetNghiem" value="NuocTieu" id="other1" checked>
+                        <label class="form-check-label" for="other1">Tổng phân tích nước tiểu</label>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = Model?.Id })" class="btn btn-light px-4 py-2">Quay lại</a>
+                <button type="submit" class="btn btn-primary px-5 py-2"><i class="fa-solid fa-paper-plane me-2"></i>Gửi Yêu Cầu</button>
+            </div>
+        </div>
+    </form>
+</div>

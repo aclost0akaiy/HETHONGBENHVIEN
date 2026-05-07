@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'QuanLyBenhVienDb')
@@ -11,6 +11,9 @@ USE QuanLyBenhVienDb;
 GO
 
 -- Xóa bảng nếu đã tồn tại để tránh lỗi khi chạy lại script
+IF OBJECT_ID('LabTests', 'U') IS NOT NULL DROP TABLE LabTests;
+IF OBJECT_ID('PrescriptionDetails', 'U') IS NOT NULL DROP TABLE PrescriptionDetails;
+IF OBJECT_ID('Prescriptions', 'U') IS NOT NULL DROP TABLE Prescriptions;
 IF OBJECT_ID('MedicalRecords', 'U') IS NOT NULL DROP TABLE MedicalRecords;
 IF OBJECT_ID('Appointments', 'U') IS NOT NULL DROP TABLE Appointments;
 IF OBJECT_ID('Patients', 'U') IS NOT NULL DROP TABLE Patients;
@@ -59,6 +62,40 @@ CREATE TABLE MedicalRecords (
     Notes NVARCHAR(MAX) NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE
+);
+GO
+
+-- 3.1. Tạo bảng Đơn thuốc (Prescriptions)
+CREATE TABLE Prescriptions (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MedicalRecordId INT NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    Status NVARCHAR(50) NOT NULL DEFAULT N'Đã kê đơn',
+    CONSTRAINT FK_Prescriptions_MedicalRecords FOREIGN KEY (MedicalRecordId) REFERENCES MedicalRecords(Id) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE PrescriptionDetails (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    PrescriptionId INT NOT NULL,
+    MedicineName NVARCHAR(200) NOT NULL,
+    Quantity INT NOT NULL,
+    Unit NVARCHAR(50) NOT NULL,
+    DosageInstruction NVARCHAR(255) NOT NULL,
+    CONSTRAINT FK_PrescriptionDetails_Prescriptions FOREIGN KEY (PrescriptionId) REFERENCES Prescriptions(Id) ON DELETE CASCADE
+);
+GO
+
+-- 3.2. Tạo bảng Xét nghiệm (LabTests)
+CREATE TABLE LabTests (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MedicalRecordId INT NOT NULL,
+    TestName NVARCHAR(200) NOT NULL,
+    Status NVARCHAR(50) NOT NULL DEFAULT N'Chờ xét nghiệm',
+    Result NVARCHAR(MAX) NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    CompletedAt DATETIME2 NULL,
+    CONSTRAINT FK_LabTests_MedicalRecords FOREIGN KEY (MedicalRecordId) REFERENCES MedicalRecords(Id) ON DELETE CASCADE
 );
 GO
 
