@@ -82,8 +82,23 @@ CREATE TABLE PrescriptionDetails (
     Quantity INT NOT NULL,
     Unit NVARCHAR(50) NOT NULL,
     DosageInstruction NVARCHAR(255) NOT NULL,
+    Price DECIMAL(18,2) NOT NULL DEFAULT 0,
     CONSTRAINT FK_PrescriptionDetails_Prescriptions FOREIGN KEY (PrescriptionId) REFERENCES Prescriptions(Id) ON DELETE CASCADE
 );
+GO
+
+-- 3.1.5 Tạo bảng Đơn vị thuốc (MedicineUnits)
+CREATE TABLE MedicineUnits (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UnitName NVARCHAR(50) NOT NULL,
+    DefaultPrice DECIMAL(18,2) NOT NULL DEFAULT 0
+);
+GO
+
+INSERT INTO MedicineUnits (UnitName, DefaultPrice) VALUES 
+(N'Viên', 5000), (N'Vỉ', 8000), (N'Lọ', 20000), 
+(N'Hộp', 60000), (N'Ống', 10000), (N'Cái', 20000), 
+(N'Tuýp', 15000), (N'Gói', 25000), (N'Chai', 15000);
 GO
 
 -- 3.2. Tạo bảng Xét nghiệm (LabTests)

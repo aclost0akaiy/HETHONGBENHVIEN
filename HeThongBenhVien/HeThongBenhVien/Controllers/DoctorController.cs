@@ -299,6 +299,9 @@ namespace HeThongBenhVien.Controllers
                         record.Notes += "\n[KEDONTHUOC]";
                         await _context.SaveChangesAsync();
                     }
+                    
+                    ViewBag.MedicineUnits = await _context.MedicineUnits.ToListAsync();
+                    
                     return View("KeDonThuocForm", await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).Include(p => p.PrescriptionDetails).FirstOrDefaultAsync(p => p.MedicalRecordId == id.Value));
                 }
             }
@@ -307,7 +310,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage)
+        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage, decimal price)
         {
             var detail = new PrescriptionDetail
             {
@@ -315,7 +318,8 @@ namespace HeThongBenhVien.Controllers
                 MedicineName = medicineName,
                 Quantity = quantity,
                 Unit = unit,
-                DosageInstruction = dosage
+                DosageInstruction = dosage,
+                Price = price
             };
             _context.PrescriptionDetails.Add(detail);
             await _context.SaveChangesAsync();

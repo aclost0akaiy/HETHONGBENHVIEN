@@ -20,5 +20,7 @@ namespace HeThongBenhVien.Models
         public string Unit { get; set; } = string.Empty;
 
         public string DosageInstruction { get; set; } = string.Empty;
+
+        public decimal Price { get; set; }
     }
 }
