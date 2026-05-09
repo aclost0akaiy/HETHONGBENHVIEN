@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
@@ -19,6 +23,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "HeThongBenhVien\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "HeThongBenhVien\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-09T03:02:35.262Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeDocumentMoniker": "HeThongBenhVien\\appsettings.json",
