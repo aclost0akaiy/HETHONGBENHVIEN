@@ -1,0 +1,83 @@
+﻿@model HeThongBenhVien.Models.User
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm Tài Khoản Mới";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Thêm Tài Khoản Mới</h2>
+            <p class="text-muted mb-0">Điền thông tin để tạo tài khoản bác sĩ hoặc quản trị viên</p>
+        </div>
+        <div>
+            <a asp-action="QuanLyTaiKhoan" asp-controller="Admin" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50 me-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-card p-4">
+        <form asp-action="ThemTaiKhoan" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Tên đăng nhập (Username) <span class="text-danger">*</span></label>
+                    <input asp-for="Username" class="form-control" required />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Mật khẩu <span class="text-danger">*</span></label>
+                    <input asp-for="Password" type="password" class="form-control" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Họ và Tên</label>
+                    <input asp-for="FullName" class="form-control" placeholder="VD: BS. Nguyễn Văn A" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Vai trò <span class="text-danger">*</span></label>
+                    <select asp-for="Role" class="form-control">
+                        <option value="Doctor">Bác sĩ</option>
+                        <option value="Admin">Quản trị viên</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Email</label>
+                    <input asp-for="Email" type="email" class="form-control" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">Số điện thoại</label>
+                    <input asp-for="SDT" class="form-control" />
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="fas fa-save me-1"></i> Lưu Tài Khoản
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+</style>

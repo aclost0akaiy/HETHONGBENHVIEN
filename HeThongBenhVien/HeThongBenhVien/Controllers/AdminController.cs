@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HeThongBenhVien.Models;
 
 namespace HeThongBenhVien.Controllers
 {
@@ -20,7 +22,7 @@ namespace HeThongBenhVien.Controllers
             var totalPatients = _context.Patients.Count();
             var medicalRecordsCount = _context.MedicalRecords.Count();
             var emergencyCases = _context.Appointments.Count(a => a.Reason.ToLower().Contains("cấp cứu"));
-            
+
             // Giả lập doanh thu dựa trên số ca khám bệnh hoàn tất (Ví dụ mỗi ca 500k)
             var dailyRevenue = medicalRecordsCount * 500000;
 
@@ -29,12 +31,57 @@ namespace HeThongBenhVien.Controllers
             ViewBag.TotalPatients = totalPatients;
             ViewBag.DailyRevenue = dailyRevenue;
             ViewBag.EmergencyCases = emergencyCases;
-            
+
             return View();
         }
 
-        // 1 - 10: Existing
-        public IActionResult QuanLyTaiKhoan() { return View(); }
+        // ==========================================
+        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (ĐÃ FIX LỖI)
+        // ==========================================
+
+        // 1. Lấy toàn bộ tài khoản từ Database truyền ra giao diện
+        public async Task<IActionResult> QuanLyTaiKhoan()
+        {
+            var danhSachTaiKhoan = await _context.Users.ToListAsync();
+            return View(danhSachTaiKhoan);
+        }
+
+        // 2. Hiển thị form Thêm Tài Khoản (GET)
+        [HttpGet]
+        public IActionResult ThemTaiKhoan()
+        {
+            return View();
+        }
+
+        // 3. Xử lý nhận dữ liệu từ form và lưu vào SQL Server (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemTaiKhoan(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                // Kiểm tra xem Username đã bị trùng chưa
+                var daTonTai = await _context.Users.AnyAsync(u => u.Username == user.Username);
+                if (daTonTai)
+                {
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác!");
+                    return View(user);
+                }
+
+                // Lưu vào database
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Lưu xong thì quay lại trang danh sách
+                return RedirectToAction(nameof(QuanLyTaiKhoan));
+            }
+            return View(user);
+        }
+
+        // ==========================================
+        // CÁC CHỨC NĂNG CÒN LẠI (GIỮ NGUYÊN)
+        // ==========================================
+
         public IActionResult QuanLyNhanSu() { return View(); }
         public IActionResult QuanLyKhoaPhong() { return View(); }
         public IActionResult QuanLyLichLamViec() { return View(); }
@@ -45,7 +92,7 @@ namespace HeThongBenhVien.Controllers
         public IActionResult ThongKeDoanhThu() { return View(); }
         public IActionResult CauHinhHeThong() { return View(); }
 
-        // 11 - 20: New Added Functions
+        // 11 - 20: Các hàm mới
         public IActionResult QuanLyBenhNhan() { return View(); }
         public IActionResult QuanLyVienPhi() { return View(); }
         public IActionResult QuanLyBHYT() { return View(); }

@@ -1,17 +1,91 @@
-﻿@{
+﻿@model IEnumerable<HeThongBenhVien.Models.User>
+@using System.Linq
+
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyTaiKhoan";
+    ViewData["Title"] = "Quản Lý Tài Khoản";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyTaiKhoan</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản Lý Tài Khoản</h2>
+            <p class="text-muted mb-0">Danh sách toàn bộ tài khoản bác sĩ và quản trị viên trên hệ thống</p>
+        </div>
+        <div>
+            <a asp-action="ThemTaiKhoan" asp-controller="Admin" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50 me-1"></i> Thêm Tài Khoản
+            </a>
         </div>
     </div>
-    
+
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyTaiKhoan</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="text-primary" style="background-color: rgba(0,0,0,0.03);">
+                    <tr>
+                        <th class="font-weight-bold">ID</th>
+                        <th class="font-weight-bold">Tên Đăng Nhập</th>
+                        <th class="font-weight-bold">Mật Khẩu</th>
+                        <th class="font-weight-bold">Họ và Tên</th>
+                        <th class="font-weight-bold text-center">Vai Trò</th>
+                        <th class="font-weight-bold">Email</th>
+                        <th class="font-weight-bold">Số Điện Thoại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="align-middle">#@item.Id</td>
+                                <td class="align-middle fw-bold">@item.Username</td>
+                                <td class="align-middle text-muted">@item.Password</td>
+                                <td class="align-middle">@item.FullName</td>
+                                <td class="align-middle text-center">
+                                    @if (item.Role == "Admin")
+                                    {
+                                        <span class="badge bg-danger text-white px-3 py-2">Quản trị viên</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success text-white px-3 py-2">Bác sĩ</span>
+                                    }
+                                </td>
+                                <td class="align-middle">@item.Email</td>
+                                <td class="align-middle">@item.SDT</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-3"></i>
+                                <p>Chưa có dữ liệu tài khoản nào được tìm thấy.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    .table thead th {
+        border-top: none;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+</style>

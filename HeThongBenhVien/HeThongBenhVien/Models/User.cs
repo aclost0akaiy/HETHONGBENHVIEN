@@ -21,5 +21,13 @@ namespace HeThongBenhVien.Models
 
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
+
+        // Thêm trường Email khớp với SQL Server
+        [StringLength(100)]
+        public string Email { get; set; } = string.Empty;
+
+        // Thêm trường SDT khớp với SQL Server
+        [StringLength(20)]
+        public string SDT { get; set; } = string.Empty;
     }
 }
