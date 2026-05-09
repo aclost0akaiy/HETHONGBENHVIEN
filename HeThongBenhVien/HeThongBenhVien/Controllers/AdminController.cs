@@ -36,19 +36,19 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (ĐÃ FIX LỖI)
+        // CHỨC NĂNG QUẢN LÝ NHÂN SỰ (PHẦN CỦA BẠN - ĐÃ CHẠY ĐƯỢC)
         // ==========================================
 
-        // 1. Lấy toàn bộ tài khoản từ Database truyền ra giao diện
-        public async Task<IActionResult> QuanLyTaiKhoan()
+        // 1. Lấy toàn bộ nhân sự từ Database truyền ra giao diện
+        public async Task<IActionResult> QuanLyNhanSu()
         {
-            var danhSachTaiKhoan = await _context.Users.ToListAsync();
-            return View(danhSachTaiKhoan);
+            var danhSachNhanSu = await _context.Users.ToListAsync();
+            return View(danhSachNhanSu);
         }
 
-        // 2. Hiển thị form Thêm Tài Khoản (GET)
+        // 2. Hiển thị form Thêm Nhân Sự (GET)
         [HttpGet]
-        public IActionResult ThemTaiKhoan()
+        public IActionResult ThemNhanSu()
         {
             return View();
         }
@@ -56,7 +56,7 @@ namespace HeThongBenhVien.Controllers
         // 3. Xử lý nhận dữ liệu từ form và lưu vào SQL Server (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemTaiKhoan(User user)
+        public async Task<IActionResult> ThemNhanSu(User user)
         {
             if (ModelState.IsValid)
             {
@@ -72,17 +72,17 @@ namespace HeThongBenhVien.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // Lưu xong thì quay lại trang danh sách
-                return RedirectToAction(nameof(QuanLyTaiKhoan));
+                // Lưu xong thì quay lại trang danh sách nhân sự
+                return RedirectToAction(nameof(QuanLyNhanSu));
             }
             return View(user);
         }
 
         // ==========================================
-        // CÁC CHỨC NĂNG CÒN LẠI (GIỮ NGUYÊN)
+        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (NGƯỜI KHÁC LÀM - ĐỂ TRỐNG)
         // ==========================================
+        public IActionResult QuanLyTaiKhoan() { return View(); }
 
-        public IActionResult QuanLyNhanSu() { return View(); }
         public IActionResult QuanLyKhoaPhong() { return View(); }
         public IActionResult QuanLyLichLamViec() { return View(); }
         public IActionResult QuanLyDichVu() { return View(); }
