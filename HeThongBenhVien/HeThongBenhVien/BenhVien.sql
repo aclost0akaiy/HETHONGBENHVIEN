@@ -146,3 +146,21 @@ VALUES
 (2, N'doctor', N'123', N'Doctor', N'BS. Nguyễn Văn A');
 SET IDENTITY_INSERT Users OFF;
 GO
+
+ALTER TABLE [QuanLyBenhVienDb].[dbo].[Users]
+ADD 
+    [Email] NVARCHAR(100),
+    [SDT] VARCHAR(20);
+-- Cập nhật thông tin cho Quản trị viên (Id = 1)
+UPDATE [QuanLyBenhVienDb].[dbo].[Users]
+SET 
+    [Email] = 'admin@benhvien.com',
+    [SDT] = '0901111222'
+WHERE [Id] = 1;
+
+-- Cập nhật thông tin cho Bác sĩ Nguyễn Văn A (Id = 2)
+UPDATE [QuanLyBenhVienDb].[dbo].[Users]
+SET 
+    [Email] = 'nguyenvana.bs@gmail.com',
+    [SDT] = '0987654321'
+WHERE [Id] = 2;
