@@ -33,8 +33,11 @@ namespace HeThongBenhVien.Controllers
         {
             if (ModelState.IsValid)
             {
+                var username = model.Username?.Trim() ?? string.Empty;
+                var password = model.Password?.Trim() ?? string.Empty;
+
                 var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == model.Username && u.Password == model.Password);
+                    .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
 
                 if (user != null)
                 {

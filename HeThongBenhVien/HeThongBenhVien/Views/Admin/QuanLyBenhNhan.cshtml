@@ -1,17 +1,94 @@
-﻿@{
+﻿@model IEnumerable<HeThongBenhVien.Models.User>
+
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyBenhNhan";
+    ViewData["Title"] = "Quản Lý Bệnh Nhân";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyBenhNhan</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản Lý Tài khoản</h2>
+            <p class="text-muted mb-0">Danh sách tài khoản bệnh nhân</p>
+        </div>
+        <div>
+            <a asp-action="ThemBenhNhan" asp-controller="Admin" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50 me-1"></i> Thêm Bệnh Nhân
+            </a>
         </div>
     </div>
-    
+
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyBenhNhan</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="text-primary" style="background-color: rgba(0,0,0,0.03);">
+                    <tr>
+                        <th class="font-weight-bold">ID</th>
+                        <th class="font-weight-bold">Tên Đăng Nhập</th>
+                        <th class="font-weight-bold">Họ và Tên</th>
+                        <th class="font-weight-bold">Email</th>
+                        <th class="font-weight-bold">SĐT</th>
+                        <th class="font-weight-bold text-center">Vai Trò</th>
+                        <th class="font-weight-bold text-center">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="align-middle">@item.Id</td>
+                                <td class="align-middle fw-bold">@item.Username</td>
+                                <td class="align-middle">@item.FullName</td>
+                                <td class="align-middle">@item.Email</td>
+                                <td class="align-middle">@item.SDT</td>
+                                <td class="align-middle text-center">
+                                    <span class="badge bg-info text-white px-3 py-2">Bệnh nhân</span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <a asp-action="EditBenhNhan" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2" title="Chỉnh sửa">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form asp-action="DeleteBenhNhan" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Bạn có chắc muốn xóa tài khoản bệnh nhân này không?');" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-3"></i>
+                                <p>Chưa có tài khoản bệnh nhân nào. Vui lòng thêm bệnh nhân mới.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .table thead th {
+        border-top: none;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+</style>

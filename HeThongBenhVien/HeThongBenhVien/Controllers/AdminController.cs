@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using HeThongBenhVien.Models;
 
 namespace HeThongBenhVien.Controllers
@@ -79,9 +80,12 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (NGƯỜI KHÁC LÀM - ĐỂ TRỐNG)
+        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (HIỂN THỊ TÀI KHOẢN BỆNH NHÂN)
         // ==========================================
-        public IActionResult QuanLyTaiKhoan() { return View(); }
+        public IActionResult QuanLyTaiKhoan()
+        {
+            return RedirectToAction(nameof(QuanLyBenhNhan));
+        }
 
         public IActionResult QuanLyKhoaPhong() { return View(); }
         public IActionResult QuanLyLichLamViec() { return View(); }
@@ -93,7 +97,104 @@ namespace HeThongBenhVien.Controllers
         public IActionResult CauHinhHeThong() { return View(); }
 
         // 11 - 20: Các hàm mới
-        public IActionResult QuanLyBenhNhan() { return View(); }
+        public async Task<IActionResult> QuanLyBenhNhan()
+        {
+            var danhSachBenhNhan = await _context.Users
+                .Where(u => u.Role == "BenhNhan")
+                .ToListAsync();
+            return View(danhSachBenhNhan);
+        }
+
+        [HttpGet]
+        public IActionResult ThemBenhNhan()
+        {
+            return View(new User { Role = "BenhNhan" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemBenhNhan(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+                {
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.");
+                    return View(user);
+                }
+
+                user.Role = "BenhNhan";
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(QuanLyBenhNhan));
+            }
+
+            user.Role = "BenhNhan";
+            return View(user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditBenhNhan(int id)
+        {
+            var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
+            if (benhNhan == null)
+            {
+                return NotFound();
+            }
+
+            return View(benhNhan);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditBenhNhan(int id, User user)
+        {
+            if (id != user.Id)
+            {
+                return BadRequest();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
+                if (benhNhan == null)
+                {
+                    return NotFound();
+                }
+
+                if (await _context.Users.AnyAsync(u => u.Username == user.Username && u.Id != id))
+                {
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.");
+                    return View(user);
+                }
+
+                benhNhan.Username = user.Username;
+                benhNhan.Password = user.Password;
+                benhNhan.FullName = user.FullName;
+                benhNhan.Email = user.Email;
+                benhNhan.SDT = user.SDT;
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(QuanLyBenhNhan));
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteBenhNhan(int id)
+        {
+            var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
+            if (benhNhan != null)
+            {
+                _context.Users.Remove(benhNhan);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(QuanLyBenhNhan));
+        }
+
         public IActionResult QuanLyVienPhi() { return View(); }
         public IActionResult QuanLyBHYT() { return View(); }
         public IActionResult BaoCaoHoatDong() { return View(); }

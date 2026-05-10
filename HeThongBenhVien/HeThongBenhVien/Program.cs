@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using HeThongBenhVien.Data;
+using HeThongBenhVien.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +16,36 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+// Seed default application users so login works on first run.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+
+    if (!db.Users.Any(u => u.Username == "admin"))
+    {
+        db.Users.AddRange(
+            new User
+            {
+                Username = "admin",
+                Password = "123",
+                Role = "Admin",
+                FullName = "Administrator"
+            },
+            new User
+            {
+                Username = "doctor",
+                Password = "123",
+                Role = "Doctor",
+                FullName = "Bác sĩ"
+            });
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
