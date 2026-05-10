@@ -9,231 +9,233 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = HeThongBenhVien
 build_property.RootNamespace = HeThongBenhVien
-build_property.ProjectDir = D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\
+build_property.ProjectDir = C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien
+build_property.MSBuildProjectDirectory = C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien
 build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Account/Login.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/BaoCaoHoatDong.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/BaoCaoHoatDong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQmFvQ2FvSG9hdERvbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/CauHinhHeThong.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/CauHinhHeThong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ2F1SGluaEhlVGhvbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/DanhGiaChatLuong.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/DanhGiaChatLuong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFuaEdpYUNoYXRMdW9uZy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/Dashboard.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/EditBenhNhan.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/EditBenhNhan.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdEJlbmhOaGFuLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyBenhNhan.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyBenhNhan.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5QmVuaE5oYW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyBHYT.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyBHYT.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5QkhZVC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyCDHA.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyCDHA.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5Q0RIQS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyDichVu.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyDichVu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5RGljaFZ1LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyGia.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyGia.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5R2lhLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyKhoaPhong.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyKhoaPhong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5S2hvYVBob25nLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyKhoDuoc.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyKhoDuoc.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5S2hvRHVvYy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyLichLamViec.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyLichLamViec.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5TGljaExhbVZpZWMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyNganHangMau.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyNganHangMau.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5TmdhbkhhbmdNYXUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyNhanSu.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyNhanSu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5TmhhblN1LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyPhauThuat.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyPhauThuat.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5UGhhdVRodWF0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyThietBi.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyThietBi.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5VGhpZXRCaS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyTiepDon.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyTiepDon.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5VGllcERvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyVienPhi.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyVienPhi.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5VmllblBoaS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyXetNghiem.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/QuanLyXetNghiem.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUXVhbkx5WGV0TmdoaWVtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/ThemBenhNhan.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/ThemBenhNhan.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVGhlbUJlbmhOaGFuLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/Themnhansu.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/Themnhansu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVGhlbW5oYW5zdS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/ThongKeDoanhThu.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/ThongKeDoanhThu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVGhvbmdLZURvYW5oVGh1LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CaiDat.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CaiDat.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENhaURhdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CanhBaoTinhTrang.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CanhBaoTinhTrang.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENhbmhCYW9UaW5oVHJhbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiDinhXetNghiem.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiDinhXetNghiem.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaURpbmhYZXROZ2hpZW0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiDinhXetNghiemForm.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiDinhXetNghiemForm.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaURpbmhYZXROZ2hpZW1Gb3JtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiTietBenhAn.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ChiTietBenhAn.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaVRpZXRCZW5oQW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/DanhSach.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/DanhSach.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhbmhTYWNoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/Dashboard.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhc2hib2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/EditPatient.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/EditPatient.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEVkaXRQYXRpZW50LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HenTaiKham.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HenTaiKham.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhlblRhaUtoYW0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoiChanOnline.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoiChanOnline.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhvaUNoYW5PbmxpbmUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoSoBenhAn.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoSoBenhAn.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhvU29CZW5oQW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuoc.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuoc.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtlRG9uVGh1b2MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuocForm.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuocForm.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtlRG9uVGh1b2NGb3JtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KetQuaCanLamSang.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KetQuaCanLamSang.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtldFF1YUNhbkxhbVNhbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KhamBenh.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KhamBenh.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEtoYW1CZW5oLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichHen.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichHen.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hIZW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichMo.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichMo.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hNby5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichSuKham.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichSuKham.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hTdUtoYW0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/QuanLyGiuong.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/QuanLyGiuong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFF1YW5MeUdpdW9uZy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/SinhHieu.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/SinhHieu.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFNpbmhIaWV1LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongBao.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongBao.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nQmFvLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongKe.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongKe.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nS2UuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Index.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Privacy.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/Error.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_AdminLayout.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_AdminLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BZG1pbkxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_DoctorLayout.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_DoctorLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Eb2N0b3JMYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/_ViewImports.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/_ViewStart.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HethongBenhvien/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_Layout.cshtml]
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-hglkk17lt3
