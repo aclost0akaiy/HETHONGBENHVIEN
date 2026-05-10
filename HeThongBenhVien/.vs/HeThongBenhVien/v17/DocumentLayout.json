@@ -32,7 +32,7 @@
               "RelativeDocumentMoniker": "HeThongBenhVien\\Program.cs",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Program.cs",
               "RelativeToolTip": "HeThongBenhVien\\Program.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAABwAAAAyAAAAAAAAAA==",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAABoAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-10T13:55:01.266Z",
               "EditorCaption": ""
@@ -47,8 +47,7 @@
               "RelativeToolTip": "HeThongBenhVien\\Data\\ApplicationDbContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-09T03:02:35.262Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-09T03:02:35.262Z"
             },
             {
               "$type": "Document",
@@ -60,8 +59,7 @@
               "RelativeToolTip": "HeThongBenhVien\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-05-03T12:08:52.358Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-03T12:08:52.358Z"
             }
           ]
         }
