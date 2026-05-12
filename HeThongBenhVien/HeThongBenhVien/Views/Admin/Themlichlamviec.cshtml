@@ -1,0 +1,94 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm Lịch Làm Việc Mới";
+
+    var definedShifts = new List<string> {
+        "Ca 1 (06:00 - 09:00)",
+        "Ca 2 (09:00 - 12:00)",
+        "Ca 3 (12:00 - 15:00)",
+        "Ca 4 (15:00 - 18:00)", 
+        "Ca 5 (18:00 - 21:00)",
+        "Ca 6 (21:00 - 24:00)",
+        "Ca 7 (00:00 - 06:00)"
+    };
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Thêm Lịch Bác Sĩ</h2>
+            <p class="text-muted mb-0">Phân ca trực mới và lưu vào hệ thống</p>
+        </div>
+        <div>
+            <a asp-action="QuanLyLichLamViec" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm me-1"></i> Quay lại lịch
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-card p-5 mx-auto" style="max-width: 800px;">
+        <form asp-action="ThemLichLamViec" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-4">
+                <label class="font-weight-bold mb-2 text-primary text-uppercase" style="letter-spacing: 0.5px;">Bác Sĩ Chuyên Môn <span class="text-danger">*</span></label>
+                <select name="UserId" class="form-select form-control form-control-lg" required>
+                    <option value="">-- Chọn bác sĩ từ danh sách --</option>
+                    @if (ViewBag.DanhSachBacSi != null)
+                    {
+                        foreach (var bacsi in ViewBag.DanhSachBacSi)
+                        {
+                            <option value="@bacsi.Id">@bacsi.FullName (Mã: @bacsi.Id)</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="font-weight-bold mb-2 text-primary text-uppercase" style="letter-spacing: 0.5px;">Ngày Trực <span class="text-danger">*</span></label>
+                    <input type="date" name="WorkDate" class="form-control form-control-lg" required />
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <label class="font-weight-bold mb-2 text-primary text-uppercase" style="letter-spacing: 0.5px;">Ca Trực <span class="text-danger">*</span></label>
+                    <select name="ShiftName" class="form-select form-control form-control-lg" required>
+                        <option value="">-- Chọn ca làm việc --</option>
+                        @foreach (var s in definedShifts)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="text-end">
+                <button type="reset" class="btn btn-light px-4 me-2">Hủy Nhập</button>
+                <button type="submit" class="btn btn-primary px-5 shadow-sm" style="background-color: #4e73df; border: none;">
+                    <i class="fas fa-save me-1"></i> Lưu Vào Cơ Sở Dữ Liệu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px 0 rgba(31, 38, 135, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #d1d3e2;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #bac8f3;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+</style>

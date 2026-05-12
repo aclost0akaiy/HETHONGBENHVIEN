@@ -1,17 +1,292 @@
-﻿@{
+﻿@model IEnumerable<HeThongBenhVien.Models.LichLamViec>
+
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyLichLamViec";
+    ViewData["Title"] = "Quản Lý Lịch Làm Việc";
+
+    // Lấy tháng/năm từ ViewBag
+    int currentMonth = ViewBag.CurrentMonth;
+    int currentYear = ViewBag.CurrentYear;
+
+    // Tính toán số ngày thực tế trong tháng
+    int daysInMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+    var dates = new List<DateTime>();
+    for (int i = 1; i <= daysInMonth; i++)
+    {
+        dates.Add(new DateTime(currentYear, currentMonth, i));
+    }
+
+    // 7 ca chuẩn
+    var definedShifts = new List<string> {
+        "Ca 1 (06:00 - 09:00)",
+        "Ca 2 (09:00 - 12:00)",
+        "Ca 3 (12:00 - 15:00)",
+        "Ca 4 (15:00 - 18:00)",
+        "Ca 5 (18:00 - 21:00)",
+        "Ca 6 (21:00 - 24:00)",
+        "Ca 7 (00:00 - 06:00)"
+    };
 }
 
 <div class="container-fluid p-0">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyLichLamViec</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Lịch Làm Việc Tháng @currentMonth/@currentYear</h2>
+            <p class="text-muted mb-0">Theo dõi và phân ca trực cho nhân sự chuyên môn</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalThemLich" style="border-radius: 8px;">
+                <i class="fas fa-user-md fa-sm text-white-50 me-1"></i> Thêm Bác Sĩ
+            </button>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyLichLamViec</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <!-- Thanh Công Cụ Bộ Lọc (Đã bọc trong Form) -->
+    <form asp-action="QuanLyLichLamViec" method="get" class="bg-white p-3 mb-4 shadow-sm d-flex gap-3 align-items-center flex-wrap" style="border-radius: 12px; border: 1px solid #eaecf4;">
+        <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control bg-light border-start-0" placeholder="Tìm kiếm bác sĩ...">
+        </div>
+        <select name="month" class="form-select bg-light border-0" style="max-width: 150px;" onchange="this.form.submit()">
+            <option value="">-- Tháng --</option>
+            @for (int i = 1; i <= 12; i++)
+            {
+                <option value="@i" selected="@(i == currentMonth ? "selected" : null)">Tháng @i</option>
+            }
+        </select>
+        <select name="year" class="form-select bg-light border-0" style="max-width: 150px;" onchange="this.form.submit()">
+            <option value="">-- Năm --</option>
+            <option value="2025" selected="@(currentYear == 2025 ? "selected" : null)">2025</option>
+            <option value="2026" selected="@(currentYear == 2026 ? "selected" : null)">2026</option>
+            <option value="2027" selected="@(currentYear == 2027 ? "selected" : null)">2027</option>
+        </select>
+        <button type="submit" class="btn btn-info text-white">Lọc</button>
+        <a asp-action="QuanLyLichLamViec" class="btn btn-outline-secondary">Làm Mới</a>
+    </form>
+
+    <!-- Bảng Lưới Lịch -->
+    <div class="bg-white shadow-sm p-4" style="border-radius: 15px; border: 1px solid #eaecf4;">
+        <div class="table-responsive custom-scroll">
+            <table class="table table-bordered schedule-table mb-0">
+                <thead>
+                    <tr>
+                        <th class="shift-col sticky-col text-center align-middle">
+                            <div class="text-primary fw-bold" style="font-size: 1rem;">Ngày & Thứ</div>
+                            <small class="text-muted fw-normal" style="font-size: 0.75rem;">7 ca (1 ca 3 tiếng)</small>
+                        </th>
+                        @foreach (var date in dates)
+                        {
+                            <th class="date-col">
+                                <div class="fs-5 fw-bold @(date.Date == DateTime.Today ? "text-primary" : "text-dark")">
+                                    @date.ToString("dd/MM")
+                                </div>
+                                <div class="text-muted fw-normal small">@GetVietnameseDayOfWeek(date)</div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shift in definedShifts)
+                    {
+                        <tr>
+                            <!-- Tên Ca -->
+                            <td class="shift-col sticky-col align-middle">
+                                <div class="fw-bold text-dark">@shift.Substring(0, 4)</div>
+                                <div class="text-muted small">@shift.Substring(5)</div>
+                            </td>
+                            
+                            <!-- Các ô lịch -->
+                            @foreach (var date in dates)
+                            {
+                                <td class="schedule-cell position-relative">
+                                    @{
+                                        if (Model != null)
+                                        {
+                                            var matchedSchedules = Model.Where(m => m.WorkDate.Date == date.Date && m.ShiftName.StartsWith(shift.Substring(0, 4))).ToList();
+
+                                            if (matchedSchedules.Any())
+                                            {
+                                                <div class="d-flex flex-column gap-1 mt-1">
+                                                    @foreach (var item in matchedSchedules)
+                                                    {
+                                                        <div class="doctor-event text-truncate" title="@(item.User != null ? item.User.FullName : "Trống")">
+                                                            <i class="fas fa-user-md me-1 opacity-75"></i>
+                                                            @(item.User != null ? item.User.FullName : "Không xác định")
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<!-- ============================================== -->
+<!-- MODAL THÊM BÁC SĨ VÀO LỊCH -->
+<!-- ============================================== -->
+<div class="modal fade" id="modalThemLich" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white" style="border-radius: 15px 15px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2"></i>Thêm Bác Sĩ Vào Lịch</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <!-- Form gọi tới Action ThemLichLamViec -->
+            <form asp-action="ThemLichLamViec" asp-controller="Admin" method="post">
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-gray-800">Tên bác sĩ <span class="text-danger">*</span></label>
+                        <select name="UserId" class="form-select form-select-lg fs-6" required>
+                            <option value="">-- Chọn nhân sự chuyên môn --</option>
+                            @if (ViewBag.DanhSachBacSi != null)
+                            {
+                                foreach (var bacsi in ViewBag.DanhSachBacSi)
+                                {
+                                    <option value="@bacsi.Id">@bacsi.FullName - (Mã BS: @bacsi.Id)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label fw-bold text-gray-800">Chọn Ngày <span class="text-danger">*</span></label>
+                            <input type="date" name="WorkDate" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-gray-800">Chọn Ca <span class="text-danger">*</span></label>
+                            <select name="ShiftName" class="form-select" required>
+                                @foreach (var s in definedShifts)
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-radius: 0 0 15px 15px; border-top: none;">
+                    <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Lưu Dữ Liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hàm phụ trợ dịch thứ -->
+@functions {
+    public string GetVietnameseDayOfWeek(DateTime date)
+    {
+        switch (date.DayOfWeek)
+        {
+            case DayOfWeek.Monday: return "Thứ 2";
+            case DayOfWeek.Tuesday: return "Thứ 3";
+            case DayOfWeek.Wednesday: return "Thứ 4";
+            case DayOfWeek.Thursday: return "Thứ 5";
+            case DayOfWeek.Friday: return "Thứ 6";
+            case DayOfWeek.Saturday: return "Thứ 7";
+            case DayOfWeek.Sunday: return "Chủ Nhật";
+            default: return "";
+        }
+    }
+}
+
+<style>
+    /* CSS hỗ trợ cuộn ngang toàn tháng */
+    .custom-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .schedule-table {
+        border-color: #eaecf4;
+        min-width: 2800px; /* Bắt buộc bảng dài ra để có thể lướt */
+        table-layout: fixed;
+    }
+
+        .schedule-table thead th {
+            background-color: #f8f9fc;
+            border-bottom: 2px solid #e3e6f0;
+            text-align: center;
+            vertical-align: middle;
+            padding: 1rem 0.5rem;
+        }
+
+    /* Fixed cứng cột đầu tiên khi cuộn ngang */
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        background-color: #f8f9fc !important;
+        z-index: 2;
+        border-right: 2px solid #eaecf4 !important;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    .shift-col {
+        width: 140px;
+        padding-left: 1rem !important;
+    }
+
+    .date-col {
+        width: 100px;
+    }
+
+    .schedule-cell {
+        height: 100px;
+        vertical-align: top;
+        padding: 0.5rem !important;
+        transition: background-color 0.2s ease;
+    }
+
+        .schedule-cell:hover {
+            background-color: #f4f6f9;
+            cursor: pointer;
+        }
+
+    .doctor-event {
+        background-color: #e8f2fc;
+        color: #2e59d9;
+        border: 1px solid #c2dcf6;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: left;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        transition: transform 0.1s;
+    }
+
+        .doctor-event:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #dceaf9;
+        }
+
+    /* Thanh cuộn đẹp mắt */
+    .custom-scroll::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 5px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 5px;
+    }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+</style>

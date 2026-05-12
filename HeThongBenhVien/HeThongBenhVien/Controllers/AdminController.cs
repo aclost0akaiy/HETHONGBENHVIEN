@@ -1,8 +1,10 @@
+using HeThongBenhVien.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
-using HeThongBenhVien.Models;
+using System.Threading.Tasks;
 
 namespace HeThongBenhVien.Controllers
 {
@@ -18,16 +20,13 @@ namespace HeThongBenhVien.Controllers
 
         public IActionResult Dashboard()
         {
-            // Lấy dữ liệu từ database
             var totalAppointments = _context.Appointments.Count();
             var totalPatients = _context.Patients.Count();
             var medicalRecordsCount = _context.MedicalRecords.Count();
-            var emergencyCases = _context.Appointments.Count(a => a.Reason.ToLower().Contains("cấp cứu"));
+            var emergencyCases = _context.Appointments.Count(a => a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"));
 
-            // Giả lập doanh thu dựa trên số ca khám bệnh hoàn tất (Ví dụ mỗi ca 500k)
             var dailyRevenue = medicalRecordsCount * 500000;
 
-            // Truyền sang View
             ViewBag.TotalAppointments = totalAppointments;
             ViewBag.TotalPatients = totalPatients;
             ViewBag.DailyRevenue = dailyRevenue;
@@ -37,31 +36,26 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // CHỨC NĂNG QUẢN LÝ NHÂN SỰ (PHẦN CỦA BẠN - ĐÃ CHẠY ĐƯỢC)
+        // QUẢN LÝ NHÂN SỰ
         // ==========================================
-
-        // 1. Lấy toàn bộ nhân sự từ Database truyền ra giao diện
         public async Task<IActionResult> QuanLyNhanSu()
         {
             var danhSachNhanSu = await _context.Users.ToListAsync();
             return View(danhSachNhanSu);
         }
 
-        // 2. Hiển thị form Thêm Nhân Sự (GET)
         [HttpGet]
         public IActionResult ThemNhanSu()
         {
             return View();
         }
 
-        // 3. Xử lý nhận dữ liệu từ form và lưu vào SQL Server (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ThemNhanSu(User user)
         {
             if (ModelState.IsValid)
             {
-                // Kiểm tra xem Username đã bị trùng chưa
                 var daTonTai = await _context.Users.AnyAsync(u => u.Username == user.Username);
                 if (daTonTai)
                 {
@@ -69,39 +63,24 @@ namespace HeThongBenhVien.Controllers
                     return View(user);
                 }
 
-                // Lưu vào database
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
-                // Lưu xong thì quay lại trang danh sách nhân sự
                 return RedirectToAction(nameof(QuanLyNhanSu));
             }
             return View(user);
         }
 
         // ==========================================
-        // CHỨC NĂNG QUẢN LÝ TÀI KHOẢN (HIỂN THỊ TÀI KHOẢN BỆNH NHÂN)
+        // QUẢN LÝ TÀI KHOẢN & BỆNH NHÂN
         // ==========================================
         public IActionResult QuanLyTaiKhoan()
         {
             return RedirectToAction(nameof(QuanLyBenhNhan));
         }
 
-        public IActionResult QuanLyKhoaPhong() { return View(); }
-        public IActionResult QuanLyLichLamViec() { return View(); }
-        public IActionResult QuanLyDichVu() { return View(); }
-        public IActionResult QuanLyGia() { return View(); }
-        public IActionResult QuanLyKhoDuoc() { return View(); }
-        public IActionResult QuanLyThietBi() { return View(); }
-        public IActionResult ThongKeDoanhThu() { return View(); }
-        public IActionResult CauHinhHeThong() { return View(); }
-
-        // 11 - 20: Các hàm mới
         public async Task<IActionResult> QuanLyBenhNhan()
         {
-            var danhSachBenhNhan = await _context.Users
-                .Where(u => u.Role == "BenhNhan")
-                .ToListAsync();
+            var danhSachBenhNhan = await _context.Users.Where(u => u.Role == "BenhNhan").ToListAsync();
             return View(danhSachBenhNhan);
         }
 
@@ -119,7 +98,7 @@ namespace HeThongBenhVien.Controllers
             {
                 if (await _context.Users.AnyAsync(u => u.Username == user.Username))
                 {
-                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.");
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại.");
                     return View(user);
                 }
 
@@ -128,7 +107,6 @@ namespace HeThongBenhVien.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(QuanLyBenhNhan));
             }
-
             user.Role = "BenhNhan";
             return View(user);
         }
@@ -137,11 +115,7 @@ namespace HeThongBenhVien.Controllers
         public async Task<IActionResult> EditBenhNhan(int id)
         {
             var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
-            if (benhNhan == null)
-            {
-                return NotFound();
-            }
-
+            if (benhNhan == null) return NotFound();
             return View(benhNhan);
         }
 
@@ -149,22 +123,16 @@ namespace HeThongBenhVien.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditBenhNhan(int id, User user)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
+            if (id != user.Id) return BadRequest();
 
             if (ModelState.IsValid)
             {
                 var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
-                if (benhNhan == null)
-                {
-                    return NotFound();
-                }
+                if (benhNhan == null) return NotFound();
 
                 if (await _context.Users.AnyAsync(u => u.Username == user.Username && u.Id != id))
                 {
-                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại, vui lòng chọn tên khác.");
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại.");
                     return View(user);
                 }
 
@@ -177,7 +145,6 @@ namespace HeThongBenhVien.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(QuanLyBenhNhan));
             }
-
             return View(user);
         }
 
@@ -191,10 +158,87 @@ namespace HeThongBenhVien.Controllers
                 _context.Users.Remove(benhNhan);
                 await _context.SaveChangesAsync();
             }
-
             return RedirectToAction(nameof(QuanLyBenhNhan));
         }
 
+        // ==========================================
+        // QUẢN LÝ LỊCH LÀM VIỆC (ĐÃ FIX TÌM KIẾM & BỘ LỌC)
+        // ==========================================
+        public async Task<IActionResult> QuanLyLichLamViec(int? month, int? year, string searchString)
+        {
+            // Mặc định lấy tháng và năm hiện tại nếu không chọn
+            int currentMonth = month ?? DateTime.Now.Month;
+            int currentYear = year ?? DateTime.Now.Year;
+
+            // Khởi tạo truy vấn
+            var query = _context.LichLamViecs
+                .Include(l => l.User)
+                .Where(l => l.User != null && l.User.Role == "Doctor")
+                .Where(l => l.MonthNumber == currentMonth && l.YearNumber == currentYear);
+
+            // Xử lý tìm kiếm theo tên bác sĩ
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(l => l.User.FullName.ToLower().Contains(searchString.ToLower()));
+            }
+
+            var danhSachLich = await query.OrderBy(l => l.WorkDate).ToListAsync();
+
+            // Truyền dữ liệu về View để giữ trạng thái bộ lọc
+            ViewBag.CurrentMonth = currentMonth;
+            ViewBag.CurrentYear = currentYear;
+            ViewBag.SearchString = searchString;
+
+            // Truyền danh sách Bác sĩ ra Modal
+            ViewBag.DanhSachBacSi = await _context.Users
+                .Where(u => u.Role == "Doctor")
+                .ToListAsync();
+
+            return View(danhSachLich);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemLichLamViec(int UserId, DateTime WorkDate, string ShiftName)
+        {
+            if (UserId == 0 || WorkDate == default || string.IsNullOrEmpty(ShiftName))
+            {
+                return RedirectToAction(nameof(QuanLyLichLamViec));
+            }
+
+            string workTime = "";
+            if (ShiftName.Contains("("))
+            {
+                workTime = ShiftName.Split('(')[1].Replace(")", "").Trim();
+            }
+
+            var lichMoi = new LichLamViec
+            {
+                UserId = UserId,
+                WorkDate = WorkDate.Date,
+                ShiftName = ShiftName,
+                WorkTime = workTime,
+                WeekNumber = System.Globalization.ISOWeek.GetWeekOfYear(WorkDate),
+                MonthNumber = WorkDate.Month,
+                YearNumber = WorkDate.Year
+            };
+
+            _context.LichLamViecs.Add(lichMoi);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(QuanLyLichLamViec));
+        }
+
+        // ==========================================
+        // CÁC CHỨC NĂNG CÒN LẠI
+        // ==========================================
+        public IActionResult QuanLyKhoaPhong() { return View(); }
+        public IActionResult QuanLyDichVu() { return View(); }
+        public IActionResult QuanLyGia() { return View(); }
+        public IActionResult QuanLyKhoDuoc() { return View(); }
+        public IActionResult QuanLyThietBi() { return View(); }
+        public IActionResult ThongKeDoanhThu() { return View(); }
+        public IActionResult CauHinhHeThong() { return View(); }
         public IActionResult QuanLyVienPhi() { return View(); }
         public IActionResult QuanLyBHYT() { return View(); }
         public IActionResult BaoCaoHoatDong() { return View(); }

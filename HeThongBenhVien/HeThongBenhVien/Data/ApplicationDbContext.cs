@@ -18,6 +18,9 @@ namespace HeThongBenhVien.Data
         public DbSet<LabTest> LabTests { get; set; }
         public DbSet<MedicineUnit> MedicineUnits { get; set; }
 
+        // Đã thêm khai báo bảng Lịch Làm Việc vào đây:
+        public DbSet<LichLamViec> LichLamViecs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

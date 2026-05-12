@@ -164,3 +164,94 @@ SET
     [Email] = 'nguyenvana.bs@gmail.com',
     [SDT] = '0987654321'
 WHERE [Id] = 2;
+
+IF OBJECT_ID('WorkSchedules', 'U') IS NOT NULL DROP TABLE WorkSchedules;
+-- =============================================
+-- Tạo bảng Lịch Làm Việc (WorkSchedules)
+-- =============================================
+
+
+-- 1. Thêm 5 nhân sự mẫu vào bảng Users
+INSERT INTO Users (Username, Password, FullName, Role, Email, SDT)
+VALUES 
+('bs_a', '123456', N'BS. Nguyễn Văn A', 'Doctor', 'bs.a@benhvien.com', '0901234567'),
+('bs_b', '123456', N'BS. Trần Thị B', 'Doctor', 'bs.b@benhvien.com', '0902345678'),
+('bs_c', '123456', N'BS. Lê Văn C', 'Doctor', 'bs.c@benhvien.com', '0903456789'),
+('bs_d', '123456', N'BS. Phạm Văn D', 'Doctor', 'bs.d@benhvien.com', '0904567890'),
+('admin_e', '123456', N'Quản trị viên E', 'Admin', 'admin.e@benhvien.com', '0905678901');
+GO
+
+-- Sau khi chạy xong đoạn này, hãy bôi đen chạy lại đoạn INSERT bảng WorkSchedules của tin nhắn trước!
+
+SELECT Id, FullName FROM Users;
+
+USE QuanLyBenhVienDb;
+GO
+
+-- Lệnh này sẽ xóa sạch dữ liệu và reset lại ID về 1
+TRUNCATE TABLE WorkSchedules;
+GO
+
+CREATE TABLE WorkSchedules (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,                -- Thay cho "Tên": Liên kết với ID của nhân sự trong bảng Users
+    WorkTime NVARCHAR(50) NOT NULL,     -- Thời gian (VD: '07:00 - 15:00')
+    ShiftName NVARCHAR(50) NOT NULL,    -- Ca (VD: N'Ca Sáng', N'Ca Chiều')
+    WorkDate DATE NOT NULL,             -- Ngày (VD: '2026-05-12')
+    WeekNumber INT NOT NULL,            -- Tuần (VD: 20)
+    MonthNumber INT NOT NULL,           -- Tháng (VD: 5)
+    YearNumber INT NOT NULL,            -- Năm (VD: 2026)
+
+    -- Khai báo khóa ngoại liên kết với bảng Users
+    -- Khi xóa một User, bạn có thể thiết lập báo lỗi hoặc tự động xóa lịch (ở đây mình để mặc định)
+    CONSTRAINT FK_WorkSchedules_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+GO
+
+USE QuanLyBenhVienDb;
+GO
+
+-- Xóa dữ liệu cũ nếu có để tránh trùng lặp khi chạy lại (tuỳ chọn)
+-- TRUNCATE TABLE WorkSchedules;
+
+USE QuanLyBenhVienDb;
+GO
+
+-- 1. Xóa sạch dữ liệu cũ không khớp form
+TRUNCATE TABLE WorkSchedules;
+GO
+
+-- 2. Thêm dữ liệu mới với ShiftName chuẩn "Ca 1", "Ca 2"... để khớp với code lưới
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber)
+VALUES
+-- Ngày 12/05/2026 (Thứ 3)
+(1, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-12', 20, 5, 2026),
+(2, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-12', 20, 5, 2026),
+(3, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-12', 20, 5, 2026),
+(4, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-12', 20, 5, 2026),
+
+-- Ngày 13/05/2026 (Thứ 4)
+(5, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-13', 20, 5, 2026),
+(1, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-13', 20, 5, 2026),
+(2, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-05-13', 20, 5, 2026),
+
+-- Ngày 14/05/2026 (Thứ 5)
+(3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-14', 20, 5, 2026),
+(4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-05-14', 20, 5, 2026),
+(5, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-05-14', 20, 5, 2026),
+
+-- Ngày 15/05/2026 (Thứ 6)
+(1, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-15', 20, 5, 2026),
+(2, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-15', 20, 5, 2026),
+(3, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-05-15', 20, 5, 2026),
+
+-- Ngày 16/05/2026 (Thứ 7)
+(4, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-16', 20, 5, 2026),
+(5, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-16', 20, 5, 2026),
+(1, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-05-16', 20, 5, 2026),
+
+-- Ngày 17/05/2026 (Chủ Nhật)
+(2, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-17', 20, 5, 2026),
+(3, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-17', 20, 5, 2026),
+(4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-05-17', 20, 5, 2026);
+GO
