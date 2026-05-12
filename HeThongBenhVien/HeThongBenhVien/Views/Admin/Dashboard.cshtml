@@ -1,336 +1,579 @@
 @{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "Admin Dashboard";
+    Layout = null;
+    ViewData["Title"] = "Dashboard - Hoàn Mỹ Đồng Nai";
 }
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Tổng Quan Hệ Thống</h2>
-            <p class="text-muted mb-0">Hiệu suất và số liệu thống kê bệnh viện trong ngày.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Vue 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        #app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: #fff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-logo img {
+            max-height: 50px;
+        }
+
+        .menu-section {
+            background-color: #009eb3;
+            color: #fff;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-section:hover {
+            background-color: #008a99;
+        }
+
+        .menu-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .menu-items li {
+            border-bottom: 1px solid #eee;
+        }
+
+        .menu-items li a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .menu-items li a:hover, .menu-items li.active a {
+            background-color: #e9ecef;
+            color: #009eb3;
+            border-left: 3px solid #009eb3;
+        }
+
+        /* Main Content Styles */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        /* Top Header */
+        .top-header {
+            background-color: #f8f9fa;
+            padding: 5px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .top-header-left span {
+            margin-right: 15px;
+        }
+
+        .top-header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-profile img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* Tabs */
+        .page-tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #009eb3;
+        }
+
+        .page-tab {
+            padding: 8px 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            color: #555;
+        }
+
+        .page-tab.active {
+            background-color: #009eb3;
+            color: white;
+            border-color: #009eb3;
+        }
+
+        .page-tab .close-tab {
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 20px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .content-title-area {
+            display: flex;
+            align-items: center;
+        }
+        
+        .content-logo {
+            max-height: 60px;
+            margin-right: 20px;
+        }
+
+        .page-title {
+            color: #006699;
+            font-weight: bold;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .datetime-area {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #006699;
+        }
+
+        /* Filters */
+        .filters-section {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+
+        .filter-group label {
+            margin-right: 10px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        .filter-group input, .filter-group select {
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .btn-search {
+            background-color: #009eb3;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .btn-export {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .total-count {
+            margin-left: auto;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 20px;
+        }
+
+        .total-count span:last-child {
+            font-size: 1.2rem;
+        }
+
+        .day-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .day-check {
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .day-check input {
+            margin-right: 3px;
+        }
+
+        /* Chart Area */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/images/logo-hoan-my.png" alt="Logo Hoàn Mỹ">
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-section" @@click="toggleMenu('ngoaiTru')">
+                    <span><i class="fas fa-university mr-2"></i> Ngoại trú</span>
+                    <i class="fas" :class="menus.ngoaiTru ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <ul class="menu-items" v-show="menus.ngoaiTru">
+                    <li class="active"><a href="#"><i class="fas fa-chart-bar mr-2 text-secondary"></i> Biểu Đồ Đăng ký Hằng...</a></li>
+                    <li><a href="#"><i class="fas fa-chart-line mr-2 text-secondary"></i> Tỉ lệ Lập_Rad Bác Sĩ</a></li>
+                    <li><a href="#"><i class="fas fa-chart-line mr-2 text-secondary"></i> Tỉ lệ Lập_Rad Bác Sĩ theo...</a></li>
+                    <li><a href="#"><i class="fas fa-chart-line mr-2 text-secondary"></i> Tỉ lệ Lập_Rad Doanh thu...</a></li>
+                    <li><a href="#"><i class="fas fa-clock mr-2 text-secondary"></i> Thời Gian Chờ</a></li>
+                    <li><a href="#"><i class="fas fa-stethoscope mr-2 text-secondary"></i> Dịch Vụ Chỉ Định</a></li>
+                </ul>
+
+                <div class="menu-section mt-2" @@click="toggleMenu('noiTru')">
+                    <span><i class="fas fa-hospital mr-2"></i> Nội Trú</span>
+                    <i class="fas" :class="menus.noiTru ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <ul class="menu-items" v-show="menus.noiTru">
+                    <li><a href="#"><i class="fas fa-users mr-2 text-secondary"></i> Danh Sách Bệnh Nhân Nằm...</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice-dollar mr-2 text-secondary"></i> Doanh Thu Bệnh Nhân Ra...</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice-dollar mr-2 text-secondary"></i> Doanh Thu Bệnh Nhân Nh...</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice-dollar mr-2 text-secondary"></i> Doanh Thu Tạm Ứng Tạm...</a></li>
+                    <li><a href="#"><i class="fas fa-list-ol mr-2 text-secondary"></i> Chọn Số lượng Nội Trú</a></li>
+                </ul>
+            </div>
         </div>
-        <div>
-            <button class="btn btn-primary px-4"><i class="fa-solid fa-download me-2"></i> Xuất Báo Cáo</button>
+
+        <!-- Main Content -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <div class="top-header">
+                <div class="top-header-left">
+                    <span>HMS &copy; 2025 IT HMDNI</span>
+                    <i class="fas fa-cog mr-2"></i>
+                    <i class="fas fa-home mr-2"></i>
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <div class="top-header-right">
+                    <div class="user-profile">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="User">
+                        <div class="user-info">
+                            <span class="user-name">Administrator</span>
+                            <span class="user-role">Phòng IT cấp cao</span>
+                        </div>
+                        <i class="fas fa-sign-out-alt ml-3 text-secondary" style="cursor: pointer;" title="Đăng xuất" onclick="window.location.href='/Account/Logout'"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="page-tabs">
+                <div class="page-tab active">
+                    Biểu Đồ Đăng ký Hằng Ngày
+                    <span class="close-tab"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="page-tab text-muted bg-light border-bottom border-secondary" style="border-radius: 0;">
+                    Tỉ lệ Lập_Rad Bác Sĩ
+                    <span class="close-tab"><i class="fas fa-times"></i></span>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="content-header">
+                    <div class="content-title-area">
+                        <img src="/images/logo-hoan-my.png" alt="Logo" class="content-logo">
+                        <h1 class="page-title">SỐ LƯỢNG KHÁM TỪNG KHOA</h1>
+                    </div>
+                    <div class="datetime-area">
+                        <div><i class="far fa-clock"></i> {{ currentDate }}</div>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-cog"></i></button>
+                            <button class="btn btn-sm btn-info"><i class="fas fa-search"></i></button>
+                            <button class="btn btn-sm btn-warning text-white"><i class="fas fa-camera"></i></button>
+                            <button class="btn btn-sm btn-secondary"><i class="fas fa-bars"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label>Từ<br>Ngày</label>
+                        <input type="date" v-model="fromDate" class="form-control form-control-sm" style="width: 130px;">
+                    </div>
+                    <div class="filter-group">
+                        <label>Đến<br>Ngày</label>
+                        <input type="date" v-model="toDate" class="form-control form-control-sm" style="width: 130px;">
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn-search"><i class="fas fa-search"></i></button>
+                        <button class="btn-export"><i class="fas fa-download"></i></button>
+                    </div>
+                    <div class="filter-group">
+                        <select class="form-control form-control-sm" style="width: 150px;">
+                            <option>TẤT CẢ</option>
+                        </select>
+                    </div>
+                    <div class="total-count">
+                        <span>Tổng SL khám:</span>
+                        <span>255</span>
+                    </div>
+                    <div class="day-checkboxes">
+                        <div class="day-check" v-for="day in days" :key="day.id">
+                            <input type="checkbox" :id="day.id" v-model="day.checked">
+                            <label :for="day.id">{{ day.label }}</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="d-flex justify-content-center flex-wrap mb-3" style="font-size: 0.8rem;">
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #36b9cc; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #858796; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #1cc88a; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #36b9cc; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #b5b5fc; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #a3e6d8; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #81e2eb; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #b4f8c8; margin-right: 5px;"></span> Số bệnh nhân</div>
+                    <div class="mr-3 mb-1"><span style="display:inline-block; width: 30px; height: 10px; background-color: #6c78a1; margin-right: 5px;"></span> Số bệnh nhân</div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted fw-bold mb-1">Tổng Lượt Khám</p>
-                        <h2 class="fw-bold m-0">@ViewBag.TotalAppointments.ToString("N0")</h2>
-                    </div>
-                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
-                        <i class="fa-solid fa-users fs-4"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-success fw-bold text-sm">
-                    <i class="fa-solid fa-arrow-trend-up"></i> +12% so với hôm qua
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-4 h-100 border-start border-4 border-success">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted fw-bold mb-1">Doanh Thu Ngày</p>
-                        <h2 class="fw-bold m-0">@ViewBag.DailyRevenue.ToString("N0") đ</h2>
-                    </div>
-                    <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
-                        <i class="fa-solid fa-money-bill-wave fs-4"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-success fw-bold text-sm">
-                    <i class="fa-solid fa-arrow-trend-up"></i> +5.4% so với hôm qua
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted fw-bold mb-1">Giường Trống</p>
-                        <h2 class="fw-bold m-0">@(150 - ViewBag.TotalPatients)/150</h2>
-                    </div>
-                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
-                        <i class="fa-solid fa-bed fs-4"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-danger fw-bold text-sm">
-                    <i class="fa-solid fa-arrow-trend-down"></i> -2% so với hôm qua
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-4 h-100 border-start border-4 border-danger">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted fw-bold mb-1">Ca Cấp Cứu</p>
-                        <h2 class="fw-bold m-0">@ViewBag.EmergencyCases.ToString("N0")</h2>
-                    </div>
-                    <div class="bg-danger bg-opacity-10 p-3 rounded-circle text-danger">
-                        <i class="fa-solid fa-truck-medical fs-4"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-muted fw-bold text-sm">
-                    <i class="fa-solid fa-minus"></i> Không đổi
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Main Chart Area (Mockup) -->
-        <div class="col-lg-8">
-            <div class="glass-card p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">Biểu Đồ Lượt Khám & Doanh Thu (Tuần)</h5>
-                    <select class="form-select w-auto">
-                        <option>7 ngày qua</option>
-                        <option>Tháng này</option>
-                    </select>
-                </div>
-                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="height: 300px; border: 1px dashed #cbd5e1;">
-                    <div class="text-center">
-                        <i class="fa-solid fa-chart-column fs-1 mb-2 text-primary opacity-50"></i>
-                        <p>Khu vực hiển thị biểu đồ Chart.js / ApexCharts</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- System Alerts -->
-        <div class="col-lg-4">
-            <div class="glass-card p-4 h-100">
-                <h5 class="fw-bold mb-4">Cảnh Báo Hệ Thống</h5>
-                
-                <div class="d-flex mb-3 align-items-start pb-3 border-bottom">
-                    <div class="bg-danger bg-opacity-10 p-2 rounded text-danger me-3 mt-1">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1">Kho Dược - Cảnh Báo Hết Thuốc</h6>
-                        <p class="text-muted small m-0">Paracetamol 500mg (Kho trung tâm) chỉ còn 15 hộp. Cần nhập gấp.</p>
-                        <small class="text-danger">10 phút trước</small>
-                    </div>
-                </div>
-
-                <div class="d-flex mb-3 align-items-start pb-3 border-bottom">
-                    <div class="bg-warning bg-opacity-10 p-2 rounded text-warning me-3 mt-1">
-                        <i class="fa-solid fa-server"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1">Tải Server Cao</h6>
-                        <p class="text-muted small m-0">CPU Server CSDL đang ở mức 85%. Vui lòng kiểm tra các query chậm.</p>
-                        <small class="text-muted">1 giờ trước</small>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-start">
-                    <div class="bg-info bg-opacity-10 p-2 rounded text-info me-3 mt-1">
-                        <i class="fa-solid fa-bed-pulse"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1">Công suất giường Khoa Hồi Sức</h6>
-                        <p class="text-muted small m-0">Khoa Hồi Sức (ICU) đã đạt 95% công suất (19/20 giường).</p>
-                        <small class="text-muted">2 giờ trước</small>
-                    </div>
-                </div>
-                
-                <button class="btn btn-outline-primary w-100 mt-4">Xem tất cả cảnh báo</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 20 Admin Functions Grid -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <h4 class="fw-bold mb-4">Các Chức Năng Quản Trị Hệ Thống</h4>
-            <div class="row g-3">
-                <!-- 1 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyTaiKhoan", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-users-gear fs-2 text-primary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Tài Khoản</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 2 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyNhanSu", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-user-doctor fs-2 text-success mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Nhân Sự</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 3 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyKhoaPhong", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-hospital-user fs-2 text-info mb-2"></i>
-                            <h6 class="fw- bold text-dark m-0">Quản Lý Khoa Phòng</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 4 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyLichLamViec", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-calendar-days fs-2 text-warning mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Lịch Làm Việc</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 5 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyDichVu", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-stethoscope fs-2 text-danger mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Dịch Vụ</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 6 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyGia", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-money-bill-wave fs-2 text-success mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Giá</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 7 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyKhoDuoc", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-pills fs-2 text-primary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Kho Dược</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 8 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyThietBi", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-microscope fs-2 text-info mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Thiết Bị</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 9 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("ThongKeDoanhThu", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-chart-line fs-2 text-warning mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Thống Kê Doanh Thu</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 10 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("CauHinhHeThong", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-gears fs-2 text-secondary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Cấu Hình Hệ Thống</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 11 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyBenhNhan", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-bed-pulse fs-2 text-danger mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Bệnh Nhân</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 12 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyVienPhi", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-file-invoice-dollar fs-2 text-success mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Viện Phí</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 13 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyBHYT", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-id-card fs-2 text-primary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý BHYT</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 14 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("BaoCaoHoatDong", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-chart-pie fs-2 text-info mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Báo Cáo Hoạt Động</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 15 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyTiepDon", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-bell-concierge fs-2 text-warning mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Tiếp Đón</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 16 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyXetNghiem", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-vials fs-2 text-danger mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Xét Nghiệm</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 17 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyCDHA", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-x-ray fs-2 text-secondary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Chẩn Đoán Hình Ảnh</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 18 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyPhauThuat", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-scissors fs-2 text-primary mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Quản Lý Phẫu Thuật</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 19 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("QuanLyNganHangMau", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-droplet fs-2 text-danger mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Ngân Hàng Máu</h6>
-                        </div>
-                    </a>
-                </div>
-                <!-- 20 -->
-                <div class="col-md-3 col-sm-6">
-                    <a href="@Url.Action("DanhGiaChatLuong", "Admin")" class="text-decoration-none">
-                        <div class="glass-card p-3 text-center admin-module-card h-100">
-                            <i class="fa-solid fa-star fs-2 text-warning mb-2"></i>
-                            <h6 class="fw-bold text-dark m-0">Đánh Giá Chất Lượng</h6>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                menus: {
+                    ngoaiTru: true,
+                    noiTru: false
+                },
+                fromDate: '2026-05-12',
+                toDate: '2026-05-12',
+                currentDate: '12/05/2026 08:36:37 | 08:35:03',
+                days: [
+                    { id: 'cn', label: 'CN', checked: true },
+                    { id: 't2', label: 'T2', checked: true },
+                    { id: 't3', label: 'T3', checked: true },
+                    { id: 't4', label: 'T4', checked: true },
+                    { id: 't5', label: 'T5', checked: true },
+                    { id: 't6', label: 'T6', checked: true },
+                    { id: 't7', label: 'T7', checked: true }
+                ]
+            },
+            methods: {
+                toggleMenu(menuName) {
+                    this.menus[menuName] = !this.menus[menuName];
+                },
+                renderChart() {
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    
+                    // Chart data matching the screenshot approximately
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['6h-8h', '8h-10h', '10h-12h', '12h-15h', '15h-18h'],
+                            datasets: [
+                                {
+                                    label: 'Dept 1',
+                                    data: [147, 12, 0, 0, 0],
+                                    backgroundColor: '#36b9cc',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 2',
+                                    data: [19, 0, 0, 0, 0],
+                                    backgroundColor: '#858796',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 3',
+                                    data: [13, 4, 0, 0, 0],
+                                    backgroundColor: '#1cc88a',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 4',
+                                    data: [16, 3, 0, 0, 0],
+                                    backgroundColor: '#81e2eb',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 5',
+                                    data: [12, 0, 0, 0, 0],
+                                    backgroundColor: '#b5b5fc',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 6',
+                                    data: [9, 8, 0, 0, 0],
+                                    backgroundColor: '#a3e6d8',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 7',
+                                    data: [8, 1, 0, 0, 0],
+                                    backgroundColor: '#a3e6d8',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 8',
+                                    data: [1, 0, 0, 0, 0],
+                                    backgroundColor: '#b4f8c8',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                },
+                                {
+                                    label: 'Dept 9',
+                                    data: [2, 0, 0, 0, 0],
+                                    backgroundColor: '#6c78a1',
+                                    barPercentage: 0.8,
+                                    categoryPercentage: 0.9
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 160,
+                                    grid: {
+                                        color: '#e9ecef'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false // We use custom HTML legend above
+                                },
+                                tooltip: {
+                                    enabled: true
+                                }
+                            },
+                            animation: {
+                                duration: 1000
+                            }
+                        }
+                    });
+                }
+            },
+            mounted() {
+                this.renderChart();
+            }
+        });
+    </script>
+</body>
+</html>
