@@ -1,4 +1,4 @@
-@model IEnumerable<HeThongBenhVien.Models.Prescription>
+@model IEnumerable<HeThongBenhVien.Models.User>
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Kê Đơn Thuốc";
@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Kê Đơn Thuốc</h2>
-            <p class="text-muted mb-0">Hệ thống cấp phát và quản lý toa thuốc điện tử.</p>
+            <p class="text-muted mb-0">Chọn bệnh nhân để tạo hoặc chỉnh sửa toa thuốc.</p>
         </div>
     </div>
 
@@ -16,38 +16,39 @@
         <div class="col-lg-12 mb-4">
             <div class="glass-card p-4 h-100">
                 <div class="d-flex justify-content-between mb-3">
-                    <h5 class="fw-bold text-dark">Danh sách bệnh nhân đã được kê đơn</h5>
+                    <h5 class="fw-bold text-dark">Danh sách bệnh nhân</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Bệnh nhân</th>
-                                <th>Chẩn đoán</th>
+                                <th>Mã BN</th>
+                                <th>Tên bệnh nhân</th>
+                                <th>Username</th>
+                                <th>Email</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @if (Model != null && Model.Any())
                             {
-                                <tr>
-                                    <td class="fw-bold">
-                                        @item.MedicalRecord?.Appointment?.Patient?.FullName <br />
-                                        <small class="text-muted">Mã BN: @item.MedicalRecord?.Appointment?.Patient?.PatientCode</small>
-                                    </td>
-                                    <td>@item.MedicalRecord?.Diagnosis</td>
-                                    <td>
-                                        <form method="post" action="@Url.Action("KetQuaCanLamSang", "Doctor")" class="d-flex gap-2 m-0">
-                                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem Hồ sơ</a>
-                                            <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-success rounded-pill px-3">Sửa Toa Thuốc</a>
-                                        </form>
-                                    </td>
-                                </tr>
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.PatientCode</td>
+                                        <td>@item.FullName</td>
+                                        <td>@item.Username</td>
+                                        <td>@item.Email</td>
+                                        <td>
+                                            <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = item.Id })" class="btn btn-sm btn-success rounded-pill px-3">Kê đơn</a>
+                                        </td>
+                                    </tr>
+                                }
                             }
-                            @if (!Model.Any())
+                            else
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center py-4 text-muted">Không có bệnh nhân chờ kê đơn.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Không có bệnh nhân nào.</td>
                                 </tr>
                             }
                         </tbody>
