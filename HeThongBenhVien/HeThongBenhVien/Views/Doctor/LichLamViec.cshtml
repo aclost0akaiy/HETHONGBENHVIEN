@@ -1,0 +1,122 @@
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Lịch Làm Việc";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Lịch Làm Việc Cá Nhân</h2>
+            <p class="text-muted mb-0">Theo dõi ca trực và lịch làm việc trong tuần của bạn.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary"><i class="fa-solid fa-chevron-left"></i> Tuần trước</button>
+            <button class="btn btn-outline-primary">Tuần sau <i class="fa-solid fa-chevron-right"></i></button>
+            <button class="btn btn-primary px-4"><i class="fa-solid fa-print me-2"></i> In Lịch</button>
+        </div>
+    </div>
+
+    <div class="glass-card p-4">
+        <h5 class="fw-bold mb-4 text-center">Tuần: 12/05/2026 - 18/05/2026</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center" style="min-width: 800px;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%;">Ca / Thứ</th>
+                        <th style="width: 12.8%;">Thứ 2<br><small class="text-muted fw-normal">12/05</small></th>
+                        <th style="width: 12.8%;">Thứ 3<br><small class="text-muted fw-normal">13/05</small></th>
+                        <th style="width: 12.8%;">Thứ 4<br><small class="text-muted fw-normal">14/05</small></th>
+                        <th style="width: 12.8%;">Thứ 5<br><small class="text-muted fw-normal">15/05</small></th>
+                        <th style="width: 12.8%;">Thứ 6<br><small class="text-muted fw-normal">16/05</small></th>
+                        <th style="width: 12.8%;">Thứ 7<br><small class="text-muted fw-normal">17/05</small></th>
+                        <th style="width: 12.8%;">Chủ Nhật<br><small class="text-muted fw-normal">18/05</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold bg-light">Sáng<br><small class="text-muted fw-normal">07:00 - 11:30</small></td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 1
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 1
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-success bg-opacity-10 text-success rounded border border-success fw-medium small">
+                                Trực Cấp Cứu
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 2
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 1
+                            </div>
+                        </td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Chiều<br><small class="text-muted fw-normal">13:30 - 17:00</small></td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 1
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-warning bg-opacity-10 text-warning rounded border border-warning fw-medium small">
+                                Khám Hội Chẩn
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-success bg-opacity-10 text-success rounded border border-success fw-medium small">
+                                Trực Cấp Cứu
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-primary bg-opacity-10 text-primary rounded border border-primary fw-medium small">
+                                Phòng Khám Nội 2
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-2 bg-info bg-opacity-10 text-info rounded border border-info fw-medium small">
+                                Giao ban / Họp khoa
+                            </div>
+                        </td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold bg-light">Tối<br><small class="text-muted fw-normal">17:00 - 07:00</small></td>
+                        <td class="text-muted">Nghỉ</td>
+                        <td class="text-muted">Nghỉ</td>
+                        <td>
+                            <div class="p-2 bg-danger bg-opacity-10 text-danger rounded border border-danger fw-medium small">
+                                Trực Đêm (ICU)
+                            </div>
+                        </td>
+                        <td class="text-muted">Nghỉ</td>
+                        <td class="text-muted">Nghỉ</td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                        <td class="text-muted bg-light">Nghỉ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex gap-4 mt-4 justify-content-center text-sm">
+            <div class="d-flex align-items-center"><div class="bg-primary rounded me-2" style="width:15px; height:15px;"></div> Khám Bệnh</div>
+            <div class="d-flex align-items-center"><div class="bg-success rounded me-2" style="width:15px; height:15px;"></div> Trực Cấp Cứu</div>
+            <div class="d-flex align-items-center"><div class="bg-warning rounded me-2" style="width:15px; height:15px;"></div> Hội Chẩn</div>
+            <div class="d-flex align-items-center"><div class="bg-danger rounded me-2" style="width:15px; height:15px;"></div> Trực Đêm</div>
+            <div class="d-flex align-items-center"><div class="bg-info rounded me-2" style="width:15px; height:15px;"></div> Hành Chính / Họp</div>
+        </div>
+    </div>
+</div>
