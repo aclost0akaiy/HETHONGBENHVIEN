@@ -2,6 +2,7 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Lịch Mổ";
+    var recordIdsWithVitals = ViewBag.RecordIdsWithVitals as List<int> ?? new List<int>();
 }
 
 <div class="container-fluid p-0">
@@ -13,37 +14,87 @@
     </div>
 
     <div class="glass-card p-0 overflow-hidden">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="bg-dark text-white">
-                <tr>
-                    <th class="ps-4 py-3 border-0">Phòng Mổ</th>
-                    <th class="py-3 border-0">Bệnh Nhân</th>
-                    <th class="py-3 border-0">Phẫu Thuật Viên</th>
-                    <th class="py-3 border-0">Chẩn Đoán / Tên Phẫu Thuật</th>
-                    <th class="pe-4 py-3 border-0">Trạng Thái</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var item in Model)
-                {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-dark text-white">
                     <tr>
-                        <td class="ps-4 fw-bold">Chưa xếp phòng</td>
-                        <td>
-                            @item.Appointment?.Patient?.FullName <br/>
-                            <small class="text-muted">Mã BN: @item.Appointment?.Patient?.PatientCode</small>
-                        </td>
-                        <td><span class="badge bg-light text-dark border">Chưa phân công</span></td>
-                        <td>@item.Diagnosis</td>
-                        <td class="pe-4"><span class="badge bg-warning text-dark rounded-pill px-3">Chờ xếp lịch mổ</span></td>
+                        <th class="ps-4 py-3 border-0">STT</th>
+                        <th class="py-3 border-0">Bệnh Nhân</th>
+                        <th class="py-3 border-0">Phẫu Thuật Viên</th>
+                        <th class="py-3 border-0">Chẩn Đoán / Tên Phẫu Thuật</th>
+                        <th class="py-3 border-0">Trạng Thái</th>
+                        <th class="pe-4 py-3 border-0 text-end">Hành động</th>
                     </tr>
-                }
-                @if(!Model.Any())
-                {
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">Không có bệnh nhân nào đang chờ phẫu thuật.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @{ int i = 1; }
+                    @foreach (var item in Model)
+                    {
+                        var hasVitals = recordIdsWithVitals.Contains(item.Appointment?.Id ?? 0);
+                        var statusClass = item.Appointment?.Status switch
+                        {
+                            9 => "bg-primary",
+                            10 => "bg-success",
+                            _ => "bg-warning text-dark"
+                        };
+                        var statusText = item.Appointment?.Status switch
+                        {
+                            9 => "Đang mổ",
+                            10 => "Kết thúc",
+                            _ => "Chờ mổ"
+                        };
+
+                        <tr>
+                            <td class="ps-4">@i</td>
+                            <td>
+                                <div class="fw-bold">@item.Appointment?.Patient?.FullName</div>
+                                <small class="text-muted">Mã BN: @item.Appointment?.Patient?.PatientCode</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">Chưa phân công</span></td>
+                            <td>@item.Diagnosis</td>
+                            <td>
+                                <span class="badge @statusClass rounded-pill px-3">@statusText</span>
+                                <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Appointment?.Id })" class="ms-1 @(hasVitals ? "text-success" : "text-danger")" title="Theo dõi sinh hiệu">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                </a>
+                                @if (!hasVitals)
+                                {
+                                    <br/><small class="text-danger" style="font-size: 10px;">Chưa nhập sinh hiệu</small>
+                                }
+                            </td>
+                            <td class="pe-4 text-end">
+                                @if (item.Appointment?.Status != 10)
+                                {
+                                    <form asp-action="CapNhatTrangThaiMo" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@item.Appointment?.Id" />
+                                        @if (item.Appointment?.Status != 9)
+                                        {
+                                            <input type="hidden" name="status" value="9" />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3" @(hasVitals ? "" : "disabled") title="@(hasVitals ? "" : "Vui lòng nhập sinh hiệu trước khi mổ")">Bắt đầu mổ</button>
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="status" value="10" />
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Kết thúc</button>
+                                        }
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small italic">Hoàn tất</span>
+                                }
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Không có bệnh nhân nào đang chờ phẫu thuật.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

@@ -164,7 +164,12 @@
                                         </td>
                                         <td>@item.Reason</td>
                                         <td>@item.AppointmentTime.ToString("hh:mm tt")</td>
-                                        <td><span class="badge @statusBadgeClass rounded-pill">@statusText</span></td>
+                                        <td>
+                                            <span class="badge @statusBadgeClass rounded-pill">@statusText</span>
+                                            <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Id })" class="ms-1 text-danger" title="Theo dõi sinh hiệu">
+                                                <i class="fa-solid fa-heart-pulse"></i>
+                                            </a>
+                                        </td>
                                         <td class="pe-4 text-end">
                                             @if (item.Status == 1 || item.Status == 2 || item.Status == 3 || item.Status == 6)
                                             {

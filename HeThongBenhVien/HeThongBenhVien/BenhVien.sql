@@ -11,6 +11,7 @@ USE QuanLyBenhVienDb;
 GO
 
 -- Xóa bảng nếu đã tồn tại để tránh lỗi khi chạy lại script
+IF OBJECT_ID('VitalSigns', 'U') IS NOT NULL DROP TABLE VitalSigns;
 IF OBJECT_ID('LabTests', 'U') IS NOT NULL DROP TABLE LabTests;
 IF OBJECT_ID('PrescriptionDetails', 'U') IS NOT NULL DROP TABLE PrescriptionDetails;
 IF OBJECT_ID('Prescriptions', 'U') IS NOT NULL DROP TABLE Prescriptions;
@@ -111,6 +112,20 @@ CREATE TABLE LabTests (
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CompletedAt DATETIME2 NULL,
     CONSTRAINT FK_LabTests_MedicalRecords FOREIGN KEY (MedicalRecordId) REFERENCES MedicalRecords(Id) ON DELETE CASCADE
+);
+GO
+
+-- 3.3. Tạo bảng Sinh hiệu (VitalSigns)
+CREATE TABLE VitalSigns (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    AppointmentId INT NOT NULL,
+    Pulse NVARCHAR(50) NULL,
+    Temperature NVARCHAR(50) NULL,
+    BloodPressure NVARCHAR(50) NULL,
+    SpO2 NVARCHAR(50) NULL,
+    NurseName NVARCHAR(100) NULL,
+    RecordedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_VitalSigns_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE
 );
 GO
 

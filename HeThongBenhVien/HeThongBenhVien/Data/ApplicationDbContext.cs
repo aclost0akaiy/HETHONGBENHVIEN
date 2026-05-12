@@ -17,6 +17,10 @@ namespace HeThongBenhVien.Data
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<LabTest> LabTests { get; set; }
         public DbSet<MedicineUnit> MedicineUnits { get; set; }
+        public DbSet<Medicine> Medicines { get; set; }
+        public DbSet<MedicalService> MedicalServices { get; set; }
+        public DbSet<MedicalEquipment> MedicalEquipments { get; set; }
+        public DbSet<VitalSign> VitalSigns { get; set; }
 
         // Đã thêm khai báo bảng Lịch Làm Việc vào đây:
         public DbSet<LichLamViec> LichLamViecs { get; set; }

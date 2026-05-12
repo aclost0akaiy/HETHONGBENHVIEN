@@ -398,7 +398,18 @@ namespace HeThongBenhVien.Controllers
                     await _context.SaveChangesAsync();
                 }
             }
-            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[PHAUTHUAT]")).ToListAsync();
+            var records = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .ThenInclude(a => a!.Patient)
+                .Where(m => m.Notes.Contains("[PHAUTHUAT]"))
+                .ToListAsync();
+
+            var recordIdsWithVitals = await _context.VitalSigns
+                .Select(v => v.AppointmentId)
+                .Distinct()
+                .ToListAsync();
+
+            ViewBag.RecordIdsWithVitals = recordIdsWithVitals;
             return View(records);
         }
 
@@ -418,7 +429,6 @@ namespace HeThongBenhVien.Controllers
         }
 
         public IActionResult LichHen() { return View(); }
-        public IActionResult SinhHieu() { return View(); }
         public IActionResult LichSuKham() { return View(); }
         public async Task<IActionResult> ThongKe(int? month)
         {
@@ -502,5 +512,75 @@ namespace HeThongBenhVien.Controllers
         public IActionResult HoiChanOnline() { return View(); }
         public IActionResult ThongBao() { return View(); }
         public IActionResult CaiDat() { return View(); }
+
+        public async Task<IActionResult> SinhHieu(int? id)
+        {
+            if (id.HasValue)
+            {
+                var appointment = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .FirstOrDefaultAsync(a => a.Id == id.Value);
+
+                if (appointment == null) return NotFound();
+
+                var history = await _context.VitalSigns
+                    .Where(v => v.AppointmentId == id.Value)
+                    .OrderByDescending(v => v.RecordedAt)
+                    .ToListAsync();
+
+                ViewBag.History = history;
+                ViewBag.Appointment = appointment;
+
+                return View("SinhHieuChiTiet", appointment);
+            }
+
+            // Nếu không có ID, hiện danh sách bệnh nhân đang chờ phẫu thuật hoặc cần theo dõi
+            var appointments = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .ThenInclude(a => a!.Patient)
+                .Where(m => m.Notes.Contains("[PHAUTHUAT]"))
+                .Select(m => m.Appointment)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LuuSinhHieu(int appointmentId, string pulse, string temperature, string bloodPressure, string spo2, string nurseName)
+        {
+            var vs = new VitalSign
+            {
+                AppointmentId = appointmentId,
+                Pulse = pulse,
+                Temperature = temperature,
+                BloodPressure = bloodPressure,
+                SpO2 = spo2,
+                NurseName = nurseName,
+                RecordedAt = DateTime.Now
+            };
+
+            _context.VitalSigns.Add(vs);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(SinhHieu), new { id = appointmentId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CapNhatTrangThaiMo(int id, int status)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment != null)
+            {
+                if (appointment.Status == 10) 
+                {
+                     return BadRequest("Lịch mổ đã kết thúc, không thể thay đổi trạng thái.");
+                }
+
+                appointment.Status = status;
+                _context.Appointments.Update(appointment);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(LichMo));
+        }
     }
 }
