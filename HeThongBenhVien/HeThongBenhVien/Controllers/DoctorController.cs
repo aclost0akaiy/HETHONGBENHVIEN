@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HeThongBenhVien.Data;
 using HeThongBenhVien.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -419,7 +420,73 @@ namespace HeThongBenhVien.Controllers
         public IActionResult LichHen() { return View(); }
         public IActionResult SinhHieu() { return View(); }
         public IActionResult LichSuKham() { return View(); }
-        public IActionResult ThongKe() { return View(); }
+        public async Task<IActionResult> ThongKe(int? month)
+        {
+            var selectedMonth = month.HasValue && month.Value >= 1 && month.Value <= 12 ? month.Value : DateTime.Now.Month;
+            var selectedYear = DateTime.Now.Year;
+
+            var completedRecords = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .ThenInclude(a => a.Patient)
+                .Where(m => m.Appointment != null
+                            && (m.Appointment.Status == 4 || m.Appointment.Status == 5)
+                            && m.Appointment.AppointmentTime.Month == selectedMonth
+                            && m.Appointment.AppointmentTime.Year == selectedYear)
+                .ToListAsync();
+
+            var totalPatientsExamined = completedRecords
+                .Where(m => m.Appointment != null)
+                .Select(m => m.Appointment!.PatientId)
+                .Distinct()
+                .Count();
+
+            var totalVisits = completedRecords.Count;
+            var totalDiagnosisCount = totalVisits;
+
+            var diseaseGroups = completedRecords
+                .Where(m => m.Appointment != null)
+                .GroupBy(m => string.IsNullOrWhiteSpace(m.Diagnosis) ? "Chưa xác định" : m.Diagnosis.Trim())
+                .Select(g => new MonthDiseaseStat
+                {
+                    Diagnosis = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(g => g.Count)
+                .ToList();
+
+            var duplicateDiagnosisCount = diseaseGroups.Where(g => g.Count > 1).Sum(g => g.Count);
+            var duplicateDiagnosisRate = totalDiagnosisCount == 0
+                ? 0m
+                : Math.Round(100m * duplicateDiagnosisCount / totalDiagnosisCount, 1);
+
+            var totalRevenue = await _context.PrescriptionDetails
+                .Where(pd => pd.Prescription != null
+                             && pd.Prescription.MedicalRecord != null
+                             && pd.Prescription.MedicalRecord.Appointment != null
+                             && (pd.Prescription.MedicalRecord.Appointment.Status == 4 || pd.Prescription.MedicalRecord.Appointment.Status == 5)
+                             && pd.Prescription.MedicalRecord.Appointment.AppointmentTime.Month == selectedMonth
+                             && pd.Prescription.MedicalRecord.Appointment.AppointmentTime.Year == selectedYear)
+                .SumAsync(pd => pd.Price * pd.Quantity);
+
+            var viewModel = new DoctorStatisticsViewModel
+            {
+                SelectedMonth = selectedMonth,
+                SelectedYear = selectedYear,
+                TotalPatientsExamined = totalPatientsExamined,
+                TotalVisits = totalVisits,
+                TotalRevenue = totalRevenue,
+                DuplicateDiagnosisCount = duplicateDiagnosisCount,
+                DuplicateDiagnosisRate = duplicateDiagnosisRate,
+                DiseaseStats = diseaseGroups.Select(g => new MonthDiseaseStat
+                {
+                    Diagnosis = g.Diagnosis,
+                    Count = g.Count,
+                    Percent = totalDiagnosisCount == 0 ? 0 : Math.Round(100m * g.Count / totalDiagnosisCount, 1)
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
         public IActionResult CanhBaoTinhTrang() { return View(); }
         
         public async Task<IActionResult> HenTaiKham() 

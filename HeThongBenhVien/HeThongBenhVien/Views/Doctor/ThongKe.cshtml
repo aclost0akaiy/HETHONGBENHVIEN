@@ -1,3 +1,5 @@
+@model HeThongBenhVien.Models.DoctorStatisticsViewModel
+
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Thống Kê Khám Bệnh";
@@ -7,78 +9,94 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Báo Cáo Thống Kê</h2>
-            <p class="text-muted mb-0">Hiệu suất và tổng quan bệnh nhân trong tháng.</p>
+            <p class="text-muted mb-0">Hiệu suất khám bệnh và phân tích bệnh lý theo tháng.</p>
         </div>
-        <select class="form-select w-auto rounded-pill px-4">
-            <option>Tháng này</option>
-            <option>Tháng trước</option>
-            <option>Quý này</option>
-        </select>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            @for (var m = 1; m <= 12; m++)
+            {
+                <a class="btn btn-sm btn-outline-primary rounded-pill@(m == Model.SelectedMonth ? " active" : "")" href="@Url.Action("ThongKe", "Doctor", new { month = m })">Tháng @m</a>
+            }
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
         <div class="col-md-4">
             <div class="glass-card p-4 h-100">
-                <h6 class="text-muted fw-bold">Tổng BN Đã Khám</h6>
+                <h6 class="text-muted fw-bold">Tổng bệnh nhân đã khám</h6>
                 <div class="d-flex justify-content-between align-items-end mt-3">
-                    <h1 class="display-5 fw-bold text-primary m-0">342</h1>
-                    <span class="text-success fw-bold"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+                    <h1 class="display-5 fw-bold text-primary m-0">@Model.TotalPatientsExamined</h1>
+                    <span class="text-success fw-bold">@Model.TotalVisits lượt khám</span>
                 </div>
                 <div class="progress mt-3" style="height: 6px;">
-                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                    <div class="progress-bar bg-primary" style="width: 100%"></div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="glass-card p-4 h-100">
-                <h6 class="text-muted fw-bold">Tổng Doanh Thu Phụ Trách</h6>
+                <h6 class="text-muted fw-bold">Tổng doanh thu</h6>
                 <div class="d-flex justify-content-between align-items-end mt-3">
-                    <h2 class="fw-bold text-success m-0">125.4M <span class="fs-6 text-muted">VNĐ</span></h2>
-                    <span class="text-success fw-bold"><i class="fa-solid fa-arrow-trend-up"></i> +5%</span>
+                    <h2 class="fw-bold text-success m-0">@String.Format("{0:N0}", Model.TotalRevenue) <span class="fs-6 text-muted">VNĐ</span></h2>
+                    <span class="text-muted">Doanh thu đơn thuốc</span>
                 </div>
                 <div class="progress mt-3" style="height: 6px;">
-                    <div class="progress-bar bg-success" style="width: 60%"></div>
+                    <div class="progress-bar bg-success" style="width: 100%"></div>
                 </div>
+                <p class="text-muted mb-0 mt-2" style="font-size: 0.9rem;">Tính toán từ đơn thuốc kê đơn trong tháng.</p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="glass-card p-4 h-100 bg-primary bg-opacity-10 border-0">
-                <h6 class="text-primary fw-bold">Chỉ Số Đánh Giá (Rating)</h6>
-                <div class="text-center mt-2">
-                    <h1 class="display-4 fw-bold text-primary m-0">4.9<span class="fs-4 text-muted">/5</span></h1>
-                    <div class="text-warning fs-5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
-                    </div>
+                <h6 class="text-primary fw-bold">Tỷ lệ bệnh trùng lặp</h6>
+                <div class="text-center mt-3">
+                    <h1 class="display-4 fw-bold text-primary m-0">@Model.DuplicateDiagnosisRate<span class="fs-4 text-muted">%</span></h1>
+                    <p class="text-muted mb-1">@Model.DuplicateDiagnosisCount trường hợp trùng lặp</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="glass-card p-4">
-        <h5 class="fw-bold mb-4">Phân Bố Bệnh Lý Tháng 5/2026</h5>
-        <div class="d-flex align-items-center mb-3">
-            <div class="w-25 text-muted fw-bold">Tim mạch</div>
-            <div class="w-75">
-                <div class="progress" style="height: 12px;">
-                    <div class="progress-bar bg-danger" style="width: 45%">45%</div>
-                </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1">Phân bố bệnh lý tháng @Model.SelectedMonth/@Model.SelectedYear</h5>
+                <p class="text-muted mb-0">Danh sách bệnh lý của bệnh nhân đã khám xong trong hồ sơ bệnh án điện tử.</p>
+            </div>
+            <div class="text-end text-muted" style="font-size: 0.95rem;">
+                <div><strong>Tổng lượt khám:</strong> @Model.TotalVisits</div>
+                <div><strong>Tổng loại bệnh:</strong> @Model.DiseaseStats.Count</div>
             </div>
         </div>
-        <div class="d-flex align-items-center mb-3">
-            <div class="w-25 text-muted fw-bold">Nội tiết</div>
-            <div class="w-75">
-                <div class="progress" style="height: 12px;">
-                    <div class="progress-bar bg-info" style="width: 30%">30%</div>
-                </div>
+
+        @if (Model.DiseaseStats.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Bệnh lý</th>
+                            <th class="text-end">Số ca</th>
+                            <th class="text-end">Tỷ lệ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.DiseaseStats)
+                        {
+                            <tr>
+                                <td>@item.Diagnosis</td>
+                                <td class="text-end">@item.Count</td>
+                                <td class="text-end">@item.Percent.ToString("0.0")%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="d-flex align-items-center">
-            <div class="w-25 text-muted fw-bold">Tiêu hóa</div>
-            <div class="w-75">
-                <div class="progress" style="height: 12px;">
-                    <div class="progress-bar bg-warning" style="width: 25%">25%</div>
-                </div>
+        }
+        else
+        {
+            <div class="alert alert-warning mb-0" role="alert">
+                Chưa có hồ sơ bệnh án khám xong cho tháng @Model.SelectedMonth/@Model.SelectedYear.
             </div>
-        </div>
+        }
     </div>
 </div>
