@@ -89,12 +89,30 @@ namespace HeThongBenhVien.Controllers
 
         public IActionResult QuanLyKhoaPhong() { return View(); }
         public IActionResult QuanLyLichLamViec() { return View(); }
-        public IActionResult QuanLyDichVu() { return View(); }
-        public IActionResult QuanLyGia() { return View(); }
+        public IActionResult QuanLyDichVu() 
+        { 
+            var services = new List<MedicalService>(); // Thêm mock data hoặc query _context.MedicalServices khi DB đã sẵn sàng
+            return View(services); 
+        }
+        
+        public IActionResult QuanLyGia() 
+        { 
+            var services = new List<MedicalService>(); // Thêm mock data hoặc query _context.MedicalServices khi DB đã sẵn sàng
+            return View(services); 
+        }
+        
         public IActionResult QuanLyKhoDuoc() { return View(); }
-        public IActionResult QuanLyThietBi() { return View(); }
+        
+        public IActionResult QuanLyThietBi() 
+        { 
+            var equipments = new List<MedicalEquipment>(); // Thêm mock data hoặc query _context.MedicalEquipments khi DB đã sẵn sàng
+            return View(equipments); 
+        }
+        
         public IActionResult ThongKeDoanhThu() { return View(); }
         public IActionResult CauHinhHeThong() { return View(); }
+        public IActionResult SaoLuuDuLieu() { return View(); }
+        public IActionResult NhatKyHeThong() { return View(); }
 
         // 11 - 20: Các hàm mới
         public async Task<IActionResult> QuanLyBenhNhan()

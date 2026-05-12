@@ -1,17 +1,76 @@
-﻿@{
+@model IEnumerable<HeThongBenhVien.Models.MedicalService>
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyGia";
+    ViewData["Title"] = "Bảng Giá Viện Phí";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyGia</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Bảng Giá Viện Phí</h2>
+            <p class="text-muted mb-0">Quản lý và cập nhật mức giá cho các dịch vụ y tế.</p>
+        </div>
+        <div>
+            <button class="btn btn-success px-4"><i class="fa-solid fa-file-excel me-2"></i> Xuất Excel</button>
         </div>
     </div>
-    
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" class="form-control" placeholder="Tìm kiếm dịch vụ...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select">
+                <option>Tất cả nhóm dịch vụ</option>
+                <option>Khám bệnh</option>
+                <option>Xét nghiệm</option>
+                <option>Chẩn đoán hình ảnh</option>
+            </select>
+        </div>
+    </div>
+
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyGia</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã Dịch Vụ</th>
+                        <th>Tên Dịch Vụ</th>
+                        <th>Nhóm</th>
+                        <th class="text-end">Đơn Giá (VNĐ)</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.ServiceCode</td>
+                                <td class="fw-bold">@item.ServiceName</td>
+                                <td><span class="badge bg-info bg-opacity-10 text-info">Dịch vụ y tế</span></td>
+                                <td class="text-end fw-bold text-success">@item.Price.ToString("N0") đ</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-primary"><i class="fa-solid fa-money-check-pen me-1"></i> Cập nhật giá</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-money-bill-wave fs-1 mb-3 opacity-25"></i>
+                                <p class="mb-0">Chưa có dữ liệu bảng giá.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

@@ -418,6 +418,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         public IActionResult LichHen() { return View(); }
+        public IActionResult LichLamViec() { return View(); }
         public IActionResult SinhHieu() { return View(); }
         public IActionResult LichSuKham() { return View(); }
         public async Task<IActionResult> ThongKe(int? month)

@@ -1,17 +1,67 @@
-﻿@{
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "ThongKeDoanhThu";
+    ViewData["Title"] = "Thống Kê Doanh Thu";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">ThongKeDoanhThu</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Thống Kê Doanh Thu</h2>
+            <p class="text-muted mb-0">Phân tích tình hình tài chính và doanh thu của bệnh viện.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <select class="form-select w-auto">
+                <option>Năm nay (2026)</option>
+                <option>Năm ngoái (2025)</option>
+            </select>
+            <button class="btn btn-primary px-4"><i class="fa-solid fa-download me-2"></i> Xuất Báo Cáo</button>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>ThongKeDoanhThu</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4">Biểu Đồ Doanh Thu Theo Tháng</h5>
+                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="height: 350px; border: 1px dashed #cbd5e1;">
+                    <div class="text-center">
+                        <i class="fa-solid fa-chart-column fs-1 mb-3 text-primary opacity-50"></i>
+                        <p class="mb-0">Chart.js / ApexCharts: Doanh thu 12 tháng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4">Cơ Cấu Doanh Thu</h5>
+                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted mb-4" style="height: 200px; border: 1px dashed #cbd5e1;">
+                    <div class="text-center">
+                        <i class="fa-solid fa-chart-pie fs-1 mb-2 text-success opacity-50"></i>
+                        <p class="mb-0 text-sm">Biểu đồ tròn tỉ trọng</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                        <span class="text-sm fw-medium">Khám chữa bệnh</span>
+                    </div>
+                    <span class="fw-bold">45%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                        <span class="text-sm fw-medium">Tiền thuốc</span>
+                    </div>
+                    <span class="fw-bold">35%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                        <span class="text-sm fw-medium">Xét nghiệm & Cận lâm sàng</span>
+                    </div>
+                    <span class="fw-bold">20%</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

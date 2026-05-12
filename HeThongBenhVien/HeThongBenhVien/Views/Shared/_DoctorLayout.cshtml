@@ -261,6 +261,11 @@
                     <i class="fa-solid fa-chart-pie"></i> Bảng điều khiển
                 </a>
             </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "LichLamViec" ? "active" : "")">
+                <a href="@Url.Action("LichLamViec", "Doctor")">
+                    <i class="fa-solid fa-calendar-days"></i> Lịch làm việc
+                </a>
+            </li>
 
             <div class="nav-section-title">Quản lý lâm sàng</div>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhSach" ? "active" : "")">
