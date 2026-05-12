@@ -17,6 +17,7 @@ namespace HeThongBenhVien.Data
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<LabTest> LabTests { get; set; }
         public DbSet<MedicineUnit> MedicineUnits { get; set; }
+        public DbSet<Medicine> Medicines { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

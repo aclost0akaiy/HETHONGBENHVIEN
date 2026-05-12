@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<HeThongBenhVien.Models.Medicine>
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "QuanLyKhoDuoc";
 }
@@ -6,12 +7,73 @@
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyKhoDuoc</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản lý kho dược</h2>
+            <p class="text-muted mb-0">Quản lý danh sách thuốc và giá trong kho.</p>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyKhoDuoc</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="row gy-4">
+        <div class="col-lg-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-3">Thêm thuốc mới</h5>
+                <form asp-action="ThemThuoc" asp-controller="Admin" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Tên thuốc</label>
+                        <input name="Name" class="form-control" placeholder="Ví dụ: Paracetamol" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giá (VNĐ)</label>
+                        <input name="Price" type="number" min="0" class="form-control" value="0" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Thêm thuốc</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="glass-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark">Danh sách thuốc trong kho</h5>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 border border-info">
+                        <span class="text-info small fw-semibold">Tổng số thuốc:</span>
+                        <div class="fs-4 fw-bold text-info mt-1">@Model.Count()</div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên thuốc</th>
+                                <th>Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td>@item.Name</td>
+                                        <td>@string.Format("{0:N0} đ", item.Price)</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Chưa có thuốc nào trong kho.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

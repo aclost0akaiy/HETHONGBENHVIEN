@@ -29,5 +29,8 @@ namespace HeThongBenhVien.Models
         // Thêm trường SDT khớp với SQL Server
         [StringLength(20)]
         public string SDT { get; set; } = string.Empty;
+
+        [StringLength(20)]
+        public string PatientCode { get; set; } = string.Empty;
     }
 }

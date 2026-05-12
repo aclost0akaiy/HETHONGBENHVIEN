@@ -287,6 +287,7 @@ namespace HeThongBenhVien.Controllers
         {
             if (id.HasValue)
             {
+                // Kiểm tra nếu id là MedicalRecord.Id
                 var record = await _context.MedicalRecords.FindAsync(id.Value);
                 if (record != null)
                 {
@@ -296,36 +297,162 @@ namespace HeThongBenhVien.Controllers
                         var prescription = new Prescription { MedicalRecordId = id.Value, Status = "Đã kê đơn" };
                         _context.Prescriptions.Add(prescription);
                         await _context.SaveChangesAsync();
-                        
+
                         record.Notes += "\n[KEDONTHUOC]";
                         await _context.SaveChangesAsync();
                     }
-                    
+
                     ViewBag.MedicineUnits = await _context.MedicineUnits.ToListAsync();
-                    
+                    ViewBag.Medicines = await _context.Medicines.ToListAsync();
+                    ViewBag.AllPrescriptionDetails = await _context.PrescriptionDetails
+                        .Include(pd => pd.Prescription)
+                        .ThenInclude(p => p.MedicalRecord)
+                        .ThenInclude(m => m.Appointment)
+                        .ThenInclude(a => a.Patient)
+                        .ToListAsync();
+
                     return View("KeDonThuocForm", await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).Include(p => p.PrescriptionDetails).FirstOrDefaultAsync(p => p.MedicalRecordId == id.Value));
                 }
+                else
+                {
+                    // Nếu không phải MedicalRecord, coi là User.Id
+                    var user = await _context.Users.FindAsync(id.Value);
+                    if (user != null && user.Role == "BenhNhan")
+                    {
+                        // Lấy hoặc tạo đối tượng Patient tương ứng với User bệnh nhân
+                        var patient = await GetOrCreatePatientFromUser(user);
+                        if (patient != null)
+                        {
+                            // Kiểm tra nếu patient đã có MedicalRecord
+                            var existingMedicalRecord = await _context.MedicalRecords
+                                .Include(m => m.Appointment)
+                                .FirstOrDefaultAsync(m => m.Appointment != null && m.Appointment.PatientId == patient.Id);
+                            if (existingMedicalRecord != null)
+                            {
+                                // Nếu đã có, load existing Prescription
+                                var existingPrescription = await _context.Prescriptions.FirstOrDefaultAsync(p => p.MedicalRecordId == existingMedicalRecord.Id);
+                                if (existingPrescription == null)
+                                {
+                                    existingPrescription = new Prescription { MedicalRecordId = existingMedicalRecord.Id, Status = "Đã kê đơn" };
+                                    _context.Prescriptions.Add(existingPrescription);
+                                    await _context.SaveChangesAsync();
+                                }
+
+                                ViewBag.MedicineUnits = await _context.MedicineUnits.ToListAsync();
+                                ViewBag.Medicines = await _context.Medicines.ToListAsync();
+                                ViewBag.AllPrescriptionDetails = await _context.PrescriptionDetails
+                                    .Include(pd => pd.Prescription)
+                                    .ThenInclude(p => p.MedicalRecord)
+                                    .ThenInclude(m => m.Appointment)
+                                    .ThenInclude(a => a.Patient)
+                                    .ToListAsync();
+
+                                return View("KeDonThuocForm", await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).Include(p => p.PrescriptionDetails).FirstOrDefaultAsync(p => p.MedicalRecordId == existingMedicalRecord.Id));
+                            }
+                            else
+                            {
+                                // Tạo Appointment mới
+                                var appointment = new Appointment
+                                {
+                                    PatientId = patient.Id,
+                                    Status = 7, // Chờ kê đơn
+                                    AppointmentTime = DateTime.Now,
+                                    Reason = "Kê đơn thuốc"
+                                };
+                                _context.Appointments.Add(appointment);
+                                await _context.SaveChangesAsync();
+
+                                // Tạo MedicalRecord
+                                var medicalRecord = new MedicalRecord
+                                {
+                                    AppointmentId = appointment.Id,
+                                    Diagnosis = "Chưa chẩn đoán",
+                                    Symptoms = "Không có triệu chứng",
+                                    TreatmentPlan = "Kê đơn thuốc",
+                                    Vitals = "Không có sinh hiệu"
+                                };
+                                _context.MedicalRecords.Add(medicalRecord);
+                                await _context.SaveChangesAsync();
+
+                                // Tạo Prescription
+                                var prescription = new Prescription { MedicalRecordId = medicalRecord.Id, Status = "Đã kê đơn" };
+                                _context.Prescriptions.Add(prescription);
+                                await _context.SaveChangesAsync();
+
+                                medicalRecord.Notes += "\n[KEDONTHUOC]";
+                                await _context.SaveChangesAsync();
+
+                                ViewBag.MedicineUnits = await _context.MedicineUnits.ToListAsync();
+                                ViewBag.Medicines = await _context.Medicines.ToListAsync();
+                                ViewBag.AllPrescriptionDetails = await _context.PrescriptionDetails
+                                    .Include(pd => pd.Prescription)
+                                    .ThenInclude(p => p.MedicalRecord)
+                                    .ThenInclude(m => m.Appointment)
+                                    .ThenInclude(a => a.Patient)
+                                    .ToListAsync();
+
+                                return View("KeDonThuocForm", await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).Include(p => p.PrescriptionDetails).FirstOrDefaultAsync(p => p.MedicalRecordId == medicalRecord.Id));
+                            }
+                        }
+                    }
+                }
             }
-            var prescriptions = await _context.Prescriptions.Include(p => p.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient).ToListAsync();
-            return View(prescriptions);
+
+            var patients = await _context.Users
+                .Where(u => u.Role == "BenhNhan")
+                .ToListAsync();
+            return View(patients);
         }
 
         [HttpPost]
-        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage, decimal price)
+        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, int medicineId, int quantity, string unit, string dosage)
         {
+            var medicine = await _context.Medicines.FindAsync(medicineId);
+            if (medicine == null)
+            {
+                TempData["ErrorMessage"] = "Thuốc không tồn tại.";
+                return RedirectToAction(nameof(KeDonThuoc), new { id = prescriptionId });
+            }
+
             var detail = new PrescriptionDetail
             {
                 PrescriptionId = prescriptionId,
-                MedicineName = medicineName,
+                MedicineName = medicine.Name,
                 Quantity = quantity,
                 Unit = unit,
                 DosageInstruction = dosage,
-                Price = price
+                Price = medicine.Price
             };
             _context.PrescriptionDetails.Add(detail);
             await _context.SaveChangesAsync();
             var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
             return RedirectToAction(nameof(KeDonThuoc), new { id = prescription?.MedicalRecordId });
+        }
+
+        private async Task<Patient?> GetOrCreatePatientFromUser(User user)
+        {
+            if (user == null) return null;
+
+            if (string.IsNullOrWhiteSpace(user.PatientCode))
+            {
+                user.PatientCode = "BN" + user.Id.ToString("D4");
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
+
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == user.PatientCode);
+            if (patient != null) return patient;
+
+            patient = new Patient
+            {
+                FullName = string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName,
+                PatientCode = user.PatientCode,
+                Gender = "Nam",
+                Age = 0
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+            return patient;
         }
 
         [HttpGet]

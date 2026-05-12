@@ -91,7 +91,44 @@ namespace HeThongBenhVien.Controllers
         public IActionResult QuanLyLichLamViec() { return View(); }
         public IActionResult QuanLyDichVu() { return View(); }
         public IActionResult QuanLyGia() { return View(); }
-        public IActionResult QuanLyKhoDuoc() { return View(); }
+        public async Task<IActionResult> QuanLyKhoDuoc()
+        {
+            var medicines = await _context.Medicines.ToListAsync();
+            // Nếu chưa có thuốc, thêm một số mẫu
+            if (!medicines.Any())
+            {
+                var sampleMedicines = new List<Medicine>
+                {
+                    new Medicine { Name = "Paracetamol", Price = 5000 },
+                    new Medicine { Name = "Ibuprofen", Price = 8000 },
+                    new Medicine { Name = "Aspirin", Price = 3000 },
+                    new Medicine { Name = "Amoxicillin", Price = 15000 },
+                    new Medicine { Name = "Vitamin C", Price = 10000 }
+                };
+                _context.Medicines.AddRange(sampleMedicines);
+                await _context.SaveChangesAsync();
+                medicines = await _context.Medicines.ToListAsync();
+            }
+            return View(medicines);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemThuoc(Medicine model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var medicines = await _context.Medicines.ToListAsync();
+                return View("QuanLyKhoDuoc", medicines);
+            }
+
+            _context.Medicines.Add(model);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đã thêm thuốc thành công.";
+            return RedirectToAction(nameof(QuanLyKhoDuoc));
+        }
+
         public IActionResult QuanLyThietBi() { return View(); }
         public IActionResult ThongKeDoanhThu() { return View(); }
         public IActionResult CauHinhHeThong() { return View(); }
@@ -126,6 +163,11 @@ namespace HeThongBenhVien.Controllers
                 user.Role = "BenhNhan";
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
+
+                // Tự động tạo mã bệnh nhân
+                user.PatientCode = "BN" + user.Id.ToString("D4");
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(QuanLyBenhNhan));
             }
 
