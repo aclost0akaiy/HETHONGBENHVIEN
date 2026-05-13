@@ -42,11 +42,11 @@
         </div>
     </div>
 
-    <!-- Thanh Công Cụ Bộ Lọc (Đã bọc trong Form) -->
+    <!-- Thanh Công Cụ Bộ Lọc -->
     <form asp-action="QuanLyLichLamViec" method="get" class="bg-white p-3 mb-4 shadow-sm d-flex gap-3 align-items-center flex-wrap" style="border-radius: 12px; border: 1px solid #eaecf4;">
         <div class="input-group" style="max-width: 300px;">
             <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-            <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control bg-light border-start-0" placeholder="Tìm kiếm bác sĩ...">
+            <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control bg-light border-start-0" placeholder="Tìm kiếm bác sĩ..." onchange="this.form.submit()">
         </div>
         <select name="month" class="form-select bg-light border-0" style="max-width: 150px;" onchange="this.form.submit()">
             <option value="">-- Tháng --</option>
@@ -56,13 +56,8 @@
             }
         </select>
         <select name="year" class="form-select bg-light border-0" style="max-width: 150px;" onchange="this.form.submit()">
-            <option value="">-- Năm --</option>
-            <option value="2025" selected="@(currentYear == 2025 ? "selected" : null)">2025</option>
-            <option value="2026" selected="@(currentYear == 2026 ? "selected" : null)">2026</option>
-            <option value="2027" selected="@(currentYear == 2027 ? "selected" : null)">2027</option>
+            <option value="2026" selected>2026</option>
         </select>
-        <button type="submit" class="btn btn-info text-white">Lọc</button>
-        <a asp-action="QuanLyLichLamViec" class="btn btn-outline-secondary">Làm Mới</a>
     </form>
 
     <!-- Bảng Lưới Lịch -->
@@ -90,13 +85,11 @@
                     @foreach (var shift in definedShifts)
                     {
                         <tr>
-                            <!-- Tên Ca -->
                             <td class="shift-col sticky-col align-middle">
                                 <div class="fw-bold text-dark">@shift.Substring(0, 4)</div>
                                 <div class="text-muted small">@shift.Substring(5)</div>
                             </td>
                             
-                            <!-- Các ô lịch -->
                             @foreach (var date in dates)
                             {
                                 <td class="schedule-cell position-relative">
@@ -110,7 +103,7 @@
                                                 <div class="d-flex flex-column gap-1 mt-1">
                                                     @foreach (var item in matchedSchedules)
                                                     {
-                                                        <div class="doctor-event text-truncate" title="@(item.User != null ? item.User.FullName : "Trống")">
+                                                        <div class="doctor-event" title="@(item.User != null ? item.User.FullName : "Trống")">
                                                             <i class="fas fa-user-md me-1 opacity-75"></i>
                                                             @(item.User != null ? item.User.FullName : "Không xác định")
                                                         </div>
@@ -129,9 +122,7 @@
     </div>
 </div>
 
-<!-- ============================================== -->
-<!-- MODAL THÊM BÁC SĨ VÀO LỊCH -->
-<!-- ============================================== -->
+<!-- MODAL THÊM BÁC SĨ -->
 <div class="modal fade" id="modalThemLich" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
@@ -140,7 +131,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
-            <!-- Form gọi tới Action ThemLichLamViec -->
             <form asp-action="ThemLichLamViec" asp-controller="Admin" method="post">
                 <div class="modal-body p-4">
                     <div class="mb-4">
@@ -182,7 +172,6 @@
     </div>
 </div>
 
-<!-- Hàm phụ trợ dịch thứ -->
 @functions {
     public string GetVietnameseDayOfWeek(DateTime date)
     {
@@ -201,7 +190,6 @@
 }
 
 <style>
-    /* CSS hỗ trợ cuộn ngang toàn tháng */
     .custom-scroll {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -209,7 +197,7 @@
 
     .schedule-table {
         border-color: #eaecf4;
-        min-width: 2800px; /* Bắt buộc bảng dài ra để có thể lướt */
+        min-width: 6500px;
         table-layout: fixed;
     }
 
@@ -221,7 +209,6 @@
             padding: 1rem 0.5rem;
         }
 
-    /* Fixed cứng cột đầu tiên khi cuộn ngang */
     .sticky-col {
         position: sticky;
         left: 0;
@@ -237,7 +224,7 @@
     }
 
     .date-col {
-        width: 100px;
+        width: 200px;
     }
 
     .schedule-cell {
@@ -263,6 +250,8 @@
         text-align: left;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         transition: transform 0.1s;
+        white-space: normal;
+        word-wrap: break-word;
     }
 
         .doctor-event:hover {
@@ -271,7 +260,6 @@
             background-color: #dceaf9;
         }
 
-    /* Thanh cuộn đẹp mắt */
     .custom-scroll::-webkit-scrollbar {
         height: 10px;
     }

@@ -22,14 +22,15 @@ namespace HeThongBenhVien.Controllers
         {
             var totalAppointments = _context.Appointments.Count();
             var totalPatients = _context.Patients.Count();
-            var medicalRecordsCount = _context.MedicalRecords.Count();
-            var emergencyCases = _context.Appointments.Count(a => a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"));
-
-            var dailyRevenue = medicalRecordsCount * 500000;
+            var totalRevenue = _context.PrescriptionDetails.Sum(d => d.Price * d.Quantity);
+            var emergencyCases = _context.Appointments.Count(a =>
+                (a.Status == 6 || (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu")))
+                && a.Status != 4 && a.Status != 5);
 
             ViewBag.TotalAppointments = totalAppointments;
             ViewBag.TotalPatients = totalPatients;
-            ViewBag.DailyRevenue = dailyRevenue;
+            ViewBag.PatientOccupancy = totalPatients;
+            ViewBag.DailyRevenue = totalRevenue;
             ViewBag.EmergencyCases = emergencyCases;
 
             return View();
@@ -232,10 +233,60 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         // CÁC CHỨC NĂNG CÒN LẠI
         // ==========================================
+        public async Task<IActionResult> QuanLyKhoDuoc()
+        {
+            var allMedicines = await _context.Medicines.ToListAsync();
+            var allPrescriptionDetails = await _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                .ThenInclude(p => p.MedicalRecord)
+                .ThenInclude(m => m.Appointment)
+                .ThenInclude(a => a.Patient)
+                .ToListAsync();
+
+            ViewBag.TotalMedicines = allMedicines.Count;
+            ViewBag.AllMedicines = allMedicines;
+            ViewBag.AllPrescriptionDetails = allPrescriptionDetails;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemThuoc(string medicineName, decimal medicinePrice)
+        {
+            if (!string.IsNullOrEmpty(medicineName) && medicinePrice > 0)
+            {
+                medicineName = medicineName.Trim();
+                var existingMedicine = await _context.Medicines.FirstOrDefaultAsync(m => m.Name.ToLower() == medicineName.ToLower());
+
+                if (existingMedicine != null)
+                {
+                    // Cập nhật giá nếu khác
+                    if (existingMedicine.Price != medicinePrice)
+                    {
+                        existingMedicine.Price = medicinePrice;
+                        _context.Medicines.Update(existingMedicine);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    // Thêm thuốc mới
+                    var newMedicine = new Medicine
+                    {
+                        Name = medicineName,
+                        Price = medicinePrice
+                    };
+                    _context.Medicines.Add(newMedicine);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return RedirectToAction(nameof(QuanLyKhoDuoc));
+        }
+
         public IActionResult QuanLyKhoaPhong() { return View(); }
         public IActionResult QuanLyDichVu() { return View(); }
         public IActionResult QuanLyGia() { return View(); }
-        public IActionResult QuanLyKhoDuoc() { return View(); }
         public IActionResult QuanLyThietBi() { return View(); }
         public IActionResult ThongKeDoanhThu() { return View(); }
         public IActionResult CauHinhHeThong() { return View(); }
