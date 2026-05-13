@@ -41,6 +41,16 @@
                         <div class="bg-light p-3 rounded-3 h-100 border border-light">
                             <span class="text-muted small fw-bold text-uppercase d-block mb-2">Sinh hiệu</span>
                             <div class="text-dark">@Model.Vitals</div>
+                            @{
+                                var vitalSignsList = ViewBag.VitalSigns as List<HeThongBenhVien.Models.VitalSign>;
+                                var latestVital = vitalSignsList?.FirstOrDefault();
+                            }
+                            @if (latestVital != null)
+                            {
+                                <div class="mt-2 pt-2 border-top border-light">
+                                    <small class="text-muted"><i class="fa-solid fa-clock me-1"></i>Cập nhật lần cuối: @latestVital.RecordedAt.ToString("HH:mm dd/MM/yyyy") - ĐD: @latestVital.NurseName</small>
+                                </div>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -195,7 +205,8 @@
                         .Replace("[KEDONTHUOC]", "✓ Đã chuyển sang Kê đơn thuốc")
                         .Replace("[XETNGHIEM_PENDING]", "⌛ Đang chờ kết quả Xét nghiệm")
                         .Replace("[XETNGHIEM_DONE]", "✓ Đã có kết quả Xét nghiệm")
-                        .Replace("[PHAUTHUAT]", "✓ Đã chuyển sang Lịch Mổ / Phẫu thuật");
+                        .Replace("[PHAUTHUAT]", "✓ Đã chuyển sang Lịch Mổ / Phẫu thuật")
+                        .Replace("[SINHHIEU]", "✓ Đã đo Sinh hiệu");
                     displayNotes = System.Text.RegularExpressions.Regex.Replace(displayNotes, @"\[NHAPVIEN[^\]]*\]", "✓ Đã Nhập viện nội trú");
                     displayNotes = System.Text.RegularExpressions.Regex.Replace(displayNotes, @"\[XUATVIEN[^\]]*\]", "✓ Đã Xuất viện");
 
@@ -216,6 +227,9 @@
                         </a>
                         <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn btn-danger px-3 py-2 fw-bold">
                             <i class="fa-solid fa-scalpel me-1"></i> Phẫu thuật
+                        </a>
+                        <a href="@Url.Action("SinhHieu", "Doctor", new { id = Model.AppointmentId, medicalRecordId = Model.Id })" class="btn btn-outline-danger px-3 py-2 fw-bold">
+                            <i class="fa-solid fa-heart-pulse me-1"></i> Sinh hiệu
                         </a>
                         <a href="@Url.Action("QuanLyGiuong", "Doctor", new { id = Model.Id })" class="btn btn-secondary px-3 py-2 fw-bold">
                             <i class="fa-solid fa-bed me-1"></i> Nhập viện

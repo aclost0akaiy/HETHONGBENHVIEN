@@ -48,7 +48,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.LabTest", b =>
@@ -83,7 +83,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("MedicalRecordId");
 
-                    b.ToTable("LabTests");
+                    b.ToTable("LabTests", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.LichLamViec", b =>
@@ -123,7 +123,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WorkSchedules");
+                    b.ToTable("WorkSchedules", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.MedicalEquipment", b =>
@@ -158,7 +158,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicalEquipments");
+                    b.ToTable("MedicalEquipments", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.MedicalRecord", b =>
@@ -199,7 +199,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("MedicalRecords");
+                    b.ToTable("MedicalRecords", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.MedicalService", b =>
@@ -230,7 +230,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicalServices");
+                    b.ToTable("MedicalServices", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.Medicine", b =>
@@ -251,7 +251,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Medicines");
+                    b.ToTable("Medicines", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.MedicineUnit", b =>
@@ -272,7 +272,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicineUnits");
+                    b.ToTable("MedicineUnits", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.Patient", b =>
@@ -302,7 +302,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.Prescription", b =>
@@ -327,7 +327,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("MedicalRecordId");
 
-                    b.ToTable("Prescriptions");
+                    b.ToTable("Prescriptions", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.PrescriptionDetail", b =>
@@ -363,7 +363,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionDetails");
+                    b.ToTable("PrescriptionDetails", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.User", b =>
@@ -406,7 +406,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.VitalSign", b =>
@@ -442,7 +442,7 @@ namespace HeThongBenhVien.Migrations
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("VitalSigns");
+                    b.ToTable("VitalSigns", (string)null);
                 });
 
             modelBuilder.Entity("HeThongBenhVien.Models.Appointment", b =>

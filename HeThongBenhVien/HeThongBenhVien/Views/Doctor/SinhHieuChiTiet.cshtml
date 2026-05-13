@@ -5,6 +5,7 @@
     ViewData["Title"] = "Sinh Hiệu Chi Tiết";
     var history = ViewBag.History as List<VitalSign> ?? new List<VitalSign>();
     var latest = history.FirstOrDefault();
+    int? medicalRecordId = ViewBag.MedicalRecordId as int?;
 }
 
 <div class="container-fluid p-0">
@@ -13,6 +14,12 @@
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Bảng Mạch Nhiệt - Sinh Hiệu</h2>
             <p class="text-muted mb-0">Bệnh nhân: <span class="fw-bold text-primary">@Model.Patient?.FullName</span> (@Model.Patient?.PatientCode) - @Model.Patient?.Age Tuổi - @Model.Patient?.Gender</p>
         </div>
+        @if (medicalRecordId.HasValue)
+        {
+            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = medicalRecordId.Value })" class="btn btn-outline-success rounded-pill me-2">
+                <i class="fa-solid fa-file-medical me-2"></i> Quay lại hồ sơ bệnh án
+            </a>
+        }
         <a href="@Url.Action("SinhHieu", "Doctor")" class="btn btn-outline-secondary rounded-pill">
             <i class="fa-solid fa-arrow-left me-2"></i> Quay lại danh sách
         </a>
@@ -55,6 +62,10 @@
                 <h5 class="fw-bold mb-3">Nhập chỉ số sinh hiệu mới</h5>
                 <form asp-action="LuuSinhHieu" method="post" class="row g-3">
                     <input type="hidden" name="appointmentId" value="@Model.Id" />
+                    @if (medicalRecordId.HasValue)
+                    {
+                        <input type="hidden" name="medicalRecordId" value="@medicalRecordId.Value" />
+                    }
                     <div class="col-md-2">
                         <label class="form-label text-muted small">Mạch (l/p)</label>
                         <input type="text" name="pulse" class="form-control" required placeholder="85">

@@ -119,6 +119,17 @@ namespace HeThongBenhVien.Controllers
 
                 _context.Patients.Add(model);
                 await _context.SaveChangesAsync();
+
+                // Tạo lịch khám mặc định để bệnh nhân hiện lên trong Lịch khám hôm nay
+                var newAppointment = new Appointment
+                {
+                    PatientId = model.Id,
+                    Reason = "Khám bệnh",
+                    AppointmentTime = DateTime.Now,
+                    Status = 1 // 1: Chờ khám
+                };
+                _context.Appointments.Add(newAppointment);
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(DanhSach));
         }
@@ -230,6 +241,15 @@ namespace HeThongBenhVien.Controllers
             ViewBag.LabTests = await _context.LabTests
                 .Where(t => t.MedicalRecordId == id)
                 .ToListAsync();
+
+            // Load vital signs history for this appointment
+            if (record.Appointment != null)
+            {
+                ViewBag.VitalSigns = await _context.VitalSigns
+                    .Where(v => v.AppointmentId == record.AppointmentId)
+                    .OrderByDescending(v => v.RecordedAt)
+                    .ToListAsync();
+            }
 
             return View(record);
         }
@@ -559,7 +579,7 @@ namespace HeThongBenhVien.Controllers
         public IActionResult ThongBao() { return View(); }
         public IActionResult CaiDat() { return View(); }
 
-        public async Task<IActionResult> SinhHieu(int? id)
+        public async Task<IActionResult> SinhHieu(int? id, int? medicalRecordId)
         {
             if (id.HasValue)
             {
@@ -576,6 +596,7 @@ namespace HeThongBenhVien.Controllers
 
                 ViewBag.History = history;
                 ViewBag.Appointment = appointment;
+                ViewBag.MedicalRecordId = medicalRecordId;
 
                 return View("SinhHieuChiTiet", appointment);
             }
@@ -584,7 +605,7 @@ namespace HeThongBenhVien.Controllers
             var appointments = await _context.MedicalRecords
                 .Include(m => m.Appointment)
                 .ThenInclude(a => a!.Patient)
-                .Where(m => m.Notes.Contains("[PHAUTHUAT]"))
+                .Where(m => m.Notes.Contains("[PHAUTHUAT]") || m.Notes.Contains("[SINHHIEU]"))
                 .Select(m => m.Appointment)
                 .ToListAsync();
 
@@ -592,7 +613,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LuuSinhHieu(int appointmentId, string pulse, string temperature, string bloodPressure, string spo2, string nurseName)
+        public async Task<IActionResult> LuuSinhHieu(int appointmentId, string pulse, string temperature, string bloodPressure, string spo2, string nurseName, int? medicalRecordId)
         {
             var vs = new VitalSign
             {
@@ -606,7 +627,31 @@ namespace HeThongBenhVien.Controllers
             };
 
             _context.VitalSigns.Add(vs);
+
+            // Cập nhật thông tin sinh hiệu vào hồ sơ bệnh án
+            var record = medicalRecordId.HasValue
+                ? await _context.MedicalRecords.FindAsync(medicalRecordId.Value)
+                : await _context.MedicalRecords.FirstOrDefaultAsync(m => m.AppointmentId == appointmentId);
+
+            if (record != null)
+            {
+                // Cập nhật trường Vitals với dữ liệu mới nhất
+                record.Vitals = $"Mạch: {pulse} l/p | Nhiệt độ: {temperature}°C | Huyết áp: {bloodPressure} mmHg | SpO2: {spo2}%";
+                
+                // Đánh dấu đã đo sinh hiệu trong Notes nếu chưa có
+                if (!record.Notes.Contains("[SINHHIEU]"))
+                {
+                    record.Notes += "\n[SINHHIEU]";
+                }
+            }
+
             await _context.SaveChangesAsync();
+
+            // Nếu có medicalRecordId, quay lại chi tiết bệnh án
+            if (medicalRecordId.HasValue)
+            {
+                return RedirectToAction(nameof(ChiTietBenhAn), new { id = medicalRecordId.Value });
+            }
 
             return RedirectToAction(nameof(SinhHieu), new { id = appointmentId });
         }

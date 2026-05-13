@@ -33,6 +33,59 @@ namespace HeThongBenhVien.Controllers
             ViewBag.DailyRevenue = totalRevenue;
             ViewBag.EmergencyCases = emergencyCases;
 
+            // --- Dữ liệu biểu đồ tuần (7 ngày gần nhất) ---
+            var today = DateTime.Today;
+            var weekStart = today.AddDays(-6); // 7 ngày: từ 6 ngày trước đến hôm nay
+
+            var chartLabels = new List<string>();
+            var chartAppointments = new List<int>();
+            var chartRevenue = new List<decimal>();
+
+            // Pre-load all appointments and prescription details in the date range
+            var weekAppointments = _context.Appointments
+                .Where(a => a.AppointmentTime.Date >= weekStart && a.AppointmentTime.Date <= today)
+                .ToList();
+
+            var weekRecordIds = _context.MedicalRecords
+                .Where(m => m.CreatedAt.Date >= weekStart && m.CreatedAt.Date <= today)
+                .Select(m => new { m.Id, m.CreatedAt })
+                .ToList();
+
+            var allPrescriptionDetails = _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                .Where(pd => pd.Prescription != null)
+                .ToList();
+
+            for (int i = 0; i < 7; i++)
+            {
+                var date = weekStart.AddDays(i);
+                // Nhãn: Thứ + ngày/tháng
+                string[] dayNames = { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
+                chartLabels.Add($"{dayNames[(int)date.DayOfWeek]} {date:dd/MM}");
+
+                // Số lượt khám trong ngày
+                chartAppointments.Add(weekAppointments.Count(a => a.AppointmentTime.Date == date));
+
+                // Doanh thu trong ngày (dựa trên ngày tạo MedicalRecord)
+                var recordIdsForDay = weekRecordIds
+                    .Where(m => m.CreatedAt.Date == date)
+                    .Select(m => m.Id)
+                    .ToList();
+
+                var dayRevenue = allPrescriptionDetails
+                    .Where(pd => pd.Prescription != null && recordIdsForDay.Contains(pd.Prescription.MedicalRecordId))
+                    .Sum(pd => pd.Price * pd.Quantity);
+
+                chartRevenue.Add(dayRevenue);
+            }
+
+            ViewBag.ChartLabels = System.Text.Json.JsonSerializer.Serialize(chartLabels);
+            ViewBag.ChartAppointments = System.Text.Json.JsonSerializer.Serialize(chartAppointments);
+            ViewBag.ChartRevenue = System.Text.Json.JsonSerializer.Serialize(chartRevenue);
+
+            // Tổng doanh thu tuần
+            ViewBag.WeeklyRevenue = chartRevenue.Sum();
+
             return View();
         }
 
