@@ -407,14 +407,60 @@ namespace HeThongBenhVien.Controllers
             if (id.HasValue)
             {
                 var record = await _context.MedicalRecords.FindAsync(id.Value);
-                if (record != null && !record.Notes.Contains("[NHAPVIEN]"))
+                if (record != null && !record.Notes.Contains("[NHAPVIEN"))
                 {
-                    record.Notes += "\n[NHAPVIEN]";
+                    record.Notes += $"\n[NHAPVIEN:{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
                     await _context.SaveChangesAsync();
                 }
             }
-            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[NHAPVIEN]")).ToListAsync();
+            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[NHAPVIEN") && !m.Notes.Contains("[XUATVIEN")).ToListAsync();
             return View(records);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> XuatVien(int id)
+        {
+            var record = await _context.MedicalRecords.FindAsync(id);
+            if (record != null && record.Notes.Contains("[NHAPVIEN") && !record.Notes.Contains("[XUATVIEN"))
+            {
+                var now = DateTime.Now;
+                record.Notes += $"\n[XUATVIEN:{now:yyyy-MM-dd HH:mm:ss}]";
+                
+                var nhapVienStr = record.Notes.Split('\n').FirstOrDefault(n => n.StartsWith("[NHAPVIEN"));
+                DateTime admissionTime = record.CreatedAt;
+                if (nhapVienStr != null && nhapVienStr.Contains(":"))
+                {
+                    var timeStr = nhapVienStr.Substring(10).TrimEnd(']');
+                    if(DateTime.TryParse(timeStr, out DateTime parsedTime)) {
+                        admissionTime = parsedTime;
+                    }
+                }
+                
+                int days = (int)Math.Ceiling((now - admissionTime).TotalDays);
+                if (days < 1) days = 1;
+                
+                var prescription = await _context.Prescriptions.FirstOrDefaultAsync(p => p.MedicalRecordId == id);
+                if (prescription == null)
+                {
+                    prescription = new Prescription { MedicalRecordId = id, Status = "Đã kê đơn" };
+                    _context.Prescriptions.Add(prescription);
+                    await _context.SaveChangesAsync();
+                }
+                
+                var bedCost = new PrescriptionDetail
+                {
+                    PrescriptionId = prescription.Id,
+                    MedicineName = $"Phí giường nội trú ({days} ngày)",
+                    Quantity = days,
+                    Unit = "Ngày",
+                    DosageInstruction = "Chi phí nằm viện nội trú",
+                    Price = 65000
+                };
+                _context.PrescriptionDetails.Add(bedCost);
+                
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyGiuong));
         }
 
         public IActionResult LichHen() { return View(); }

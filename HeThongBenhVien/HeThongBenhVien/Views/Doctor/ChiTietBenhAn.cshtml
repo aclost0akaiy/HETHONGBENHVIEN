@@ -124,14 +124,80 @@
                     }
                 }
 
+                @{
+                    bool isAdmitted = false;
+                    bool isDischarged = false;
+                    DateTime? admissionTime = null;
+                    DateTime? dischargeTime = null;
+
+                    if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        var nhapVienStr = Model.Notes.Split('\n').FirstOrDefault(n => n.StartsWith("[NHAPVIEN"));
+                        if (nhapVienStr != null)
+                        {
+                            isAdmitted = true;
+                            if (nhapVienStr.Contains(":"))
+                            {
+                                var timeStr = nhapVienStr.Substring(10).TrimEnd(']');
+                                if(DateTime.TryParse(timeStr, out DateTime pt)) admissionTime = pt;
+                            }
+                        }
+
+                        var xuatVienStr = Model.Notes.Split('\n').FirstOrDefault(n => n.StartsWith("[XUATVIEN"));
+                        if (xuatVienStr != null)
+                        {
+                            isDischarged = true;
+                            if (xuatVienStr.Contains(":"))
+                            {
+                                var timeStr = xuatVienStr.Substring(10).TrimEnd(']');
+                                if(DateTime.TryParse(timeStr, out DateTime pt)) dischargeTime = pt;
+                            }
+                        }
+                    }
+                }
+                
+                @if (isAdmitted)
+                {
+                    <div class="bg-danger bg-opacity-10 p-4 rounded-3 mb-4 border border-danger border-opacity-25">
+                        <span class="text-danger small fw-bold text-uppercase d-block mb-2"><i class="fa-solid fa-bed-pulse me-1"></i> Thông tin lưu trú nội trú</span>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-dark"><strong>Nhập viện:</strong> @(admissionTime.HasValue ? admissionTime.Value.ToString("dd/MM/yyyy HH:mm") : "Không rõ")</p>
+                                <p class="mb-1 text-dark"><strong>Trạng thái:</strong> 
+                                    @if(isDischarged) { <span class="badge bg-success">Đã xuất viện</span> }
+                                    else { <span class="badge bg-warning text-dark">Đang điều trị nội trú</span> }
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                @if (isDischarged && admissionTime.HasValue && dischargeTime.HasValue)
+                                {
+                                    int days = (int)Math.Ceiling((dischargeTime.Value - admissionTime.Value).TotalDays);
+                                    if (days < 1) days = 1;
+                                    <p class="mb-1 text-dark"><strong>Xuất viện:</strong> @dischargeTime.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <p class="mb-1 text-dark"><strong>Thời gian nằm viện:</strong> @days ngày</p>
+                                    <p class="mb-0 text-danger fw-bold"><strong>Tổng tiền giường:</strong> @string.Format("{0:N0} VNĐ", days * 65000)</p>
+                                }
+                                else if (!isDischarged && admissionTime.HasValue)
+                                {
+                                    int days = (int)Math.Ceiling((DateTime.Now - admissionTime.Value).TotalDays);
+                                    if (days < 1) days = 1;
+                                    <p class="mb-1 text-dark"><strong>Thời gian lưu trú (hiện tại):</strong> @days ngày</p>
+                                    <p class="mb-0 text-danger fw-bold"><strong>Tạm tính tiền giường:</strong> @string.Format("{0:N0} VNĐ", days * 65000)</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
                 @if(!string.IsNullOrEmpty(Model.Notes))
                 {
                     string displayNotes = Model.Notes
                         .Replace("[KEDONTHUOC]", "✓ Đã chuyển sang Kê đơn thuốc")
                         .Replace("[XETNGHIEM_PENDING]", "⌛ Đang chờ kết quả Xét nghiệm")
                         .Replace("[XETNGHIEM_DONE]", "✓ Đã có kết quả Xét nghiệm")
-                        .Replace("[PHAUTHUAT]", "✓ Đã chuyển sang Lịch Mổ / Phẫu thuật")
-                        .Replace("[NHAPVIEN]", "✓ Đã Nhập viện nội trú");
+                        .Replace("[PHAUTHUAT]", "✓ Đã chuyển sang Lịch Mổ / Phẫu thuật");
+                    displayNotes = System.Text.RegularExpressions.Regex.Replace(displayNotes, @"\[NHAPVIEN[^\]]*\]", "✓ Đã Nhập viện nội trú");
+                    displayNotes = System.Text.RegularExpressions.Regex.Replace(displayNotes, @"\[XUATVIEN[^\]]*\]", "✓ Đã Xuất viện");
 
                     <div class="bg-light p-4 rounded-3 border border-light">
                         <span class="text-muted small fw-bold text-uppercase d-block mb-2">Ghi chú & Lời dặn / Trạng thái xử lý</span>
@@ -154,12 +220,23 @@
                         <a href="@Url.Action("QuanLyGiuong", "Doctor", new { id = Model.Id })" class="btn btn-secondary px-3 py-2 fw-bold">
                             <i class="fa-solid fa-bed me-1"></i> Nhập viện
                         </a>
-                        <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3">
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
-                                <i class="fa-solid fa-check-double me-1"></i> Xác nhận
-                            </button>
-                        </form>
+                        @if (Model.Notes != null && Model.Notes.Contains("[NHAPVIEN") && !Model.Notes.Contains("[XUATVIEN"))
+                        {
+                            <div class="m-0 ms-3 d-flex align-items-center">
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 border border-danger border-opacity-25 fw-bold" style="font-size: 1rem;">
+                                    <i class="fa-solid fa-bed-pulse me-1"></i> Đang nhập viện
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
+                                    <i class="fa-solid fa-check-double me-1"></i> Xác nhận
+                                </button>
+                            </form>
+                        }
                     }
                     
                     <button class="btn btn-primary px-4 py-2 fw-bold ms-3" onclick="window.print()">

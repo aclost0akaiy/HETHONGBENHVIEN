@@ -3,12 +3,19 @@
   "WorkspaceRootPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\benhvien.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\benhvien.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -22,7 +29,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -30,20 +37,43 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
+              "Title": "Microsoft.Common.CurrentVersion.targets",
+              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ViewState": "AgIAAAsVAAAAAAAAAAAMwA8VAABuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-05-13T03:09:24.019Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "BenhVien.sql",
+              "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\BenhVien.sql",
+              "RelativeDocumentMoniker": "HeThongBenhVien\\BenhVien.sql",
+              "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\BenhVien.sql",
+              "RelativeToolTip": "HeThongBenhVien\\BenhVien.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-05-13T01:31:10.049Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Program.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Program.cs",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Program.cs",
               "RelativeToolTip": "HeThongBenhVien\\Program.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAApwB0AAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAABcAAAAAAAAAAAAhwBwAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-10T13:55:01.266Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Data\\ApplicationDbContext.cs",
@@ -55,13 +85,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeDocumentMoniker": "HeThongBenhVien\\appsettings.json",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeToolTip": "HeThongBenhVien\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-05-03T12:08:52.358Z",
               "EditorCaption": ""

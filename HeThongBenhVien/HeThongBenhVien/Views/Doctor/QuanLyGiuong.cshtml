@@ -21,14 +21,113 @@
             @foreach(var item in Model)
             {
                 <div class="col-md-3">
-                    <div class="card bg-danger bg-opacity-10 border-danger border-2 h-100 text-center p-3 rounded-4 shadow-sm" style="cursor: pointer;">
+                    <div class="card bg-danger bg-opacity-10 border-danger border-2 h-100 text-center p-3 rounded-4 shadow-sm" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal-@item.Id">
                         <i class="fa-solid fa-bed-pulse text-danger fs-1 mb-2"></i>
                         <h6 class="fw-bold mb-1 text-danger">Mã BN: @item.Appointment?.Patient?.PatientCode</h6>
                         <small class="text-dark fw-bold d-block text-truncate">@item.Appointment?.Patient?.FullName</small>
                         <small class="text-muted d-block text-truncate mt-1">@item.Diagnosis</small>
                     </div>
                 </div>
+
             }
+            @if(!Model.Any())
+            {
+                <div class="col-12 text-center text-muted py-4">Chưa có bệnh nhân nào nhập viện.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+@foreach(var item in Model)
+{
+    <!-- Modal cho bệnh nhân @item.Id -->
+    <div class="modal fade" id="modal-@item.Id" tabindex="-1" aria-labelledby="modalLabel-@item.Id" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalLabel-@item.Id">Hồ sơ bệnh án nội trú - @item.Appointment?.Patient?.FullName</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Mã BN:</strong> @item.Appointment?.Patient?.PatientCode</p>
+                            <p><strong>Giới tính:</strong> @item.Appointment?.Patient?.Gender</p>
+                            <p><strong>Tuổi:</strong> @item.Appointment?.Patient?.Age</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Triệu chứng:</strong> @item.Symptoms</p>
+                            <p><strong>Chẩn đoán:</strong> @item.Diagnosis</p>
+                            <p><strong>Hướng điều trị:</strong> @item.TreatmentPlan</p>
+                        </div>
+                    </div>
+                    <hr />
+                    @{
+                        var nhapVienStr = item.Notes?.Split('\n').FirstOrDefault(n => n.StartsWith("[NHAPVIEN"));
+                        DateTime admissionTime = item.CreatedAt;
+                        if (nhapVienStr != null && nhapVienStr.Contains(":"))
+                        {
+                            var timeStr = nhapVienStr.Substring(10).TrimEnd(']');
+                            if(DateTime.TryParse(timeStr, out DateTime parsedTime)) {
+                                admissionTime = parsedTime;
+                            }
+                        }
+                    }
+                    <div class="alert alert-info text-center">
+                        <h6 class="mb-1"><i class="fa-regular fa-clock me-1"></i> Thời gian nhập viện: @admissionTime.ToString("dd/MM/yyyy HH:mm:ss")</h6>
+                        <h5 class="fw-bold text-danger mb-0" id="timer-@item.Id">Đang tính thời gian...</h5>
+                        <h5 class="fw-bold text-success mt-2 mb-0" id="cost-@item.Id">Tổng tiền tạm tính: ...</h5>
+                    </div>
+                    
+                    <script>
+                        (function() {
+                            var admissionTime = new Date("@admissionTime.ToString("yyyy-MM-ddTHH:mm:ss")").getTime();
+                            var timerElement = document.getElementById("timer-@item.Id");
+                            var costElement = document.getElementById("cost-@item.Id");
+                            
+                            function updateTimer() {
+                                var now = new Date().getTime();
+                                var distance = now - admissionTime;
+                                
+                                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                                
+                                var timeString = "";
+                                if (days > 0) timeString += days + " ngày ";
+                                if (hours > 0 || days > 0) timeString += hours + " giờ ";
+                                timeString += minutes + " phút " + seconds + " giây";
+                                
+                                timerElement.innerHTML = "Đã nhập viện: " + timeString;
+
+                                // Tính tiền (tối thiểu 1 ngày)
+                                var calcDays = Math.ceil(distance / (1000 * 60 * 60 * 24));
+                                if (calcDays < 1) calcDays = 1;
+                                var totalCost = calcDays * 65000;
+                                costElement.innerHTML = "Tổng tiền tạm tính: " + totalCost.toLocaleString('vi-VN') + " VNĐ";
+                            }
+                            
+                            setInterval(updateTimer, 1000);
+                            updateTimer(); // Initial call
+                        })();
+                    </script>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <form action="@Url.Action("XuatVien", "Doctor")" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check me-1"></i> Xác nhận xuất viện
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
             @if(!Model.Any())
             {
                 <div class="col-12 text-center text-muted py-4">Chưa có bệnh nhân nào nhập viện.</div>
