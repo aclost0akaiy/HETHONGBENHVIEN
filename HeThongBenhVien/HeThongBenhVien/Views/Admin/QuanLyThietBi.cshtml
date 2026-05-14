@@ -1,17 +1,163 @@
-﻿@{
+@model List<HeThongBenhVien.Models.MedicalEquipment>
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyThietBi";
+    ViewData["Title"] = "Quản Lý Thiết Bị Y Tế";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyThietBi</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1" style="font-weight: 700; color: #1e293b;">Quản Lý Thiết Bị Y Tế</h2>
+            <p class="text-muted mb-0">Theo dõi và quản lý tất cả thiết bị y tế trong bệnh viện.</p>
+        </div>
+        <button class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#modalThemThietBi">
+            <i class="fa-solid fa-plus me-2"></i> Thêm Thiết Bị
+        </button>
+    </div>
+
+    <!-- Thống kê -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
+                <p class="text-muted fw-bold mb-1">Tổng Loại TB</p>
+                <h2 class="fw-bold m-0">@Model.Count</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-success">
+                <p class="text-muted fw-bold mb-1">Đang Hoạt Động</p>
+                <h2 class="fw-bold m-0">@Model.Count(e => e.Status == "Hoạt động")</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
+                <p class="text-muted fw-bold mb-1">Đang Bảo Trì</p>
+                <h2 class="fw-bold m-0">@Model.Count(e => e.Status == "Bảo trì")</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                <p class="text-muted fw-bold mb-1">Tổng Số Lượng</p>
+                <h2 class="fw-bold m-0">@Model.Sum(e => e.Quantity)</h2>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Bảng thiết bị -->
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyThietBi</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <h5 class="fw-bold mb-4">Danh Sách Thiết Bị</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã TB</th>
+                        <th>Tên Thiết Bị</th>
+                        <th>Phân Loại</th>
+                        <th class="text-center">Số Lượng</th>
+                        <th class="text-center">Trạng Thái</th>
+                        <th>Bảo Trì Lần Cuối</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var eq in Model)
+                        {
+                            <tr>
+                                <td><span class="badge bg-info bg-opacity-10 text-info fw-bold">@eq.EquipmentCode</span></td>
+                                <td class="fw-bold">@eq.EquipmentName</td>
+                                <td><small class="text-muted">@eq.Category</small></td>
+                                <td class="text-center fw-bold">@eq.Quantity</td>
+                                <td class="text-center">
+                                    @if (eq.Status == "Hoạt động")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success">@eq.Status</span>
+                                    }
+                                    else if (eq.Status == "Bảo trì")
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">@eq.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">@eq.Status</span>
+                                    }
+                                </td>
+                                <td><small>@eq.LastMaintenanceDate.ToString("dd/MM/yyyy")</small></td>
+                                <td class="text-end">
+                                    <form method="post" action="@Url.Action("XoaThietBi", "Admin")" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@eq.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xác nhận xóa thiết bị này?')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-microscope fs-1 mb-3 d-block opacity-25"></i>
+                                Chưa có thiết bị nào.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Thiết Bị -->
+<div class="modal fade" id="modalThemThietBi" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i>Thêm Thiết Bị Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="@Url.Action("ThemThietBi", "Admin")">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Mã Thiết Bị</label>
+                            <input type="text" class="form-control" name="EquipmentCode" placeholder="VD: TB-SA01" />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Tên Thiết Bị <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="EquipmentName" required placeholder="VD: Máy siêu âm 4D" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Phân Loại</label>
+                            <input type="text" class="form-control" name="Category" placeholder="VD: Chẩn đoán hình ảnh" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Số Lượng</label>
+                            <input type="number" class="form-control" name="Quantity" value="1" min="0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Trạng Thái</label>
+                            <select class="form-select" name="Status">
+                                <option value="Hoạt động">Hoạt động</option>
+                                <option value="Bảo trì">Bảo trì</option>
+                                <option value="Hỏng">Hỏng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Ngày Bảo Trì Cuối</label>
+                            <input type="date" class="form-control" name="LastMaintenanceDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save me-2"></i>Lưu</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

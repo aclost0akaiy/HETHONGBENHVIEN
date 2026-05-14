@@ -1,17 +1,142 @@
-﻿@{
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "ThongKeDoanhThu";
+    ViewData["Title"] = "Thống Kê Doanh Thu";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">ThongKeDoanhThu</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1" style="font-weight: 700; color: #1e293b;">Thống Kê Doanh Thu</h2>
+            <p class="text-muted mb-0">Phân tích doanh thu theo thời gian và các chỉ số tài chính.</p>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>ThongKeDoanhThu</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <!-- Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-success">
+                <p class="text-muted fw-bold mb-1">Doanh Thu Hôm Nay</p>
+                <h2 class="fw-bold m-0 text-success">@string.Format("{0:N0}", (decimal)ViewBag.TodayRevenue) đ</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
+                <p class="text-muted fw-bold mb-1">Doanh Thu Tháng</p>
+                <h2 class="fw-bold m-0 text-primary">@string.Format("{0:N0}", (decimal)ViewBag.MonthRevenue) đ</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
+                <p class="text-muted fw-bold mb-1">Tổng Doanh Thu</p>
+                <h2 class="fw-bold m-0 text-warning">@string.Format("{0:N0}", (decimal)ViewBag.TotalRevenue) đ</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                <p class="text-muted fw-bold mb-1">Tổng Đơn Thuốc</p>
+                <h2 class="fw-bold m-0 text-info">@ViewBag.TotalPrescriptions</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ 12 tháng -->
+    <div class="glass-card p-4 mb-4">
+        <h5 class="fw-bold mb-4">Biểu Đồ Doanh Thu & Lượt Khám (12 Tháng)</h5>
+        <div style="position: relative; height: 350px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const labels = @Html.Raw(ViewBag.MonthLabels);
+        const revenueData = @Html.Raw(ViewBag.MonthRevenueData);
+        const appointmentData = @Html.Raw(ViewBag.MonthAppointmentData);
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        const barGradient = ctx.createLinearGradient(0, 0, 0, 350);
+        barGradient.addColorStop(0, 'rgba(16, 185, 129, 0.85)');
+        barGradient.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Doanh thu (VNĐ)',
+                        data: revenueData,
+                        backgroundColor: barGradient,
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        yAxisID: 'y',
+                        order: 2,
+                        barPercentage: 0.6
+                    },
+                    {
+                        label: 'Lượt khám',
+                        data: appointmentData,
+                        type: 'line',
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#6366f1',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1',
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        cornerRadius: 12,
+                        padding: 14,
+                        callbacks: {
+                            label: function (context) {
+                                if (context.dataset.yAxisID === 'y') {
+                                    return ' Doanh thu: ' + context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                                }
+                                return ' Lượt khám: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear', position: 'left', beginAtZero: true,
+                        ticks: {
+                            color: '#10b981',
+                            callback: function (v) {
+                                if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                                if (v >= 1000) return (v / 1000).toFixed(0) + 'K';
+                                return v;
+                            }
+                        },
+                        title: { display: true, text: 'Doanh thu (VNĐ)', color: '#10b981', font: { weight: 'bold' } }
+                    },
+                    y1: {
+                        type: 'linear', position: 'right', beginAtZero: true,
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#6366f1' },
+                        title: { display: true, text: 'Lượt khám', color: '#6366f1', font: { weight: 'bold' } }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>

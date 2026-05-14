@@ -318,11 +318,11 @@
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" ? "active" : "")">
                 <a href="@Url.Action("CauHinhHeThong", "Admin")"><i class="fa-solid fa-gears"></i> Cấu hình hệ thống</a>
             </li>
-            <li>
-                <a href="#"><i class="fa-solid fa-database"></i> Sao lưu dữ liệu</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "SaoLuuDuLieu" ? "active" : "")">
+                <a href="@Url.Action("SaoLuuDuLieu", "Admin")"><i class="fa-solid fa-database"></i> Sao lưu dữ liệu</a>
             </li>
-            <li>
-                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hệ thống</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "NhatKyHeThong" ? "active" : "")">
+                <a href="@Url.Action("NhatKyHeThong", "Admin")"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hệ thống</a>
             </li>
         </ul>
     </nav>

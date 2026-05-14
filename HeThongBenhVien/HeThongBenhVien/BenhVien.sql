@@ -2481,3 +2481,131 @@ VALUES
   (2, N'18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-12-31', 53, 12, 2026),
   (5, N'21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-12-31', 53, 12, 2026),
   (3, N'00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-12-31', 53, 12, 2026);
+GO
+
+-- =============================================
+-- TẠO BẢNG MEDICINES (Thuốc)
+-- =============================================
+IF OBJECT_ID('Medicines', 'U') IS NOT NULL DROP TABLE Medicines;
+GO
+
+CREATE TABLE Medicines (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(200) NOT NULL,
+    Price DECIMAL(18,2) NOT NULL DEFAULT 0
+);
+GO
+
+INSERT INTO Medicines (Name, Price) VALUES
+(N'Paracetamol 500mg', 5000),
+(N'Amoxicillin 500mg', 8000),
+(N'Omeprazole 20mg', 12000),
+(N'Metformin 500mg', 6000),
+(N'Amlodipine 5mg', 7500),
+(N'Ibuprofen 400mg', 4500),
+(N'Cetirizine 10mg', 3500),
+(N'Azithromycin 250mg', 15000),
+(N'Losartan 50mg', 9000),
+(N'Vitamin C 1000mg', 2000);
+GO
+
+-- =============================================
+-- TẠO BẢNG DEPARTMENTS (Khoa Phòng)
+-- =============================================
+IF OBJECT_ID('Departments', 'U') IS NOT NULL DROP TABLE Departments;
+GO
+
+CREATE TABLE Departments (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    DepartmentCode NVARCHAR(50) NOT NULL,
+    DepartmentName NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(200) NULL,
+    HeadDoctor NVARCHAR(100) NULL,
+    TotalBeds INT NOT NULL DEFAULT 0,
+    OccupiedBeds INT NOT NULL DEFAULT 0,
+    Phone NVARCHAR(20) NULL,
+    IsActive BIT NOT NULL DEFAULT 1
+);
+GO
+
+INSERT INTO Departments (DepartmentCode, DepartmentName, Description, HeadDoctor, TotalBeds, OccupiedBeds, Phone, IsActive) VALUES
+(N'KNK', N'Khoa Nội Khoa', N'Điều trị các bệnh lý nội khoa tổng quát', N'PGS.TS Nguyễn Văn Minh', 50, 38, N'028-3855-0001', 1),
+(N'KNK-TM', N'Khoa Nội Tim Mạch', N'Chuyên khoa tim mạch và huyết áp', N'TS.BS Trần Thị Hoa', 30, 25, N'028-3855-0002', 1),
+(N'KNK-TH', N'Khoa Nội Tiêu Hóa', N'Điều trị bệnh lý dạ dày, đường ruột', N'ThS.BS Lê Văn Phong', 25, 18, N'028-3855-0003', 1),
+(N'KNG', N'Khoa Ngoại Khoa', N'Phẫu thuật tổng quát và chuyên sâu', N'PGS.TS Phạm Đức Long', 40, 32, N'028-3855-0004', 1),
+(N'KSN', N'Khoa Sản Nhi', N'Chăm sóc sản phụ và trẻ em', N'TS.BS Vũ Thị Lan', 35, 22, N'028-3855-0005', 1),
+(N'KCC', N'Khoa Cấp Cứu', N'Tiếp nhận và xử lý bệnh nhân cấp cứu', N'ThS.BS Hoàng Minh Tuấn', 20, 15, N'028-3855-0006', 1),
+(N'KHSTC', N'Khoa Hồi Sức Tích Cực (ICU)', N'Hồi sức cấp cứu và chăm sóc đặc biệt', N'TS.BS Ngô Quang Huy', 20, 19, N'028-3855-0007', 1),
+(N'KCDHAXN', N'Khoa Chẩn Đoán Hình Ảnh & Xét Nghiệm', N'X-quang, siêu âm, CT, MRI và xét nghiệm', N'TS.BS Đặng Văn Tâm', 0, 0, N'028-3855-0008', 1),
+(N'KDL', N'Khoa Dược', N'Quản lý và cấp phát thuốc', N'DS.CKI Nguyễn Thu Hà', 0, 0, N'028-3855-0009', 1),
+(N'KPHCN', N'Khoa Phục Hồi Chức Năng', N'Vật lý trị liệu và phục hồi chức năng', N'ThS.BS Trần Quốc Đạt', 15, 8, N'028-3855-0010', 0);
+GO
+
+-- =============================================
+-- TẠO BẢNG MEDICALSERVICES (Dịch vụ khám chữa bệnh)
+-- =============================================
+IF OBJECT_ID('MedicalServices', 'U') IS NOT NULL DROP TABLE MedicalServices;
+GO
+
+CREATE TABLE MedicalServices (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    ServiceCode NVARCHAR(50) NULL,
+    ServiceName NVARCHAR(200) NOT NULL,
+    Description NVARCHAR(500) NULL,
+    Price DECIMAL(18,2) NOT NULL DEFAULT 0,
+    IsActive BIT NOT NULL DEFAULT 1
+);
+GO
+
+INSERT INTO MedicalServices (ServiceCode, ServiceName, Description, Price, IsActive) VALUES
+(N'DV-KTQ', N'Khám tổng quát', N'Khám sức khỏe tổng quát bao gồm đo huyết áp, nghe tim phổi, khám lâm sàng', 150000, 1),
+(N'DV-KCK', N'Khám chuyên khoa', N'Khám chuyên sâu theo từng chuyên khoa: Tim mạch, Tiêu hóa, Thần kinh...', 250000, 1),
+(N'DV-XN-M', N'Xét nghiệm máu', N'Xét nghiệm công thức máu, sinh hóa máu, đường huyết', 120000, 1),
+(N'DV-XN-NT', N'Xét nghiệm nước tiểu', N'Tổng phân tích nước tiểu', 80000, 1),
+(N'DV-SA', N'Siêu âm ổ bụng', N'Siêu âm tổng quát ổ bụng: gan, mật, lách, thận, tụy', 200000, 1),
+(N'DV-SA-TM', N'Siêu âm tim', N'Siêu âm tim màu Doppler', 350000, 1),
+(N'DV-XQ', N'Chụp X-Quang', N'Chụp X-Quang ngực thẳng, xương khớp', 100000, 1),
+(N'DV-CT', N'Chụp CT Scan', N'Chụp cắt lớp vi tính các vùng cơ thể', 1500000, 1),
+(N'DV-MRI', N'Chụp MRI', N'Chụp cộng hưởng từ não, cột sống, khớp', 2500000, 1),
+(N'DV-NDS', N'Nội soi dạ dày', N'Nội soi thực quản - dạ dày - tá tràng', 800000, 1),
+(N'DV-NDTT', N'Nội soi đại tràng', N'Nội soi toàn bộ đại tràng', 1200000, 1),
+(N'DV-DTD', N'Điện tâm đồ (ECG)', N'Đo điện tâm đồ 12 chuyển đạo', 80000, 1),
+(N'DV-DTN', N'Điện não đồ (EEG)', N'Đo điện não đồ', 300000, 1),
+(N'DV-TL', N'Tiểu phẫu', N'Tiểu phẫu ngoại trú: khâu vết thương, cắt u nhỏ', 500000, 1),
+(N'DV-VLTL', N'Vật lý trị liệu', N'Điều trị vật lý trị liệu và phục hồi chức năng', 200000, 1);
+GO
+
+-- =============================================
+-- TẠO BẢNG MEDICALEQUIPMENTS (Thiết bị y tế)
+-- =============================================
+IF OBJECT_ID('MedicalEquipments', 'U') IS NOT NULL DROP TABLE MedicalEquipments;
+GO
+
+CREATE TABLE MedicalEquipments (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    EquipmentCode NVARCHAR(50) NULL,
+    EquipmentName NVARCHAR(200) NOT NULL,
+    Category NVARCHAR(100) NULL,
+    Quantity INT NOT NULL DEFAULT 0,
+    Status NVARCHAR(50) NOT NULL DEFAULT N'Hoạt động',
+    LastMaintenanceDate DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+GO
+
+INSERT INTO MedicalEquipments (EquipmentCode, EquipmentName, Category, Quantity, Status, LastMaintenanceDate) VALUES
+(N'TB-MH01', N'Máy theo dõi sinh hiệu đa thông số', N'Theo dõi bệnh nhân', 25, N'Hoạt động', '2026-04-15'),
+(N'TB-MT01', N'Máy thở xâm nhập', N'Hồi sức cấp cứu', 10, N'Hoạt động', '2026-04-20'),
+(N'TB-SA01', N'Máy siêu âm màu 4D', N'Chẩn đoán hình ảnh', 5, N'Hoạt động', '2026-03-10'),
+(N'TB-CT01', N'Máy chụp CT Scan 128 lát cắt', N'Chẩn đoán hình ảnh', 2, N'Hoạt động', '2026-05-01'),
+(N'TB-MRI01', N'Máy chụp MRI 1.5 Tesla', N'Chẩn đoán hình ảnh', 1, N'Hoạt động', '2026-04-25'),
+(N'TB-XQ01', N'Máy X-Quang kỹ thuật số', N'Chẩn đoán hình ảnh', 4, N'Hoạt động', '2026-03-20'),
+(N'TB-NS01', N'Máy nội soi tiêu hóa', N'Nội soi', 3, N'Hoạt động', '2026-04-10'),
+(N'TB-DTD01', N'Máy điện tâm đồ 12 kênh', N'Tim mạch', 8, N'Hoạt động', '2026-05-05'),
+(N'TB-BT01', N'Bơm tiêm điện', N'Hồi sức cấp cứu', 30, N'Hoạt động', '2026-02-15'),
+(N'TB-KH01', N'Máy khử rung tim (Defibrillator)', N'Cấp cứu', 6, N'Hoạt động', '2026-04-01'),
+(N'TB-GT01', N'Giường bệnh đa chức năng điện', N'Giường bệnh', 200, N'Hoạt động', '2026-01-15'),
+(N'TB-NS02', N'Máy nội soi phế quản', N'Nội soi', 2, N'Bảo trì', '2026-05-10'),
+(N'TB-PT01', N'Đèn mổ phẫu thuật LED', N'Phòng mổ', 8, N'Hoạt động', '2026-03-25'),
+(N'TB-HL01', N'Máy hút dịch phẫu thuật', N'Phòng mổ', 10, N'Hoạt động', '2026-04-05'),
+(N'TB-XN01', N'Máy xét nghiệm huyết học tự động', N'Xét nghiệm', 3, N'Hoạt động', '2026-05-08');
+GO

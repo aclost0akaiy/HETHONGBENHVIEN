@@ -1,17 +1,119 @@
-﻿@{
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "DanhGiaChatLuong";
+    ViewData["Title"] = "Đánh Giá Chất Lượng";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">DanhGiaChatLuong</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1" style="font-weight: 700; color: #1e293b;">Đánh Giá Chất Lượng</h2>
+            <p class="text-muted mb-0">Theo dõi chỉ số chất lượng dịch vụ khám chữa bệnh.</p>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>DanhGiaChatLuong</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-success">
+                <p class="text-muted fw-bold mb-1">Tỷ Lệ Hoàn Thành</p>
+                <h2 class="fw-bold m-0 text-success">@ViewBag.CompletionRate%</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
+                <p class="text-muted fw-bold mb-1">TG Chờ TB</p>
+                <h2 class="fw-bold m-0 text-warning">@ViewBag.AvgWaitTime phút</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
+                <p class="text-muted fw-bold mb-1">TG Khám TB</p>
+                <h2 class="fw-bold m-0 text-primary">@ViewBag.AvgExamTime phút</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                <p class="text-muted fw-bold mb-1">DV Hoạt Động</p>
+                <h2 class="fw-bold m-0 text-info">@ViewBag.TotalServices</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-star text-warning me-2"></i>Đánh Giá Chung</h5>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Chất lượng khám bệnh</span>
+                        <span class="fw-bold text-success">4.5 / 5.0</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" style="width: 90%;"></div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Thái độ phục vụ</span>
+                        <span class="fw-bold text-primary">4.3 / 5.0</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-primary" style="width: 86%;"></div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Cơ sở vật chất</span>
+                        <span class="fw-bold text-info">4.1 / 5.0</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-info" style="width: 82%;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Thời gian chờ đợi</span>
+                        <span class="fw-bold text-warning">3.8 / 5.0</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-warning" style="width: 76%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-hospital text-primary me-2"></i>Tài Nguyên</h5>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="border rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-user-doctor fs-2 text-primary mb-2 d-block"></i>
+                            <h4 class="fw-bold m-0">@ViewBag.TotalDoctors</h4>
+                            <small class="text-muted fw-bold">Bác Sĩ</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-users fs-2 text-success mb-2 d-block"></i>
+                            <h4 class="fw-bold m-0">@ViewBag.TotalPatients</h4>
+                            <small class="text-muted fw-bold">Bệnh Nhân</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-stethoscope fs-2 text-info mb-2 d-block"></i>
+                            <h4 class="fw-bold m-0">@ViewBag.TotalServices</h4>
+                            <small class="text-muted fw-bold">Dịch Vụ</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded-3 p-3 text-center">
+                            <i class="fa-solid fa-microscope fs-2 text-warning mb-2 d-block"></i>
+                            <h4 class="fw-bold m-0">@ViewBag.TotalEquipments</h4>
+                            <small class="text-muted fw-bold">Thiết Bị</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

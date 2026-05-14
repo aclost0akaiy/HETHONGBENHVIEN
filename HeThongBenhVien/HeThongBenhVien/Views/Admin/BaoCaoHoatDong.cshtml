@@ -1,17 +1,149 @@
-﻿@{
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "BaoCaoHoatDong";
+    ViewData["Title"] = "Báo Cáo Hoạt Động";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">BaoCaoHoatDong</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1" style="font-weight: 700; color: #1e293b;">Báo Cáo Hoạt Động</h2>
+            <p class="text-muted mb-0">Tổng quan hoạt động khám chữa bệnh và vận hành hệ thống.</p>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>BaoCaoHoatDong</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Tổng Lượt Khám</p>
+                        <h2 class="fw-bold m-0">@ViewBag.TotalAppointments</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                        <i class="fa-solid fa-calendar-check fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Tổng Bệnh Nhân</p>
+                        <h2 class="fw-bold m-0">@ViewBag.TotalPatients</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+                        <i class="fa-solid fa-users fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Tổng Bác Sĩ</p>
+                        <h2 class="fw-bold m-0">@ViewBag.TotalDoctors</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
+                        <i class="fa-solid fa-user-doctor fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Loại Thuốc</p>
+                        <h2 class="fw-bold m-0">@ViewBag.TotalMedicines</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
+                        <i class="fa-solid fa-pills fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Thống kê tháng -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Hoạt Động Tháng Này</h5>
+                <div class="row g-3">
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-primary m-0">@ViewBag.MonthAppointments</h3>
+                        <small class="text-muted fw-bold">Tổng lượt</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-success m-0">@ViewBag.MonthCompleted</h3>
+                        <small class="text-muted fw-bold">Hoàn thành</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-warning m-0">@ViewBag.MonthPending</h3>
+                        <small class="text-muted fw-bold">Đang chờ</small>
+                    </div>
+                </div>
+                @{
+                    int total = (int)ViewBag.MonthAppointments;
+                    int completed = (int)ViewBag.MonthCompleted;
+                    int percent = total > 0 ? (int)((double)completed / total * 100) : 0;
+                }
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="fw-bold text-muted">Tỷ lệ hoàn thành</small>
+                        <small class="fw-bold text-success">@percent%</small>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" style="width: @percent%; border-radius: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái lịch hẹn -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-list-check text-info me-2"></i>Phân Bố Trạng Thái</h5>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold"><i class="fa-solid fa-clock text-warning me-2"></i>Đang chờ / Chưa đến</span>
+                        <span class="fw-bold">@ViewBag.StatusWaiting</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: @(ViewBag.TotalAppointments > 0 ? (int)ViewBag.StatusWaiting * 100 / (int)ViewBag.TotalAppointments : 0)%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold"><i class="fa-solid fa-stethoscope text-primary me-2"></i>Đang khám</span>
+                        <span class="fw-bold">@ViewBag.StatusExamining</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: @(ViewBag.TotalAppointments > 0 ? (int)ViewBag.StatusExamining * 100 / (int)ViewBag.TotalAppointments : 0)%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold"><i class="fa-solid fa-check-circle text-success me-2"></i>Đã hoàn thành</span>
+                        <span class="fw-bold">@ViewBag.StatusCompleted</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: @(ViewBag.TotalAppointments > 0 ? (int)ViewBag.StatusCompleted * 100 / (int)ViewBag.TotalAppointments : 0)%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold"><i class="fa-solid fa-truck-medical text-danger me-2"></i>Cấp cứu</span>
+                        <span class="fw-bold">@ViewBag.StatusEmergency</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: @(ViewBag.TotalAppointments > 0 ? (int)ViewBag.StatusEmergency * 100 / (int)ViewBag.TotalAppointments : 0)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

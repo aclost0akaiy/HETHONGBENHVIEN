@@ -284,7 +284,41 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // CÁC CHỨC NĂNG CÒN LẠI
+        // QUẢN LÝ KHOA PHÒNG
+        // ==========================================
+        public async Task<IActionResult> QuanLyKhoaPhong()
+        {
+            var departments = await _context.Departments.ToListAsync();
+            return View(departments);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemKhoaPhong(Department dept)
+        {
+            if (!string.IsNullOrEmpty(dept.DepartmentName))
+            {
+                _context.Departments.Add(dept);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyKhoaPhong));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XoaKhoaPhong(int id)
+        {
+            var dept = await _context.Departments.FindAsync(id);
+            if (dept != null)
+            {
+                _context.Departments.Remove(dept);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyKhoaPhong));
+        }
+
+        // ==========================================
+        // QUẢN LÝ KHO DƯỢC
         // ==========================================
         public async Task<IActionResult> QuanLyKhoDuoc()
         {
@@ -314,7 +348,6 @@ namespace HeThongBenhVien.Controllers
 
                 if (existingMedicine != null)
                 {
-                    // Cập nhật giá nếu khác
                     if (existingMedicine.Price != medicinePrice)
                     {
                         existingMedicine.Price = medicinePrice;
@@ -324,7 +357,6 @@ namespace HeThongBenhVien.Controllers
                 }
                 else
                 {
-                    // Thêm thuốc mới
                     var newMedicine = new Medicine
                     {
                         Name = medicineName,
@@ -337,20 +369,252 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
 
-        public IActionResult QuanLyKhoaPhong() { return View(); }
-        public IActionResult QuanLyDichVu() { return View(); }
-        public IActionResult QuanLyGia() { return View(); }
-        public IActionResult QuanLyThietBi() { return View(); }
-        public IActionResult ThongKeDoanhThu() { return View(); }
-        public IActionResult CauHinhHeThong() { return View(); }
+        // ==========================================
+        // QUẢN LÝ DỊCH VỤ KHÁM CHỮA BỆNH
+        // ==========================================
+        public async Task<IActionResult> QuanLyDichVu()
+        {
+            var services = await _context.MedicalServices.ToListAsync();
+            return View(services);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemDichVu(MedicalService svc)
+        {
+            if (!string.IsNullOrEmpty(svc.ServiceName))
+            {
+                svc.IsActive = true;
+                _context.MedicalServices.Add(svc);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyDichVu));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XoaDichVu(int id)
+        {
+            var svc = await _context.MedicalServices.FindAsync(id);
+            if (svc != null)
+            {
+                _context.MedicalServices.Remove(svc);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyDichVu));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleDichVu(int id)
+        {
+            var svc = await _context.MedicalServices.FindAsync(id);
+            if (svc != null)
+            {
+                svc.IsActive = !svc.IsActive;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyDichVu));
+        }
+
+        // ==========================================
+        // BẢNG GIÁ VIỆN PHÍ
+        // ==========================================
+        public async Task<IActionResult> QuanLyGia()
+        {
+            var services = await _context.MedicalServices.Where(s => s.IsActive).ToListAsync();
+            var medicines = await _context.Medicines.ToListAsync();
+            ViewBag.Services = services;
+            ViewBag.Medicines = medicines;
+            return View();
+        }
+
+        // ==========================================
+        // QUẢN LÝ THIẾT BỊ Y TẾ
+        // ==========================================
+        public async Task<IActionResult> QuanLyThietBi()
+        {
+            var equipments = await _context.MedicalEquipments.ToListAsync();
+            return View(equipments);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemThietBi(MedicalEquipment eq)
+        {
+            if (!string.IsNullOrEmpty(eq.EquipmentName))
+            {
+                _context.MedicalEquipments.Add(eq);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyThietBi));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XoaThietBi(int id)
+        {
+            var eq = await _context.MedicalEquipments.FindAsync(id);
+            if (eq != null)
+            {
+                _context.MedicalEquipments.Remove(eq);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyThietBi));
+        }
+
+        // ==========================================
+        // THỐNG KÊ DOANH THU
+        // ==========================================
+        public async Task<IActionResult> ThongKeDoanhThu()
+        {
+            var today = DateTime.Today;
+
+            // Doanh thu hôm nay
+            var todayRecordIds = await _context.MedicalRecords
+                .Where(m => m.CreatedAt.Date == today)
+                .Select(m => m.Id).ToListAsync();
+            var todayRevenue = await _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                .Where(pd => pd.Prescription != null && todayRecordIds.Contains(pd.Prescription.MedicalRecordId))
+                .SumAsync(pd => pd.Price * pd.Quantity);
+
+            // Doanh thu tháng này
+            var monthRecordIds = await _context.MedicalRecords
+                .Where(m => m.CreatedAt.Month == today.Month && m.CreatedAt.Year == today.Year)
+                .Select(m => m.Id).ToListAsync();
+            var monthRevenue = await _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                .Where(pd => pd.Prescription != null && monthRecordIds.Contains(pd.Prescription.MedicalRecordId))
+                .SumAsync(pd => pd.Price * pd.Quantity);
+
+            // Tổng doanh thu
+            var totalRevenue = await _context.PrescriptionDetails.SumAsync(pd => pd.Price * pd.Quantity);
+
+            // Tổng số đơn thuốc
+            var totalPrescriptions = await _context.Prescriptions.CountAsync();
+
+            // Dữ liệu 12 tháng gần nhất cho biểu đồ
+            var monthLabels = new List<string>();
+            var monthRevenueData = new List<decimal>();
+            var monthAppointmentData = new List<int>();
+
+            for (int i = 11; i >= 0; i--)
+            {
+                var monthDate = today.AddMonths(-i);
+                monthLabels.Add($"T{monthDate.Month}/{monthDate.Year % 100}");
+
+                var mRecIds = _context.MedicalRecords
+                    .Where(m => m.CreatedAt.Month == monthDate.Month && m.CreatedAt.Year == monthDate.Year)
+                    .Select(m => m.Id).ToList();
+
+                var mRevenue = _context.PrescriptionDetails
+                    .Include(pd => pd.Prescription)
+                    .Where(pd => pd.Prescription != null && mRecIds.Contains(pd.Prescription.MedicalRecordId))
+                    .Sum(pd => pd.Price * pd.Quantity);
+                monthRevenueData.Add(mRevenue);
+
+                var mAppts = _context.Appointments
+                    .Count(a => a.AppointmentTime.Month == monthDate.Month && a.AppointmentTime.Year == monthDate.Year);
+                monthAppointmentData.Add(mAppts);
+            }
+
+            ViewBag.TodayRevenue = todayRevenue;
+            ViewBag.MonthRevenue = monthRevenue;
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.TotalPrescriptions = totalPrescriptions;
+            ViewBag.MonthLabels = System.Text.Json.JsonSerializer.Serialize(monthLabels);
+            ViewBag.MonthRevenueData = System.Text.Json.JsonSerializer.Serialize(monthRevenueData);
+            ViewBag.MonthAppointmentData = System.Text.Json.JsonSerializer.Serialize(monthAppointmentData);
+
+            return View();
+        }
+
+        // ==========================================
+        // BÁO CÁO HOẠT ĐỘNG
+        // ==========================================
+        public async Task<IActionResult> BaoCaoHoatDong()
+        {
+            var today = DateTime.Today;
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek + 1);
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+            // Thống kê chung
+            ViewBag.TotalAppointments = await _context.Appointments.CountAsync();
+            ViewBag.TotalPatients = await _context.Patients.CountAsync();
+            ViewBag.TotalDoctors = await _context.Users.CountAsync(u => u.Role == "Doctor");
+            ViewBag.TotalMedicines = await _context.Medicines.CountAsync();
+
+            // Thống kê tháng
+            ViewBag.MonthAppointments = await _context.Appointments
+                .CountAsync(a => a.AppointmentTime >= startOfMonth);
+            ViewBag.MonthCompleted = await _context.Appointments
+                .CountAsync(a => a.AppointmentTime >= startOfMonth && (a.Status == 4 || a.Status == 5));
+            ViewBag.MonthPending = await _context.Appointments
+                .CountAsync(a => a.AppointmentTime >= startOfMonth && a.Status < 4);
+
+            // Thống kê theo trạng thái
+            ViewBag.StatusWaiting = await _context.Appointments.CountAsync(a => a.Status == 0 || a.Status == 1);
+            ViewBag.StatusExamining = await _context.Appointments.CountAsync(a => a.Status == 2);
+            ViewBag.StatusCompleted = await _context.Appointments.CountAsync(a => a.Status == 4 || a.Status == 5);
+            ViewBag.StatusEmergency = await _context.Appointments.CountAsync(a => a.Status == 6);
+
+            // Top bác sĩ (số lượt khám)
+            var topDoctors = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .Where(m => m.Appointment != null)
+                .GroupBy(m => m.Appointment!.PatientId)
+                .Select(g => new { PatientId = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .Take(5)
+                .ToListAsync();
+            ViewBag.TopDoctorData = topDoctors;
+
+            return View();
+        }
+
+        // ==========================================
+        // ĐÁNH GIÁ CHẤT LƯỢNG
+        // ==========================================
+        public async Task<IActionResult> DanhGiaChatLuong()
+        {
+            // Tỷ lệ khám xong / tổng
+            var totalAppts = await _context.Appointments.CountAsync();
+            var completedAppts = await _context.Appointments.CountAsync(a => a.Status == 4 || a.Status == 5);
+            ViewBag.CompletionRate = totalAppts > 0 ? Math.Round((double)completedAppts / totalAppts * 100, 1) : 0;
+
+            // Thời gian trung bình (giả lập)
+            ViewBag.AvgWaitTime = 15; // phút
+            ViewBag.AvgExamTime = 25; // phút
+
+            // Tổng số bác sĩ & bệnh nhân
+            ViewBag.TotalDoctors = await _context.Users.CountAsync(u => u.Role == "Doctor");
+            ViewBag.TotalPatients = await _context.Patients.CountAsync();
+            ViewBag.TotalServices = await _context.MedicalServices.CountAsync(s => s.IsActive);
+            ViewBag.TotalEquipments = await _context.MedicalEquipments.CountAsync();
+
+            return View();
+        }
+
+        // ==========================================
+        // CẤU HÌNH HỆ THỐNG
+        // ==========================================
+        public IActionResult CauHinhHeThong()
+        {
+            return View();
+        }
+
+        // ==========================================
+        // CÁC CHỨC NĂNG KHÁC (giữ nguyên)
+        // ==========================================
         public IActionResult QuanLyVienPhi() { return View(); }
         public IActionResult QuanLyBHYT() { return View(); }
-        public IActionResult BaoCaoHoatDong() { return View(); }
         public IActionResult QuanLyTiepDon() { return View(); }
         public IActionResult QuanLyXetNghiem() { return View(); }
         public IActionResult QuanLyCDHA() { return View(); }
         public IActionResult QuanLyPhauThuat() { return View(); }
         public IActionResult QuanLyNganHangMau() { return View(); }
-        public IActionResult DanhGiaChatLuong() { return View(); }
+        public IActionResult SaoLuuDuLieu() { return View(); }
+        public IActionResult NhatKyHeThong() { return View(); }
     }
-}
+}

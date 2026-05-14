@@ -1,17 +1,212 @@
-﻿@{
+@model List<HeThongBenhVien.Models.Department>
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyKhoaPhong";
+    ViewData["Title"] = "Quản Lý Khoa Phòng";
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyKhoaPhong</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1" style="font-weight: 700; color: #1e293b;">Quản Lý Khoa Phòng</h2>
+            <p class="text-muted mb-0">Quản lý các khoa, phòng ban trong bệnh viện.</p>
+        </div>
+        <button class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#modalThemKhoa">
+            <i class="fa-solid fa-plus me-2"></i> Thêm Khoa Mới
+        </button>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Tổng Số Khoa</p>
+                        <h2 class="fw-bold m-0">@Model.Count</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                        <i class="fa-solid fa-hospital fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Đang Hoạt Động</p>
+                        <h2 class="fw-bold m-0">@Model.Count(d => d.IsActive)</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+                        <i class="fa-solid fa-check-circle fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Tổng Giường</p>
+                        <h2 class="fw-bold m-0">@Model.Sum(d => d.TotalBeds)</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
+                        <i class="fa-solid fa-bed fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted fw-bold mb-1">Giường Đã Dùng</p>
+                        <h2 class="fw-bold m-0">@Model.Sum(d => d.OccupiedBeds)</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
+                        <i class="fa-solid fa-bed-pulse fs-4"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Bảng danh sách -->
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyKhoaPhong</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <h5 class="fw-bold mb-4">Danh Sách Khoa Phòng</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã Khoa</th>
+                        <th>Tên Khoa</th>
+                        <th>Mô Tả</th>
+                        <th>Trưởng Khoa</th>
+                        <th class="text-center">Giường (Đã dùng/Tổng)</th>
+                        <th>SĐT</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var dept in Model)
+                        {
+                            <tr>
+                                <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold">@dept.DepartmentCode</span></td>
+                                <td class="fw-bold">@dept.DepartmentName</td>
+                                <td><small class="text-muted">@dept.Description</small></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-info bg-opacity-10 p-1 rounded-circle text-info" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
+                                            <i class="fa-solid fa-user-doctor" style="font-size:12px;"></i>
+                                        </div>
+                                        @dept.HeadDoctor
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @{
+                                        var percent = dept.TotalBeds > 0 ? (int)((double)dept.OccupiedBeds / dept.TotalBeds * 100) : 0;
+                                        var barColor = percent > 80 ? "bg-danger" : percent > 50 ? "bg-warning" : "bg-success";
+                                    }
+                                    <div>@dept.OccupiedBeds / @dept.TotalBeds</div>
+                                    <div class="progress mt-1" style="height: 5px;">
+                                        <div class="progress-bar @barColor" style="width: @(percent)%"></div>
+                                    </div>
+                                </td>
+                                <td><small>@dept.Phone</small></td>
+                                <td>
+                                    @if (dept.IsActive)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">Tạm ngưng</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <form method="post" action="@Url.Action("XoaKhoaPhong", "Admin")" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@dept.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xác nhận xóa khoa này?')" title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-hospital fs-1 mb-3 d-block opacity-25"></i>
+                                Chưa có khoa phòng nào. Nhấn <strong>"Thêm Khoa Mới"</strong> để bắt đầu.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Khoa -->
+<div class="modal fade" id="modalThemKhoa" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i>Thêm Khoa Phòng Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="@Url.Action("ThemKhoaPhong", "Admin")">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Mã Khoa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="DepartmentCode" placeholder="VD: KNK" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tên Khoa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="DepartmentName" placeholder="VD: Khoa Nội Khoa" required />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Mô Tả</label>
+                            <input type="text" class="form-control" name="Description" placeholder="Mô tả ngắn gọn về khoa..." />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Trưởng Khoa</label>
+                            <input type="text" class="form-control" name="HeadDoctor" placeholder="Tên trưởng khoa" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Tổng Giường</label>
+                            <input type="number" class="form-control" name="TotalBeds" value="0" min="0" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Giường Đã Dùng</label>
+                            <input type="number" class="form-control" name="OccupiedBeds" value="0" min="0" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Số Điện Thoại</label>
+                            <input type="text" class="form-control" name="Phone" placeholder="SĐT liên hệ" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Trạng Thái</label>
+                            <select class="form-select" name="IsActive">
+                                <option value="true" selected>Hoạt động</option>
+                                <option value="false">Tạm ngưng</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save me-2"></i>Lưu</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
