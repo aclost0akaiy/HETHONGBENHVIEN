@@ -1,17 +1,60 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyPhauThuat";
-}
+@model IEnumerable<HeThongBenhVien.Models.Surgery>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Quản Lý Phẫu Thuật"; var patients = ViewBag.Patients as List<HeThongBenhVien.Models.Patient>; var doctors = ViewBag.Doctors as List<HeThongBenhVien.Models.User>; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyPhauThuat</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Quản Lý Phẫu Thuật</h2><p class="text-muted mb-0">Lịch phẫu thuật và theo dõi ca mổ</p></div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus me-1"></i> Thêm Ca Mổ</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1 small">Tổng Ca Mổ</p><h3 class="fw-bold m-0">@Model.Count()</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1 small">Lên Lịch</p><h3 class="fw-bold m-0 text-warning">@Model.Count(s => s.Status == "Lên lịch")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-info"><p class="text-muted fw-bold mb-1 small">Đang Mổ</p><h3 class="fw-bold m-0 text-info">@Model.Count(s => s.Status == "Đang mổ")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-success"><p class="text-muted fw-bold mb-1 small">Hoàn Thành</p><h3 class="fw-bold m-0 text-success">@Model.Count(s => s.Status == "Hoàn thành")</h3></div></div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr><th>Mã PT</th><th>Bệnh Nhân</th><th>Tên PT</th><th>Loại</th><th>BS Chính</th><th>Phòng Mổ</th><th>Ngày Mổ</th><th>Trạng Thái</th><th class="text-center">Cập Nhật</th></tr></thead>
+                <tbody>
+                @if(Model.Any()){ foreach(var item in Model){
+                <tr>
+                    <td class="fw-bold text-primary">@item.SurgeryCode</td>
+                    <td class="fw-bold">@(item.Patient?.FullName ?? "N/A")</td>
+                    <td>@item.SurgeryName</td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info">@item.SurgeryType</span></td>
+                    <td>@item.Surgeon</td>
+                    <td>@item.OperatingRoom</td>
+                    <td>@item.ScheduledDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@if(item.Status=="Lên lịch"){<span class="badge bg-warning text-dark">Lên lịch</span>}else if(item.Status=="Đang mổ"){<span class="badge bg-info">Đang mổ</span>}else if(item.Status=="Hoàn thành"){<span class="badge bg-success">Hoàn thành</span>}else{<span class="badge bg-secondary">Hủy</span>}</td>
+                    <td class="text-center">
+                        @if(item.Status=="Lên lịch"){<form asp-action="CapNhatPhauThuat" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><input type="hidden" name="status" value="Đang mổ"/><button type="submit" class="btn btn-sm btn-outline-info rounded-pill">Bắt đầu</button></form>}
+                        @if(item.Status=="Đang mổ"){<form asp-action="CapNhatPhauThuat" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><input type="hidden" name="status" value="Hoàn thành"/><button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Hoàn thành</button></form>}
+                    </td>
+                </tr>
+                }}else{<tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-scissors fa-3x mb-3"></i><p>Chưa có ca phẫu thuật nào.</p></td></tr>}
+                </tbody>
+            </table>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyPhauThuat</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm Ca Phẫu Thuật</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <form asp-action="ThemPhauThuat" method="post">@Html.AntiForgeryToken()
+        <div class="modal-body"><div class="row">
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Bệnh Nhân</label><select name="PatientId" class="form-select">@if(patients!=null){foreach(var p in patients){<option value="@p.Id">@p.FullName</option>}}</select></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Tên Phẫu Thuật</label><input name="SurgeryName" class="form-control" required/></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Loại</label><select name="SurgeryType" class="form-select"><option>Đại phẫu</option><option>Trung phẫu</option><option>Tiểu phẫu</option></select></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">BS Chính</label><select name="Surgeon" class="form-select">@if(doctors!=null){foreach(var d in doctors){<option>@d.FullName</option>}}</select></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Phòng Mổ</label><select name="OperatingRoom" class="form-select"><option>Phòng mổ 1</option><option>Phòng mổ 2</option><option>Phòng mổ 3</option></select></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Gây Mê</label><select name="Anesthesia" class="form-select"><option>Gây mê toàn thân</option><option>Gây tê vùng</option><option>Gây tê tại chỗ</option></select></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Ngày Mổ</label><input name="ScheduledDate" type="datetime-local" class="form-control" required/></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Thời Gian (phút)</label><input name="DurationMinutes" type="number" class="form-control" value="60"/></div>
+            <div class="col-12 mb-3"><label class="form-label fw-bold">Ghi Chú</label><textarea name="Notes" class="form-control" rows="2"></textarea></div>
+        </div></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+    </form>
+</div></div></div>

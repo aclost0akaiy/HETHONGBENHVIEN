@@ -1,17 +1,49 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyCDHA";
-}
+@model IEnumerable<HeThongBenhVien.Models.DiagnosticImage>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Chẩn Đoán Hình Ảnh"; var patients = ViewBag.Patients as List<HeThongBenhVien.Models.Patient>; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyCDHA</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Chẩn Đoán Hình Ảnh</h2><p class="text-muted mb-0">Quản lý yêu cầu X-Quang, CT, MRI, Siêu âm</p></div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus me-1"></i> Thêm Yêu Cầu</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="glass-card p-3 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1 small">Tổng YC</p><h3 class="fw-bold m-0">@Model.Count()</h3></div></div>
+        <div class="col-md-4"><div class="glass-card p-3 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1 small">Chờ Chụp</p><h3 class="fw-bold m-0 text-warning">@Model.Count(d => d.Status == "Chờ chụp")</h3></div></div>
+        <div class="col-md-4"><div class="glass-card p-3 border-start border-4 border-success"><p class="text-muted fw-bold mb-1 small">Có Kết Quả</p><h3 class="fw-bold m-0 text-success">@Model.Count(d => d.Status == "Có kết quả")</h3></div></div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr><th>Mã YC</th><th>Bệnh Nhân</th><th>Loại</th><th>Vùng Chụp</th><th>BS Chỉ Định</th><th>Ngày</th><th>Trạng Thái</th></tr></thead>
+                <tbody>
+                @if(Model.Any()){ foreach(var item in Model){
+                <tr>
+                    <td class="fw-bold text-primary">@item.RequestCode</td>
+                    <td class="fw-bold">@(item.Patient?.FullName ?? "N/A")</td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info">@item.ImageType</span></td>
+                    <td>@item.BodyPart</td>
+                    <td>@item.RequestedBy</td>
+                    <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
+                    <td>@if(item.Status=="Chờ chụp"){<span class="badge bg-warning text-dark">Chờ chụp</span>}else if(item.Status=="Đang chụp"){<span class="badge bg-info">Đang chụp</span>}else{<span class="badge bg-success">Có KQ</span>}</td>
+                </tr>
+                }}else{<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-x-ray fa-3x mb-3"></i><p>Chưa có yêu cầu CĐHA nào.</p></td></tr>}
+                </tbody>
+            </table>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyCDHA</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm Yêu Cầu CĐHA</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <form asp-action="ThemCDHA" method="post">@Html.AntiForgeryToken()
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label fw-bold">Bệnh Nhân</label><select name="PatientId" class="form-select">@if(patients!=null){foreach(var p in patients){<option value="@p.Id">@p.FullName</option>}}</select></div>
+            <div class="mb-3"><label class="form-label fw-bold">Loại Chẩn Đoán</label><select name="ImageType" class="form-select"><option>X-Quang</option><option>CT Scanner</option><option>MRI</option><option>Siêu âm</option><option>Nội soi</option></select></div>
+            <div class="mb-3"><label class="form-label fw-bold">Vùng Chụp</label><input name="BodyPart" class="form-control"/></div>
+            <div class="mb-3"><label class="form-label fw-bold">BS Chỉ Định</label><input name="RequestedBy" class="form-control"/></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+    </form>
+</div></div></div>

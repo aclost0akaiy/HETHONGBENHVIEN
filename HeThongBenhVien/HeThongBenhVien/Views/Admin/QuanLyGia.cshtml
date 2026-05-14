@@ -1,17 +1,45 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyGia";
-}
+@model IEnumerable<HeThongBenhVien.Models.HospitalFee>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Bảng Giá Viện Phí"; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyGia</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Bảng Giá Viện Phí</h2><p class="text-muted mb-0">Quản lý bảng giá các dịch vụ, xét nghiệm, thuốc</p></div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus me-1"></i> Thêm Mục Giá</button>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr><th>Mã</th><th>Tên Mục</th><th>Danh Mục</th><th>Giá (VNĐ)</th><th>BHYT (%)</th><th>Trạng Thái</th><th class="text-center">Xóa</th></tr></thead>
+                <tbody>
+                @if(Model.Any()){ foreach(var item in Model){
+                <tr>
+                    <td class="fw-bold text-primary">@item.FeeCode</td>
+                    <td class="fw-bold">@item.FeeName</td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info">@item.Category</span></td>
+                    <td class="fw-bold text-success">@item.Price.ToString("N0") đ</td>
+                    <td><span class="badge bg-primary">@item.InsuranceCoverage%</span></td>
+                    <td>@if(item.IsActive){<span class="badge bg-success">Áp dụng</span>}else{<span class="badge bg-secondary">Ngưng</span>}</td>
+                    <td class="text-center"><form asp-action="XoaGia" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Xác nhận xóa?');"><i class="fas fa-trash"></i></button></form></td>
+                </tr>
+                }}else{<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-money-bill-wave fa-3x mb-3"></i><p>Chưa có mục giá nào.</p></td></tr>}
+                </tbody>
+            </table>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyGia</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm Mục Giá</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <form asp-action="ThemGia" method="post">@Html.AntiForgeryToken()
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label fw-bold">Mã</label><input name="FeeCode" class="form-control" required/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Tên Mục</label><input name="FeeName" class="form-control" required/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Danh Mục</label><select name="Category" class="form-select"><option>Khám bệnh</option><option>Xét nghiệm</option><option>Phẫu thuật</option><option>Giường bệnh</option><option>Thuốc</option><option>Chẩn đoán hình ảnh</option></select></div>
+            <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Giá (VNĐ)</label><input name="Price" type="number" class="form-control" required/></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">BHYT chi trả (%)</label><input name="InsuranceCoverage" type="number" class="form-control" value="80"/></div></div>
+            <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><textarea name="Description" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+    </form>
+</div></div></div>

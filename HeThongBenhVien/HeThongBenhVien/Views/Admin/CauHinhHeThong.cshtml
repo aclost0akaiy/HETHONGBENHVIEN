@@ -1,17 +1,60 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "CauHinhHeThong";
-}
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Cấu Hình Hệ Thống"; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">CauHinhHeThong</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
-        </div>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Cấu Hình Hệ Thống</h2><p class="text-muted mb-0">Thiết lập và tùy chỉnh hệ thống bệnh viện</p></div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>CauHinhHeThong</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+
+    <div class="row g-4">
+        <!-- Thông tin bệnh viện -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fas fa-hospital text-primary me-2"></i>Thông Tin Bệnh Viện</h5>
+                <div class="mb-3"><label class="form-label fw-bold">Tên Bệnh Viện</label><input class="form-control" value="Bệnh Viện Đa Khoa Trung Ương" readonly/></div>
+                <div class="mb-3"><label class="form-label fw-bold">Địa Chỉ</label><input class="form-control" value="123 Đường Lê Lợi, Quận 1, TP.HCM" readonly/></div>
+                <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Hotline</label><input class="form-control" value="1900 1234" readonly/></div>
+                <div class="col-md-6 mb-3"><label class="form-label fw-bold">Email</label><input class="form-control" value="info@benhvien.com" readonly/></div></div>
+                <div class="mb-3"><label class="form-label fw-bold">Website</label><input class="form-control" value="https://benhvien.com" readonly/></div>
+            </div>
+        </div>
+
+        <!-- Cài đặt hệ thống -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="fas fa-gears text-success me-2"></i>Cài Đặt Chung</h5>
+                <div class="mb-3 d-flex justify-content-between align-items-center pb-3 border-bottom"><div><h6 class="fw-bold mb-0">Chế Độ Bảo Trì</h6><small class="text-muted">Tạm ngưng hệ thống để bảo trì</small></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" style="width:50px; height:25px;"></div></div>
+                <div class="mb-3 d-flex justify-content-between align-items-center pb-3 border-bottom"><div><h6 class="fw-bold mb-0">Sao Lưu Tự Động</h6><small class="text-muted">Tự động sao lưu hàng ngày lúc 1:00 AM</small></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked style="width:50px; height:25px;"></div></div>
+                <div class="mb-3 d-flex justify-content-between align-items-center pb-3 border-bottom"><div><h6 class="fw-bold mb-0">Gửi Email Thông Báo</h6><small class="text-muted">Thông báo qua email khi có sự cố</small></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked style="width:50px; height:25px;"></div></div>
+                <div class="mb-3 d-flex justify-content-between align-items-center"><div><h6 class="fw-bold mb-0">Xác Thực 2 Lớp</h6><small class="text-muted">Bắt buộc xác thực 2 lớp cho Admin</small></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" style="width:50px; height:25px;"></div></div>
+            </div>
+        </div>
+
+        <!-- Thông tin hệ thống -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-server text-info me-2"></i>Thông Tin Hệ Thống</h5>
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted">Phiên bản</td><td class="fw-bold text-end">v2.5.0</td></tr>
+                    <tr><td class="text-muted">Framework</td><td class="fw-bold text-end">ASP.NET Core 8.0</td></tr>
+                    <tr><td class="text-muted">Database</td><td class="fw-bold text-end">SQL Server 2022</td></tr>
+                    <tr><td class="text-muted">Server OS</td><td class="fw-bold text-end">Windows Server 2022</td></tr>
+                    <tr><td class="text-muted">Uptime</td><td class="fw-bold text-end text-success">99.9% (30 ngày)</td></tr>
+                    <tr><td class="text-muted">Cập nhật cuối</td><td class="fw-bold text-end">@DateTime.Now.ToString("dd/MM/yyyy")</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-link text-warning me-2"></i>Công Cụ Nhanh</h5>
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("SaoLuuDuLieu","Admin")" class="btn btn-outline-primary text-start"><i class="fas fa-database me-2"></i>Sao Lưu Dữ Liệu</a>
+                    <a href="@Url.Action("NhatKyHeThong","Admin")" class="btn btn-outline-info text-start"><i class="fas fa-clock-rotate-left me-2"></i>Nhật Ký Hệ Thống</a>
+                    <a href="@Url.Action("BaoCaoHoatDong","Admin")" class="btn btn-outline-success text-start"><i class="fas fa-chart-pie me-2"></i>Báo Cáo Hoạt Động</a>
+                    <a href="@Url.Action("ThongKeDoanhThu","Admin")" class="btn btn-outline-warning text-start"><i class="fas fa-chart-line me-2"></i>Thống Kê Doanh Thu</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -25,6 +25,16 @@ namespace HeThongBenhVien.Data
         // Đã thêm khai báo bảng Lịch Làm Việc vào đây:
         public DbSet<LichLamViec> LichLamViecs { get; set; }
 
+        // Các bảng mới cho chức năng quản trị
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<HospitalFee> HospitalFees { get; set; }
+        public DbSet<InsuranceCard> InsuranceCards { get; set; }
+        public DbSet<Reception> Receptions { get; set; }
+        public DbSet<DiagnosticImage> DiagnosticImages { get; set; }
+        public DbSet<Surgery> Surgeries { get; set; }
+        public DbSet<BloodBank> BloodBanks { get; set; }
+        public DbSet<QualityReview> QualityReviews { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

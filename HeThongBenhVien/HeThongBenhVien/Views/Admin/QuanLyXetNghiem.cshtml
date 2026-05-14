@@ -1,17 +1,35 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyXetNghiem";
-}
+@model IEnumerable<HeThongBenhVien.Models.LabTest>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Quản Lý Xét Nghiệm"; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyXetNghiem</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
-        </div>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Quản Lý Xét Nghiệm</h2><p class="text-muted mb-0">Theo dõi các yêu cầu xét nghiệm và kết quả</p></div>
     </div>
-    
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1 small">Tổng XN</p><h3 class="fw-bold m-0">@Model.Count()</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1 small">Chờ XN</p><h3 class="fw-bold m-0 text-warning">@Model.Count(l => l.Status == "Chờ xét nghiệm")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-info"><p class="text-muted fw-bold mb-1 small">Đang XN</p><h3 class="fw-bold m-0 text-info">@Model.Count(l => l.Status == "Đang xét nghiệm")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-success"><p class="text-muted fw-bold mb-1 small">Có Kết Quả</p><h3 class="fw-bold m-0 text-success">@Model.Count(l => l.Status == "Có kết quả")</h3></div></div>
+    </div>
+
     <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyXetNghiem</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr><th>ID</th><th>Tên XN</th><th>Bệnh Nhân</th><th>Ngày Tạo</th><th>Kết Quả</th><th>Trạng Thái</th></tr></thead>
+                <tbody>
+                @if(Model.Any()){ foreach(var item in Model){
+                <tr>
+                    <td class="fw-bold text-primary">XN-@item.Id.ToString("D4")</td>
+                    <td class="fw-bold">@item.TestName</td>
+                    <td>@(item.MedicalRecord?.Appointment?.Patient?.FullName ?? "N/A")</td>
+                    <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(string.IsNullOrEmpty(item.Result) ? "Chưa có" : item.Result)</td>
+                    <td>@if(item.Status=="Chờ xét nghiệm"){<span class="badge bg-warning text-dark">Chờ XN</span>}else if(item.Status=="Đang xét nghiệm"){<span class="badge bg-info">Đang XN</span>}else{<span class="badge bg-success">Có KQ</span>}</td>
+                </tr>
+                }}else{<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-vials fa-3x mb-3"></i><p>Chưa có xét nghiệm nào.</p></td></tr>}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

@@ -1,17 +1,45 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "ThongKeDoanhThu";
-}
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Thống Kê Doanh Thu"; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">ThongKeDoanhThu</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Thống Kê Doanh Thu</h2><p class="text-muted mb-0">Phân tích doanh thu và hiệu suất hoạt động</p></div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-success"><p class="text-muted fw-bold mb-1">Tổng Doanh Thu</p><h3 class="fw-bold m-0 text-success">@(((long)ViewBag.TotalRevenue).ToString("N0")) đ</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1">Tổng Hồ Sơ</p><h3 class="fw-bold m-0">@ViewBag.TotalRecords</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-info"><p class="text-muted fw-bold mb-1">Tổng Bệnh Nhân</p><h3 class="fw-bold m-0">@ViewBag.TotalPatients</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1">Tổng Lượt Khám</p><h3 class="fw-bold m-0">@ViewBag.TotalAppointments</h3></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card p-4"><h5 class="fw-bold mb-3">Biểu Đồ Doanh Thu 7 Ngày Qua</h5>
+                <canvas id="revenueChart" height="300"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card p-4"><h5 class="fw-bold mb-3">Biểu Đồ Lượt Khám</h5>
+                <canvas id="visitChart" height="300"></canvas>
+            </div>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>ThongKeDoanhThu</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels));
+    var revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartRevenues));
+    var counts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartCounts));
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar', data: { labels: labels, datasets: [{ label: 'Doanh thu (VNĐ)', data: revenues, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 8 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('vi-VN') + ' đ' } } } }
+    });
+    new Chart(document.getElementById('visitChart'), {
+        type: 'doughnut', data: { labels: labels, datasets: [{ data: counts, backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'] }] },
+        options: { responsive: true }
+    });
+</script>
+}

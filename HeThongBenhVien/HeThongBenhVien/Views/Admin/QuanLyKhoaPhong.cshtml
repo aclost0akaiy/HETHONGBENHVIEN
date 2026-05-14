@@ -1,17 +1,74 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyKhoaPhong";
-}
+@model IEnumerable<HeThongBenhVien.Models.Department>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Quản Lý Khoa Phòng"; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyKhoaPhong</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản Lý Khoa Phòng</h2>
+            <p class="text-muted mb-0">Quản lý danh sách các khoa, phòng ban trong bệnh viện</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+            <i class="fas fa-plus fa-sm text-white-50 me-1"></i> Thêm Khoa Phòng
+        </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1 small">Tổng Khoa Phòng</p><h3 class="fw-bold m-0">@Model.Count()</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-success"><p class="text-muted fw-bold mb-1 small">Đang Hoạt Động</p><h3 class="fw-bold m-0 text-success">@Model.Count(d => d.IsActive)</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1 small">Tổng Giường Bệnh</p><h3 class="fw-bold m-0">@Model.Sum(d => d.TotalBeds)</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-info"><p class="text-muted fw-bold mb-1 small">Giường Đang Dùng</p><h3 class="fw-bold m-0">@Model.Sum(d => d.OccupiedBeds)</h3></div></div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr>
+                    <th>Mã Khoa</th><th>Tên Khoa</th><th>Trưởng Khoa</th><th>Giường</th><th>SĐT</th><th>Trạng Thái</th><th class="text-center">Hành Động</th>
+                </tr></thead>
+                <tbody>
+                @if (Model.Any()) {
+                    foreach (var item in Model) {
+                    <tr>
+                        <td class="fw-bold text-primary">@item.DepartmentCode</td>
+                        <td class="fw-bold">@item.DepartmentName</td>
+                        <td>@item.HeadDoctor</td>
+                        <td><span class="badge bg-info text-white">@item.OccupiedBeds/@item.TotalBeds</span></td>
+                        <td>@item.Phone</td>
+                        <td>
+                            @if(item.IsActive){<span class="badge bg-success">Hoạt động</span>}
+                            else{<span class="badge bg-secondary">Tạm ngưng</span>}
+                        </td>
+                        <td class="text-center">
+                            <form asp-action="XoaKhoaPhong" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id"/>
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Xác nhận xóa?');"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    }
+                } else {
+                    <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-hospital fa-3x mb-3"></i><p>Chưa có khoa phòng nào.</p></td></tr>
+                }
+                </tbody>
+            </table>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyKhoaPhong</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+<!-- Modal Thêm -->
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm Khoa Phòng</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <form asp-action="ThemKhoaPhong" method="post">
+        @Html.AntiForgeryToken()
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label fw-bold">Mã Khoa</label><input name="DepartmentCode" class="form-control" required/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Tên Khoa</label><input name="DepartmentName" class="form-control" required/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><input name="Description" class="form-control"/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Trưởng Khoa</label><input name="HeadDoctor" class="form-control"/></div>
+            <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Tổng Giường</label><input name="TotalBeds" type="number" class="form-control" value="0"/></div>
+            <div class="col-md-6 mb-3"><label class="form-label fw-bold">SĐT</label><input name="Phone" class="form-control"/></div></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+    </form>
+</div></div></div>

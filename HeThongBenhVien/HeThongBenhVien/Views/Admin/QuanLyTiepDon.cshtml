@@ -1,17 +1,54 @@
-﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "QuanLyTiepDon";
-}
+@model IEnumerable<HeThongBenhVien.Models.Reception>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Quản Lý Tiếp Đón"; var patients = ViewBag.Patients as List<HeThongBenhVien.Models.Patient>; }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">QuanLyTiepDon</h2>
-            <p class="text-muted mb-0">Đang phát triển chức năng này...</p>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Quản Lý Tiếp Đón</h2><p class="text-muted mb-0">Tiếp đón bệnh nhân và quản lý hàng chờ</p></div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus me-1"></i> Tiếp Đón Mới</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1 small">Hôm Nay</p><h3 class="fw-bold m-0">@Model.Count(r => r.CheckInTime.Date == DateTime.Today)</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1 small">Đang Chờ</p><h3 class="fw-bold m-0 text-warning">@Model.Count(r => r.Status == "Chờ khám")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-info"><p class="text-muted fw-bold mb-1 small">Đang Khám</p><h3 class="fw-bold m-0 text-info">@Model.Count(r => r.Status == "Đang khám")</h3></div></div>
+        <div class="col-md-3"><div class="glass-card p-3 border-start border-4 border-success"><p class="text-muted fw-bold mb-1 small">Đã Khám</p><h3 class="fw-bold m-0 text-success">@Model.Count(r => r.Status == "Đã khám")</h3></div></div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light"><tr><th>STT</th><th>Mã TĐ</th><th>Bệnh Nhân</th><th>Khoa</th><th>Ưu Tiên</th><th>Giờ Đến</th><th>Trạng Thái</th><th class="text-center">Hành Động</th></tr></thead>
+                <tbody>
+                @if(Model.Any()){ foreach(var item in Model){
+                <tr>
+                    <td class="fw-bold">@item.QueueNumber</td>
+                    <td class="text-primary fw-bold">@item.ReceptionCode</td>
+                    <td class="fw-bold">@(item.Patient?.FullName ?? "N/A")</td>
+                    <td>@item.Department</td>
+                    <td>@if(item.Priority=="Cấp cứu"){<span class="badge bg-danger">Cấp cứu</span>}else if(item.Priority=="Ưu tiên"){<span class="badge bg-warning text-dark">Ưu tiên</span>}else{<span class="badge bg-secondary">Thường</span>}</td>
+                    <td>@item.CheckInTime.ToString("HH:mm dd/MM")</td>
+                    <td>@if(item.Status=="Chờ khám"){<span class="badge bg-warning text-dark">Chờ khám</span>}else if(item.Status=="Đang khám"){<span class="badge bg-info">Đang khám</span>}else if(item.Status=="Đã khám"){<span class="badge bg-success">Đã khám</span>}else{<span class="badge bg-secondary">Hủy</span>}</td>
+                    <td class="text-center">
+                        @if(item.Status=="Chờ khám"){<form asp-action="CapNhatTrangThaiTiepDon" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><input type="hidden" name="status" value="Đang khám"/><button type="submit" class="btn btn-sm btn-outline-info rounded-pill">Gọi khám</button></form>}
+                        @if(item.Status=="Đang khám"){<form asp-action="CapNhatTrangThaiTiepDon" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><input type="hidden" name="status" value="Đã khám"/><button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Hoàn thành</button></form>}
+                    </td>
+                </tr>
+                }}else{<tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-bell-concierge fa-3x mb-3"></i><p>Chưa có tiếp đón nào.</p></td></tr>}
+                </tbody>
+            </table>
         </div>
     </div>
-    
-    <div class="glass-card p-4">
-        <h5 class="text-center text-muted py-5">Chức năng <strong>QuanLyTiepDon</strong> sẽ được cập nhật trong phiên bản tiếp theo.</h5>
-    </div>
 </div>
+
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-plus me-2"></i>Tiếp Đón Bệnh Nhân</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <form asp-action="ThemTiepDon" method="post">@Html.AntiForgeryToken()
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label fw-bold">Bệnh Nhân</label><select name="PatientId" class="form-select">@if(patients!=null){foreach(var p in patients){<option value="@p.Id">@p.FullName (@p.PatientCode)</option>}}</select></div>
+            <div class="mb-3"><label class="form-label fw-bold">Khoa Khám</label><select name="Department" class="form-select"><option>Khoa Nội</option><option>Khoa Ngoại</option><option>Khoa Sản</option><option>Khoa Nhi</option><option>Khoa Mắt</option><option>Khoa TMH</option><option>Khoa RHM</option><option>Cấp cứu</option></select></div>
+            <div class="mb-3"><label class="form-label fw-bold">Mức Ưu Tiên</label><select name="Priority" class="form-select"><option>Thường</option><option>Ưu tiên</option><option>Cấp cứu</option></select></div>
+            <div class="mb-3"><label class="form-label fw-bold">Lý Do Khám</label><textarea name="Reason" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Tiếp Đón</button></div>
+    </form>
+</div></div></div>
