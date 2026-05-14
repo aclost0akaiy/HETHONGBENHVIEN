@@ -401,44 +401,7 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         // CẤU HÌNH HỆ THỐNG
         // ==========================================
-<<<<<<< Updated upstream
-        public IActionResult QuanLyKhoaPhong() { return View(); }
-        public IActionResult QuanLyDichVu() { return View(); }
-        public IActionResult QuanLyGia() { return View(); }
-        public IActionResult QuanLyKhoDuoc()
-        {
-            ViewBag.TotalMedicines = _context.Medicines.Count();
-            ViewBag.AllMedicines = _context.Medicines.ToList();
-            ViewBag.AllPrescriptionDetails = _context.PrescriptionDetails.ToList();
-            return View();
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemThuoc(string medicineName, decimal medicinePrice)
-        {
-            if (ModelState.IsValid)
-            {
-                var medicine = new Medicine
-                {
-                    Name = medicineName,
-                    Price = medicinePrice
-                };
-
-                _context.Medicines.Add(medicine);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Thêm thuốc thành công!";
-                return RedirectToAction(nameof(QuanLyKhoDuoc));
-            }
-
-            TempData["ErrorMessage"] = "Có lỗi xảy ra khi thêm thuốc!";
-            return RedirectToAction(nameof(QuanLyKhoDuoc));
-        }
-        public IActionResult QuanLyThietBi() { return View(); }
-        public IActionResult ThongKeDoanhThu() { return View(); }
-=======
->>>>>>> Stashed changes
         public IActionResult CauHinhHeThong() { return View(); }
 
         // ==========================================

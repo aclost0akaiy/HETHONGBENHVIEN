@@ -1,163 +1,47 @@
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.Development.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.runtime.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.endpoints.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.exe
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.deps.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.runtimeconfig.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssets.props
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.build.HeThongBenhVien.props
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.HeThongBenhVien.props
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.HeThongBenhVien.props
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.pack.json
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Humanizer.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Mono.TextTemplating.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.CodeDom.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.AttributedModel.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Convention.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Hosting.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Runtime.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.TypedParts.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
-G:\Nâng Cao C#\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.sourcelink.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.json
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.endpoints.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.runtime.json
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.endpoints.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.exe
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.deps.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.runtimeconfig.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Humanizer.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Mono.TextTemplating.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.CodeDom.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.AttributedModel.dll
@@ -165,6 +49,14 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Hosting.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Runtime.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.TypedParts.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -217,293 +109,6 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.sourcelink.json
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.Development.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.runtime.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.endpoints.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.exe
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.deps.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.runtimeconfig.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Humanizer.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Mono.TextTemplating.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.CodeDom.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.AttributedModel.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Convention.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Hosting.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Runtime.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.TypedParts.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rpswa.dswa.cache.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.sourcelink.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjimswa.dswa.cache.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\swae.build.ex.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
-C:\Users\Asus\Downloads\DATN\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.Development.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.runtime.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.exe
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.deps.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.runtimeconfig.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Humanizer.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Mono.TextTemplating.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.CodeDom.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.AttributedModel.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Convention.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Hosting.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Runtime.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.TypedParts.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.sourcelink.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssets.props
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.build.HeThongBenhVien.props
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.HeThongBenhVien.props
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.HeThongBenhVien.props
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.pack.json
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
@@ -516,184 +121,21 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
-D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rpswa.dswa.cache.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\swae.build.ex.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.Development.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\appsettings.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.runtime.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.staticwebassets.endpoints.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.exe
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.deps.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.runtimeconfig.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Core.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Azure.Identity.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Humanizer.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\Mono.TextTemplating.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.CodeDom.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.AttributedModel.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Convention.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Hosting.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.Runtime.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Composition.TypedParts.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Drawing.Common.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Memory.Data.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Runtime.Caching.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Security.Permissions.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\System.Windows.Extensions.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.AssemblyReference.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfoInputs.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.AssemblyInfo.cs
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.csproj.CoreCompileInputs.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.RazorAssemblyInfo.cs
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.sourcelink.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\bundle\HeThongBenhVien.styles.css
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\scopedcss\projectbundle\HeThongBenhVien.bundle.scp.css
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.build.HeThongBenhVien.props
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.HeThongBenhVien.props
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.HeThongBenhVien.props
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.pack.json
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
-C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
