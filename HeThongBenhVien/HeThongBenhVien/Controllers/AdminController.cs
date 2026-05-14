@@ -20,16 +20,23 @@ namespace HeThongBenhVien.Controllers
 
         public IActionResult Dashboard()
         {
+            // Tổng lượt khám
             var totalAppointments = _context.Appointments.Count();
-            var totalPatients = _context.Patients.Count();
-            var medicalRecordsCount = _context.MedicalRecords.Count();
-            var emergencyCases = _context.Appointments.Count(a => a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"));
 
-            var dailyRevenue = medicalRecordsCount * 500000;
+            // Doanh thu ngày: Sum of PrescriptionDetail (Price * Quantity)
+            var dailyRevenue = _context.PrescriptionDetails.Sum(pd => pd.Price * pd.Quantity);
+
+            // Giường trống: Patient count (represented as patient count, normalize to /500)
+            var patientOccupancy = _context.Patients.Count();
+
+            // Ca cấp cứu: Appointments with Status==6 or reason contains "cấp cứu" AND Status != 4,5
+            var emergencyCases = _context.Appointments.Count(a => 
+                a.Status == 6 || 
+                (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu") && a.Status != 4 && a.Status != 5));
 
             ViewBag.TotalAppointments = totalAppointments;
-            ViewBag.TotalPatients = totalPatients;
             ViewBag.DailyRevenue = dailyRevenue;
+            ViewBag.PatientOccupancy = patientOccupancy;
             ViewBag.EmergencyCases = emergencyCases;
 
             return View();
@@ -318,16 +325,59 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         public async Task<IActionResult> QuanLyKhoDuoc()
         {
-            var list = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
-            return View(list);
+            // Load all medicines
+            var allMedicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
+            ViewBag.AllMedicines = allMedicines;
+            ViewBag.TotalMedicines = allMedicines.Count;
+
+            // Load all prescription details with patient relationships
+            var allPrescriptionDetails = await _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                    .ThenInclude(p => p.MedicalRecord)
+                        .ThenInclude(mr => mr.Appointment)
+                            .ThenInclude(a => a.Patient)
+                .ToListAsync();
+            ViewBag.AllPrescriptionDetails = allPrescriptionDetails;
+
+            return View();
         }
 
         [HttpPost][ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemThuoc(Medicine med)
+        public async Task<IActionResult> ThemThuoc(string medicineName, decimal medicinePrice)
         {
-            if (!string.IsNullOrEmpty(med.Name))
+            if (!string.IsNullOrEmpty(medicineName))
             {
-                _context.Medicines.Add(med);
+                // Case-insensitive duplicate check
+                var existingMedicine = await _context.Medicines
+                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicineName.ToLower());
+
+                if (existingMedicine != null)
+                {
+                    // If exists and price is different, update the price
+                    if (existingMedicine.Price != medicinePrice)
+                    {
+                        existingMedicine.Price = medicinePrice;
+                        _context.Medicines.Update(existingMedicine);
+                    }
+                }
+                else
+                {
+                    // Create new medicine
+                    var newMedicine = new Medicine
+                    {
+                        Name = medicineName,
+                        Price = medicinePrice,
+                        Unit = "",
+                        Category = "",
+                        StockQuantity = 0,
+                        MinStock = 10,
+                        Manufacturer = "",
+                        ExpiryDate = null,
+                        IsActive = true
+                    };
+                    _context.Medicines.Add(newMedicine);
+                }
+
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
@@ -401,6 +451,7 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         // CẤU HÌNH HỆ THỐNG
         // ==========================================
+
         public IActionResult CauHinhHeThong() { return View(); }
 
         // ==========================================
