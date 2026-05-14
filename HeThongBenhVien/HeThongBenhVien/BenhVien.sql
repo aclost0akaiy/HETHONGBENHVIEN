@@ -228,7 +228,6 @@ GO
 
 -- Xóa dữ liệu cũ nếu có để tránh trùng lặp khi chạy lại (tuỳ chọn)
 -- TRUNCATE TABLE WorkSchedules;
-
 USE QuanLyBenhVienDb;
 GO
 
@@ -270,11 +269,6 @@ VALUES
 (3, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-17', 20, 5, 2026),
 (4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-05-17', 20, 5, 2026);
 GO
-
-
-
-
-
 
 
 -- WorkSchedules data for 2026 (Sundays excluded)
@@ -2481,3 +2475,48 @@ VALUES
   (2, N'18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-12-31', 53, 12, 2026),
   (5, N'21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-12-31', 53, 12, 2026),
   (3, N'00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-12-31', 53, 12, 2026);
+
+  -- Xóa sạch dữ liệu và reset ID bảng WorkSchedules
+TRUNCATE TABLE [QuanLyBenhVienDb].[dbo].[WorkSchedules];
+
+-- Xóa toàn bộ dữ liệu bảng Users
+DELETE FROM [QuanLyBenhVienDb].[dbo].[Users];
+
+-- Reset lại cột Id để người tiếp theo thêm vào sẽ bắt đầu từ số 1
+DBCC CHECKIDENT ('[QuanLyBenhVienDb].[dbo].[Users]', RESEED, 0);
+
+-- Thêm danh sách nhân sự với tên thật vào bảng Users
+INSERT INTO [QuanLyBenhVienDb].[dbo].[Users] 
+       ([Username], [Password], [Role], [FullName], [Email], [SDT])
+VALUES 
+       ('admin_hethong', '123456', 'Admin', N'Nguyễn Hoàng An', 'an.nguyen@benhvien.com', '0901112222'),
+       ('bs_bao', '123456', 'Doctor', N'Trần Quốc Bảo', 'bao.tran@benhvien.com', '0987654321'),
+       ('bs_chi', '123456', 'Doctor', N'Lê Kim Chi', 'chi.le@benhvien.com', '0901234567'),
+       ('bs_dung', '123456', 'Doctor', N'Phạm Tiến Dũng', 'dung.pham@benhvien.com', '0902345678'),
+       ('bs_ha', '123456', 'Doctor', N'Vũ Thu Hà', 'ha.vu@benhvien.com', '0903456789'),
+       ('bs_long', '123456', 'Doctor', N'Đinh Văn Long', 'long.dinh@benhvien.com', '0904567890'),
+       ('admin_phongkham', '123456', 'Admin', N'Hoàng Thúy Quyên', 'quyen.hoang@benhvien.com', '0905678901');
+
+       INSERT INTO [QuanLyBenhVienDb].[dbo].[Users] 
+       ([Username], [Password], [Role], [FullName], [Email], [SDT])
+VALUES 
+       ('bs_tuan', '123456', 'Doctor', N'Nguyễn Văn Tuấn', 'tuan.nguyen@benhvien.com', '0981112233'),
+       ('bs_mai', '123456', 'Doctor', N'Trần Thị Mai', 'mai.tran@benhvien.com', '0981112234'),
+       ('bs_hung', '123456', 'Doctor', N'Lê Mạnh Hùng', 'hung.le@benhvien.com', '0912223344'),
+       ('bs_lan', '123456', 'Doctor', N'Phạm Ngọc Lan', 'lan.pham@benhvien.com', '0912223345'),
+       ('bs_phong', '123456', 'Doctor', N'Hoàng Đình Phong', 'phong.hoang@benhvien.com', '0933334455'),
+       ('bs_thao', '123456', 'Doctor', N'Vũ Phương Thảo', 'thao.vu@benhvien.com', '0933334456'),
+       ('bs_kiet', '123456', 'Doctor', N'Đặng Anh Kiệt', 'kiet.dang@benhvien.com', '0944445566'),
+       ('bs_tram', '123456', 'Doctor', N'Bùi Ngọc Trâm', 'tram.bui@benhvien.com', '0944445567'),
+       ('bs_minh', '123456', 'Doctor', N'Trịnh Quang Minh', 'minh.trinh@benhvien.com', '0905556677'),
+       ('bs_nga', '123456', 'Doctor', N'Đỗ Thanh Nga', 'nga.do@benhvien.com', '0905556678'),
+       ('bs_dat', '123456', 'Doctor', N'Hồ Tiến Đạt', 'dat.ho@benhvien.com', '0976667788'),
+       ('bs_thu', '123456', 'Doctor', N'Dương Minh Thu', 'thu.duong@benhvien.com', '0976667789'),
+       ('bs_khanh', '123456', 'Doctor', N'Ngô Nam Khánh', 'khanh.ngo@benhvien.com', '0967778899'),
+       ('bs_yen', '123456', 'Doctor', N'Lý Hải Yến', 'yen.ly@benhvien.com', '0967778800'),
+       ('bs_son', '123456', 'Doctor', N'Tạ Hoàng Sơn', 'son.ta@benhvien.com', '0888889900'),
+       ('bs_linh', '123456', 'Doctor', N'Châu Khánh Linh', 'linh.chau@benhvien.com', '0888889901'),
+       ('bs_cuong', '123456', 'Doctor', N'Nguyễn Phú Cường', 'cuong.nguyen@benhvien.com', '0899990011'),
+       ('bs_trang', '123456', 'Doctor', N'Trần Thu Trang', 'trang.tran@benhvien.com', '0899990012'),
+       ('admin_khoa', '123456', 'Admin', N'Lê Anh Khoa', 'khoa.le@benhvien.com', '0901239876'),
+       ('admin_thuy', '123456', 'Admin', N'Phạm Bích Thủy', 'thuy.pham@benhvien.com', '0901239877');
