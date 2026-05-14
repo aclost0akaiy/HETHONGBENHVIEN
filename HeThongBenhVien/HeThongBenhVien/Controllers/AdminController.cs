@@ -20,16 +20,9 @@ namespace HeThongBenhVien.Controllers
 
         public IActionResult Dashboard()
         {
-            // Tổng lượt khám
             var totalAppointments = _context.Appointments.Count();
-
-            // Doanh thu ngày: Sum of PrescriptionDetail (Price * Quantity)
             var dailyRevenue = _context.PrescriptionDetails.Sum(pd => pd.Price * pd.Quantity);
-
-            // Giường trống: Patient count (represented as patient count, normalize to /500)
             var patientOccupancy = _context.Patients.Count();
-
-            // Ca cấp cứu: Appointments with Status==6 or reason contains "cấp cứu" AND Status != 4,5
             var emergencyCases = _context.Appointments.Count(a => 
                 a.Status == 6 || 
                 (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu") && a.Status != 4 && a.Status != 5));
@@ -169,21 +162,18 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // QUẢN LÝ LỊCH LÀM VIỆC (ĐÃ FIX TÌM KIẾM & BỘ LỌC)
+        // QUẢN LÝ LỊCH LÀM VIỆC
         // ==========================================
         public async Task<IActionResult> QuanLyLichLamViec(int? month, int? year, string searchString)
         {
-            // Mặc định lấy tháng và năm hiện tại nếu không chọn
             int currentMonth = month ?? DateTime.Now.Month;
             int currentYear = year ?? DateTime.Now.Year;
 
-            // Khởi tạo truy vấn
             var query = _context.LichLamViecs
                 .Include(l => l.User)
                 .Where(l => l.User != null && l.User.Role == "Doctor")
                 .Where(l => l.MonthNumber == currentMonth && l.YearNumber == currentYear);
 
-            // Xử lý tìm kiếm theo tên bác sĩ
             if (!string.IsNullOrEmpty(searchString))
             {
                 query = query.Where(l => l.User.FullName.ToLower().Contains(searchString.ToLower()));
@@ -191,15 +181,10 @@ namespace HeThongBenhVien.Controllers
 
             var danhSachLich = await query.OrderBy(l => l.WorkDate).ToListAsync();
 
-            // Truyền dữ liệu về View để giữ trạng thái bộ lọc
             ViewBag.CurrentMonth = currentMonth;
             ViewBag.CurrentYear = currentYear;
             ViewBag.SearchString = searchString;
-
-            // Truyền danh sách Bác sĩ ra Modal
-            ViewBag.DanhSachBacSi = await _context.Users
-                .Where(u => u.Role == "Doctor")
-                .ToListAsync();
+            ViewBag.DanhSachBacSi = await _context.Users.Where(u => u.Role == "Doctor").ToListAsync();
 
             return View(danhSachLich);
         }
@@ -321,16 +306,14 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // QUẢN LÝ KHO DƯỢC
+        // QUẢN LÝ KHO DƯỢC (ĐÃ SỬA)
         // ==========================================
         public async Task<IActionResult> QuanLyKhoDuoc()
         {
-            // Load all medicines
-            var allMedicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
-            ViewBag.AllMedicines = allMedicines;
-            ViewBag.TotalMedicines = allMedicines.Count;
-
-            // Load all prescription details with patient relationships
+            // Trả về model thay vì null
+            var medicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
+            
+            // Vẫn giữ ViewBag cho danh sách đơn thuốc nếu cần (tùy chọn)
             var allPrescriptionDetails = await _context.PrescriptionDetails
                 .Include(pd => pd.Prescription)
                     .ThenInclude(p => p.MedicalRecord)
@@ -339,55 +322,55 @@ namespace HeThongBenhVien.Controllers
                 .ToListAsync();
             ViewBag.AllPrescriptionDetails = allPrescriptionDetails;
 
-            return View();
+            return View(medicines);
         }
 
-        [HttpPost][ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemThuoc(string medicineName, decimal medicinePrice)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemThuoc(Medicine medicine)
         {
-            if (!string.IsNullOrEmpty(medicineName))
+            if (ModelState.IsValid && !string.IsNullOrEmpty(medicine.Name))
             {
-                // Case-insensitive duplicate check
-                var existingMedicine = await _context.Medicines
-                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicineName.ToLower());
-
-                if (existingMedicine != null)
+                // Kiểm tra trùng tên (không phân biệt hoa thường)
+                var existing = await _context.Medicines
+                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicine.Name.ToLower());
+                
+                if (existing != null)
                 {
-                    // If exists and price is different, update the price
-                    if (existingMedicine.Price != medicinePrice)
-                    {
-                        existingMedicine.Price = medicinePrice;
-                        _context.Medicines.Update(existingMedicine);
-                    }
-                }
-                else
-                {
-                    // Create new medicine
-                    var newMedicine = new Medicine
-                    {
-                        Name = medicineName,
-                        Price = medicinePrice,
-                        Unit = "",
-                        Category = "",
-                        StockQuantity = 0,
-                        MinStock = 10,
-                        Manufacturer = "",
-                        ExpiryDate = null,
-                        IsActive = true
-                    };
-                    _context.Medicines.Add(newMedicine);
+                    // Nếu thuốc đã tồn tại, cập nhật giá và số lượng?
+                    // Ở đây ta thông báo lỗi để tránh trùng lặp
+                    ModelState.AddModelError("Name", "Tên thuốc đã tồn tại trong hệ thống.");
+                    var medicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
+                    ViewBag.AllPrescriptionDetails = await _context.PrescriptionDetails
+                        .Include(pd => pd.Prescription)
+                            .ThenInclude(p => p.MedicalRecord)
+                                .ThenInclude(mr => mr.Appointment)
+                                    .ThenInclude(a => a.Patient)
+                        .ToListAsync();
+                    return View("QuanLyKhoDuoc", medicines);
                 }
 
+                // Gán giá trị mặc định
+                if (medicine.StockQuantity == null) medicine.StockQuantity = 0;
+                if (medicine.MinStock == null) medicine.MinStock = 10;
+                medicine.IsActive = true;
+
+                _context.Medicines.Add(medicine);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
 
-        [HttpPost][ValidateAntiForgeryToken]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> XoaThuoc(int id)
         {
             var item = await _context.Medicines.FindAsync(id);
-            if (item != null) { _context.Medicines.Remove(item); await _context.SaveChangesAsync(); }
+            if (item != null) 
+            { 
+                _context.Medicines.Remove(item); 
+                await _context.SaveChangesAsync(); 
+            }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
 
@@ -433,7 +416,6 @@ namespace HeThongBenhVien.Controllers
             ViewBag.TotalPatients = totalPatients;
             ViewBag.TotalAppointments = totalAppointments;
 
-            // Dữ liệu biểu đồ 7 ngày
             var last7Days = Enumerable.Range(0, 7).Select(i => DateTime.Now.Date.AddDays(-6 + i)).ToList();
             var dailyData = last7Days.Select(d => new {
                 Date = d.ToString("dd/MM"),
@@ -449,14 +431,10 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // CẤU HÌNH HỆ THỐNG
+        // CÁC ACTION KHÁC (GIỮ NGUYÊN)
         // ==========================================
-
         public IActionResult CauHinhHeThong() { return View(); }
 
-        // ==========================================
-        // QUẢN LÝ VIỆN PHÍ (THANH TOÁN)
-        // ==========================================
         public async Task<IActionResult> QuanLyVienPhi()
         {
             var records = await _context.MedicalRecords
@@ -465,9 +443,6 @@ namespace HeThongBenhVien.Controllers
             return View(records);
         }
 
-        // ==========================================
-        // QUẢN LÝ BHYT
-        // ==========================================
         public async Task<IActionResult> QuanLyBHYT()
         {
             var list = await _context.InsuranceCards.Include(i => i.Patient).OrderByDescending(i => i.CreatedAt).ToListAsync();
@@ -494,9 +469,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyBHYT));
         }
 
-        // ==========================================
-        // BÁO CÁO HOẠT ĐỘNG
-        // ==========================================
         public async Task<IActionResult> BaoCaoHoatDong()
         {
             ViewBag.TotalPatients = await _context.Patients.CountAsync();
@@ -510,9 +482,6 @@ namespace HeThongBenhVien.Controllers
             return View();
         }
 
-        // ==========================================
-        // QUẢN LÝ TIẾP ĐÓN
-        // ==========================================
         public async Task<IActionResult> QuanLyTiepDon()
         {
             var list = await _context.Receptions.Include(r => r.Patient).OrderByDescending(r => r.CheckInTime).ToListAsync();
@@ -546,9 +515,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyTiepDon));
         }
 
-        // ==========================================
-        // QUẢN LÝ XÉT NGHIỆM
-        // ==========================================
         public async Task<IActionResult> QuanLyXetNghiem()
         {
             var list = await _context.LabTests.Include(l => l.MedicalRecord)
@@ -557,9 +523,6 @@ namespace HeThongBenhVien.Controllers
             return View(list);
         }
 
-        // ==========================================
-        // CHẨN ĐOÁN HÌNH ẢNH
-        // ==========================================
         public async Task<IActionResult> QuanLyCDHA()
         {
             var list = await _context.DiagnosticImages.Include(d => d.Patient).OrderByDescending(d => d.RequestDate).ToListAsync();
@@ -594,9 +557,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyCDHA));
         }
 
-        // ==========================================
-        // QUẢN LÝ PHẪU THUẬT
-        // ==========================================
         public async Task<IActionResult> QuanLyPhauThuat()
         {
             var list = await _context.Surgeries.Include(s => s.Patient).OrderByDescending(s => s.ScheduledDate).ToListAsync();
@@ -625,9 +585,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyPhauThuat));
         }
 
-        // ==========================================
-        // NGÂN HÀNG MÁU
-        // ==========================================
         public async Task<IActionResult> QuanLyNganHangMau()
         {
             var list = await _context.BloodBanks.OrderByDescending(b => b.CollectionDate).ToListAsync();
@@ -654,9 +611,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyNganHangMau));
         }
 
-        // ==========================================
-        // ĐÁNH GIÁ CHẤT LƯỢNG
-        // ==========================================
         public async Task<IActionResult> DanhGiaChatLuong()
         {
             var list = await _context.QualityReviews.OrderByDescending(q => q.CreatedAt).ToListAsync();
@@ -682,9 +636,6 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(DanhGiaChatLuong));
         }
 
-        // ==========================================
-        // SAO LƯU & NHẬT KÝ
-        // ==========================================
         public IActionResult SaoLuuDuLieu() { return View(); }
         public IActionResult NhatKyHeThong() { return View(); }
     }
