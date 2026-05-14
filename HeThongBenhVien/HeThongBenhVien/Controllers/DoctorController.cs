@@ -44,13 +44,38 @@ namespace HeThongBenhVien.Controllers
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
+            // ===== Lịch làm việc trong tuần hiện tại =====
+            var today = DateTime.Today;
+            // Tính ngày đầu tuần (Thứ 2)
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var weekStart = today.AddDays(-diff);
+            var weekEnd = weekStart.AddDays(6); // Chủ nhật
+
+            var currentUsername = User.Identity?.Name ?? "";
+
+            var workSchedules = await _context.LichLamViecs
+                .Include(l => l.User)
+                .Where(l => l.WorkDate >= weekStart && l.WorkDate <= weekEnd)
+                .OrderBy(l => l.WorkDate)
+                .ThenBy(l => l.WorkTime)
+                .ToListAsync();
+
+            var allDoctors = await _context.Users
+                .Where(u => u.Role == "Doctor")
+                .ToListAsync();
+
             var viewModel = new DoctorDashboardViewModel
             {
                 TodayPatientsCount = unexaminedCount,
                 CompletedPatientsCount = completedCount,
                 WaitingResultsCount = waitingCount,
                 EmergencyCount = emergencyCount,
-                UpcomingAppointments = upcomingAppointments
+                UpcomingAppointments = upcomingAppointments,
+                WorkSchedules = workSchedules,
+                CurrentUsername = currentUsername,
+                WeekStart = weekStart,
+                WeekEnd = weekEnd,
+                AllDoctors = allDoctors
             };
 
             return View(viewModel);

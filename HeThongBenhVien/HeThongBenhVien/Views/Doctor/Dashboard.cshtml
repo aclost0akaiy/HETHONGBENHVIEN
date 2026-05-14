@@ -339,6 +339,119 @@
         </div>
     </div>
 
+    <!-- ===== LỊCH LÀM VIỆC TRONG TUẦN ===== -->
+    <div class="row mt-2">
+        <div class="col-12">
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                    <div>
+                        <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">
+                            <i class="fa-solid fa-calendar-week me-2 text-primary"></i>Lịch Làm Việc Bác Sĩ Trong Tuần
+                        </h6>
+                        <small class="text-muted">Tuần: @Model.WeekStart.ToString("dd/MM/yyyy") - @Model.WeekEnd.ToString("dd/MM/yyyy")</small>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="d-flex align-items-center me-3">
+                            <span style="display:inline-block; width:14px; height:14px; background:#22c55e; border-radius:4px; margin-right:6px;"></span>
+                            <small class="text-muted fw-medium">Bạn</small>
+                        </span>
+                        <span class="d-flex align-items-center">
+                            <span style="display:inline-block; width:14px; height:14px; background:#bae6fd; border-radius:4px; margin-right:6px;"></span>
+                            <small class="text-muted fw-medium">Bác sĩ khác</small>
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-center mb-0" style="min-width: 900px; font-size: 13px;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                                    <th style="width: 13%; vertical-align: middle; font-weight: 600; color: #475569; border-color: #e2e8f0;">Ca / Ngày</th>
+                                    @{
+                                        string[] dayNames = { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN" };
+                                        for (int d = 0; d < 7; d++)
+                                        {
+                                            var currentDate = Model.WeekStart.AddDays(d);
+                                            bool isToday = currentDate == DateTime.Today;
+                                            <th style="width: 12.4%; vertical-align: middle; font-weight: 600; color: @(isToday ? "#0ea5e9" : "#475569"); border-color: #e2e8f0; @(isToday ? "background: rgba(14, 165, 233, 0.08);" : "")">
+                                                @dayNames[d]<br>
+                                                <small class="fw-normal" style="color: @(isToday ? "#0ea5e9" : "#94a3b8"); font-size: 11px;">@currentDate.ToString("dd/MM")</small>
+                                                @if (isToday)
+                                                {
+                                                    <br><span class="badge bg-primary" style="font-size: 9px; padding: 2px 6px;">Hôm nay</span>
+                                                }
+                                            </th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    // Danh sách 7 ca
+                                    var shifts = new[] {
+                                        new { Name = "Ca 1", Time = "06:00 - 09:00", Prefix = "Ca 1" },
+                                        new { Name = "Ca 2", Time = "09:00 - 12:00", Prefix = "Ca 2" },
+                                        new { Name = "Ca 3", Time = "12:00 - 15:00", Prefix = "Ca 3" },
+                                        new { Name = "Ca 4", Time = "15:00 - 18:00", Prefix = "Ca 4" },
+                                        new { Name = "Ca 5", Time = "18:00 - 21:00", Prefix = "Ca 5" },
+                                        new { Name = "Ca 6", Time = "21:00 - 24:00", Prefix = "Ca 6" },
+                                        new { Name = "Ca 7", Time = "00:00 - 06:00", Prefix = "Ca 7" }
+                                    };
+
+                                    string[] shiftColors = { "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#6366f1", "#ec4899", "#64748b" };
+                                }
+                                @for (int s = 0; s < shifts.Length; s++)
+                                {
+                                    var shift = shifts[s];
+                                    <tr>
+                                        <td class="fw-bold" style="background: #f8fafc; color: #334155; border-color: #e2e8f0; vertical-align: middle;">
+                                            <div style="font-size: 12px; font-weight: 600;">@shift.Name</div>
+                                            <small class="text-muted fw-normal" style="font-size: 10px;">@shift.Time</small>
+                                        </td>
+                                        @for (int d = 0; d < 7; d++)
+                                        {
+                                            var currentDate = Model.WeekStart.AddDays(d);
+                                            bool isToday = currentDate == DateTime.Today;
+                                            // Tìm lịch cho ngày + ca này
+                                            var scheduleForCell = Model.WorkSchedules
+                                                .Where(w => w.WorkDate.Date == currentDate.Date && w.ShiftName.StartsWith(shift.Prefix))
+                                                .FirstOrDefault();
+
+                                            <td style="border-color: #e2e8f0; padding: 6px; @(isToday ? "background: rgba(14, 165, 233, 0.03);" : "")">
+                                                @if (scheduleForCell != null && scheduleForCell.User != null)
+                                                {
+                                                    bool isCurrentDoctor = scheduleForCell.User.Username == Model.CurrentUsername;
+                                                    if (isCurrentDoctor)
+                                                    {
+                                                        <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 6px 4px; border-radius: 8px; font-weight: 600; font-size: 11px; box-shadow: 0 2px 8px rgba(34,197,94,0.3); transition: all 0.2s;" class="schedule-cell-me">
+                                                            <i class="fa-solid fa-user-doctor me-1" style="font-size: 10px;"></i>
+                                                            @scheduleForCell.User.FullName
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div style="background: #e0f2fe; color: #0369a1; padding: 6px 4px; border-radius: 8px; font-weight: 500; font-size: 11px; border: 1px solid #bae6fd; transition: all 0.2s;" class="schedule-cell-other">
+                                                            <i class="fa-solid fa-user-doctor me-1" style="font-size: 10px; opacity: 0.7;"></i>
+                                                            @scheduleForCell.User.FullName
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted" style="font-size: 11px; opacity: 0.4;">—</span>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Khám Bệnh Nhân Mới -->
     <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -400,6 +513,14 @@
             background-color: #f8fafc;
             transform: translateY(-3px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .schedule-cell-me:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(34,197,94,0.4) !important;
+        }
+        .schedule-cell-other:hover {
+            background: #bae6fd !important;
+            transform: scale(1.03);
         }
     </style>
 }
