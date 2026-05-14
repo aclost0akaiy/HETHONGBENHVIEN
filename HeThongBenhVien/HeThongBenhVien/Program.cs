@@ -24,26 +24,40 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    
 
-    if (!db.Users.Any(u => u.Username == "admin"))
+    try
     {
-        db.Users.AddRange(
-            new User
+        if (!db.Users.Any(u => u.Username == "admin"))
+        {
+            db.Users.Add(new User
             {
                 Username = "admin",
                 Password = "123",
                 Role = "Admin",
-                FullName = "Administrator"
-            },
-            new User
+                FullName = "Administrator",
+                Email = "admin@benhvien.com",
+                SDT = "0901111222"
+            });
+            db.SaveChanges();
+        }
+
+        if (!db.Users.Any(u => u.Username == "doctor"))
+        {
+            db.Users.Add(new User
             {
                 Username = "doctor",
                 Password = "123",
                 Role = "Doctor",
-                FullName = "Bác sĩ"
+                FullName = "Bác sĩ",
+                Email = "doctor@benhvien.com",
+                SDT = "0987654321"
             });
-        db.SaveChanges();
+            db.SaveChanges();
+        }
+    }
+    catch (Exception)
+    {
+        // Users already exist in database (seeded via BenhVien.sql) — skip silently.
     }
 }
 
