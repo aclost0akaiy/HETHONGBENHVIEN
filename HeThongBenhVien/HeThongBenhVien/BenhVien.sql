@@ -2520,3 +2520,63 @@ VALUES
        ('bs_trang', '123456', 'Doctor', N'Trần Thu Trang', 'trang.tran@benhvien.com', '0899990012'),
        ('admin_khoa', '123456', 'Admin', N'Lê Anh Khoa', 'khoa.le@benhvien.com', '0901239876'),
        ('admin_thuy', '123456', 'Admin', N'Phạm Bích Thủy', 'thuy.pham@benhvien.com', '0901239877');
+GO
+
+-- =============================================
+-- Bảng Thuốc / Dược phẩm (Medicines)
+-- =============================================
+IF OBJECT_ID('Medicines', 'U') IS NOT NULL DROP TABLE Medicines;
+GO
+
+CREATE TABLE Medicines (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(200) NOT NULL,
+    Price DECIMAL(18,2) NOT NULL,
+    Unit NVARCHAR(50) NULL,
+    Category NVARCHAR(100) NULL,
+    StockQuantity INT NOT NULL DEFAULT 0,
+    MinStock INT NOT NULL DEFAULT 10,
+    Manufacturer NVARCHAR(200) NULL,
+    ExpiryDate DATETIME2 NULL,
+    IsActive BIT NOT NULL DEFAULT 1
+);
+GO
+
+-- Thêm dữ liệu mẫu cho Kho Dược
+INSERT INTO Medicines (Name, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
+VALUES 
+(N'Paracetamol 500mg', 50000, N'Hộp', N'Giảm đau, hạ sốt', 100, 20, N'Dược Hậu Giang', '2025-12-31', 1),
+(N'Amoxicillin 500mg', 120000, N'Hộp', N'Kháng sinh', 50, 10, N'Domesco', '2026-06-30', 1),
+(N'Vitamin C 1000mg', 85000, N'Lọ', N'Vitamin & Khoáng chất', 200, 30, N'Traphaco', '2027-01-15', 1),
+(N'Omeprazole 20mg', 150000, N'Hộp', N'Tiêu hóa', 80, 15, N'Hasan', '2025-10-20', 1),
+(N'Ibuprofen 400mg', 75000, N'Hộp', N'Giảm đau, kháng viêm', 120, 25, N'Stella', '2026-03-10', 1);
+GO
+
+-- =============================================
+-- Bảng Viện Phí / Bảng giá (HospitalFees)
+-- =============================================
+IF OBJECT_ID('HospitalFees', 'U') IS NOT NULL DROP TABLE HospitalFees;
+GO
+
+CREATE TABLE HospitalFees (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    FeeCode NVARCHAR(50) NOT NULL,
+    FeeName NVARCHAR(200) NOT NULL,
+    Category NVARCHAR(100) NULL,
+    Price DECIMAL(18,2) NOT NULL,
+    InsuranceCoverage DECIMAL(5,2) NOT NULL DEFAULT 0,
+    Description NVARCHAR(500) NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+);
+GO
+
+-- Thêm dữ liệu mẫu cho Bảng Giá Viện Phí
+INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, Description)
+VALUES 
+('KB01', N'Khám bệnh chuyên khoa', N'Khám bệnh', 150000, 80, N'Khám bệnh ngoại trú'),
+('XN01', N'Xét nghiệm máu tổng quát', N'Xét nghiệm', 250000, 80, N'Công thức máu, đường huyết'),
+('CD01', N'Siêu âm ổ bụng', N'Chẩn đoán hình ảnh', 300000, 80, N'Siêu âm ổ bụng tổng quát'),
+('PT01', N'Phẫu thuật ruột thừa', N'Phẫu thuật', 5000000, 80, N'Phẫu thuật nội soi ruột thừa'),
+('GB01', N'Giường bệnh nội trú (Phòng thường)', N'Giường bệnh', 200000, 100, N'Giường bệnh thường (1 ngày)');
+GO

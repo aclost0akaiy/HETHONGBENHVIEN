@@ -339,43 +339,32 @@ namespace HeThongBenhVien.Controllers
                 .ToListAsync();
             ViewBag.AllPrescriptionDetails = allPrescriptionDetails;
 
-            return View();
+            return View(allMedicines);
         }
 
         [HttpPost][ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemThuoc(string medicineName, decimal medicinePrice)
+        public async Task<IActionResult> ThemThuoc(Medicine medicine)
         {
-            if (!string.IsNullOrEmpty(medicineName))
+            if (ModelState.IsValid && !string.IsNullOrEmpty(medicine.Name))
             {
                 // Case-insensitive duplicate check
                 var existingMedicine = await _context.Medicines
-                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicineName.ToLower());
+                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicine.Name.ToLower());
 
                 if (existingMedicine != null)
                 {
-                    // If exists and price is different, update the price
-                    if (existingMedicine.Price != medicinePrice)
+                    // If exists and price is different, update the price and stock
+                    if (existingMedicine.Price != medicine.Price)
                     {
-                        existingMedicine.Price = medicinePrice;
-                        _context.Medicines.Update(existingMedicine);
+                        existingMedicine.Price = medicine.Price;
                     }
+                    existingMedicine.StockQuantity += medicine.StockQuantity;
+                    _context.Medicines.Update(existingMedicine);
                 }
                 else
                 {
                     // Create new medicine
-                    var newMedicine = new Medicine
-                    {
-                        Name = medicineName,
-                        Price = medicinePrice,
-                        Unit = "",
-                        Category = "",
-                        StockQuantity = 0,
-                        MinStock = 10,
-                        Manufacturer = "",
-                        ExpiryDate = null,
-                        IsActive = true
-                    };
-                    _context.Medicines.Add(newMedicine);
+                    _context.Medicines.Add(medicine);
                 }
 
                 await _context.SaveChangesAsync();

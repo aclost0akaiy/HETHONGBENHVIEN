@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "D:\\HethongBenhvien\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj": {}
+    "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj": {}
   },
   "projects": {
-    "D:\\HethongBenhvien\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj": {
+    "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\HethongBenhvien\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj",
         "projectName": "HeThongBenhVien",
-        "projectPath": "D:\\HethongBenhvien\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj",
-        "packagesPath": "C:\\Users\\doanh\\.nuget\\packages\\",
-        "outputPath": "D:\\HethongBenhvien\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\obj\\",
+        "projectPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\HeThongBenhVien.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\doanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -37,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -65,6 +72,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.23, 8.0.23]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[8.0.23, 8.0.23]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.23, 8.0.23]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.23, 8.0.23]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -73,7 +98,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
