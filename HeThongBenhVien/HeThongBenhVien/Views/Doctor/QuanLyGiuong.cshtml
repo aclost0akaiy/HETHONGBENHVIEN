@@ -21,7 +21,8 @@
             @foreach(var item in Model)
             {
                 <div class="col-md-3">
-                    <div class="card bg-danger bg-opacity-10 border-danger border-2 h-100 text-center p-3 rounded-4 shadow-sm" style="cursor: pointer;">
+                    <div class="card bg-danger bg-opacity-10 border-danger border-2 h-100 text-center p-3 rounded-4 shadow-sm" style="cursor: pointer;" 
+                         onclick="showAdmissionModal(@item.Id, '@item.Appointment?.Patient?.FullName', '@(item.AdmissionDate?.ToString("o") ?? item.CreatedAt.ToString("o"))')">
                         <i class="fa-solid fa-bed-pulse text-danger fs-1 mb-2"></i>
                         <h6 class="fw-bold mb-1 text-danger">Mã BN: @item.Appointment?.Patient?.PatientCode</h6>
                         <small class="text-dark fw-bold d-block text-truncate">@item.Appointment?.Patient?.FullName</small>
@@ -36,3 +37,74 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Xuất Viện -->
+<div class="modal fade" id="admissionModal" tabindex="-1" aria-labelledby="admissionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="@Url.Action("XuatVien", "Doctor")" method="post">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="admissionModalLabel"><i class="fa-solid fa-bed me-2"></i>Thông tin nhập viện</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="id" id="modalRecordId" value="" />
+            <h4 id="modalPatientName" class="fw-bold text-primary mb-3 text-center"></h4>
+            
+            <div class="bg-light p-3 rounded mb-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Thời gian nhập viện:</span>
+                    <strong id="modalStartTime"></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Số ngày nằm viện:</span>
+                    <strong id="modalDays">0 ngày</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Phí giường/ngày:</span>
+                    <strong>65.000 VNĐ</strong>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark text-uppercase">Tổng tiền phòng:</span>
+                    <strong class="text-danger fs-5" id="modalTotalFee">0 VNĐ</strong>
+                </div>
+            </div>
+            
+            <div class="alert alert-info py-2 small mb-0">
+                <i class="fa-solid fa-circle-info me-1"></i> Số tiền này sẽ được lưu vào hồ sơ bệnh án.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-success fw-bold"><i class="fa-solid fa-person-walking-arrow-right me-1"></i> Xuất viện</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showAdmissionModal(id, name, startTimeIso) {
+            $('#modalRecordId').val(id);
+            $('#modalPatientName').text(name);
+            
+            var startTime = new Date(startTimeIso);
+            $('#modalStartTime').text(startTime.toLocaleString('vi-VN'));
+            
+            var now = new Date();
+            var diffTime = Math.abs(now - startTime);
+            var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays < 1) diffDays = 1;
+            
+            $('#modalDays').text(diffDays + ' ngày');
+            
+            var totalFee = diffDays * 65000;
+            $('#modalTotalFee').text(totalFee.toLocaleString('vi-VN') + ' VNĐ');
+            
+            var modal = new bootstrap.Modal(document.getElementById('admissionModal'));
+            modal.show();
+        }
+    </script>
+}

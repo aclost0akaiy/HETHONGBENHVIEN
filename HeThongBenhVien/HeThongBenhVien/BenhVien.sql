@@ -61,6 +61,9 @@ CREATE TABLE MedicalRecords (
     Diagnosis NVARCHAR(MAX) NOT NULL,
     TreatmentPlan NVARCHAR(MAX) NOT NULL,
     Notes NVARCHAR(MAX) NULL,
+    AdmissionDate DATETIME2 NULL,
+    DischargeDate DATETIME2 NULL,
+    RoomFee DECIMAL(18,2) NOT NULL DEFAULT 65000,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE
 );

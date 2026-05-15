@@ -33,6 +33,10 @@ namespace HeThongBenhVien.Models
         [Display(Name = "Ghi chú thêm")]
         public string Notes { get; set; } = string.Empty;
 
+        public DateTime? AdmissionDate { get; set; }
+        public DateTime? DischargeDate { get; set; }
+        public decimal RoomFee { get; set; } = 65000;
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

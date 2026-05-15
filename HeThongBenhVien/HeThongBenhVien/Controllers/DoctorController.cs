@@ -417,10 +417,15 @@ namespace HeThongBenhVien.Controllers
         {
             if (id.HasValue)
             {
-                var record = await _context.MedicalRecords.FindAsync(id.Value);
+                var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id.Value);
                 if (record != null && !record.Notes.Contains("[NHAPVIEN]"))
                 {
                     record.Notes += "\n[NHAPVIEN]";
+                    if (record.Appointment != null)
+                    {
+                        record.Appointment.Status = 11; // 11 = Nhập viện
+                    }
+                    record.AdmissionDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                 }
             }
@@ -428,7 +433,27 @@ namespace HeThongBenhVien.Controllers
             return View(records);
         }
 
-        public IActionResult LichHen() { return View(); }
+        [HttpPost]
+        public async Task<IActionResult> XuatVien(int id)
+        {
+            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
+            if (record != null && record.Notes.Contains("[NHAPVIEN]"))
+            {
+                record.DischargeDate = DateTime.Now;
+                var days = Math.Ceiling((record.DischargeDate.Value - (record.AdmissionDate ?? record.CreatedAt)).TotalDays);
+                if (days < 1) days = 1;
+                
+                var totalFee = (decimal)days * record.RoomFee;
+                
+                record.Notes = record.Notes.Replace("[NHAPVIEN]", $"[XUATVIEN] - Tiền phòng: {totalFee:N0} VNĐ ({days} ngày)");
+                if (record.Appointment != null)
+                {
+                    record.Appointment.Status = 5; // Hoàn thành điều trị
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyGiuong));
+        }
         public IActionResult LichSuKham() { return View(); }
         public async Task<IActionResult> ThongKe(int? month)
         {
