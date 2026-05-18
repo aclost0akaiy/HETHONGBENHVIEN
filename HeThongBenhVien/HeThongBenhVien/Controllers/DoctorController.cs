@@ -53,6 +53,38 @@ namespace HeThongBenhVien.Controllers
                 UpcomingAppointments = upcomingAppointments
             };
 
+            // Build current week range (Monday - Sunday)
+            var today = DateTime.Today;
+            int diff = (int)today.DayOfWeek - 1;
+            if (diff < 0) diff = 6; // Sunday -> previous Monday
+            var weekStart = today.AddDays(-diff).Date;
+            var weekEnd = weekStart.AddDays(6).Date;
+
+            // Load work schedules for the week and include user info
+            try
+            {
+                var weekSchedules = await _context.LichLamViecs
+                    .Include(l => l.User)
+                    .Where(l => l.WorkDate >= weekStart && l.WorkDate <= weekEnd)
+                    .ToListAsync();
+
+                viewModel.WorkSchedules = weekSchedules;
+            }
+            catch (Exception)
+            {
+                // If the WorkSchedules table does not exist or DB error occurs,
+                // fall back to empty schedule so the doctor can still log in.
+                viewModel.WorkSchedules = new System.Collections.Generic.List<LichLamViec>();
+            }
+
+            // Determine current logged-in user's ID (lookup by username if available)
+            var username = User?.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                viewModel.CurrentUserId = currentUser?.Id;
+            }
+
             return View(viewModel);
         }
 

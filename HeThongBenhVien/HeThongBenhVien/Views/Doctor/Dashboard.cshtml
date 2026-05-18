@@ -20,6 +20,91 @@
         </div>
     </div>
 
+    <!-- Weekly Work Schedule (Doctor view, no add button) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Lịch Làm Việc Tuần</h6>
+                        <div class="text-muted" style="font-size: 13px;">Theo dõi và phân ca cho nhân sự chuyên môn</div>
+                    </div>
+                    <div>
+                        <small class="text-muted">Tuần hiện tại</small>
+                    </div>
+                </div>
+
+                @{
+                    var today = DateTime.Today;
+                    int diff = (int)today.DayOfWeek - 1;
+                    if (diff < 0) diff = 6;
+                    var weekStart = today.AddDays(-diff).Date;
+                    var days = Enumerable.Range(0, 7).Select(i => weekStart.AddDays(i)).ToList();
+                    var shifts = new[] {
+                        new { Key = "Ca 1", Label = "Ca 1 (06:00 - 09:00)" },
+                        new { Key = "Ca 2", Label = "Ca 2 (09:00 - 12:00)" },
+                        new { Key = "Ca 3", Label = "Ca 3 (12:00 - 15:00)" },
+                        new { Key = "Ca 4", Label = "Ca 4 (15:00 - 18:00)" },
+                        new { Key = "Ca 5", Label = "Ca 5 (18:00 - 21:00)" }
+                    };
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0" style="font-size:14px;">
+                        <thead>
+                            <tr class="table-light">
+                                <th style="width:140px;">Ca / Ngày</th>
+                                @foreach (var d in days)
+                                {
+                                    <th class="text-center">
+                                        <div style="font-weight:700;">@d.ToString("dd/MM")</div>
+                                        <div class="text-muted" style="font-size:12px;">@d.ToString("dddd")</div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in shifts)
+                            {
+                                <tr>
+                                    <td style="font-weight:600; width:140px;">@s.Label</td>
+                                    @foreach (var d in days)
+                                    {
+                                        <td style="min-width:120px;">
+                                            @{
+                                                var entries = Model.WorkSchedules
+                                                    .Where(w => w.WorkDate.Date == d.Date && (w.ShiftName ?? string.Empty).Contains(s.Key))
+                                                    .OrderBy(w => w.WorkTime)
+                                                    .ToList();
+                                            }
+                                            @if (entries.Any())
+                                            {
+                                                foreach (var e in entries)
+                                                {
+                                                    var isCurrent = Model.CurrentUserId.HasValue && e.UserId == Model.CurrentUserId.Value;
+                                                    var displayName = e.User?.FullName ?? e.User?.Username ?? "-";
+                                                    <div class="mb-1">
+                                                        <span class="badge rounded-pill @((isCurrent) ? "bg-success text-white" : "bg-light text-dark")" style="padding:0.4rem 0.6rem; display:inline-block; min-width:100px;">
+                                                            <i class="fa-solid fa-user-doctor me-1"></i> @displayName
+                                                        </span>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="text-muted" style="font-size:13px;">-</div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Stats Cards -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
