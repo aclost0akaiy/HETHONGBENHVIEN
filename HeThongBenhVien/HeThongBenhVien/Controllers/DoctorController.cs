@@ -591,12 +591,15 @@ namespace HeThongBenhVien.Controllers
                 return View("SinhHieuChiTiet", appointment);
             }
 
-            // Nếu không có ID, hiện danh sách bệnh nhân đang chờ phẫu thuật hoặc cần theo dõi
-            var appointments = await _context.MedicalRecords
-                .Include(m => m.Appointment)
-                .ThenInclude(a => a!.Patient)
-                .Where(m => m.Notes.Contains("[PHAUTHUAT]"))
-                .Select(m => m.Appointment)
+            // Nếu không có ID, hiển thị danh sách các bệnh nhân đã đo sinh hiệu
+            var appointmentIdsWithVitals = await _context.VitalSigns
+                .Select(v => v.AppointmentId)
+                .Distinct()
+                .ToListAsync();
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => appointmentIdsWithVitals.Contains(a.Id))
                 .ToListAsync();
 
             return View(appointments);
