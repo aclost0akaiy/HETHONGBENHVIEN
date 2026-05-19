@@ -29,7 +29,7 @@ namespace HeThongBenhVien.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(int? month, int? year, string? searchString)
         {
             var allAppointmentsQuery = _context.Appointments;
 
@@ -44,40 +44,47 @@ namespace HeThongBenhVien.Controllers
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
+            int currentMonth = month ?? DateTime.Now.Month;
+            int currentYear = year ?? DateTime.Now.Year;
+
             var viewModel = new DoctorDashboardViewModel
             {
                 TodayPatientsCount = unexaminedCount,
                 CompletedPatientsCount = completedCount,
                 WaitingResultsCount = waitingCount,
                 EmergencyCount = emergencyCount,
-                UpcomingAppointments = upcomingAppointments
+                UpcomingAppointments = upcomingAppointments,
+                CurrentMonth = currentMonth,
+                CurrentYear = currentYear,
+                SearchString = searchString ?? string.Empty
             };
 
-            // Build current week range (Monday - Sunday)
-            var today = DateTime.Today;
-            int diff = (int)today.DayOfWeek - 1;
-            if (diff < 0) diff = 6; // Sunday -> previous Monday
-            var weekStart = today.AddDays(-diff).Date;
-            var weekEnd = weekStart.AddDays(6).Date;
-
-            // Load work schedules for the week and include user info
             try
             {
-                var weekSchedules = await _context.LichLamViecs
+                var scheduleQuery = _context.LichLamViecs
                     .Include(l => l.User)
-                    .Where(l => l.WorkDate >= weekStart && l.WorkDate <= weekEnd)
-                    .ToListAsync();
+                    .Where(l => l.MonthNumber == currentMonth && l.YearNumber == currentYear);
 
-                viewModel.WorkSchedules = weekSchedules;
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    var normalizedSearch = searchString.ToLower();
+                    scheduleQuery = scheduleQuery.Where(l =>
+                        l.User != null &&
+                        ((l.User.FullName ?? string.Empty).ToLower().Contains(normalizedSearch) ||
+                        (l.User.Username ?? string.Empty).ToLower().Contains(normalizedSearch) ||
+                        (l.ShiftName ?? string.Empty).ToLower().Contains(normalizedSearch)));
+                }
+
+                viewModel.WorkSchedules = await scheduleQuery
+                    .OrderBy(l => l.WorkDate)
+                    .ThenBy(l => l.ShiftName)
+                    .ToListAsync();
             }
             catch (Exception)
             {
-                // If the WorkSchedules table does not exist or DB error occurs,
-                // fall back to empty schedule so the doctor can still log in.
                 viewModel.WorkSchedules = new System.Collections.Generic.List<LichLamViec>();
             }
 
-            // Determine current logged-in user's ID (lookup by username if available)
             var username = User?.Identity?.Name;
             if (!string.IsNullOrEmpty(username))
             {

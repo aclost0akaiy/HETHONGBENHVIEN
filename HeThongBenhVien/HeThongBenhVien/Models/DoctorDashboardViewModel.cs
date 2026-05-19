@@ -15,5 +15,8 @@ namespace HeThongBenhVien.Models
 
         // The currently logged in user id (if available) to highlight their name
         public int? CurrentUserId { get; set; }
+        public int CurrentMonth { get; set; }
+        public int CurrentYear { get; set; }
+        public string SearchString { get; set; } = string.Empty;
     }
 }

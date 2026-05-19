@@ -20,90 +20,7 @@
         </div>
     </div>
 
-    <!-- Weekly Work Schedule (Doctor view, no add button) -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="glass-card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Lịch Làm Việc Tuần</h6>
-                        <div class="text-muted" style="font-size: 13px;">Theo dõi và phân ca cho nhân sự chuyên môn</div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Tuần hiện tại</small>
-                    </div>
-                </div>
 
-                @{
-                    var today = DateTime.Today;
-                    int diff = (int)today.DayOfWeek - 1;
-                    if (diff < 0) diff = 6;
-                    var weekStart = today.AddDays(-diff).Date;
-                    var days = Enumerable.Range(0, 7).Select(i => weekStart.AddDays(i)).ToList();
-                    var shifts = new[] {
-                        new { Key = "Ca 1", Label = "Ca 1 (06:00 - 09:00)" },
-                        new { Key = "Ca 2", Label = "Ca 2 (09:00 - 12:00)" },
-                        new { Key = "Ca 3", Label = "Ca 3 (12:00 - 15:00)" },
-                        new { Key = "Ca 4", Label = "Ca 4 (15:00 - 18:00)" },
-                        new { Key = "Ca 5", Label = "Ca 5 (18:00 - 21:00)" }
-                    };
-                }
-
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0" style="font-size:14px;">
-                        <thead>
-                            <tr class="table-light">
-                                <th style="width:140px;">Ca / Ngày</th>
-                                @foreach (var d in days)
-                                {
-                                    <th class="text-center">
-                                        <div style="font-weight:700;">@d.ToString("dd/MM")</div>
-                                        <div class="text-muted" style="font-size:12px;">@d.ToString("dddd")</div>
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var s in shifts)
-                            {
-                                <tr>
-                                    <td style="font-weight:600; width:140px;">@s.Label</td>
-                                    @foreach (var d in days)
-                                    {
-                                        <td style="min-width:120px;">
-                                            @{
-                                                var entries = Model.WorkSchedules
-                                                    .Where(w => w.WorkDate.Date == d.Date && (w.ShiftName ?? string.Empty).Contains(s.Key))
-                                                    .OrderBy(w => w.WorkTime)
-                                                    .ToList();
-                                            }
-                                            @if (entries.Any())
-                                            {
-                                                foreach (var e in entries)
-                                                {
-                                                    var isCurrent = Model.CurrentUserId.HasValue && e.UserId == Model.CurrentUserId.Value;
-                                                    var displayName = e.User?.FullName ?? e.User?.Username ?? "-";
-                                                    <div class="mb-1">
-                                                        <span class="badge rounded-pill @((isCurrent) ? "bg-success text-white" : "bg-light text-dark")" style="padding:0.4rem 0.6rem; display:inline-block; min-width:100px;">
-                                                            <i class="fa-solid fa-user-doctor me-1"></i> @displayName
-                                                        </span>
-                                                    </div>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <div class="text-muted" style="font-size:13px;">-</div>
-                                            }
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Quick Stats Cards -->
     <div class="row mb-4">
@@ -178,8 +95,113 @@
 
     <!-- Main Content Row -->
     <div class="row">
-        <!-- Patient Queue -->
-        <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="col-xl-4 mb-4">
+            <div class="glass-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Lịch trực tháng @Model.CurrentMonth/@Model.CurrentYear</h6>
+                        <div class="text-muted" style="font-size: 13px;">Xem lịch làm việc chi tiết và đánh dấu tên bạn.</div>
+                    </div>
+                </div>
+
+                <form asp-action="Dashboard" method="get" class="bg-white p-3 mb-4 shadow-sm d-flex gap-2 align-items-center flex-wrap" style="border-radius: 12px; border: 1px solid #eaecf4;">
+                    <div class="input-group" style="flex: 1 1 100%; min-width: 220px;">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="searchString" value="@Model.SearchString" class="form-control bg-light border-start-0" placeholder="Tìm kiếm bác sĩ..." />
+                    </div>
+                    <select name="month" class="form-select bg-light border-0" style="max-width: 120px;" onchange="this.form.submit()">
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" selected="@(i == Model.CurrentMonth ? "selected" : null)">Tháng @i</option>
+                        }
+                    </select>
+                    <select name="year" class="form-select bg-light border-0" style="max-width: 110px;" onchange="this.form.submit()">
+                        @for (int y = DateTime.Now.Year - 1; y <= DateTime.Now.Year + 1; y++)
+                        {
+                            <option value="@y" selected="@(y == Model.CurrentYear ? "selected" : null)">@y</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Lọc</button>
+                </form>
+
+                @{ 
+                    int daysInMonth = DateTime.DaysInMonth(Model.CurrentYear, Model.CurrentMonth);
+                    var dates = Enumerable.Range(1, daysInMonth).Select(d => new DateTime(Model.CurrentYear, Model.CurrentMonth, d)).ToList();
+                    var definedShifts = new List<string> {
+                        "Ca 1 (06:00 - 09:00)",
+                        "Ca 2 (09:00 - 12:00)",
+                        "Ca 3 (12:00 - 15:00)",
+                        "Ca 4 (15:00 - 18:00)",
+                        "Ca 5 (18:00 - 21:00)",
+                        "Ca 6 (21:00 - 24:00)",
+                        "Ca 7 (00:00 - 06:00)"
+                    };
+                }
+
+                <div class="custom-scroll" style="max-height: 560px; overflow-x:auto;">
+                    <table class="table table-bordered schedule-table mb-0">
+                        <thead>
+                            <tr>
+                                <th class="shift-col sticky-col text-center align-middle">
+                                    <div class="text-primary fw-bold" style="font-size: 1rem;">Ngày & Thứ</div>
+                                    <small class="text-muted fw-normal" style="font-size: 0.75rem;">7 ca</small>
+                                </th>
+                                @foreach (var date in dates)
+                                {
+                                    <th class="date-col text-center">
+                                        <div class="fs-6 fw-bold @(date.Date == DateTime.Today ? "text-primary" : "text-dark")">
+                                            @date.ToString("dd/MM")
+                                        </div>
+                                        <div class="text-muted fw-normal small">@GetVietnameseDayOfWeek(date)</div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var shift in definedShifts)
+                            {
+                                <tr>
+                                    <td class="shift-col sticky-col align-middle">
+                                        <div class="fw-bold text-dark">@shift.Substring(0, 4)</div>
+                                        <div class="text-muted small">@shift.Substring(5)</div>
+                                    </td>
+                                    @foreach (var date in dates)
+                                    {
+                                        <td class="schedule-cell">
+                                            @{ 
+                                                var matchedSchedules = Model.WorkSchedules
+                                                    .Where(m => m.WorkDate.Date == date.Date && (m.ShiftName ?? string.Empty).StartsWith(shift.Substring(0, 4)))
+                                                    .OrderBy(m => m.User?.FullName)
+                                                    .ToList();
+                                            }
+                                            @if (matchedSchedules.Any())
+                                            {
+                                                <div class="d-flex flex-column gap-1 mt-1">
+                                                    @foreach (var item in matchedSchedules)
+                                                    {
+                                                        var isCurrent = Model.CurrentUserId.HasValue && item.UserId == Model.CurrentUserId.Value;
+                                                        var displayName = item.User?.FullName ?? item.User?.Username ?? "Không xác định";
+                                                        <span class="badge rounded-pill @(isCurrent ? "bg-success text-white" : "bg-light text-dark")" style="font-size:0.75rem;">
+                                                            <i class="fa-solid fa-user-doctor me-1"></i> @displayName
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-muted" style="font-size: 12px;">Trống</div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5 mb-4">
             <div class="glass-card h-100">
                 <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
                     <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Danh sách chờ khám tiếp theo</h6>
@@ -275,15 +297,13 @@
             </div>
         </div>
 
-        <!-- Quick Access Menu (Matrix of 15 functionalities) -->
-        <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="col-xl-3 mb-4">
             <div class="glass-card h-100">
                 <div class="p-4 border-bottom">
                     <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Hệ sinh thái Quản lý Bệnh nhân</h6>
                 </div>
                 <div class="p-4">
                     <div class="row g-3">
-                        <!-- Func 1 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("DanhSach", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -292,7 +312,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">DS Bệnh Nhân</div>
                             </a>
                         </div>
-                        <!-- Func 2 -->
                         <div class="col-4 text-center">
                             <a href="#" data-bs-toggle="modal" data-bs-target="#addAppointmentModal" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -301,7 +320,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Tiếp nhận Mới</div>
                             </a>
                         </div>
-                        <!-- Func 3 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("LichHen", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -310,7 +328,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Hẹn</div>
                             </a>
                         </div>
-                        <!-- Func 4 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -319,7 +336,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Hồ Sơ BA</div>
                             </a>
                         </div>
-                        <!-- Func 5 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("KeDonThuoc", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -328,7 +344,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Kê Đơn Thuốc</div>
                             </a>
                         </div>
-                        <!-- Func 6 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("ChiDinhXetNghiem", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -337,7 +352,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Chỉ Định XN</div>
                             </a>
                         </div>
-                        <!-- Func 7 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("KetQuaCanLamSang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -346,7 +360,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Kết Quả CLS</div>
                             </a>
                         </div>
-                        <!-- Func 8 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("SinhHieu", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -355,7 +368,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Sinh Hiệu</div>
                             </a>
                         </div>
-                        <!-- Func 9 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("LichSuKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -364,7 +376,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Sử Khám</div>
                             </a>
                         </div>
-                        <!-- Func 10 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("LichMo", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-dark bg-opacity-10 text-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -373,7 +384,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Mổ</div>
                             </a>
                         </div>
-                        <!-- Func 11 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("ThongKe", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -382,7 +392,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Thống Kê</div>
                             </a>
                         </div>
-                        <!-- Func 12 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("CanhBaoTinhTrang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -391,7 +400,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Cảnh Báo TT</div>
                             </a>
                         </div>
-                         <!-- Func 13 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("HenTaiKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -400,7 +408,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">Hẹn Tái Khám</div>
                             </a>
                         </div>
-                         <!-- Func 14 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("QuanLyGiuong", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -409,7 +416,6 @@
                                 <div style="font-size: 11px; color: #475569; font-weight: 500;">QL Giường</div>
                             </a>
                         </div>
-                         <!-- Func 15 -->
                         <div class="col-4 text-center">
                             <a href="@Url.Action("HoiChanOnline", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
                                 <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
@@ -479,6 +485,23 @@
     </div>
 </div>
 
+@functions {
+    public string GetVietnameseDayOfWeek(DateTime date)
+    {
+        return date.DayOfWeek switch
+        {
+            DayOfWeek.Monday => "Thứ 2",
+            DayOfWeek.Tuesday => "Thứ 3",
+            DayOfWeek.Wednesday => "Thứ 4",
+            DayOfWeek.Thursday => "Thứ 5",
+            DayOfWeek.Friday => "Thứ 6",
+            DayOfWeek.Saturday => "Thứ 7",
+            DayOfWeek.Sunday => "Chủ Nhật",
+            _ => string.Empty,
+        };
+    }
+}
+
 @section Styles {
     <style>
         .menu-item-box:hover {
@@ -486,13 +509,82 @@
             transform: translateY(-3px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
+
+        .custom-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .schedule-table {
+            border-color: #eaecf4;
+            min-width: 900px;
+            table-layout: fixed;
+        }
+
+        .schedule-table thead th {
+            background-color: #f8f9fc;
+            border-bottom: 2px solid #e3e6f0;
+            text-align: center;
+            vertical-align: middle;
+            padding: 1rem 0.5rem;
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background-color: #f8f9fc !important;
+            z-index: 2;
+            border-right: 2px solid #eaecf4 !important;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .shift-col {
+            width: 140px;
+            padding-left: 1rem !important;
+        }
+
+        .date-col {
+            width: 130px;
+        }
+
+        .schedule-cell {
+            height: 100px;
+            vertical-align: top;
+            padding: 0.5rem !important;
+            transition: background-color 0.2s ease;
+        }
+
+        .schedule-cell:hover {
+            background-color: #f4f6f9;
+            cursor: pointer;
+        }
+
+        .doctor-event {
+            background-color: #e8f2fc;
+            color: #2e59d9;
+            border: 1px solid #c2dcf6;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: left;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .doctor-event:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #dceaf9;
+        }
     </style>
 }
 
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // JS approach to replace 
             setInterval(function() {
                 $('.blink').fadeTo(750, 0).fadeTo(750, 1);
             }, 1500);
