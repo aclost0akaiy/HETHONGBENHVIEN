@@ -21,11 +21,12 @@ namespace HeThongBenhVien.Models
         [StringLength(100)]
         public string HeadDoctor { get; set; } = string.Empty;
 
-        public int TotalBeds { get; set; }
+        public int TotalBeds { get; set; } = 50;
 
         public int OccupiedBeds { get; set; }
 
-        [StringLength(20)]
+        [StringLength(10)]
+        [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số")]
         public string Phone { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;

@@ -250,8 +250,45 @@ namespace HeThongBenhVien.Controllers
         {
             if (!string.IsNullOrEmpty(dept.DepartmentName))
             {
+                // Tự động sinh mã khoa theo thứ tự 1, 2, 3, ...
+                var maxCode = await _context.Departments
+                    .Select(d => d.DepartmentCode)
+                    .ToListAsync();
+                int nextNum = 1;
+                if (maxCode.Any())
+                {
+                    var nums = maxCode
+                        .Select(c => { int n; return int.TryParse(c, out n) ? n : 0; })
+                        .ToList();
+                    nextNum = nums.Max() + 1;
+                }
+                dept.DepartmentCode = nextNum.ToString();
+                dept.TotalBeds = 50; // Force 50 beds
                 _context.Departments.Add(dept);
                 await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyKhoaPhong));
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapNhatKhoaPhong(Department dept)
+        {
+            if (dept.Id > 0)
+            {
+                var existing = await _context.Departments.FindAsync(dept.Id);
+                if (existing != null)
+                {
+                    existing.DepartmentCode = dept.DepartmentCode;
+                    existing.DepartmentName = dept.DepartmentName;
+                    existing.Description = dept.Description;
+                    existing.HeadDoctor = dept.HeadDoctor;
+                    existing.TotalBeds = 50; // Force 50 beds
+                    existing.Phone = dept.Phone;
+                    existing.IsActive = dept.IsActive;
+                    
+                    _context.Departments.Update(existing);
+                    await _context.SaveChangesAsync();
+                }
             }
             return RedirectToAction(nameof(QuanLyKhoaPhong));
         }

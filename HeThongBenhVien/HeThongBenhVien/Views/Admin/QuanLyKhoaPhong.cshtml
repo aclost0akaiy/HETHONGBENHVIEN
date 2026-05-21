@@ -39,11 +39,10 @@
                             else{<span class="badge bg-secondary">Tạm ngưng</span>}
                         </td>
                         <td class="text-center">
-                            <form asp-action="XoaKhoaPhong" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@item.Id"/>
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Xác nhận xóa?');"><i class="fas fa-trash"></i></button>
-                            </form>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editModal@(item.Id)">
+                                <i class="fas fa-edit me-1"></i> Chỉnh sửa
+                            </button>
+
                         </td>
                     </tr>
                     }
@@ -62,13 +61,76 @@
     <form asp-action="ThemKhoaPhong" method="post">
         @Html.AntiForgeryToken()
         <div class="modal-body">
-            <div class="mb-3"><label class="form-label fw-bold">Mã Khoa</label><input name="DepartmentCode" class="form-control" required/></div>
-            <div class="mb-3"><label class="form-label fw-bold">Tên Khoa</label><input name="DepartmentName" class="form-control" required/></div>
+            <input type="hidden" name="DepartmentCode" value="" />
+            <div class="mb-3"><label class="form-label fw-bold">Tên Khoa</label><input name="DepartmentName" class="form-control" required placeholder="Nhập tên khoa..."/></div>
             <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><input name="Description" class="form-control"/></div>
             <div class="mb-3"><label class="form-label fw-bold">Trưởng Khoa</label><input name="HeadDoctor" class="form-control"/></div>
-            <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Tổng Giường</label><input name="TotalBeds" type="number" class="form-control" value="0"/></div>
-            <div class="col-md-6 mb-3"><label class="form-label fw-bold">SĐT</label><input name="Phone" class="form-control"/></div></div>
+            <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Tổng Giường</label><input name="TotalBeds" type="number" class="form-control bg-light" value="50" readonly/></div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">SĐT</label>
+                <input name="Phone" type="tel" class="form-control" pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
+            </div></div>
         </div>
         <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
     </form>
 </div></div></div>
+
+@foreach (var item in Model)
+{
+    <!-- Modal Chỉnh Sửa cho @item.DepartmentName -->
+    <div class="modal fade" id="editModal@(item.Id)" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chỉnh sửa Khoa Phòng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="CapNhatKhoaPhong" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@item.Id" />
+                    <input type="hidden" name="DepartmentCode" value="@item.DepartmentCode" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên Khoa</label>
+                            <input name="DepartmentName" class="form-control" value="@item.DepartmentName" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả</label>
+                            <input name="Description" class="form-control" value="@item.Description" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trưởng Khoa</label>
+                            <input name="HeadDoctor" class="form-control" value="@item.HeadDoctor" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Tổng Giường</label>
+                                <input name="TotalBeds" type="number" class="form-control bg-light" value="50" readonly />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">SĐT</label>
+                                <input name="Phone" type="tel" class="form-control" value="@item.Phone" pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
+                                <small class="text-muted">Nhập 10 số, bắt đầu bằng 0</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold d-block">Trạng thái hoạt động</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="IsActive" id="active@(item.Id)" value="true" @(item.IsActive ? "checked" : "")>
+                                <label class="form-check-label text-success fw-bold" for="active@(item.Id)">Hoạt động</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="IsActive" id="inactive@(item.Id)" value="false" @(!item.IsActive ? "checked" : "")>
+                                <label class="form-check-label text-danger fw-bold" for="inactive@(item.Id)">Ngưng hoạt động</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -39,17 +39,26 @@
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <div class="bg-light p-3 rounded-3 h-100 border border-light">
-                            <span class="text-muted small fw-bold text-uppercase d-block mb-2">Sinh hiệu</span>
-                            <div class="text-dark">@Model.Vitals</div>
+                            <span class="text-muted small fw-bold text-uppercase d-block mb-2">Sinh hiệu (Mới nhất)</span>
                             @{
                                 var vitalSignsList = ViewBag.VitalSigns as List<HeThongBenhVien.Models.VitalSign>;
                                 var latestVital = vitalSignsList?.FirstOrDefault();
                             }
                             @if (latestVital != null)
                             {
-                                <div class="mt-2 pt-2 border-top border-light">
-                                    <small class="text-muted"><i class="fa-solid fa-clock me-1"></i>Cập nhật lần cuối: @latestVital.RecordedAt.ToString("HH:mm dd/MM/yyyy") - ĐD: @latestVital.NurseName</small>
+                                <div class="text-dark">
+                                    <span class="me-3">Mạch: <strong>@latestVital.Pulse</strong> bpm</span>
+                                    <span class="me-3">T°: <strong>@latestVital.Temperature</strong> °C</span>
+                                    <span class="me-3">HA: <strong>@latestVital.BloodPressure</strong> mmHg</span>
+                                    <span>SpO2: <strong>@latestVital.SpO2</strong> %</span>
                                 </div>
+                                <div class="mt-2 pt-2 border-top border-light">
+                                    <small class="text-muted"><i class="fa-solid fa-clock me-1"></i>Cập nhật: @latestVital.RecordedAt.ToString("HH:mm dd/MM/yyyy") - ĐD: @latestVital.NurseName</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted italic">Chưa có thông tin sinh hiệu ghi nhận.</div>
                             }
                         </div>
                     </div>
@@ -164,18 +173,18 @@
                         <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn btn-danger px-3 py-2 fw-bold">
                             <i class="fa-solid fa-scalpel me-1"></i> Phẫu thuật
                         </a>
-                        <a href="@Url.Action("QuanLyGiuong", "Doctor", new { id = Model.Id })" class="btn btn-secondary px-3 py-2 fw-bold">
+                        <button type="button" class="btn btn-secondary px-3 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#admissionModel">
                             <i class="fa-solid fa-bed me-1"></i> Nhập viện
-                        </a>
-                        <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3">
+                        </button>
+                        <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-2">
                             <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
+                            <button type="submit" class="btn btn-success px-4 py-2 fw-bold text-white shadow-sm rounded-pill">
                                 <i class="fa-solid fa-check-double me-1"></i> Xác nhận
                             </button>
                         </form>
                     }
                     
-                    <button class="btn btn-primary px-4 py-2 fw-bold ms-3" onclick="window.print()">
+                    <button class="btn btn-primary px-4 py-2 fw-bold ms-2 rounded-pill shadow-sm" onclick="window.print()">
                         <i class="fa-solid fa-print me-1"></i> In Hồ Sơ
                     </button>
                 </div>
@@ -183,3 +192,124 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Nhập Viện (Moved to root level for stability) -->
+<div class="modal fade" id="admissionModel" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header bg-primary text-white p-4">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-bed me-2"></i>Chọn Khoa & Giường Bệnh Nằm Viện</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="NhapVienNoiTru" method="post" id="formNhapVien">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="bedNumber" id="selectedBedNumber" value="" />
+                <div class="modal-body p-4 bg-light">
+                    @if (!(ViewBag.Departments as List<HeThongBenhVien.Models.Department>)?.Any() ?? true)
+                    {
+                        <div class="alert alert-danger text-center shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Hệ thống chưa có dữ liệu khoa phòng. Vui lòng liên hệ Admin để thêm mới khoa phòng trước khi nhập viện.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-6 offset-md-3 text-center">
+                                <label class="form-label fw-bold small text-uppercase text-muted mb-2">Bước 1: Chọn Khoa / Phòng nội trú</label>
+                                <select name="departmentId" id="deptSelect" class="form-select form-select-lg text-center border-primary shadow-sm" required onchange="loadBeds(this.value)" style="border-radius: 12px;">
+                                    <option value="">-- Click để chọn Khoa --</option>
+                                    @foreach(var d in ViewBag.Departments as List<HeThongBenhVien.Models.Department>)
+                                    {
+                                        <option value="@d.Id">@d.DepartmentName (@(d.TotalBeds - d.OccupiedBeds) giường trống)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="bedGridContainer" class="mt-4" style="display:none;">
+                            <label class="form-label fw-bold small text-uppercase text-muted mb-3 d-block text-center">Bước 2: Chọn vị trí giường bệnh (Giường trống màu trắng)</label>
+                            <div class="bed-scroll-area p-4 bg-white rounded-4 border shadow-inner">
+                                <div class="d-flex flex-wrap gap-3 justify-content-center" id="bedGrid">
+                                    @for(int i = 1; i <= 50; i++)
+                                    {
+                                        <div class="bed-item" id="bed-@i" data-bed="@i" onclick="selectBed(@i)">
+                                            <div class="bed-icon"><i class="fa-solid fa-bed"></i></div>
+                                            <div class="bed-number">G-@i</div>
+                                            <div class="bed-patient">Trống</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <div class="d-inline-flex gap-4 bg-white p-2 px-4 rounded-pill border shadow-sm">
+                                <div class="d-flex align-items-center gap-2 small"><div class="legend-box" style="background:#fff; border:1px solid #e2e8f0;"></div> Giường trống</div>
+                                <div class="d-flex align-items-center gap-2 small"><div class="legend-box" style="background:#fee2e2; border:1px solid #ef4444;"></div> Đã có bệnh</div>
+                                <div class="d-flex align-items-center gap-2 small"><div class="legend-box" style="background:#0d6efd; border:1px solid #0044cc;"></div> Đang chọn</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer bg-white border-0 px-4 py-3 shadow-top">
+                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold rounded-pill" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" id="btnSubmitAdmission" class="btn btn-primary px-5 fw-bold shadow-lg rounded-pill" disabled>
+                        <i class="fa-solid fa-check-circle me-2"></i>Xác nhận Nhập viện
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+                        <style>
+                            .legend-box { width:16px; height:16px; border-radius:4px; }
+                            .bed-scroll-area { max-height: 450px; overflow-y: auto; scrollbar-width: thin; }
+                            .bed-item { width: 100px; height: 100px; border: 2px solid #e2e8f0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); background: #fff; position: relative; user-select: none; }
+                            .bed-item:hover { transform: translateY(-5px); border-color: #0d6efd; box-shadow: 0 10px 20px rgba(13, 110, 253, 0.1); }
+                            .bed-item.occupied { background: #fee2e2; border-color: #ef4444; cursor: not-allowed; opacity: 1; }
+                            .bed-item.occupied .bed-icon { color: #ef4444; }
+                            .bed-item.occupied .bed-number { color: #b91c1c; }
+                            .bed-item.occupied .bed-patient { color: #ef4444; font-weight: 500; }
+                            .bed-item.selected { background: #0d6efd; border-color: #0044cc; transform: scale(1.05); }
+                            .bed-item.selected .bed-icon, .bed-item.selected .bed-number, .bed-item.selected .bed-patient { color: #fff; }
+                            .bed-icon { font-size: 22px; color: #cbd5e1; margin-bottom: 4px; }
+                            .bed-number { font-weight: 800; font-size: 14px; color: #475569; }
+                            .bed-patient { font-size: 9px; color: #94a3b8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+                        </style>
+
+                        <script>
+                            function loadBeds(deptId) {
+                                if (!deptId) {
+                                    $('#bedGridContainer').hide();
+                                    return;
+                                }
+
+                                // Reset beds state
+                                $('.bed-item').removeClass('occupied selected').css('pointer-events', 'auto');
+                                $('.bed-patient').text('Trống');
+                                $('#selectedBedNumber').val('');
+                                $('#btnSubmitAdmission').prop('disabled', true);
+
+                                // Load occupied beds from server
+                                $.get('/Doctor/GetOccupiedBeds', { departmentId: deptId }, function(data) {
+                                    data.forEach(function(item) {
+                                        let bed = $('#bed-' + item.bedNumber);
+                                        bed.addClass('occupied').css('pointer-events', 'none');
+                                        bed.find('.bed-patient').text(item.patientName);
+                                    });
+                                    $('#bedGridContainer').show();
+                                });
+                            }
+
+                            function selectBed(num) {
+                                let bed = $('#bed-' + num);
+                                if (bed.hasClass('occupied')) return;
+
+                                $('.bed-item').removeClass('selected');
+                                bed.addClass('selected');
+                                $('#selectedBedNumber').val(num);
+                                $('#btnSubmitAdmission').prop('disabled', false);
+                            }
+                        </script>
+

@@ -18,9 +18,6 @@ namespace HeThongBenhVien.Models
         [Display(Name = "Triệu chứng lâm sàng")]
         public string Symptoms { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng nhập sinh hiệu")]
-        [Display(Name = "Sinh hiệu (Huyết áp, Nhịp tim, Nhiệt độ)")]
-        public string Vitals { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập chẩn đoán")]
         [Display(Name = "Chẩn đoán bệnh")]
@@ -32,6 +29,12 @@ namespace HeThongBenhVien.Models
 
         [Display(Name = "Ghi chú thêm")]
         public string Notes { get; set; } = string.Empty;
+
+        public int? DepartmentId { get; set; }
+        [ForeignKey("DepartmentId")]
+        public Department? Department { get; set; }
+        
+        public int? BedNumber { get; set; }
 
         public DateTime? AdmissionDate { get; set; }
         public DateTime? DischargeDate { get; set; }

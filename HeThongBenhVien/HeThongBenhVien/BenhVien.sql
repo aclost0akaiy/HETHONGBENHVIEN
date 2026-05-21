@@ -41,6 +41,20 @@ CREATE TABLE Users (
 );
 GO
 
+-- 1.6 Tạo bảng Khoa Phòng
+CREATE TABLE Departments (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    DepartmentCode NVARCHAR(50) NOT NULL,
+    DepartmentName NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(200) NULL,
+    HeadDoctor NVARCHAR(100) NULL,
+    TotalBeds INT NOT NULL DEFAULT 50,
+    OccupiedBeds INT NOT NULL DEFAULT 0,
+    Phone NVARCHAR(20) NULL,
+    IsActive BIT NOT NULL DEFAULT 1
+);
+GO
+
 -- 2. Tạo bảng Lịch Khám (Appointments)
 CREATE TABLE Appointments (
     Id INT IDENTITY(1,1) PRIMARY KEY,
@@ -57,16 +71,27 @@ CREATE TABLE MedicalRecords (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     AppointmentId INT NOT NULL,
     Symptoms NVARCHAR(MAX) NOT NULL,
-    Vitals NVARCHAR(MAX) NOT NULL,
     Diagnosis NVARCHAR(MAX) NOT NULL,
     TreatmentPlan NVARCHAR(MAX) NOT NULL,
     Notes NVARCHAR(MAX) NULL,
     AdmissionDate DATETIME2 NULL,
     DischargeDate DATETIME2 NULL,
     RoomFee DECIMAL(18,2) NOT NULL DEFAULT 65000,
+    DepartmentId INT NULL,
+    BedNumber INT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE
+    CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_MedicalRecords_Departments FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
 );
+GO
+
+-- Thêm dữ liệu mẫu cho Departments
+INSERT INTO Departments (DepartmentCode, DepartmentName, Description, HeadDoctor, TotalBeds, Phone) VALUES 
+(N'KNT', N'Khoa Nội Tổng Hợp', N'Chuyên điều trị các bệnh nội khoa', N'BS. Nguyễn Văn A', 50, '0901234567'),
+(N'KNG', N'Khoa Ngoại', N'Chuyên phẫu thuật điều trị', N'BS. Trần Thị B', 50, '0902345678'),
+(N'KSN', N'Khoa Sản', N'Chăm sóc sức khỏe phụ sản', N'BS. Lê Văn C', 50, '0903456789'),
+(N'KNH', N'Khoa Nhi', N'Chăm sóc sức khỏe trẻ em', N'BS. Phạm Văn D', 50, '0904567890'),
+(N'KCC', N'Khoa Cấp Cứu', N'Xử lý các trường hợp khẩn cấp', N'BS. Hoàng Văn E', 50, '0805678901');
 GO
 
 -- 3.1. Tạo bảng Đơn thuốc (Prescriptions)

@@ -270,6 +270,8 @@ namespace HeThongBenhVien.Controllers
                 .Where(t => t.MedicalRecordId == id)
                 .ToListAsync();
 
+            ViewBag.Departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
+
             return View(record);
         }
 
@@ -452,24 +454,79 @@ namespace HeThongBenhVien.Controllers
             return View(records);
         }
 
-        public async Task<IActionResult> QuanLyGiuong(int? id)
+        public async Task<IActionResult> GetOccupiedBeds(int departmentId)
         {
-            if (id.HasValue)
+            var occupiedBeds = await _context.MedicalRecords
+                .Include(r => r.Appointment)
+                .ThenInclude(a => a!.Patient)
+                .Where(r => r.DepartmentId == departmentId && r.AdmissionDate != null && r.DischargeDate == null)
+                .Select(r => new { 
+                    BedNumber = r.BedNumber, 
+                    PatientName = r.Appointment != null && r.Appointment.Patient != null ? r.Appointment.Patient.FullName : "N/A", 
+                    AdmissionDate = r.AdmissionDate, 
+                    RecordId = r.Id 
+                })
+                .ToListAsync();
+            return Json(occupiedBeds);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> NhapVienNoiTru(int id, int departmentId, int bedNumber)
+        {
+            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
+            if (record != null)
             {
-                var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id.Value);
-                if (record != null && !record.Notes.Contains("[NHAPVIEN]"))
+                record.DepartmentId = departmentId;
+                record.BedNumber = bedNumber;
+                record.AdmissionDate = DateTime.Now;
+                
+                if (!record.Notes.Contains("[NHAPVIEN]"))
                 {
                     record.Notes += "\n[NHAPVIEN]";
-                    if (record.Appointment != null)
-                    {
-                        record.Appointment.Status = 11; // 11 = Nhập viện
-                    }
-                    record.AdmissionDate = DateTime.Now;
-                    await _context.SaveChangesAsync();
                 }
+                
+                if (record.Appointment != null)
+                {
+                    record.Appointment.Status = 11; // 11 = Nhập viện
+                }
+
+                // Cập nhật số giường của khoa
+                var dept = await _context.Departments.FindAsync(departmentId);
+                if (dept != null)
+                {
+                    dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => r.DepartmentId == departmentId && r.AdmissionDate != null && r.DischargeDate == null) + 1;
+                }
+
+                await _context.SaveChangesAsync();
             }
-            var records = await _context.MedicalRecords.Include(m => m.Appointment).ThenInclude(a => a.Patient).Where(m => m.Notes.Contains("[NHAPVIEN]")).ToListAsync();
-            return View(records);
+            return RedirectToAction(nameof(QuanLyGiuong), new { deptId = departmentId });
+        }
+
+        public async Task<IActionResult> QuanLyGiuong(int? deptId)
+        {
+            var departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
+            ViewBag.Departments = departments;
+            
+            int selectedDeptId = deptId ?? (departments.FirstOrDefault()?.Id ?? 0);
+            ViewBag.SelectedDeptId = selectedDeptId;
+
+            var recordsQuery = _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .ThenInclude(a => a.Patient)
+                .Where(m => m.AdmissionDate != null && m.DischargeDate == null);
+
+            var allOccupiedRecords = await recordsQuery.ToListAsync();
+            
+            if (selectedDeptId > 0)
+            {
+                ViewBag.CurrentDeptOccupiedBeds = allOccupiedRecords.Where(r => r.DepartmentId == selectedDeptId).ToList();
+            }
+            else
+            {
+                ViewBag.CurrentDeptOccupiedBeds = new List<MedicalRecord>();
+            }
+
+            return View(allOccupiedRecords);
         }
 
         [HttpPost]
