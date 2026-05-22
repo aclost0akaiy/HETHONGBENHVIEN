@@ -40,6 +40,9 @@ namespace HeThongBenhVien.Models
         public DateTime? DischargeDate { get; set; }
         public decimal RoomFee { get; set; } = 65000;
 
+        public int? SurgeonId { get; set; }
+        public int? SurgeryFeeId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

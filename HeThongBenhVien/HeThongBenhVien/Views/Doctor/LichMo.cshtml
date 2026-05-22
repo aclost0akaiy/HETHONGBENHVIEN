@@ -50,22 +50,48 @@
                                 <div class="fw-bold">@item.Appointment?.Patient?.FullName</div>
                                 <small class="text-muted">Mã BN: @item.Appointment?.Patient?.PatientCode</small>
                             </td>
-                            <td><span class="badge bg-light text-dark border">Chưa phân công</span></td>
+                            @{
+                                var isCompleted = item.Appointment?.Status == 10 || item.Appointment?.Status == 5;
+                            }
+                            <td>
+                                <select name="surgeonId" class="form-select form-select-sm" form="form-@item.Appointment?.Id" @(isCompleted ? "disabled" : "")>
+                                    <option value="">-- Chọn Bác Sĩ --</option>
+                                    @if (ViewBag.Surgeons != null)
+                                    {
+                                        foreach (var surgeon in ViewBag.Surgeons)
+                                        {
+                                            <option value="@surgeon.Id">@surgeon.FullName</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
                             <td>@item.Diagnosis</td>
                             <td>
-                                <span class="badge @statusClass rounded-pill px-3">@statusText</span>
-                                <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Appointment?.Id })" class="ms-1 @(hasVitals ? "text-success" : "text-danger")" title="Theo dõi sinh hiệu">
-                                    <i class="fa-solid fa-heart-pulse"></i>
-                                </a>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge @statusClass rounded-pill px-3">@statusText</span>
+                                    <select name="surgeryType" class="form-select form-select-sm w-auto" form="form-@item.Appointment?.Id" @(isCompleted ? "disabled" : "")>
+                                        <option value="">-- Loại mổ --</option>
+                                        @if (ViewBag.SurgeryTypes != null)
+                                        {
+                                            foreach (var type in ViewBag.SurgeryTypes)
+                                            {
+                                                <option value="@type.Id">@type.FeeName (@type.Price.ToString("N0") VNĐ)</option>
+                                            }
+                                        }
+                                    </select>
+                                    <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Appointment?.Id })" class="ms-1 @(hasVitals ? "text-success" : "text-danger")" title="Theo dõi sinh hiệu">
+                                        <i class="fa-solid fa-heart-pulse"></i>
+                                    </a>
+                                </div>
                                 @if (!hasVitals)
                                 {
-                                    <br/><small class="text-danger" style="font-size: 10px;">Chưa nhập sinh hiệu</small>
+                                    <small class="text-danger" style="font-size: 10px;">Chưa nhập sinh hiệu</small>
                                 }
                             </td>
                             <td class="pe-4 text-end">
-                                @if (item.Appointment?.Status != 10)
+                                @if (item.Appointment?.Status != 10 && item.Appointment?.Status != 5)
                                 {
-                                    <form asp-action="CapNhatTrangThaiMo" method="post" class="d-inline">
+                                    <form asp-action="CapNhatTrangThaiMo" method="post" class="d-inline" id="form-@item.Appointment?.Id">
                                         <input type="hidden" name="id" value="@item.Appointment?.Id" />
                                         @if (item.Appointment?.Status != 9)
                                         {

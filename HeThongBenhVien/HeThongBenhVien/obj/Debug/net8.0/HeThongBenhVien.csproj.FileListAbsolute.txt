@@ -132,7 +132,6 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\swae.build.ex.cache
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongB.1DD08616.Up2Date
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\refint\HeThongBenhVien.dll
@@ -416,3 +415,4 @@ D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

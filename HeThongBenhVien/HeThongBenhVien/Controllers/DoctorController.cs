@@ -270,6 +270,20 @@ namespace HeThongBenhVien.Controllers
                 .Where(t => t.MedicalRecordId == id)
                 .ToListAsync();
 
+            ViewBag.VitalSigns = await _context.VitalSigns
+                .Where(v => v.AppointmentId == record.AppointmentId)
+                .OrderByDescending(v => v.RecordedAt)
+                .ToListAsync();
+
+            if (record.SurgeryFeeId.HasValue)
+            {
+                ViewBag.SurgeryFee = await _context.HospitalFees.FindAsync(record.SurgeryFeeId.Value);
+            }
+            if (record.SurgeonId.HasValue)
+            {
+                ViewBag.Surgeon = await _context.Users.FindAsync(record.SurgeonId.Value);
+            }
+
             ViewBag.Departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
 
             return View(record);
@@ -322,6 +336,18 @@ namespace HeThongBenhVien.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(HoSoBenhAn));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChuyenTaiKham(int id)
+        {
+            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
+            if (record != null && record.Appointment != null)
+            {
+                record.Appointment.Status = 8; // Tái khám
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(ChiTietBenhAn), new { id = id });
         }
 
         public async Task<IActionResult> KeDonThuoc(int? id)
@@ -451,6 +477,9 @@ namespace HeThongBenhVien.Controllers
                 .ToListAsync();
 
             ViewBag.RecordIdsWithVitals = recordIdsWithVitals;
+            ViewBag.Surgeons = await _context.Users.Where(u => u.Role == "PhauThuat").ToListAsync();
+            ViewBag.SurgeryTypes = await _context.HospitalFees.Where(f => f.Category == "Phẫu thuật").ToListAsync();
+            
             return View(records);
         }
 
@@ -690,7 +719,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CapNhatTrangThaiMo(int id, int status)
+        public async Task<IActionResult> CapNhatTrangThaiMo(int id, int status, int? surgeonId, int? surgeryType)
         {
             var appointment = await _context.Appointments.FindAsync(id);
             if (appointment != null)
@@ -702,6 +731,15 @@ namespace HeThongBenhVien.Controllers
 
                 appointment.Status = status;
                 _context.Appointments.Update(appointment);
+                
+                var record = await _context.MedicalRecords.FirstOrDefaultAsync(m => m.AppointmentId == id);
+                if (record != null)
+                {
+                    if (surgeonId.HasValue) record.SurgeonId = surgeonId.Value;
+                    if (surgeryType.HasValue) record.SurgeryFeeId = surgeryType.Value;
+                    _context.MedicalRecords.Update(record);
+                }
+
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(LichMo));
