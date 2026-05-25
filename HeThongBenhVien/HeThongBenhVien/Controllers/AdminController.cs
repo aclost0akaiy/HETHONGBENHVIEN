@@ -34,10 +34,45 @@ namespace HeThongBenhVien.Controllers
                 a.Status == 6 || 
                 (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu") && a.Status != 4 && a.Status != 5));
 
+            var startDate = DateTime.Today.AddDays(-6);
+            var endDate = DateTime.Today.AddDays(1);
+
+            var weeklyAppointments = _context.Appointments
+                .Where(a => a.AppointmentTime >= startDate && a.AppointmentTime < endDate)
+                .AsEnumerable()
+                .GroupBy(a => a.AppointmentTime.Date)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var weeklyRevenue = _context.Prescriptions
+                .Where(p => p.CreatedAt >= startDate && p.CreatedAt < endDate)
+                .SelectMany(p => p.PrescriptionDetails, (prescription, detail) => new { prescription.CreatedAt, detail.Price, detail.Quantity })
+                .AsEnumerable()
+                .GroupBy(x => x.CreatedAt.Date)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Price * x.Quantity));
+
+            var dateKeys = Enumerable.Range(0, 7)
+                .Select(i => startDate.AddDays(i))
+                .ToList();
+
+            var labels = dateKeys
+                .Select(date => date.ToString("dd/MM"))
+                .ToArray();
+
+            var counts = dateKeys
+                .Select(date => weeklyAppointments.TryGetValue(date, out var count) ? count : 0)
+                .ToArray();
+
+            var revenues = dateKeys
+                .Select(date => weeklyRevenue.TryGetValue(date, out var value) ? value : 0m)
+                .ToArray();
+
             ViewBag.TotalAppointments = totalAppointments;
             ViewBag.DailyRevenue = dailyRevenue;
             ViewBag.PatientOccupancy = patientOccupancy;
             ViewBag.EmergencyCases = emergencyCases;
+            ViewBag.WeeklyChartLabels = labels;
+            ViewBag.WeeklyChartCounts = counts;
+            ViewBag.WeeklyChartRevenues = revenues;
 
             return View();
         }

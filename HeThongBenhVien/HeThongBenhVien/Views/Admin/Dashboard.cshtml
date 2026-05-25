@@ -93,11 +93,8 @@
                         <option>Tháng này</option>
                     </select>
                 </div>
-                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="height: 300px; border: 1px dashed #cbd5e1;">
-                    <div class="text-center">
-                        <i class="fa-solid fa-chart-column fs-1 mb-2 text-primary opacity-50"></i>
-                        <p>Khu vực hiển thị biểu đồ Chart.js / ApexCharts</p>
-                    </div>
+                <div class="bg-light rounded p-3" style="border: 1px dashed #cbd5e1;">
+                    <canvas id="weeklyChart" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -334,3 +331,89 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.WeeklyChartLabels));
+        var counts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.WeeklyChartCounts));
+        var revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.WeeklyChartRevenues));
+
+        var ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Lượt khám',
+                        data: counts,
+                        backgroundColor: 'rgba(59, 130, 246, 0.65)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'count',
+                    },
+                    {
+                        type: 'line',
+                        label: 'Doanh thu',
+                        data: revenues,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        tension: 0.35,
+                        fill: true,
+                        yAxisID: 'revenue',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    count: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Lượt khám'
+                        },
+                        beginAtZero: true
+                    },
+                    revenue: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Doanh thu (đ)'
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.label === 'Doanh thu') {
+                                    return context.dataset.label + ': ' + new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' đ';
+                                }
+                                return context.dataset.label + ': ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    </script>
+}
