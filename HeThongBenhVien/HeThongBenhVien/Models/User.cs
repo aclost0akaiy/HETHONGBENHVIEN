@@ -24,10 +24,13 @@ namespace HeThongBenhVien.Models
 
         // Thêm trường Email khớp với SQL Server
         [StringLength(100)]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
         // Thêm trường SDT khớp với SQL Server
         [StringLength(20)]
-        public string SDT { get; set; } = string.Empty;
+        public string? SDT { get; set; }
+
+        [StringLength(20)]
+        public string? PatientCode { get; set; }
     }
 }

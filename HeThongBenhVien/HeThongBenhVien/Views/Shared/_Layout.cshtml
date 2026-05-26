@@ -3,22 +3,40 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - QuanLyHeThongBenhVien</title>
+    <title>@ViewData["Title"] - Quản Lý Khám Chữa Bệnh</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/QuanLyHeThongBenhVien.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --navbar-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(0,0,0,0.05);
+            --link-color: #475569;
+            --footer-bg: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --navbar-bg: rgba(15, 23, 42, 0.95);
+            --border-color: rgba(255,255,255,0.1);
+            --link-color: #cbd5e1;
+            --footer-bg: #1e293b;
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         .navbar {
-            background-color: rgba(255, 255, 255, 0.95) !important;
+            background-color: var(--navbar-bg) !important;
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            transition: background-color 0.3s;
         }
         .navbar-brand {
             font-weight: 700;
@@ -27,7 +45,7 @@
         }
         .nav-link {
             font-weight: 500;
-            color: #475569 !important;
+            color: var(--link-color) !important;
             transition: color 0.3s ease;
         }
         .nav-link:hover {
@@ -44,10 +62,23 @@
             color: white !important;
         }
         .footer {
-            background-color: #ffffff;
-            border-top: 1px solid rgba(0,0,0,0.05) !important;
+            background-color: var(--footer-bg);
+            border-top: 1px solid var(--border-color) !important;
             padding: 20px 0;
-            color: #64748b;
+            color: var(--link-color);
+            transition: background-color 0.3s;
+        }
+        .theme-toggle {
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: var(--link-color);
+            font-size: 1.2rem;
+        }
+        .theme-toggle:hover {
+            background: var(--border-color);
         }
     </style>
 </head>
@@ -56,8 +87,8 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-4 py-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-heart-pulse text-primary fs-3"></i> 
-                    MediCare
+                    <i class="fa-solid fa-hospital-user text-primary fs-3"></i> 
+                    QL KCB
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -69,17 +100,21 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Dịch vụ</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Tin tức</a>
+                            <a class="nav-link text-success" asp-area="" asp-controller="Patient" asp-action="Portal">
+                                <i class="fa-solid fa-user-injured"></i> Cổng Bệnh Nhân
+                            </a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav align-items-center">
+                        <li class="nav-item me-3">
+                            <button id="themeToggle" class="theme-toggle" title="Chuyển đổi Sáng/Tối">
+                                <i class="fa-solid fa-moon"></i>
+                            </button>
+                        </li>
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item d-flex align-items-center">
-                                <span class="navbar-text text-dark me-3">
+                                <span class="navbar-text me-3" style="color: var(--text-color)">
                                     Xin chào, @User.FindFirst("FullName")?.Value (@User.IsInRole("Admin") ? "Admin" : "Doctor")
                                 </span>
                             </li>
@@ -100,7 +135,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link btn btn-outline-primary text-primary px-3 ms-2" asp-controller="Account" asp-action="Login">Đăng Nhập</a>
+                                <a class="nav-link btn btn-outline-primary text-primary px-3 ms-2" asp-controller="Account" asp-action="Login">Đăng Nhập NV Y Tế</a>
                             </li>
                         }
                     </ul>
@@ -117,10 +152,9 @@
     <footer class="footer text-center">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <span>&copy; 2026 - MediCare System</span>
+                <span>&copy; 2026 - Phần mềm Quản Lý Khám Chữa Bệnh</span>
                 <div>
-                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted me-3">Chính sách bảo mật</a>
-                    <a href="#" class="text-decoration-none text-muted">Điều khoản sử dụng</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none me-3" style="color: var(--link-color)">Chính sách bảo mật</a>
                 </div>
             </div>
         </div>
@@ -128,6 +162,31 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if(savedTheme === 'dark') {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            if(newTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

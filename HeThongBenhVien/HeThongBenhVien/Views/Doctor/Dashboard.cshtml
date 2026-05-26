@@ -93,6 +93,26 @@
         </div>
     </div>
 
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-8 col-lg-7">
+            <div class="glass-card h-100 p-4 border-top border-4 border-info">
+                <h6 class="font-weight-bold text-info mb-3"><i class="fa-solid fa-chart-line"></i> Lưu Lượng Bệnh Nhân 7 Ngày Qua</h6>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="patientsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-lg-5">
+            <div class="glass-card h-100 p-4 border-top border-4 border-warning">
+                <h6 class="font-weight-bold text-warning mb-3"><i class="fa-solid fa-chart-pie"></i> Tỉ Lệ Bệnh Theo Chuyên Khoa</h6>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="departmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Row -->
     <div class="row">
         <div class="col-xl-7 mb-4">
@@ -614,11 +634,55 @@
 }
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
             setInterval(function() {
                 $('.blink').fadeTo(750, 0).fadeTo(750, 1);
             }, 1500);
+
+            // Chart JS Implementation
+            const ctx1 = document.getElementById('patientsChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                        datasets: [{
+                            label: 'Số ca khám',
+                            data: [15, 22, 18, 30, 25, 40, 20],
+                            borderColor: '#0ea5e9',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            const ctx2 = document.getElementById('departmentsChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Nội Tổng Hợp', 'Ngoại Khoa', 'Sản Khoa', 'Nhi Khoa'],
+                        datasets: [{
+                            data: [45, 25, 20, 10],
+                            backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
         });
     </script>
 }

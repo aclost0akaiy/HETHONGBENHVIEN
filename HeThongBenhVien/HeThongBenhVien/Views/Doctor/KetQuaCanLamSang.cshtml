@@ -52,10 +52,14 @@
                             }
                             else
                             {
-                                <form asp-action="CapNhatKetQuaXetNghiem" asp-controller="Doctor" method="post" class="d-flex gap-2 m-0">
+                                <form asp-action="CapNhatKetQuaXetNghiem" asp-controller="Doctor" method="post" class="d-flex flex-column gap-2 m-0">
                                     <input type="hidden" name="id" value="@item.Id" />
                                     <input type="text" name="ketQua" class="form-control form-control-sm" placeholder="Nhập kết quả..." required />
-                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Cập nhật</button>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="fa-solid fa-image"></i></span>
+                                        <input type="url" name="imageUrl" class="form-control" placeholder="Link ảnh X-Quang/Siêu âm (nếu có)" />
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 mt-1">Cập nhật</button>
                                 </form>
                             }
                         </td>

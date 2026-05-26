@@ -58,7 +58,13 @@
             <div class="glass-card p-4 h-100">
                 <div class="d-flex justify-content-between mb-3">
                     <h5 class="fw-bold text-dark">Toa Thuốc Hiện Tại</h5>
-                    <span class="badge bg-danger rounded-pill px-3 py-2">Bệnh nhân: @Model.MedicalRecord?.Appointment?.Patient?.FullName</span>
+                    <div>
+                        <span class="badge bg-primary rounded-pill px-3 py-2">Bệnh nhân: @Model.MedicalRecord?.Appointment?.Patient?.FullName</span>
+                        @if(!string.IsNullOrEmpty(Model.MedicalRecord?.Appointment?.Patient?.Allergies))
+                        {
+                            <span class="badge bg-danger rounded-pill px-3 py-2 ms-2 blink" title="Cảnh báo dị ứng"><i class="fa-solid fa-triangle-exclamation"></i> Dị ứng: @Model.MedicalRecord?.Appointment?.Patient?.Allergies</span>
+                        }
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -132,6 +138,39 @@
 
             // Set initial value on page load
             $('#unitSelect').trigger('change');
+            
+            setInterval(function() {
+                $('.blink').fadeTo(500, 0.5).fadeTo(500, 1);
+            }, 1000);
+
+            // Cảnh báo dị ứng và tương tác thuốc
+            $('form').submit(function (e) {
+                const medicine = $('input[name="medicineName"]').val().toLowerCase();
+                const allergies = "@(Model.MedicalRecord?.Appointment?.Patient?.Allergies?.ToLower() ?? "")";
+                
+                // 1. Cảnh báo dị ứng
+                if (allergies && medicine && (allergies.includes(medicine) || medicine.includes(allergies))) {
+                    e.preventDefault();
+                    alert("⚠️ CẢNH BÁO ĐỎ: Bệnh nhân có tiền sử dị ứng với thuốc/thành phần này (" + medicine + ")!\nVui lòng kê thuốc khác.");
+                    return false;
+                }
+                
+                // 2. Cảnh báo tương tác thuốc (Giả lập)
+                const currentPrescription = [];
+                @foreach(var d in Model.PrescriptionDetails) {
+                    <text>currentPrescription.push("@d.MedicineName.ToLower()");</text>
+                }
+                
+                if ((medicine.includes("aspirin") && currentPrescription.some(m => m.includes("ibuprofen"))) ||
+                    (medicine.includes("ibuprofen") && currentPrescription.some(m => m.includes("aspirin")))) {
+                    if(!confirm("⚠️ CẢNH BÁO TƯƠNG TÁC THUỐC:\nDùng chung Aspirin và Ibuprofen làm tăng nguy cơ xuất huyết tiêu hóa.\nBạn có chắc chắn muốn kê toa này không?")) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
         });
     </script>
 }

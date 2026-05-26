@@ -27,7 +27,8 @@ CREATE TABLE Patients (
     FullName NVARCHAR(100) NOT NULL,
     Gender NVARCHAR(50) NOT NULL DEFAULT N'Nam',
     Age INT NOT NULL,
-    PatientCode NVARCHAR(20) NOT NULL
+    PatientCode NVARCHAR(20) NOT NULL,
+    Allergies NVARCHAR(MAX) NULL
 );
 GO
 
@@ -82,6 +83,8 @@ CREATE TABLE MedicalRecords (
     SurgeonId INT NULL,
     SurgeryFeeId INT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    IsLocked BIT NOT NULL DEFAULT 0,
+    DigitalSignature NVARCHAR(MAX) NULL,
     CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE,
     CONSTRAINT FK_MedicalRecords_Departments FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
 );
@@ -139,6 +142,7 @@ CREATE TABLE LabTests (
     TestName NVARCHAR(200) NOT NULL,
     Status NVARCHAR(50) NOT NULL DEFAULT N'Chờ xét nghiệm',
     Result NVARCHAR(MAX) NULL,
+    ImageUrl NVARCHAR(MAX) NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CompletedAt DATETIME2 NULL,
     CONSTRAINT FK_LabTests_MedicalRecords FOREIGN KEY (MedicalRecordId) REFERENCES MedicalRecords(Id) ON DELETE CASCADE
@@ -2654,5 +2658,514 @@ INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, 
 ('PT018', N'Phẫu thuật vá nhĩ', N'Phẫu thuật', 5000000, 80, N'Vá lại màng nhĩ bị rách', 1, GETDATE()),
 ('PT019', N'Phẫu thuật u tuyến giáp', N'Phẫu thuật', 10000000, 80, N'Cắt bỏ một phần hoặc toàn bộ tuyến giáp', 1, GETDATE()),
 ('PT020', N'Phẫu thuật bóc u mỡ/u bã đậu', N'Phẫu thuật', 1000000, 80, N'Tiểu phẫu bóc tách khối u lành tính', 1, GETDATE());
+GO
+
+
+
+-- Bảng bổ sung từ Model
+CREATE TABLE [BloodBanks] (
+    [Id] int NOT NULL IDENTITY,
+    [BagCode] nvarchar(20) NOT NULL,
+    [BloodType] nvarchar(5) NOT NULL,
+    [Component] nvarchar(20) NOT NULL,
+    [VolumeMl] int NOT NULL,
+    [DonorName] nvarchar(100) NOT NULL,
+    [DonorPhone] nvarchar(20) NOT NULL,
+    [CollectionDate] datetime2 NOT NULL,
+    [ExpiryDate] datetime2 NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [Notes] nvarchar(200) NOT NULL,
+    CONSTRAINT [PK_BloodBanks] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [MedicalEquipments] (
+    [Id] int NOT NULL IDENTITY,
+    [EquipmentCode] nvarchar(max) NOT NULL,
+    [EquipmentName] nvarchar(max) NOT NULL,
+    [Category] nvarchar(max) NOT NULL,
+    [Quantity] int NOT NULL,
+    [Status] nvarchar(max) NOT NULL,
+    [LastMaintenanceDate] datetime2 NOT NULL,
+    CONSTRAINT [PK_MedicalEquipments] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [MedicalServices] (
+    [Id] int NOT NULL IDENTITY,
+    [ServiceCode] nvarchar(max) NOT NULL,
+    [ServiceName] nvarchar(max) NOT NULL,
+    [Description] nvarchar(max) NOT NULL,
+    [Price] decimal(18,2) NOT NULL,
+    [IsActive] bit NOT NULL,
+    CONSTRAINT [PK_MedicalServices] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [QualityReviews] (
+    [Id] int NOT NULL IDENTITY,
+    [Department] nvarchar(100) NOT NULL,
+    [ReviewerName] nvarchar(100) NOT NULL,
+    [ServiceScore] int NOT NULL,
+    [CleanlinessScore] int NOT NULL,
+    [StaffScore] int NOT NULL,
+    [FacilityScore] int NOT NULL,
+    [WaitTimeScore] int NOT NULL,
+    [Comment] nvarchar(1000) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_QualityReviews] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [DiagnosticImages] (
+    [Id] int NOT NULL IDENTITY,
+    [RequestCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [ImageType] nvarchar(100) NOT NULL,
+    [BodyPart] nvarchar(200) NOT NULL,
+    [RequestedBy] nvarchar(100) NOT NULL,
+    [Result] nvarchar(1000) NOT NULL,
+    [Conclusion] nvarchar(500) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [RequestDate] datetime2 NOT NULL,
+    [CompletedDate] datetime2 NULL,
+    CONSTRAINT [PK_DiagnosticImages] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_DiagnosticImages_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [InsuranceCards] (
+    [Id] int NOT NULL IDENTITY,
+    [CardNumber] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [RegisteredHospital] nvarchar(200) NOT NULL,
+    [StartDate] datetime2 NOT NULL,
+    [EndDate] datetime2 NOT NULL,
+    [CoveragePercent] int NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_InsuranceCards] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_InsuranceCards_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [Receptions] (
+    [Id] int NOT NULL IDENTITY,
+    [ReceptionCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [Department] nvarchar(100) NOT NULL,
+    [Priority] nvarchar(50) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [QueueNumber] int NOT NULL,
+    [Reason] nvarchar(500) NOT NULL,
+    [CheckInTime] datetime2 NOT NULL,
+    [CheckOutTime] datetime2 NULL,
+    CONSTRAINT [PK_Receptions] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Receptions_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [Surgeries] (
+    [Id] int NOT NULL IDENTITY,
+    [SurgeryCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [SurgeryName] nvarchar(200) NOT NULL,
+    [SurgeryType] nvarchar(100) NOT NULL,
+    [Surgeon] nvarchar(100) NOT NULL,
+    [AssistantTeam] nvarchar(200) NOT NULL,
+    [Anesthesia] nvarchar(100) NOT NULL,
+    [OperatingRoom] nvarchar(50) NOT NULL,
+    [ScheduledDate] datetime2 NOT NULL,
+    [DurationMinutes] int NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [Notes] nvarchar(1000) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Surgeries] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Surgeries_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- THÊM TÀI KHOẢN BỆNH NHÂN ĐỂ ĐĂNG NHẬP
+-- =============================================
+INSERT INTO [Users] ([Username], [Password], [Role], [FullName], [Email], [SDT], [PatientCode])
+VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Nguyễn Văn Bệnh Nhân', 'bn.demo@benhvien.com', '0999888777', 'BN123456');
+GO
+
+USE QuanLyBenhVienDb;
+GO
+
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 1', N'Nam', 30, 'DS1', '');
+DECLARE @Pid1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 2', N'Nam', 30, 'DS2', '');
+DECLARE @Pid2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 3', N'Nam', 30, 'DS3', '');
+DECLARE @Pid3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 4', N'Nam', 30, 'DS4', '');
+DECLARE @Pid4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 5', N'Nam', 30, 'DS5', '');
+DECLARE @Pid5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 6', N'Nam', 30, 'DS6', '');
+DECLARE @Pid6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 7', N'Nam', 30, 'DS7', '');
+DECLARE @Pid7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 1', N'Nữ', 40, 'HS1', '');
+DECLARE @Pid_HS1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS1 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triệu chứng 1', N'Chẩn đoán 1', N'Điều trị 1', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 2', N'Nữ', 40, 'HS2', '');
+DECLARE @Pid_HS2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS2 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triệu chứng 2', N'Chẩn đoán 2', N'Điều trị 2', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 3', N'Nữ', 40, 'HS3', '');
+DECLARE @Pid_HS3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS3 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triệu chứng 3', N'Chẩn đoán 3', N'Điều trị 3', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 4', N'Nữ', 40, 'HS4', '');
+DECLARE @Pid_HS4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS4 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triệu chứng 4', N'Chẩn đoán 4', N'Điều trị 4', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 5', N'Nữ', 40, 'HS5', '');
+DECLARE @Pid_HS5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS5 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triệu chứng 5', N'Chẩn đoán 5', N'Điều trị 5', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 6', N'Nữ', 40, 'HS6', '');
+DECLARE @Pid_HS6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS6 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triệu chứng 6', N'Chẩn đoán 6', N'Điều trị 6', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 7', N'Nữ', 40, 'HS7', '');
+DECLARE @Pid_HS7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS7 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triệu chứng 7', N'Chẩn đoán 7', N'Điều trị 7', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 8', N'Nữ', 40, 'HS8', '');
+DECLARE @Pid_HS8 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS8 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triệu chứng 8', N'Chẩn đoán 8', N'Điều trị 8', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 9', N'Nữ', 40, 'HS9', '');
+DECLARE @Pid_HS9 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS9 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triệu chứng 9', N'Chẩn đoán 9', N'Điều trị 9', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 10', N'Nữ', 40, 'HS10', '');
+DECLARE @Pid_HS10 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS10 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triệu chứng 10', N'Chẩn đoán 10', N'Điều trị 10', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 11', N'Nữ', 40, 'HS11', '');
+DECLARE @Pid_HS11 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS11 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triệu chứng 11', N'Chẩn đoán 11', N'Điều trị 11', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 12', N'Nữ', 40, 'HS12', '');
+DECLARE @Pid_HS12 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS12 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triệu chứng 12', N'Chẩn đoán 12', N'Điều trị 12', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 13', N'Nữ', 40, 'HS13', '');
+DECLARE @Pid_HS13 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS13 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triệu chứng 13', N'Chẩn đoán 13', N'Điều trị 13', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 14', N'Nữ', 40, 'HS14', '');
+DECLARE @Pid_HS14 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS14 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triệu chứng 14', N'Chẩn đoán 14', N'Điều trị 14', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 15', N'Nữ', 40, 'HS15', '');
+DECLARE @Pid_HS15 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS15 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triệu chứng 15', N'Chẩn đoán 15', N'Điều trị 15', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 16', N'Nữ', 40, 'HS16', '');
+DECLARE @Pid_HS16 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS16 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triệu chứng 16', N'Chẩn đoán 16', N'Điều trị 16', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 17', N'Nữ', 40, 'HS17', '');
+DECLARE @Pid_HS17 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS17 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triệu chứng 17', N'Chẩn đoán 17', N'Điều trị 17', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 18', N'Nữ', 40, 'HS18', '');
+DECLARE @Pid_HS18 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS18 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triệu chứng 18', N'Chẩn đoán 18', N'Điều trị 18', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 19', N'Nữ', 40, 'HS19', '');
+DECLARE @Pid_HS19 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS19 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triệu chứng 19', N'Chẩn đoán 19', N'Điều trị 19', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 20', N'Nữ', 40, 'HS20', '');
+DECLARE @Pid_HS20 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS20 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triệu chứng 20', N'Chẩn đoán 20', N'Điều trị 20', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 1', N'Nam', 50, 'NT1', '');
+DECLARE @Pid_NT1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT1 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 1, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 2', N'Nam', 50, 'NT2', '');
+DECLARE @Pid_NT2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT2 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 2, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 3', N'Nam', 50, 'NT3', '');
+DECLARE @Pid_NT3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT3 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 3, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 4', N'Nam', 50, 'NT4', '');
+DECLARE @Pid_NT4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT4 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 4, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 5', N'Nam', 50, 'NT5', '');
+DECLARE @Pid_NT5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT5 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 5, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 6', N'Nam', 50, 'NT6', '');
+DECLARE @Pid_NT6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT6 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 6, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 7', N'Nam', 50, 'NT7', '');
+DECLARE @Pid_NT7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT7 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 7, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 8', N'Nam', 50, 'NT8', '');
+DECLARE @Pid_NT8 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT8 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 8, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 9', N'Nam', 50, 'NT9', '');
+DECLARE @Pid_NT9 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT9 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 9, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 10', N'Nam', 50, 'NT10', '');
+DECLARE @Pid_NT10 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT10 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 10, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 11', N'Nam', 50, 'NT11', '');
+DECLARE @Pid_NT11 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT11 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 11, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 12', N'Nam', 50, 'NT12', '');
+DECLARE @Pid_NT12 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT12 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 12, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 13', N'Nam', 50, 'NT13', '');
+DECLARE @Pid_NT13 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT13 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 13, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 14', N'Nam', 50, 'NT14', '');
+DECLARE @Pid_NT14 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT14 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 14, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 15', N'Nam', 50, 'NT15', '');
+DECLARE @Pid_NT15 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT15 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 15, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 16', N'Nam', 50, 'NT16', '');
+DECLARE @Pid_NT16 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT16 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 16, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 17', N'Nam', 50, 'NT17', '');
+DECLARE @Pid_NT17 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT17 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 17, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 18', N'Nam', 50, 'NT18', '');
+DECLARE @Pid_NT18 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT18 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 18, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 19', N'Nam', 50, 'NT19', '');
+DECLARE @Pid_NT19 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT19 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 19, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 20', N'Nam', 50, 'NT20', '');
+DECLARE @Pid_NT20 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT20 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 20, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 21', N'Nam', 50, 'NT21', '');
+DECLARE @Pid_NT21 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT21 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 21, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 22', N'Nam', 50, 'NT22', '');
+DECLARE @Pid_NT22 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT22 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 22, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 23', N'Nam', 50, 'NT23', '');
+DECLARE @Pid_NT23 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT23 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 23, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 24', N'Nam', 50, 'NT24', '');
+DECLARE @Pid_NT24 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT24 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 24, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 25', N'Nam', 50, 'NT25', '');
+DECLARE @Pid_NT25 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT25 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 25, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 26', N'Nam', 50, 'NT26', '');
+DECLARE @Pid_NT26 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT26 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 26, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 27', N'Nam', 50, 'NT27', '');
+DECLARE @Pid_NT27 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT27 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 27, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 28', N'Nam', 50, 'NT28', '');
+DECLARE @Pid_NT28 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT28 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 28, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 29', N'Nam', 50, 'NT29', '');
+DECLARE @Pid_NT29 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT29 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 29, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 30', N'Nam', 50, 'NT30', '');
+DECLARE @Pid_NT30 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT30 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 30, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 31', N'Nam', 50, 'NT31', '');
+DECLARE @Pid_NT31 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT31 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 31, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 32', N'Nam', 50, 'NT32', '');
+DECLARE @Pid_NT32 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT32 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 32, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 33', N'Nam', 50, 'NT33', '');
+DECLARE @Pid_NT33 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT33 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 33, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 34', N'Nam', 50, 'NT34', '');
+DECLARE @Pid_NT34 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT34 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 34, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 35', N'Nam', 50, 'NT35', '');
+DECLARE @Pid_NT35 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT35 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 35, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 36', N'Nam', 50, 'NT36', '');
+DECLARE @Pid_NT36 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT36 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 36, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 37', N'Nam', 50, 'NT37', '');
+DECLARE @Pid_NT37 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT37 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 37, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 38', N'Nam', 50, 'NT38', '');
+DECLARE @Pid_NT38 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT38 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 38, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 39', N'Nam', 50, 'NT39', '');
+DECLARE @Pid_NT39 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT39 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 39, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 40', N'Nam', 50, 'NT40', '');
+DECLARE @Pid_NT40 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT40 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 40, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 41', N'Nam', 50, 'NT41', '');
+DECLARE @Pid_NT41 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT41 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 41, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 42', N'Nam', 50, 'NT42', '');
+DECLARE @Pid_NT42 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT42 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 42, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 43', N'Nam', 50, 'NT43', '');
+DECLARE @Pid_NT43 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT43 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 43, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 44', N'Nam', 50, 'NT44', '');
+DECLARE @Pid_NT44 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT44 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 44, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 45', N'Nam', 50, 'NT45', '');
+DECLARE @Pid_NT45 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT45 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 45, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 46', N'Nam', 50, 'NT46', '');
+DECLARE @Pid_NT46 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT46 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 46, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 47', N'Nam', 50, 'NT47', '');
+DECLARE @Pid_NT47 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT47 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 47, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 48', N'Nam', 50, 'NT48', '');
+DECLARE @Pid_NT48 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT48 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 48, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 49', N'Nam', 50, 'NT49', '');
+DECLARE @Pid_NT49 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT49 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 49, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 50', N'Nam', 50, 'NT50', '');
+DECLARE @Pid_NT50 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT50 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 50, GETDATE(), 0);
 GO
 

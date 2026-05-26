@@ -49,7 +49,14 @@
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 800; color: #1e293b;">
                 <i class="fa-solid fa-laptop-medical text-primary me-2"></i>Hồ Sơ Bệnh Án Điện Tử
             </h2>
-            @if (isCompleted)
+            @if (Model.IsLocked)
+            {
+                <div class="mt-2">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i> Hồ sơ đã được khóa lưu trữ</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill ms-2" title="Chữ ký số có giá trị pháp lý"><i class="fa-solid fa-file-signature me-1"></i> Đã ký số bởi: @Model.DigitalSignature</span>
+                </div>
+            }
+            else if (isCompleted)
             {
                 <p class="text-success fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-check-double me-1"></i> Xác nhận thành công</p>
             }
@@ -258,6 +265,13 @@
                                                         <div class="bg-light p-2 rounded small text-dark mt-2 border">
                                                             <span class="text-muted"><i class="fa-solid fa-file-medical-alt me-1"></i>Kết quả:</span> <strong class="ms-1">@test.Result</strong>
                                                         </div>
+                                                        @if(!string.IsNullOrEmpty(test.ImageUrl)) {
+                                                            <div class="mt-2 text-center bg-dark rounded p-1">
+                                                                <a href="@test.ImageUrl" target="_blank" title="Nhấn để xem toàn màn hình">
+                                                                    <img src="@test.ImageUrl" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;" alt="Ảnh cận lâm sàng" />
+                                                                </a>
+                                                            </div>
+                                                        }
                                                     }
                                                 </div>
                                             </div>
@@ -426,48 +440,58 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 flex-wrap">
-                        @if (!isCompleted)
+                        @if (!Model.IsLocked)
                         {
-                            <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = Model.Id })" class="btn btn-warning text-dark px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover">
-                                <i class="fa-solid fa-pills me-1"></i> Kê thuốc
-                            </a>
-                            <a href="@Url.Action("SinhHieu", "Doctor", new { id = Model.Appointment?.Id })" class="btn btn-primary px-4 py-2 fw-bold text-white rounded-pill shadow-sm btn-hover">
-                                <i class="fa-solid fa-heart-pulse me-1"></i> Sinh hiệu
-                            </a>
-                            <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover">
-                                <i class="fa-solid fa-scalpel me-1"></i> Phẫu thuật
-                            </a>
-                            <a href="@Url.Action("ChiDinhXetNghiem", "Doctor", new { id = Model.Id })" class="btn text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" style="background-color: #14b8a6;">
-                                <i class="fa-solid fa-vial me-1"></i> Xét nghiệm
-                            </a>
-                            @if (isAdmitted)
+                            @if (!isCompleted)
                             {
-                                <button type="button" class="btn text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" data-bs-toggle="modal" data-bs-target="#admissionModel" style="background-color: #0ea5e9;">
-                                    <i class="fa-solid fa-bed-pulse me-1"></i> Đổi giường
-                                </button>
+                                <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = Model.Id })" class="btn btn-warning text-dark px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover">
+                                    <i class="fa-solid fa-pills me-1"></i> Kê thuốc
+                                </a>
+                                <a href="@Url.Action("SinhHieu", "Doctor", new { id = Model.Appointment?.Id })" class="btn btn-primary px-4 py-2 fw-bold text-white rounded-pill shadow-sm btn-hover">
+                                    <i class="fa-solid fa-heart-pulse me-1"></i> Sinh hiệu
+                                </a>
+                                <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover">
+                                    <i class="fa-solid fa-scalpel me-1"></i> Phẫu thuật
+                                </a>
+                                <a href="@Url.Action("ChiDinhXetNghiem", "Doctor", new { id = Model.Id })" class="btn text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" style="background-color: #14b8a6;">
+                                    <i class="fa-solid fa-vial me-1"></i> Xét nghiệm
+                                </a>
+                                @if (isAdmitted)
+                                {
+                                    <button type="button" class="btn text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" data-bs-toggle="modal" data-bs-target="#admissionModel" style="background-color: #0ea5e9;">
+                                        <i class="fa-solid fa-bed-pulse me-1"></i> Đổi giường
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-info text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" data-bs-toggle="modal" data-bs-target="#admissionModel">
+                                        <i class="fa-solid fa-bed me-1"></i> Nhập viện
+                                    </button>
+                                }
+                                
+                                <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3 border-start ps-3 border-secondary" onsubmit="return confirm('⚠️ Chú ý: Xác nhận hoàn thành sẽ KHÓA HỒ SƠ & KÝ SỐ ĐIỆN TỬ. Bạn sẽ không thể sửa đổi sau khi khóa. Bạn chắc chắn chứ?');">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-success px-5 py-2 fw-bold text-white rounded-pill shadow" style="transform: scale(1.05);">
+                                        <i class="fa-solid fa-file-signature me-2"></i> Khóa & Ký Số Hồ Sơ
+                                    </button>
+                                </form>
                             }
                             else
                             {
-                                <button type="button" class="btn btn-info text-white px-4 py-2 fw-bold rounded-pill shadow-sm btn-hover" data-bs-toggle="modal" data-bs-target="#admissionModel">
-                                    <i class="fa-solid fa-bed me-1"></i> Nhập viện
-                                </button>
+                                <form action="@Url.Action("ChuyenTaiKham", "Doctor")" method="post" class="m-0 ms-3 border-start ps-3 border-secondary">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-warning px-5 py-2 fw-bold text-dark rounded-pill shadow" style="transform: scale(1.05);">
+                                        <i class="fa-solid fa-rotate-left me-2"></i> Chuyển trạng thái Tái Khám
+                                    </button>
+                                </form>
                             }
-                            
-                            <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-3 border-start ps-3 border-secondary">
-                                <input type="hidden" name="id" value="@Model.Id" />
-                                <button type="submit" class="btn btn-success px-5 py-2 fw-bold text-white rounded-pill shadow" style="transform: scale(1.05);">
-                                    <i class="fa-solid fa-check-double me-2"></i> Xác nhận Hoàn Thành
-                                </button>
-                            </form>
                         }
                         else
                         {
-                            <form action="@Url.Action("ChuyenTaiKham", "Doctor")" method="post" class="m-0 ms-3 border-start ps-3 border-secondary">
-                                <input type="hidden" name="id" value="@Model.Id" />
-                                <button type="submit" class="btn btn-warning px-5 py-2 fw-bold text-dark rounded-pill shadow" style="transform: scale(1.05);">
-                                    <i class="fa-solid fa-rotate-left me-2"></i> Chuyển trạng thái Tái Khám
-                                </button>
-                            </form>
+                            <div class="alert alert-success m-0 me-3 py-2 px-4 rounded-pill border-0 shadow-sm d-flex align-items-center">
+                                <i class="fa-solid fa-shield-check text-success fs-5 me-2"></i>
+                                <span class="fw-bold text-success">Hồ sơ đã được lưu trữ an toàn</span>
+                            </div>
                         }
                         
                         <button class="btn btn-outline-secondary px-4 py-2 fw-bold ms-3 rounded-pill" onclick="window.print()">
@@ -567,6 +591,42 @@
         .bed-icon { font-size: 22px; color: #cbd5e1; margin-bottom: 4px; }
         .bed-number { font-weight: 800; font-size: 14px; color: #475569; }
         .bed-patient { font-size: 9px; color: #94a3b8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        @@media print {
+            body { background: white !important; }
+            /* Ẩn sidebar, navbar, các nút bấm, footer */
+            .sidebar, .navbar, .btn, form, footer, .modal { display: none !important; }
+            .glass-card { box-shadow: none !important; border: 1px solid #000 !important; background: white !important; }
+            .container-fluid { padding: 0 !important; margin: 0 !important; }
+            /* Loại bỏ màu gradient */
+            .p-4[style*="linear-gradient"] { background: white !important; border: 1px solid #ccc !important; }
+            /* Thêm Header cho PDF */
+            body::before {
+                content: "PHÒNG KHÁM ĐA KHOA QUỐC TẾ\A Địa chỉ: 123 Đường Y Tế, TP.HCM | SĐT: 1900 1234\A------------------------------------------------------------------\A";
+                white-space: pre-wrap;
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: center;
+                display: block;
+                margin-bottom: 20px;
+                color: #000;
+            }
+            * { color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .shadow-sm, .shadow-lg, .shadow { box-shadow: none !important; }
+            
+            /* Thêm phần Footer Ký tên vào cuối trang in */
+            body::after {
+                content: "\A\A Ngày ..... tháng ..... năm .....\A BÁC SĨ ĐIỀU TRỊ\A (Ký và ghi rõ họ tên)";
+                white-space: pre-wrap;
+                font-size: 12pt;
+                font-weight: bold;
+                text-align: right;
+                display: block;
+                margin-top: 50px;
+                padding-right: 50px;
+                color: #000;
+            }
+        }
     </style>
 }
 

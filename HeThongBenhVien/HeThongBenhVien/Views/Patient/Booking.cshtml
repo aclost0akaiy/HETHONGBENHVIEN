@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Đặt Lịch Khám Trực Tuyến";
+}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: var(--text-color);"><i class="fa-regular fa-calendar-check text-primary"></i> Đặt Lịch Khám Trực Tuyến</h2>
+        <a asp-action="Portal" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+    
+    <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--navbar-bg);">
+        <div class="card-body p-5">
+            <h5 class="card-title text-center text-primary mb-4">Vui lòng điền thông tin để đặt lịch hẹn</h5>
+            <form>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Họ và Tên</label>
+                        <input type="text" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Số Điện Thoại</label>
+                        <input type="tel" class="form-control" placeholder="0912345678">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Chuyên Khoa</label>
+                        <select class="form-select">
+                            <option>-- Chọn chuyên khoa --</option>
+                            <option>Nội tổng hợp</option>
+                            <option>Ngoại khoa</option>
+                            <option>Tai Mũi Họng</option>
+                            <option>Da liễu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Bác Sĩ Cụ Thể (Tùy chọn)</label>
+                        <select class="form-select">
+                            <option>-- Không yêu cầu --</option>
+                            <option>BS. Trần Văn B (Nội khoa)</option>
+                            <option>BS. Lê Thị C (Da liễu)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Ngày Khám</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="color: var(--text-color)">Giờ Khám (Dự kiến)</label>
+                        <select class="form-select">
+                            <option>-- Chọn khung giờ --</option>
+                            <option>08:00 - 09:00</option>
+                            <option>09:00 - 10:00</option>
+                            <option>10:00 - 11:00</option>
+                            <option>14:00 - 15:00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <button type="button" class="btn btn-primary btn-lg px-5 rounded-pill"><i class="fa-solid fa-check"></i> Xác nhận đặt lịch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

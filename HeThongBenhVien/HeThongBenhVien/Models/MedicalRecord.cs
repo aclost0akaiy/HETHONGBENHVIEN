@@ -28,7 +28,7 @@ namespace HeThongBenhVien.Models
         public string TreatmentPlan { get; set; } = string.Empty;
 
         [Display(Name = "Ghi chú thêm")]
-        public string Notes { get; set; } = string.Empty;
+        public string? Notes { get; set; }
 
         public int? DepartmentId { get; set; }
         [ForeignKey("DepartmentId")]
@@ -44,5 +44,9 @@ namespace HeThongBenhVien.Models
         public int? SurgeryFeeId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public bool IsLocked { get; set; } = false;
+        
+        public string? DigitalSignature { get; set; }
     }
 }

@@ -27,6 +27,29 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        // Auto-fix schema for Email, SDT, PatientCode in Users table in case they recreated from old BenhVien.sql
+        db.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Email' AND Object_ID = Object_ID(N'Users'))
+            BEGIN
+                ALTER TABLE Users ADD Email NVARCHAR(100) NULL;
+            END
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'SDT' AND Object_ID = Object_ID(N'Users'))
+            BEGIN
+                ALTER TABLE Users ADD SDT NVARCHAR(20) NULL;
+            END
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'PatientCode' AND Object_ID = Object_ID(N'Users'))
+            BEGIN
+                ALTER TABLE Users ADD PatientCode NVARCHAR(20) NULL;
+            END
+        ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Could not auto-fix Users table schema: " + ex.Message);
+    }
+
+    try
+    {
         if (!db.Users.Any(u => u.Username == "admin"))
         {
             db.Users.Add(new User

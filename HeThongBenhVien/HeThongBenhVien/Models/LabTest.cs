@@ -23,5 +23,7 @@ namespace HeThongBenhVien.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? CompletedAt { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 }

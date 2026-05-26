@@ -19,5 +19,7 @@ namespace HeThongBenhVien.Models
         [Required]
         [StringLength(20)]
         public string PatientCode { get; set; } = string.Empty;
+
+        public string? Allergies { get; set; }
     }
 }

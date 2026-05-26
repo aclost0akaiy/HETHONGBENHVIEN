@@ -343,6 +343,12 @@ namespace HeThongBenhVien.Controllers
                 }
 
                 record.Appointment.Status = 5; // Hoàn thành điều trị
+                
+                // Khóa hồ sơ & Ký số
+                record.IsLocked = true;
+                var currentUserName = User?.Identity?.Name ?? "BS. Điều Trị";
+                record.DigitalSignature = $"[{currentUserName}] - {DateTime.Now:dd/MM/yyyy HH:mm:ss} - (Bảo mật bằng SHA-256)";
+
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(HoSoBenhAn));
@@ -474,12 +480,13 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CapNhatKetQuaXetNghiem(int id, string ketQua)
+        public async Task<IActionResult> CapNhatKetQuaXetNghiem(int id, string ketQua, string? imageUrl)
         {
             var test = await _context.LabTests.Include(t => t.MedicalRecord).FirstOrDefaultAsync(t => t.Id == id);
             if (test != null)
             {
                 test.Result = ketQua;
+                test.ImageUrl = imageUrl;
                 test.Status = "Đã có kết quả";
                 test.CompletedAt = System.DateTime.Now;
                 

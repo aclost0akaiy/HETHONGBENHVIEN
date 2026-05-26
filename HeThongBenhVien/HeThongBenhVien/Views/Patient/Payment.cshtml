@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Thanh Toán Viện Phí";
+}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: var(--text-color);"><i class="fa-solid fa-qrcode text-warning"></i> Thanh Toán QR Viện Phí</h2>
+        <a asp-action="Portal" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--navbar-bg);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--text-color)">Hóa Đơn Cần Thanh Toán</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; color: var(--text-color)">
+                            Phí khám bệnh ban đầu
+                            <span>150,000 VNĐ</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; color: var(--text-color)">
+                            Xét nghiệm máu tổng quát
+                            <span>300,000 VNĐ</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold" style="background-color: transparent; color: var(--text-color); font-size: 1.2rem">
+                            Tổng cộng
+                            <span class="text-danger">450,000 VNĐ</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 text-center" style="background-color: var(--navbar-bg);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--text-color)">Quét Mã QR Bằng Momo / VNPay</h5>
+                    <!-- Placeholder QR -->
+                    <div class="p-3 bg-white d-inline-block rounded-3 mb-3">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ThanhToanVienPhi450000" alt="QR Code">
+                    </div>
+                    <p class="text-muted">Hệ thống sẽ tự động ghi nhận thanh toán sau khi bạn chuyển khoản thành công.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

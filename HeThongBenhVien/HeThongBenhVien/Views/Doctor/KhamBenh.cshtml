@@ -72,7 +72,12 @@
                         </div>
                         
                         <div class="col-12 mb-3">
-                            <label asp-for="Diagnosis" class="form-label fw-bold"></label>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label asp-for="Diagnosis" class="form-label fw-bold mb-0"></label>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-voice" data-target="Diagnosis" title="Nhấn để đọc">
+                                    <i class="fa-solid fa-microphone"></i> Voice-to-Text
+                                </button>
+                            </div>
                             <textarea asp-for="Diagnosis" class="form-control bg-light border-0" rows="2" placeholder="Chẩn đoán lâm sàng..."></textarea>
                             <span asp-validation-for="Diagnosis" class="text-danger small"></span>
                         </div>
@@ -103,4 +108,49 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // AI Voice to Text Feature
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'vi-VN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            let currentTarget = null;
+            let currentBtn = null;
+
+            $('.btn-voice').click(function() {
+                currentBtn = $(this);
+                currentTarget = $('#' + currentBtn.data('target'));
+                
+                if (currentBtn.hasClass('recording')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                    $('.btn-voice').removeClass('recording btn-danger').addClass('btn-outline-danger').html('<i class="fa-solid fa-microphone"></i> Voice-to-Text');
+                    currentBtn.addClass('recording btn-danger').removeClass('btn-outline-danger');
+                    currentBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Đang nghe...');
+                }
+            });
+
+            recognition.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                if (currentTarget) {
+                    let currentVal = currentTarget.val();
+                    currentTarget.val(currentVal + (currentVal ? ' ' : '') + text + '.');
+                }
+            };
+
+            recognition.onend = function() {
+                if (currentBtn) {
+                    currentBtn.removeClass('recording btn-danger').addClass('btn-outline-danger');
+                    currentBtn.html('<i class="fa-solid fa-microphone"></i> Voice-to-Text');
+                }
+            };
+        } else {
+            console.log("Trình duyệt không hỗ trợ AI Voice-to-Text");
+            $('.btn-voice').hide();
+        }
+    </script>
 }

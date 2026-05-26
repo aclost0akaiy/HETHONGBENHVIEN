@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "Cổng Thông Tin Bệnh Nhân";
+}
+
+<div class="container mt-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary"><i class="fa-solid fa-user-injured"></i> Cổng Thông Tin Bệnh Nhân</h1>
+        <p class="lead" style="color: var(--text-color);">Trải nghiệm dịch vụ y tế thông minh, nhanh chóng và tiện lợi.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Đặt lịch khám -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Booking", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-regular fa-calendar-check fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Đặt Lịch Khám</h5>
+                    <p class="card-text" style="color: var(--link-color);">Đặt lịch hẹn trực tuyến, chọn bác sĩ và nhận số thứ tự điện tử (E-ticket) ngay lập tức.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hồ sơ sức khỏe -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("EHR", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-file-medical fa-2x text-success"></i>
+                    </div>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Hồ Sơ Sức Khỏe (EHR)</h5>
+                    <p class="card-text" style="color: var(--link-color);">Xem lịch sử khám bệnh, đơn thuốc, và tải kết quả xét nghiệm/X-Quang mọi lúc mọi nơi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thanh toán viện phí -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Payment", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-qrcode fa-2x text-warning"></i>
+                    </div>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Thanh Toán QR Viện Phí</h5>
+                    <p class="card-text" style="color: var(--link-color);">Thanh toán không tiền mặt qua mã QR động (Momo, VNPay) an toàn và cực kỳ nhanh chóng.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nhắc nhở tự động -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Notifications", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-bell fa-2x text-info"></i>
+                    </div>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Nhắc Nhở Tự Động</h5>
+                    <p class="card-text" style="color: var(--link-color);">Hệ thống tự động gửi thông báo nhắc lịch tái khám, nhắc uống thuốc đúng giờ qua App và Zalo.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Đánh giá chất lượng -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Rating", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-star fa-2x text-danger"></i>
+                    </div>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Đánh Giá Dịch Vụ</h5>
+                    <p class="card-text" style="color: var(--link-color);">Chấm điểm bác sĩ, phòng khám sau mỗi lượt khám để giúp chúng tôi nâng cao chất lượng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>

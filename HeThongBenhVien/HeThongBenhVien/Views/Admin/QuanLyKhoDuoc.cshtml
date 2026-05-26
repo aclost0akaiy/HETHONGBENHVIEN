@@ -199,3 +199,21 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var outOfStock = @(Model != null ? Model.Count(m => m.StockQuantity <= m.MinStock) : 0);
+            var expiring = @(Model != null ? Model.Count(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3)) : 0);
+            
+            if (outOfStock > 0 || expiring > 0) {
+                var msg = "CẢNH BÁO KHO DƯỢC:\n\n";
+                if (outOfStock > 0) msg += "⚠️ Có " + outOfStock + " loại thuốc dưới mức tồn kho tối thiểu!\n";
+                if (expiring > 0) msg += "⏰ Có " + expiring + " loại thuốc sắp hết hạn sử dụng (dưới 3 tháng)!\n";
+                msg += "\nVui lòng kiểm tra danh sách và bổ sung/xử lý kịp thời.";
+                
+                alert(msg);
+            }
+        });
+    </script>
+}
