@@ -15,9 +15,11 @@ namespace HeThongBenhVien.Models
         [StringLength(100)]
         public string DepartmentName { get; set; } = string.Empty;
 
+        [Required]
         [StringLength(200)]
         public string Description { get; set; } = string.Empty;
 
+        [Required]
         [StringLength(100)]
         public string HeadDoctor { get; set; } = string.Empty;
 
@@ -25,6 +27,7 @@ namespace HeThongBenhVien.Models
 
         public int OccupiedBeds { get; set; }
 
+        [Required]
         [StringLength(10)]
         [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số")]
         public string Phone { get; set; } = string.Empty;

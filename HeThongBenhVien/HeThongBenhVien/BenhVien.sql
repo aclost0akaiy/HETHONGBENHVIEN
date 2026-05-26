@@ -79,6 +79,8 @@ CREATE TABLE MedicalRecords (
     RoomFee DECIMAL(18,2) NOT NULL DEFAULT 65000,
     DepartmentId INT NULL,
     BedNumber INT NULL,
+    SurgeonId INT NULL,
+    SurgeryFeeId INT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_MedicalRecords_Appointments FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id) ON DELETE CASCADE,
     CONSTRAINT FK_MedicalRecords_Departments FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)

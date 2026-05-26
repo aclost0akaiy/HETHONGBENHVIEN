@@ -299,6 +299,12 @@ namespace HeThongBenhVien.Controllers
                 }
                 dept.DepartmentCode = nextNum.ToString();
                 dept.TotalBeds = 50; // Force 50 beds
+                
+                // Đảm bảo không bị null khi lưu vào database
+                dept.Description = dept.Description ?? string.Empty;
+                dept.HeadDoctor = dept.HeadDoctor ?? string.Empty;
+                dept.Phone = dept.Phone ?? string.Empty;
+
                 _context.Departments.Add(dept);
                 await _context.SaveChangesAsync();
             }
@@ -315,10 +321,10 @@ namespace HeThongBenhVien.Controllers
                 {
                     existing.DepartmentCode = dept.DepartmentCode;
                     existing.DepartmentName = dept.DepartmentName;
-                    existing.Description = dept.Description;
-                    existing.HeadDoctor = dept.HeadDoctor;
+                    existing.Description = dept.Description ?? string.Empty;
+                    existing.HeadDoctor = dept.HeadDoctor ?? string.Empty;
                     existing.TotalBeds = 50; // Force 50 beds
-                    existing.Phone = dept.Phone;
+                    existing.Phone = dept.Phone ?? string.Empty;
                     existing.IsActive = dept.IsActive;
                     
                     _context.Departments.Update(existing);

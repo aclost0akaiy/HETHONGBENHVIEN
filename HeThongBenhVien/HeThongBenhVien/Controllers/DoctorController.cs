@@ -329,13 +329,60 @@ namespace HeThongBenhVien.Controllers
         [HttpPost]
         public async Task<IActionResult> XacNhanHoSo(int id)
         {
-            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
+            var record = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .Include(m => m.Department)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (record != null && record.Appointment != null)
             {
+                // Nếu đang nhập viện (có AdmissionDate mà chưa có DischargeDate), tự động làm thủ tục xuất viện
+                if (record.AdmissionDate.HasValue && !record.DischargeDate.HasValue)
+                {
+                    await PerformDischargeLogic(record);
+                }
+
                 record.Appointment.Status = 5; // Hoàn thành điều trị
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(HoSoBenhAn));
+        }
+
+        private async Task PerformDischargeLogic(MedicalRecord record)
+        {
+            if (record.AdmissionDate.HasValue && !record.DischargeDate.HasValue)
+            {
+                record.DischargeDate = DateTime.Now;
+                var admissionTime = record.AdmissionDate.Value;
+                var days = Math.Ceiling((record.DischargeDate.Value - admissionTime).TotalDays);
+                if (days < 1) days = 1;
+                
+                var totalFee = (decimal)days * record.RoomFee;
+                var timestamp = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                
+                // Thêm dòng thông tin xuất viện vào cuối Notes
+                string stayNote = $"\n[XUATVIEN] ({timestamp}) - Tiền phòng: {totalFee:N0} VNĐ ({days} ngày)";
+                record.Notes += stayNote;
+
+                if (record.Appointment != null)
+                {
+                    record.Appointment.Status = 5; // Hoàn thành điều trị
+                }
+
+                // Cập nhật số giường của khoa
+                if (record.DepartmentId.HasValue)
+                {
+                    var dept = await _context.Departments.FindAsync(record.DepartmentId.Value);
+                    if (dept != null)
+                    {
+                        dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => 
+                            r.DepartmentId == record.DepartmentId.Value && 
+                            r.AdmissionDate != null && 
+                            r.DischargeDate == null && 
+                            r.Id != record.Id);
+                    }
+                }
+            }
         }
 
         [HttpPost]
@@ -483,6 +530,7 @@ namespace HeThongBenhVien.Controllers
             return View(records);
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetOccupiedBeds(int departmentId)
         {
             var occupiedBeds = await _context.MedicalRecords
@@ -490,10 +538,10 @@ namespace HeThongBenhVien.Controllers
                 .ThenInclude(a => a!.Patient)
                 .Where(r => r.DepartmentId == departmentId && r.AdmissionDate != null && r.DischargeDate == null)
                 .Select(r => new { 
-                    BedNumber = r.BedNumber, 
-                    PatientName = r.Appointment != null && r.Appointment.Patient != null ? r.Appointment.Patient.FullName : "N/A", 
-                    AdmissionDate = r.AdmissionDate, 
-                    RecordId = r.Id 
+                    bedNumber = r.BedNumber, 
+                    patientName = r.Appointment != null && r.Appointment.Patient != null ? r.Appointment.Patient.FullName : "N/A", 
+                    admissionDate = r.AdmissionDate, 
+                    recordId = r.Id 
                 })
                 .ToListAsync();
             return Json(occupiedBeds);
@@ -505,28 +553,38 @@ namespace HeThongBenhVien.Controllers
             var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
             if (record != null)
             {
+                // Nếu đang có đợt nhập viện cũ chưa kết thúc, kết thúc nó trước
+                if (record.AdmissionDate.HasValue && !record.DischargeDate.HasValue)
+                {
+                    await PerformDischargeLogic(record);
+                }
+
                 record.DepartmentId = departmentId;
                 record.BedNumber = bedNumber;
                 record.AdmissionDate = DateTime.Now;
+                record.DischargeDate = null; // Reset để bắt đầu đợt mới
                 
-                if (!record.Notes.Contains("[NHAPVIEN]"))
-                {
-                    record.Notes += "\n[NHAPVIEN]";
-                }
-                
+                // Thêm ghi chú lần nhập viện mới với thời gian
+                var timestamp = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                record.Notes += $"\n[NHAPVIEN] ({timestamp})";
+
                 if (record.Appointment != null)
                 {
                     record.Appointment.Status = 11; // 11 = Nhập viện
                 }
 
+                await _context.SaveChangesAsync();
+
                 // Cập nhật số giường của khoa
                 var dept = await _context.Departments.FindAsync(departmentId);
                 if (dept != null)
                 {
-                    dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => r.DepartmentId == departmentId && r.AdmissionDate != null && r.DischargeDate == null) + 1;
+                    dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => 
+                        r.DepartmentId == departmentId && 
+                        r.AdmissionDate != null && 
+                        r.DischargeDate == null);
+                    await _context.SaveChangesAsync();
                 }
-
-                await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(QuanLyGiuong), new { deptId = departmentId });
         }
@@ -540,6 +598,7 @@ namespace HeThongBenhVien.Controllers
             ViewBag.SelectedDeptId = selectedDeptId;
 
             var recordsQuery = _context.MedicalRecords
+                .Include(m => m.Department)
                 .Include(m => m.Appointment)
                 .ThenInclude(a => a.Patient)
                 .Where(m => m.AdmissionDate != null && m.DischargeDate == null);
@@ -561,24 +620,19 @@ namespace HeThongBenhVien.Controllers
         [HttpPost]
         public async Task<IActionResult> XuatVien(int id)
         {
-            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
-            if (record != null && record.Notes.Contains("[NHAPVIEN]"))
+            var record = await _context.MedicalRecords
+                .Include(r => r.Department)
+                .Include(m => m.Appointment)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (record != null)
             {
-                record.DischargeDate = DateTime.Now;
-                var days = Math.Ceiling((record.DischargeDate.Value - (record.AdmissionDate ?? record.CreatedAt)).TotalDays);
-                if (days < 1) days = 1;
-                
-                var totalFee = (decimal)days * record.RoomFee;
-                
-                record.Notes = record.Notes.Replace("[NHAPVIEN]", $"[XUATVIEN] - Tiền phòng: {totalFee:N0} VNĐ ({days} ngày)");
-                if (record.Appointment != null)
-                {
-                    record.Appointment.Status = 5; // Hoàn thành điều trị
-                }
+                await PerformDischargeLogic(record);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(QuanLyGiuong));
         }
+
         public IActionResult LichSuKham() { return View(); }
         public async Task<IActionResult> ThongKe(int? month)
         {

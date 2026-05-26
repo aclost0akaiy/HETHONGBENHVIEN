@@ -62,13 +62,13 @@
         @Html.AntiForgeryToken()
         <div class="modal-body">
             <input type="hidden" name="DepartmentCode" value="" />
-            <div class="mb-3"><label class="form-label fw-bold">Tên Khoa</label><input name="DepartmentName" class="form-control" required placeholder="Nhập tên khoa..."/></div>
-            <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><input name="Description" class="form-control"/></div>
-            <div class="mb-3"><label class="form-label fw-bold">Trưởng Khoa</label><input name="HeadDoctor" class="form-control"/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Tên Khoa</label><input name="DepartmentName" class="form-control" required placeholder="Vui lòng nhập tên khoa"/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><input name="Description" class="form-control" required placeholder="Vui lòng nhập mô tả khoa"/></div>
+            <div class="mb-3"><label class="form-label fw-bold">Trưởng Khoa</label><input name="HeadDoctor" class="form-control" required placeholder="Vui lòng nhập tên trưởng khoa"/></div>
             <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold">Tổng Giường</label><input name="TotalBeds" type="number" class="form-control bg-light" value="50" readonly/></div>
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">SĐT</label>
-                <input name="Phone" type="tel" class="form-control" pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
+                <input name="Phone" type="tel" class="form-control" required pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
             </div></div>
         </div>
         <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
@@ -96,11 +96,11 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mô tả</label>
-                            <input name="Description" class="form-control" value="@item.Description" />
+                            <input name="Description" class="form-control" value="@item.Description" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Trưởng Khoa</label>
-                            <input name="HeadDoctor" class="form-control" value="@item.HeadDoctor" />
+                            <input name="HeadDoctor" class="form-control" value="@item.HeadDoctor" required />
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -109,7 +109,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">SĐT</label>
-                                <input name="Phone" type="tel" class="form-control" value="@item.Phone" pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
+                                <input name="Phone" type="tel" class="form-control" value="@item.Phone" required pattern="^0\d{9}$" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="0123456789" />
                                 <small class="text-muted">Nhập 10 số, bắt đầu bằng 0</small>
                             </div>
                         </div>

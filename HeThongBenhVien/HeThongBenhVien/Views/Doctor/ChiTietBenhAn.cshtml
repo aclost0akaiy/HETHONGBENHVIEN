@@ -5,7 +5,8 @@
 
     // Trạng thái hồ sơ
     bool isCompleted = Model.Appointment?.Status == 5;
-    bool isAdmitted = Model.DepartmentId.HasValue && Model.AdmissionDate.HasValue;
+    // Bệnh nhân đang ở trong bệnh viện (đã nhập viện và chưa xuất viện)
+    bool isAdmitted = Model.AdmissionDate.HasValue && !Model.DischargeDate.HasValue;
 
     // Tính toán viện phí
     decimal examFee = 150000;
@@ -15,12 +16,27 @@
     decimal surgeryFee = ViewBag.SurgeryFee?.Price ?? 0;
     
     decimal roomFeeTotal = 0;
-    if (isAdmitted)
+    // 1. Tính tiền phòng cho đợt đang nằm viện (nếu có)
+    if (Model.AdmissionDate.HasValue && !Model.DischargeDate.HasValue)
     {
-        var endDate = Model.DischargeDate ?? DateTime.Now;
-        var days = (endDate.Date - Model.AdmissionDate.Value.Date).Days;
-        if (days == 0) days = 1;
-        roomFeeTotal = Model.RoomFee * days;
+        var days = Math.Ceiling((DateTime.Now - Model.AdmissionDate.Value).TotalDays);
+        if (days < 1) days = 1;
+        roomFeeTotal = Model.RoomFee * (decimal)days;
+    }
+    
+    // 2. Cộng dồn tiền phòng từ các đợt đã xuất viện (nếu có trong Notes)
+    if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        var regex = new System.Text.RegularExpressions.Regex(@"Tiền phòng: ([\d.,]+) VNĐ");
+        var matches = regex.Matches(Model.Notes);
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            string feeString = match.Groups[1].Value.Replace(".", "").Replace(",", "");
+            if (decimal.TryParse(feeString, out decimal pastFee))
+            {
+                roomFeeTotal += pastFee;
+            }
+        }
     }
     
     decimal totalBill = examFee + prescriptionFee + surgeryFee + roomFeeTotal;
@@ -304,23 +320,90 @@
                         </div>
                     }
 
-                    <!-- Khối 6: Ghi chú hệ thống -->
-                    @if(!string.IsNullOrEmpty(Model.Notes))
+                    <!-- Khối 6: Lịch sử Lưu trú & Nhập viện -->
+                    @if (!string.IsNullOrEmpty(Model.Notes) && (Model.Notes.Contains("[NHAPVIEN]") || Model.Notes.Contains("[XUATVIEN]")))
                     {
-                        string displayNotes = Model.Notes
-                            .Replace("[KEDONTHUOC]", "✓ Đã lưu đơn thuốc")
-                            .Replace("[XETNGHIEM_PENDING]", "⌛ Yêu cầu Xét nghiệm")
-                            .Replace("[XETNGHIEM_DONE]", "✓ Hoàn thành Xét nghiệm")
-                            .Replace("[PHAUTHUAT]", "✓ Có lịch Phẫu thuật")
-                            .Replace("[NHAPVIEN]", "✓ Làm thủ tục Nhập viện");
+                        <div class="mt-5">
+                            <h6 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 0.5px;">
+                                <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Lịch sử lưu trú nội trú
+                            </h6>
+                            <div class="table-responsive rounded-3 border">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr class="small text-muted text-uppercase" style="background: #f8fafc;">
+                                            <th class="ps-4" style="width: 30%;">Thông tin lưu trú</th>
+                                            <th style="width: 25%;">Thời gian nhập viện</th>
+                                            <th style="width: 25%;">Thời gian xuất viện</th>
+                                            <th class="text-end pe-4" style="width: 20%;">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var notes = Model.Notes ?? "";
+                                            var lines = notes.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                                            
+                                            for (int i = 0; i < lines.Length; i++)
+                                            {
+                                                var line = lines[i];
+                                                if (line.Contains("[NHAPVIEN]"))
+                                                {
+                                                    var admitTime = System.Text.RegularExpressions.Regex.Match(line, @"\((.+?)\)").Groups[1].Value;
+                                                    string dischargeTime = "---";
+                                                    string stayFee = "---";
 
-                        <div class="mt-4 p-3 rounded bg-light border border-dashed text-muted small d-flex align-items-start">
-                            <i class="fa-solid fa-terminal me-2 mt-1"></i>
-                            <div style="white-space: pre-wrap; font-family: monospace;">Hệ thống ghi nhận:\n@displayNotes</div>
+                                                    if (i + 1 < lines.Length && lines[i+1].Contains("[XUATVIEN]"))
+                                                    {
+                                                        var nextLine = lines[i+1];
+                                                        dischargeTime = System.Text.RegularExpressions.Regex.Match(nextLine, @"\((.+?)\)").Groups[1].Value;
+                                                        var rawFee = nextLine.Split('-').LastOrDefault()?.Trim() ?? "---";
+                                                        stayFee = System.Text.RegularExpressions.Regex.Replace(rawFee, @"\s*\([\d/:\s]+\)$", "").Trim();
+                                                        i++;
+                                                    }
+                                                    else if (!Model.DischargeDate.HasValue && i == lines.Length - 1)
+                                                    {
+                                                        dischargeTime = "Đang điều trị";
+                                                        stayFee = "Chưa chốt";
+                                                    }
+
+                                                    <tr>
+                                                        <td class="ps-4">
+                                                            <div class="fw-bold"><i class="fa-solid fa-bed-pulse text-primary me-2"></i>Đợt nội trú</div>
+                                                            <small class="text-muted ms-4">@(stayFee == "---" ? "Đang nằm viện" : "Đã thanh toán")</small>
+                                                        </td>
+                                                        <td class="fw-medium text-dark">@admitTime</td>
+                                                        <td class="fw-medium text-dark">@dischargeTime</td>
+                                                        <td class="text-end pe-4 fw-bold text-danger">@stayFee</td>
+                                                    </tr>
+                                                }
+                                                else if (line.Contains("[XUATVIEN]") && (i == 0 || !lines[i-1].Contains("[NHAPVIEN]")))
+                                                {
+                                                    var outTime = System.Text.RegularExpressions.Regex.Match(line, @"\((.+?)\)").Groups[1].Value;
+                                                    var rawFee = line.Split('-').LastOrDefault()?.Trim() ?? "---";
+                                                    
+                                                    // Thử tìm xem có thời gian nhập viện bị dư ở cuối không (do lỗi version cũ)
+                                                    var admitTimeMatch = System.Text.RegularExpressions.Regex.Match(rawFee, @"\(([\d/:\s]+)\)$");
+                                                    var admitTime = admitTimeMatch.Success ? admitTimeMatch.Groups[1].Value : "---";
+                                                    
+                                                    // Loại bỏ phần thời gian bị dư ở cuối để lấy số tiền sạch
+                                                    var fee = System.Text.RegularExpressions.Regex.Replace(rawFee, @"\s*\([\d/:\s]+\)$", "").Trim();
+                                                    
+                                                    <tr>
+                                                        <td class="ps-4">
+                                                            <div class="fw-bold"><i class="fa-solid fa-clock-rotate-left text-secondary me-2"></i>Lịch sử cũ</div>
+                                                            <small class="text-muted ms-4">Dữ liệu từ phiên bản trước</small>
+                                                        </td>
+                                                        <td class="text-dark fw-medium">@admitTime</td>
+                                                        <td class="fw-medium text-dark">@outTime</td>
+                                                        <td class="text-end pe-4 fw-bold text-danger">@fee</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     }
-
-                </div>
 
                 <!-- Footer & Buttons -->
                 <div class="p-4 bg-light border-top">
