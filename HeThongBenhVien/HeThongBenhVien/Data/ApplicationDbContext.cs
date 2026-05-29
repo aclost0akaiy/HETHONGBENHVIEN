@@ -34,6 +34,7 @@ namespace HeThongBenhVien.Data
         public DbSet<Surgery> Surgeries { get; set; }
         public DbSet<BloodBank> BloodBanks { get; set; }
         public DbSet<QualityReview> QualityReviews { get; set; }
+        public DbSet<ICD10Protocol> ICD10Protocols { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

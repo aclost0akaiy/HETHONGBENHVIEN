@@ -1,0 +1,364 @@
+@{
+    ViewData["Title"] = "AI Trợ Lý Y Tế";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Header Section -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 80px; height: 80px;">
+                    <i class="fa-solid fa-brain fs-1"></i>
+                </div>
+                <h2 class="fw-bold text-dark">AI Trợ Lý Y Tế <span class="badge bg-danger fs-6 align-middle ms-2 shadow-sm"><i class="fa-solid fa-bolt me-1"></i>v2.0 Pro</span></h2>
+                <p class="text-muted">Nhập triệu chứng của bạn, AI sẽ phân tích và gợi ý khoa khám bệnh phù hợp nhất.</p>
+            </div>
+
+            <!-- Main AI Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <!-- Input Section -->
+                    <div id="aiInputSection">
+                        <label class="form-label fw-bold text-dark mb-3"><i class="fa-solid fa-notes-medical text-primary me-2"></i>Mô tả triệu chứng của bạn:</label>
+                        <textarea id="symptomsInput" class="form-control form-control-lg bg-light border-0 mb-4" rows="5" placeholder="Ví dụ: Tôi bị đau đầu dai dẳng, sốt nhẹ về chiều và buồn nôn..." style="resize: none;"></textarea>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-light px-4 me-md-2" type="button" onclick="clearInput()">Làm mới</button>
+                            <button id="btnAnalyze" class="btn btn-primary px-5 fw-bold" type="button" onclick="analyzeSymptoms()">
+                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Phân tích bằng AI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Section -->
+                    <div id="aiLoadingSection" class="text-center py-5 d-none">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="fw-bold text-dark">Đang phân tích dữ liệu...</h5>
+                        <p class="text-muted">Hệ thống đang đối chiếu hàng nghìn bệnh án lâm sàng.</p>
+                    </div>
+
+                    <!-- Result Section -->
+                    <div id="aiResultSection" class="d-none mt-2">
+                        <div class="alert border-0 bg-success bg-opacity-10 mb-4 rounded-3 p-4">
+                            <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-check-circle me-2"></i>Kết quả phân tích sơ bộ</h5>
+                            <p class="mb-2 text-dark">Dựa trên triệu chứng <strong>"<span id="echoSymptoms"></span>"</strong>, AI đưa ra các đánh giá sau:</p>
+                        </div>
+
+                        <!-- Diagnosis List -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-3">Các bệnh lý có thể mắc phải:</h6>
+                            <div class="list-group list-group-flush border-top border-bottom" id="diseaseList">
+                                <!-- Dynamic Content -->
+                            </div>
+                        </div>
+
+                        <!-- Recommendation Box -->
+                        <div class="card bg-primary text-white border-0 rounded-4 p-4 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fa-solid fa-hospital fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Khoa khám bệnh đề xuất:</h6>
+                                    <h4 class="fw-bold mb-0 mt-1" id="recommendedDept">Khoa Thần Kinh</h4>
+                                </div>
+                            </div>
+                            <p class="mb-0 opacity-75 small" id="recommendationDetail">Bác sĩ chuyên khoa Thần kinh sẽ giúp chẩn đoán chính xác tình trạng đau đầu của bạn.</p>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between align-items-center">
+                            <button class="btn btn-outline-secondary px-4" type="button" onclick="resetAI()">
+                                <i class="fa-solid fa-rotate-left me-2"></i>Phân tích lại
+                            </button>
+                            <a href="@Url.Action("Booking", "Patient")" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm rounded-pill">
+                                Đặt Lịch Khám Ngay <i class="fa-solid fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i><strong>Lưu ý:</strong> Kết quả chỉ mang tính chất tham khảo. Vui lòng đến bệnh viện để được bác sĩ thăm khám chính xác.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function clearInput() {
+            document.getElementById('symptomsInput').value = '';
+        }
+
+        function resetAI() {
+            document.getElementById('aiInputSection').classList.remove('d-none');
+            document.getElementById('aiResultSection').classList.add('d-none');
+            document.getElementById('symptomsInput').value = '';
+        }
+
+        function analyzeSymptoms() {
+            const symptoms = document.getElementById('symptomsInput').value.trim();
+            if (!symptoms) {
+                alert('Vui lòng nhập triệu chứng của bạn!');
+                return;
+            }
+
+            // Show Loading
+            document.getElementById('aiInputSection').classList.add('d-none');
+            document.getElementById('aiLoadingSection').classList.remove('d-none');
+
+            // Mock AI Processing Delay (2 seconds)
+            setTimeout(() => {
+                document.getElementById('aiLoadingSection').classList.add('d-none');
+                
+                // AI v2.0 Logic: Phân tách từ khóa chính (Primary - độ ưu tiên cực cao) và phụ (Secondary - ưu tiên thấp)
+                const knowledgeBase = [
+                    {
+                        dept: "Khoa Thần Kinh",
+                        detail: "Bác sĩ chuyên khoa Thần kinh sẽ kiểm tra các vấn đề về hệ thần kinh trung ương và ngoại biên.",
+                        primary: ["đau đầu", "chóng mặt", "mất ngủ", "co giật", "tê liệt", "đau nửa đầu", "động kinh", "rối loạn tiền đình", "run tay", "mất cảm giác", "đột quỵ", "liệt"],
+                        secondary: ["thần kinh", "trí nhớ", "nhức đầu", "hay quên", "choáng", "ngất"],
+                        diseases: [
+                            { name: "Rối loạn tiền đình", percent: 85 },
+                            { name: "Đau dây thần kinh", percent: 75 },
+                            { name: "Thiểu năng tuần hoàn não", percent: 65 },
+                            { name: "Đau nửa đầu (Migraine)", percent: 55 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Hô Hấp",
+                        detail: "Các triệu chứng hô hấp cần được thăm khám kỹ phổi và đường thở.",
+                        primary: ["khó thở", "tức ngực", "khò khè", "mất khứu giác", "mất mùi", "hen suyễn", "viêm phổi", "ngạt mũi", "thở khò khè"],
+                        secondary: ["ho", "sốt", "đờm", "hắt hơi", "sổ mũi", "đau họng"],
+                        diseases: [
+                            { name: "Viêm phế quản cấp", percent: 78 },
+                            { name: "Viêm phổi", percent: 60 },
+                            { name: "Hen suyễn", percent: 55 },
+                            { name: "Bệnh phổi tắc nghẽn (COPD)", percent: 45 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Tiêu Hóa",
+                        detail: "Cần kiểm tra nội soi dạ dày hoặc xét nghiệm tiêu hóa.",
+                        primary: ["đau bụng", "buồn nôn", "tiêu chảy", "táo bón", "đầy hơi", "ợ chua", "khó tiêu", "đi ngoài", "đau dạ dày", "đi cầu ra máu", "vàng da", "trào ngược", "viêm loét"],
+                        secondary: ["nôn", "trĩ", "chán ăn", "ruột", "dạ dày", "đau quặn"],
+                        diseases: [
+                            { name: "Rối loạn tiêu hóa", percent: 85 },
+                            { name: "Viêm loét dạ dày tá tràng", percent: 75 },
+                            { name: "Trào ngược dạ dày (GERD)", percent: 60 },
+                            { name: "Hội chứng ruột kích thích", percent: 50 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Tim Mạch",
+                        detail: "Triệu chứng nguy hiểm, có thể cần đo điện tâm đồ và siêu âm tim ngay.",
+                        primary: ["đau ngực", "đau thắt ngực", "tim đập nhanh", "đánh trống ngực", "suy tim", "huyết áp cao", "khó thở khi nằm", "nhồi máu cơ tim"],
+                        secondary: ["hồi hộp", "ngất xỉu", "huyết áp", "tim", "mệt mỏi khi gắng sức"],
+                        diseases: [
+                            { name: "Rối loạn nhịp tim", percent: 82 },
+                            { name: "Cao huyết áp", percent: 70 },
+                            { name: "Thiếu máu cơ tim", percent: 45 },
+                            { name: "Suy tim", percent: 30 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Cơ Xương Khớp",
+                        detail: "Cần siêu âm khớp, chụp X-Quang hoặc MRI để đánh giá tổn thương cơ, xương, khớp.",
+                        primary: ["đau khớp", "nhức mỏi", "sưng khớp", "chuột rút", "đau lưng", "mỏi cổ", "đau vai gáy", "đau cột sống", "bong gân", "thoát vị", "mỏi tay", "mỏi chân", "đau tay", "đau chân", "cứng khớp"],
+                        secondary: ["nhức", "mỏi", "tê", "gút", "khớp", "xương", "cơ", "gout", "đau nhức"],
+                        diseases: [
+                            { name: "Thoái hóa khớp", percent: 80 },
+                            { name: "Viêm khớp dạng thấp", percent: 70 },
+                            { name: "Đau mỏi vai gáy", percent: 85 },
+                            { name: "Bệnh Gout", percent: 45 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Mắt",
+                        detail: "Các vấn đề về thị lực cần được bác sĩ chuyên khoa Mắt đo thị lực và khám đáy mắt.",
+                        primary: ["nhức mắt", "mỏi mắt", "đau mắt", "mờ mắt", "cộm mắt", "chói mắt", "viêm kết mạc", "đỏ mắt", "ngứa mắt", "mù", "viêm giác mạc", "nhìn đôi", "cận thị", "viễn thị"],
+                        secondary: ["mắt", "nhìn mờ", "thị lực", "nước mắt", "cận", "viễn", "loạn"],
+                        diseases: [
+                            { name: "Tật khúc xạ (Cận/Viễn/Loạn)", percent: 85 },
+                            { name: "Viêm kết mạc (Đau mắt đỏ)", percent: 75 },
+                            { name: "Hội chứng khô mắt", percent: 60 },
+                            { name: "Mỏi mắt kỹ thuật số", percent: 90 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Tai Mũi Họng",
+                        detail: "Bác sĩ sẽ nội soi tai mũi họng để kiểm tra các viêm nhiễm vùng đầu cổ.",
+                        primary: ["đau tai", "ù tai", "đau họng", "viêm xoang", "chảy máu cam", "nuốt vướng", "mủ tai", "amidan", "khàn tiếng", "nghẹt mũi", "điếc"],
+                        secondary: ["tai", "mũi", "họng", "ngáy", "sổ mũi", "viêm họng"],
+                        diseases: [
+                            { name: "Viêm họng / Viêm Amidan", percent: 80 },
+                            { name: "Viêm mũi dị ứng", percent: 75 },
+                            { name: "Viêm xoang", percent: 65 },
+                            { name: "Viêm tai giữa", percent: 50 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Da Liễu",
+                        detail: "Khám chuyên khoa Da liễu để xác định các bệnh lý ngoài da, tóc, móng và dị ứng.",
+                        primary: ["nổi mẩn", "phát ban", "vảy nến", "mề đay", "lang ben", "hắc lào", "mụn nhọt", "bong tróc", "viêm da", "dị ứng", "rụng tóc"],
+                        secondary: ["da", "ngứa", "mụn", "nám", "gàu"],
+                        diseases: [
+                            { name: "Viêm da cơ địa / Dị ứng", percent: 85 },
+                            { name: "Mụn trứng cá", percent: 70 },
+                            { name: "Mề đay mẩn ngứa", percent: 65 },
+                            { name: "Nấm da", percent: 50 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Răng Hàm Mặt",
+                        detail: "Cần chụp X-quang răng và khám chuyên khoa để xử lý các vấn đề răng miệng.",
+                        primary: ["đau răng", "chảy máu chân răng", "hôi miệng", "sâu răng", "nhổ răng", "nhiệt miệng", "sưng má", "viêm tủy", "viêm nha chu"],
+                        secondary: ["răng", "nướu", "lợi", "ê buốt", "hàm"],
+                        diseases: [
+                            { name: "Sâu răng", percent: 90 },
+                            { name: "Viêm nướu / Viêm nha chu", percent: 80 },
+                            { name: "Răng khôn mọc lệch", percent: 60 },
+                            { name: "Viêm tủy răng", percent: 45 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Tiết Niệu / Thận",
+                        detail: "Các triệu chứng bài tiết cần được xét nghiệm nước tiểu và siêu âm hệ tiết niệu.",
+                        primary: ["tiểu buốt", "tiểu rắt", "tiểu ra máu", "đau hông lưng", "sỏi thận", "suy thận", "nước tiểu đục", "tiểu đêm"],
+                        secondary: ["tiểu nhiều", "thận", "bàng quang", "tiết niệu", "tiểu", "đái buốt"],
+                        diseases: [
+                            { name: "Nhiễm trùng đường tiết niệu", percent: 85 },
+                            { name: "Sỏi thận / Sỏi tiết niệu", percent: 70 },
+                            { name: "Viêm bàng quang", percent: 60 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Phụ Sản / Nam Khoa",
+                        detail: "Thăm khám các vấn đề liên quan đến sức khỏe sinh sản, phụ khoa, nam khoa.",
+                        primary: ["kinh nguyệt", "mang thai", "khí hư", "ngứa vùng kín", "rối loạn cương dương", "yếu sinh lý", "vô sinh", "đau bụng dưới", "ra máu bất thường", "u nang"],
+                        secondary: ["sinh sản", "phụ khoa", "nam khoa", "vùng kín"],
+                        diseases: [
+                            { name: "Viêm nhiễm phụ khoa/nam khoa", percent: 80 },
+                            { name: "Rối loạn kinh nguyệt", percent: 70 },
+                            { name: "U nang buồng trứng", percent: 45 }
+                        ]
+                    },
+                    {
+                        dept: "Khoa Truyền Nhiễm",
+                        detail: "Các bệnh lây nhiễm cần được cách ly và làm xét nghiệm máu, xét nghiệm PCR.",
+                        primary: ["sốt xuất huyết", "sốt rét", "thủy đậu", "quai bị", "tay chân miệng", "covid", "phát ban toàn thân", "sốt siêu vi"],
+                        secondary: ["sốt cao liên tục", "ớn lạnh", "sốt lây"],
+                        diseases: [
+                            { name: "Sốt xuất huyết Dengue", percent: 85 },
+                            { name: "Sốt siêu vi", percent: 75 },
+                            { name: "Bệnh Thủy đậu", percent: 60 }
+                        ]
+                    }
+                ];
+
+                let bestMatch = null;
+                let maxScore = 0;
+
+                const lowerSymptoms = symptoms.toLowerCase();
+
+                knowledgeBase.forEach(kb => {
+                    let score = 0;
+                    
+                    // Xử lý từ khóa CHÍNH (Primary keywords) - Ưu tiên tuyệt đối
+                    kb.primary.forEach(kw => {
+                        if (lowerSymptoms.includes(kw)) {
+                            score += 100; // Điểm rất cao cho các triệu chứng chính xác (như 'nhức mắt', 'mỏi tay')
+                            
+                            // Nếu là từ độc lập (không nằm trong 1 từ khác)
+                            const regex = new RegExp(`\\b${kw}\\b`, 'i');
+                            if (regex.test(lowerSymptoms)) {
+                                score += 20;
+                            }
+                        }
+                    });
+
+                    // Xử lý từ khóa PHỤ (Secondary keywords) - Ưu tiên thấp
+                    kb.secondary.forEach(kw => {
+                        if (lowerSymptoms.includes(kw)) {
+                            score += 10; // Điểm thấp (như 'nhức', 'mỏi', 'mắt') để không lấn át từ khóa chính
+                            
+                            const regex = new RegExp(`\\b${kw}\\b`, 'i');
+                            if (regex.test(lowerSymptoms)) {
+                                score += 5;
+                            }
+                        }
+                    });
+                    
+                    if (score > maxScore) {
+                        maxScore = score;
+                        bestMatch = kb;
+                    }
+                });
+
+                let diseases = [];
+                let department = "";
+                let detail = "";
+
+                if (bestMatch && maxScore > 0) {
+                    department = bestMatch.dept;
+                    detail = bestMatch.detail;
+                    
+                    // Lấy top 3 bệnh cao nhất của khoa phù hợp
+                    diseases = bestMatch.diseases.sort((a, b) => b.percent - a.percent).slice(0, 3);
+                    
+                    // Thêm chút ngẫu nhiên để mô phỏng sự linh hoạt của AI (dao động từ -3 đến +3 phần trăm)
+                    diseases.forEach(d => {
+                        const randomAdjust = Math.floor(Math.random() * 7) - 3;
+                        d.percent = Math.min(99, Math.max(10, d.percent + randomAdjust));
+                    });
+                } else {
+                    // Fallback nếu không khớp bất kỳ từ khóa nào
+                    department = "Khoa Nội Tổng Hợp";
+                    detail = "Triệu chứng của bạn khá chung chung hoặc phức tạp. Bạn nên đăng ký khám nội tổng hợp để được bác sĩ đánh giá và sàng lọc ban đầu.";
+                    
+                    const fallbackDiseases = [
+                        { name: "Suy nhược cơ thể", percent: 65 },
+                        { name: "Nhiễm siêu vi", percent: 55 },
+                        { name: "Thiếu máu", percent: 45 },
+                        { name: "Rối loạn thần kinh thực vật", percent: 40 },
+                        { name: "Căng thẳng kéo dài (Stress)", percent: 50 },
+                        { name: "Rối loạn chuyển hóa", percent: 35 }
+                    ];
+                    
+                    // Chọn ngẫu nhiên 3 bệnh dự phòng
+                    diseases = fallbackDiseases.sort(() => 0.5 - Math.random()).slice(0, 3);
+                }
+
+                // Render Results
+                document.getElementById('echoSymptoms').textContent = symptoms.length > 50 ? symptoms.substring(0, 50) + '...' : symptoms;
+                document.getElementById('recommendedDept').textContent = department;
+                document.getElementById('recommendationDetail').textContent = detail;
+                
+                let listHtml = '';
+                diseases.forEach(d => {
+                    let color = d.percent >= 75 ? 'danger' : (d.percent >= 50 ? 'warning' : 'info');
+                    listHtml += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark">${d.name}</h6>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="progress me-3" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar bg-${color}" role="progressbar" style="width: ${d.percent}%" aria-valuenow="${d.percent}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="badge bg-${color} bg-opacity-10 text-${color} rounded-pill fs-6">${d.percent}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('diseaseList').innerHTML = listHtml;
+
+                // Show Results
+                document.getElementById('aiResultSection').classList.remove('d-none');
+            }, 1500);
+        }
+    </script>
+}

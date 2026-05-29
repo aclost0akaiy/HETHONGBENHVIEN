@@ -415,4 +415,5 @@ D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.pdb
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
 D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\SixLabors.ImageSharp.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

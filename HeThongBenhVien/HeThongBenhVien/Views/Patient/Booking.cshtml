@@ -1,5 +1,7 @@
+@model HeThongBenhVien.Models.Appointment
 @{
     ViewData["Title"] = "Đặt Lịch Khám Trực Tuyến";
+    var departments = ViewBag.Departments as List<HeThongBenhVien.Models.Department>;
 }
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -7,54 +9,51 @@
         <a asp-action="Portal" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
     </div>
     
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--navbar-bg);">
         <div class="card-body p-5">
             <h5 class="card-title text-center text-primary mb-4">Vui lòng điền thông tin để đặt lịch hẹn</h5>
-            <form>
+            <form asp-action="Booking" method="post">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" style="color: var(--text-color)">Họ và Tên</label>
-                        <input type="text" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
+                        <input type="text" class="form-control" name="FullName" placeholder="Ví dụ: Nguyễn Văn A" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" style="color: var(--text-color)">Số Điện Thoại</label>
-                        <input type="tel" class="form-control" placeholder="0912345678">
+                        <input type="tel" class="form-control" name="PhoneNumber" placeholder="0912345678" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label" style="color: var(--text-color)">Lý do khám (Triệu chứng)</label>
+                        <textarea name="Reason" class="form-control" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Chuyên Khoa</label>
-                        <select class="form-select">
-                            <option>-- Chọn chuyên khoa --</option>
-                            <option>Nội tổng hợp</option>
-                            <option>Ngoại khoa</option>
-                            <option>Tai Mũi Họng</option>
-                            <option>Da liễu</option>
+                        <label class="form-label" style="color: var(--text-color)">Chuyên Khoa (Gợi ý)</label>
+                        <select name="DepartmentId" class="form-select">
+                            <option value="">-- Chọn chuyên khoa --</option>
+                            @if (departments != null)
+                            {
+                                foreach (var dept in departments)
+                                {
+                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                }
+                            }
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Bác Sĩ Cụ Thể (Tùy chọn)</label>
-                        <select class="form-select">
-                            <option>-- Không yêu cầu --</option>
-                            <option>BS. Trần Văn B (Nội khoa)</option>
-                            <option>BS. Lê Thị C (Da liễu)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Ngày Khám</label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Giờ Khám (Dự kiến)</label>
-                        <select class="form-select">
-                            <option>-- Chọn khung giờ --</option>
-                            <option>08:00 - 09:00</option>
-                            <option>09:00 - 10:00</option>
-                            <option>10:00 - 11:00</option>
-                            <option>14:00 - 15:00</option>
-                        </select>
+                        <label class="form-label" style="color: var(--text-color)">Ngày & Giờ Khám</label>
+                        <input name="AppointmentTime" type="datetime-local" class="form-control" required>
                     </div>
                 </div>
                 <div class="mt-4 text-center">
-                    <button type="button" class="btn btn-primary btn-lg px-5 rounded-pill"><i class="fa-solid fa-check"></i> Xác nhận đặt lịch</button>
+                    <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill"><i class="fa-solid fa-check"></i> Xác nhận đặt lịch</button>
                 </div>
             </form>
         </div>

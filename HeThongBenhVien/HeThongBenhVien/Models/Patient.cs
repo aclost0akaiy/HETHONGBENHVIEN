@@ -21,5 +21,10 @@ namespace HeThongBenhVien.Models
         public string PatientCode { get; set; } = string.Empty;
 
         public string? Allergies { get; set; }
+
+        [StringLength(20)]
+        public string? CCCD { get; set; }
+
+        public string? FaceData { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+@model HeThongBenhVien.Models.QualityReview
 @{
     ViewData["Title"] = "Đánh Giá Dịch Vụ";
 }
@@ -13,31 +14,47 @@
         </a>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card border-0 shadow-lg rounded-4" style="background-color: var(--card-bg);">
                 <div class="card-body p-5 text-center">
                     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135690.png" class="img-fluid mb-4 rounded-circle bg-light p-2 shadow-sm" style="width: 120px;" />
-                    <h5 class="fw-bold mb-1" style="color: var(--text-color);">Lượt khám gần nhất</h5>
-                    <p class="text-muted small mb-4">Ngày 20/05/2026 - BS. Nguyễn Văn A - Khoa Nội Tổng Hợp</p>
+                    <h5 class="fw-bold mb-1" style="color: var(--text-color);">Đánh giá trải nghiệm khám bệnh</h5>
                     
-                    <h4 class="fw-bold mb-3" style="color: var(--text-color);">Bạn cảm thấy hài lòng không?</h4>
-                    <div class="d-flex justify-content-center gap-3 mb-4 rating-stars">
-                        <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(1)"></i>
-                        <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(2)"></i>
-                        <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(3)"></i>
-                        <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(4)"></i>
-                        <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(5)"></i>
-                    </div>
+                    <form asp-action="Rating" method="post" id="ratingForm">
+                        <input type="hidden" asp-for="Department" value="Khám Tổng Hợp" />
+                        <input type="hidden" asp-for="CleanlinessScore" id="cScore" value="5" />
+                        <input type="hidden" asp-for="StaffScore" id="sScore" value="5" />
+                        <input type="hidden" asp-for="FacilityScore" id="fScore" value="5" />
+                        <input type="hidden" asp-for="WaitTimeScore" id="wScore" value="5" />
+                        <input type="hidden" asp-for="ServiceScore" id="mainScore" value="0" />
 
-                    <div class="form-group text-start mb-4">
-                        <label class="fw-bold mb-2" style="color: var(--text-color);">Góp ý thêm (Tùy chọn)</label>
-                        <textarea class="form-control rounded-3" rows="4" placeholder="Chia sẻ trải nghiệm của bạn với bác sĩ và nhân viên y tế..."></textarea>
-                    </div>
+                        <h4 class="fw-bold mb-3" style="color: var(--text-color);">Bạn cảm thấy hài lòng không?</h4>
+                        <div class="d-flex justify-content-center gap-3 mb-4 rating-stars">
+                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(1)"></i>
+                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(2)"></i>
+                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(3)"></i>
+                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(4)"></i>
+                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(5)"></i>
+                        </div>
 
-                    <button class="btn btn-primary w-100 rounded-pill py-3 fw-bold fs-5 shadow" onclick="submitRating()">
-                        <i class="fa-solid fa-paper-plane me-2"></i>Gửi Đánh Giá
-                    </button>
+                        <div class="form-group text-start mb-4">
+                            <label class="fw-bold mb-2" style="color: var(--text-color);">Góp ý thêm (Tùy chọn)</label>
+                            <textarea asp-for="Comment" class="form-control rounded-3" rows="4" placeholder="Chia sẻ trải nghiệm của bạn với bác sĩ và nhân viên y tế..."></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100 rounded-pill py-3 fw-bold fs-5 shadow" onclick="submitRating()">
+                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi Đánh Giá
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -48,6 +65,12 @@
     let currentRating = 0;
     function rate(stars) {
         currentRating = stars;
+        document.getElementById('mainScore').value = stars;
+        document.getElementById('cScore').value = stars;
+        document.getElementById('sScore').value = stars;
+        document.getElementById('fScore').value = stars;
+        document.getElementById('wScore').value = stars;
+        
         const starElements = document.querySelectorAll('.rating-stars i');
         starElements.forEach((el, index) => {
             if (index < stars) {
@@ -65,7 +88,6 @@
             alert('Vui lòng chọn số sao để đánh giá!');
             return;
         }
-        alert('Cảm ơn bạn đã đánh giá ' + currentRating + ' sao! Phản hồi của bạn đã được ghi nhận.');
-        window.location.href = '@Url.Action("Portal", "Patient")';
+        document.getElementById('ratingForm').submit();
     }
 </script>

@@ -1,3 +1,4 @@
+@model IEnumerable<HeThongBenhVien.Models.Prescription>
 @{
     ViewData["Title"] = "Thanh Toán Viện Phí";
 }
@@ -7,37 +8,69 @@
         <a asp-action="Portal" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
     </div>
     
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
         <div class="col-md-6">
             <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--navbar-bg);">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--text-color)">Hóa Đơn Cần Thanh Toán</h5>
-                    <ul class="list-group list-group-flush mb-3">
-                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; color: var(--text-color)">
-                            Phí khám bệnh ban đầu
-                            <span>150,000 VNĐ</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; color: var(--text-color)">
-                            Xét nghiệm máu tổng quát
-                            <span>300,000 VNĐ</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold" style="background-color: transparent; color: var(--text-color); font-size: 1.2rem">
-                            Tổng cộng
-                            <span class="text-danger">450,000 VNĐ</span>
-                        </li>
-                    </ul>
+                    <h5 class="fw-bold mb-3" style="color: var(--text-color)">Hóa Đơn Thuốc Cần Thanh Toán</h5>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var prescription in Model)
+                        {
+                            var totalAmount = prescription.PrescriptionDetails.Sum(p => p.Price * p.Quantity);
+                            <div class="mb-4 border rounded p-3 bg-white text-dark shadow-sm">
+                                <h6>Đơn thuốc ngày: @prescription.CreatedAt.ToString("dd/MM/yyyy HH:mm")</h6>
+                                <p class="mb-1 text-muted">Chẩn đoán: @(prescription.MedicalRecord?.Diagnosis ?? "N/A")</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    @foreach(var detail in prescription.PrescriptionDetails)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 pb-0">
+                                            @detail.MedicineName (SL: @detail.Quantity)
+                                            <span>@((detail.Price * detail.Quantity).ToString("N0")) VNĐ</span>
+                                        </li>
+                                    }
+                                </ul>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                    <strong>Tổng cộng:</strong>
+                                    <strong class="text-danger fs-5">@totalAmount.ToString("N0") VNĐ</strong>
+                                </div>
+                                <div class="mt-3 text-end">
+                                    <form asp-action="PayPrescription" method="post" class="d-inline">
+                                        <input type="hidden" name="prescriptionId" value="@prescription.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-money-bill-wave"></i> Đã chuyển khoản (Xác nhận)</button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">Bạn không có hóa đơn nào cần thanh toán.</div>
+                    }
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 text-center" style="background-color: var(--navbar-bg);">
+            <div class="card shadow-sm border-0 rounded-4 text-center sticky-top" style="background-color: var(--navbar-bg); top: 80px;">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3" style="color: var(--text-color)">Quét Mã QR Bằng Momo / VNPay</h5>
-                    <!-- Placeholder QR -->
-                    <div class="p-3 bg-white d-inline-block rounded-3 mb-3">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ThanhToanVienPhi450000" alt="QR Code">
+                    <!-- Placeholder QR (VietQR) -->
+                    <div class="p-3 bg-white d-inline-block rounded-3 mb-3 shadow-sm border">
+                        <img src="https://img.vietqr.io/image/970415-113366668888-compact2.jpg?amount=0&addInfo=ThanhToanVienPhi&accountName=Benh%20Vien%20Da%20Khoa" alt="Dynamic VietQR Code" width="250">
                     </div>
-                    <p class="text-muted">Hệ thống sẽ tự động ghi nhận thanh toán sau khi bạn chuyển khoản thành công.</p>
+                    <p class="text-muted">Sau khi quét mã và chuyển tiền thành công, vui lòng bấm nút "Đã chuyển khoản" ở hóa đơn bên cạnh.</p>
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" height="30" alt="Momo">
+                        <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/9/06ncktiwd6dc1694418189387.png" height="30" alt="VNPay">
+                    </div>
                 </div>
             </div>
         </div>

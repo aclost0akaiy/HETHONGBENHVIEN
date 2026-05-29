@@ -38,8 +38,23 @@
             }
         }
     }
+
+    // 3. Tính tiền xét nghiệm / cận lâm sàng
+    decimal labTestFee = 0;
+    var labTests = ViewBag.LabTests as ICollection<HeThongBenhVien.Models.LabTest>;
+    if (labTests != null)
+    {
+        foreach(var test in labTests)
+        {
+            if (test.TestName == "CBC") labTestFee += 100000;
+            else if (test.TestName == "SinhHoa") labTestFee += 200000;
+            else if (test.TestName == "SieuAm") labTestFee += 150000;
+            else if (test.TestName == "XQuang") labTestFee += 120000;
+            else if (test.TestName == "NuocTieu") labTestFee += 50000;
+        }
+    }
     
-    decimal totalBill = examFee + prescriptionFee + surgeryFee + roomFeeTotal;
+    decimal totalBill = examFee + prescriptionFee + surgeryFee + roomFeeTotal + labTestFee;
 }
 
 <div class="container-fluid p-0 pb-5">
@@ -251,10 +266,18 @@
                                     <div class="row g-3">
                                         @foreach(var test in tests)
                                         {
+                                            decimal testPrice = 0;
+                                            string displayTestName = test.TestName;
+                                            if (test.TestName == "CBC") { testPrice = 100000; displayTestName = "Công thức máu toàn phần (CBC)"; }
+                                            else if (test.TestName == "SinhHoa") { testPrice = 200000; displayTestName = "Sinh hóa máu (Đường huyết, Ure, Creatinin)"; }
+                                            else if (test.TestName == "SieuAm") { testPrice = 150000; displayTestName = "Siêu âm ổ bụng tổng quát"; }
+                                            else if (test.TestName == "XQuang") { testPrice = 120000; displayTestName = "X-Quang ngực thẳng"; }
+                                            else if (test.TestName == "NuocTieu") { testPrice = 50000; displayTestName = "Tổng phân tích nước tiểu"; }
+
                                             <div class="col-md-6">
                                                 <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="fw-bold text-dark fs-6">@test.TestName</span>
+                                                        <span class="fw-bold text-dark fs-6">@displayTestName <span class="text-danger ms-2 small">@string.Format("{0:N0}đ", testPrice)</span></span>
                                                         @if(string.IsNullOrEmpty(test.Result)) {
                                                             <span class="badge bg-warning bg-opacity-25 text-dark px-3 py-1 rounded-pill border border-warning"><i class="fa-regular fa-clock me-1"></i>Chờ KQ</span>
                                                         } else {
@@ -266,10 +289,11 @@
                                                             <span class="text-muted"><i class="fa-solid fa-file-medical-alt me-1"></i>Kết quả:</span> <strong class="ms-1">@test.Result</strong>
                                                         </div>
                                                         @if(!string.IsNullOrEmpty(test.ImageUrl)) {
-                                                            <div class="mt-2 text-center bg-dark rounded p-1">
-                                                                <a href="@test.ImageUrl" target="_blank" title="Nhấn để xem toàn màn hình">
-                                                                    <img src="@test.ImageUrl" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;" alt="Ảnh cận lâm sàng" />
-                                                                </a>
+                                                            <div class="mt-2 text-center bg-dark rounded p-1 position-relative" style="cursor: pointer;" onclick="openDICOMViewer('@test.ImageUrl')">
+                                                                <img src="@test.ImageUrl" class="img-fluid rounded" style="max-height: 150px; object-fit: contain; transition: transform 0.3s;" alt="Ảnh cận lâm sàng" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                                                <div class="position-absolute top-50 start-50 translate-middle text-white" style="background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; opacity: 0; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
+                                                                    <i class="fa-solid fa-magnifying-glass-plus"></i> Xem ảnh
+                                                                </div>
                                                             </div>
                                                         }
                                                     }
@@ -428,6 +452,7 @@
                                 <h5 class="mb-1 fw-bold text-uppercase text-warning" style="letter-spacing: 1px;"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Tổng Viện Phí Bệnh Nhân</h5>
                                 <div class="d-flex gap-3 small opacity-75 mt-2">
                                     <span>Khám: <strong>@string.Format("{0:N0}đ", examFee)</strong></span>
+                                    <span>Xét nghiệm: <strong>@string.Format("{0:N0}đ", labTestFee)</strong></span>
                                     <span>Thuốc: <strong>@string.Format("{0:N0}đ", prescriptionFee)</strong></span>
                                     <span>Mổ: <strong>@string.Format("{0:N0}đ", surgeryFee)</strong></span>
                                     <span>Giường: <strong>@string.Format("{0:N0}đ", roomFeeTotal)</strong></span>
@@ -574,6 +599,40 @@
     </div>
 </div>
 
+<!-- Modal DICOM Viewer (Hệ thống phân tích hình ảnh Y tế) -->
+<div class="modal fade" id="dicomViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0 border-bottom border-secondary bg-black text-white p-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-desktop-medical me-2 text-info"></i>Hệ Thống Phân Tích Hình Ảnh Cận Lâm Sàng</h5>
+                
+                <div class="d-flex align-items-center gap-3 ms-auto me-4">
+                    <button class="btn btn-outline-light btn-sm" onclick="dicomZoom(0.1)" title="Phóng to"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button class="btn btn-outline-light btn-sm" onclick="dicomZoom(-0.1)" title="Thu nhỏ"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <div class="vr bg-secondary mx-1"></div>
+                    <button class="btn btn-outline-light btn-sm" onclick="dicomRotate()" title="Xoay 90 độ"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="dicomInvert()" title="Đảo màu âm bản (X-Quang)"><i class="fa-solid fa-circle-half-stroke"></i> Invert</button>
+                    <div class="vr bg-secondary mx-1"></div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-sun text-light small"></i>
+                        <input type="range" class="form-range" id="dicomBrightness" min="50" max="150" step="10" value="100" style="width: 100px;" oninput="applyDicomFilters()">
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-half-stroke text-light small"></i>
+                        <input type="range" class="form-range" id="dicomContrast" min="50" max="150" step="10" value="100" style="width: 100px;" oninput="applyDicomFilters()">
+                    </div>
+                    <button class="btn btn-danger btn-sm ms-2" onclick="resetDicom()" title="Khôi phục mặc định"><i class="fa-solid fa-rotate-left"></i></button>
+                </div>
+
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 position-relative overflow-hidden bg-black d-flex justify-content-center align-items-center" id="dicomContainer" style="height: calc(100vh - 70px);">
+                <img id="dicomImage" src="" alt="Clinical Image" style="max-width: 100%; max-height: 100%; transition: transform 0.2s, filter 0.2s; cursor: grab;" draggable="false" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
         .btn-hover { transition: all 0.3s ease; }
@@ -664,5 +723,90 @@
             $('#selectedBedNumber').val(num);
             $('#btnSubmitAdmission').prop('disabled', false);
         }
+
+        // ===== LƯU TRỮ TRẠNG THÁI VIEWER =====
+        let dicomState = {
+            scale: 1,
+            rotate: 0,
+            invert: false,
+            brightness: 100,
+            contrast: 100,
+            panX: 0,
+            panY: 0,
+            isDragging: false,
+            startX: 0,
+            startY: 0
+        };
+
+        function openDICOMViewer(url) {
+            $('#dicomImage').attr('src', url);
+            resetDicom();
+            var myModal = new bootstrap.Modal(document.getElementById('dicomViewerModal'));
+            myModal.show();
+        }
+
+        function applyDicomFilters() {
+            let img = document.getElementById('dicomImage');
+            
+            // Transform (Zoom, Rotate, Pan)
+            img.style.transform = `translate(${dicomState.panX}px, ${dicomState.panY}px) scale(${dicomState.scale}) rotate(${dicomState.rotate}deg)`;
+            
+            // Filter (Invert, Brightness, Contrast)
+            let invertVal = dicomState.invert ? '100%' : '0%';
+            let brightVal = $('#dicomBrightness').val() + '%';
+            let contVal = $('#dicomContrast').val() + '%';
+            img.style.filter = `invert(${invertVal}) brightness(${brightVal}) contrast(${contVal})`;
+        }
+
+        function dicomZoom(delta) {
+            dicomState.scale += delta;
+            if (dicomState.scale < 0.1) dicomState.scale = 0.1;
+            applyDicomFilters();
+        }
+
+        function dicomRotate() {
+            dicomState.rotate += 90;
+            applyDicomFilters();
+        }
+
+        function dicomInvert() {
+            dicomState.invert = !dicomState.invert;
+            applyDicomFilters();
+        }
+
+        function resetDicom() {
+            dicomState = { scale: 1, rotate: 0, invert: false, brightness: 100, contrast: 100, panX: 0, panY: 0, isDragging: false, startX: 0, startY: 0 };
+            $('#dicomBrightness').val(100);
+            $('#dicomContrast').val(100);
+            applyDicomFilters();
+        }
+
+        // Kéo thả hình ảnh (Panning)
+        const dicomImg = document.getElementById('dicomImage');
+        dicomImg.addEventListener('mousedown', (e) => {
+            dicomState.isDragging = true;
+            dicomState.startX = e.clientX - dicomState.panX;
+            dicomState.startY = e.clientY - dicomState.panY;
+            dicomImg.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!dicomState.isDragging) return;
+            dicomState.panX = e.clientX - dicomState.startX;
+            dicomState.panY = e.clientY - dicomState.startY;
+            applyDicomFilters();
+        });
+
+        window.addEventListener('mouseup', () => {
+            dicomState.isDragging = false;
+            dicomImg.style.cursor = 'grab';
+        });
+
+        // Hỗ trợ Zoom bằng con lăn chuột
+        document.getElementById('dicomContainer').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) dicomZoom(0.1);
+            else dicomZoom(-0.1);
+        });
     </script>
 }

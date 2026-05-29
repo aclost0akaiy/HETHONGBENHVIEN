@@ -28,8 +28,15 @@ CREATE TABLE Patients (
     Gender NVARCHAR(50) NOT NULL DEFAULT N'Nam',
     Age INT NOT NULL,
     PatientCode NVARCHAR(20) NOT NULL,
-    Allergies NVARCHAR(MAX) NULL
+    Allergies NVARCHAR(MAX) NULL,
+    CCCD NVARCHAR(20) NULL,
+    FaceData NVARCHAR(MAX) NULL
 );
+GO
+
+ALTER TABLE Patients
+ADD CCCD NVARCHAR(20) NULL,
+    FaceData NVARCHAR(MAX) NULL;
 GO
 
 -- 1.5 T·∫°o b·∫£ng Ng∆∞·ªùi d√πng (T√†i kho·∫£n)
@@ -165,14 +172,18 @@ GO
 
 -- 3. Th√™m D·ªØ Li·ªáu M·∫´u (Seed Data) cho Patients
 SET IDENTITY_INSERT Patients ON;
-INSERT INTO Patients (Id, FullName, Gender, Age, PatientCode)
+INSERT INTO Patients (Id, FullName, Gender, Age, PatientCode, CCCD, FaceData)
 VALUES 
-(1, N'Tr·∫ßn VƒÉn L√¢m', N'Nam', 45, N'BN1293'),
-(2, N'Ho√†ng Th·ªã Mai', N'N·ªØ', 32, N'BN1294'),
-(3, N'Ph·∫°m Qu·ªëc Qu√¢n', N'Nam', 58, N'BN1295');
+(1, N'Tr·∫ßn VƒÉn L√¢m', N'Nam', 45, N'BN1293', '001080000001', NULL),
+(2, N'Ho√†ng Th·ªã Mai', N'N·ªØ', 32, N'BN1294', '001080000002', NULL),
+(3, N'Ph·∫°m Qu·ªëc Qu√¢n', N'Nam', 58, N'BN1295', '001080000003', NULL),
+(4, N'Nguy·ªÖn VƒÉn A', N'Nam', 30, N'BN1296', '001080000004', 'FACE_NGUYENVANA');
 SET IDENTITY_INSERT Patients OFF;
 GO
-
+-- Reset d·ªØ li·ªáu b·∫£ng Patients
+DELETE FROM Patients;
+DBCC CHECKIDENT ('Patients', RESEED, 0);
+GO
 -- 4. Th√™m D·ªØ Li·ªáu M·∫´u (Seed Data) cho Appointments
 SET IDENTITY_INSERT Appointments ON;
 
@@ -3167,5 +3178,27 @@ DECLARE @Pid_NT50 INT = SCOPE_IDENTITY();
 INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'C·∫•p c·ª©u', GETDATE(), 4);
 DECLARE @Aid_NT50 INT = SCOPE_IDENTITY();
 INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Tri·ªáu ch·ª©ng n·∫∑ng', N'Nh·∫≠p vi·ªán', N'Theo d√µi', GETDATE(), 3, 50, GETDATE(), 0);
+GO
+
+
+CREATE TABLE [ICD10Protocols] (
+    [ICDCode] nvarchar(50) PRIMARY KEY,
+    [Diagnosis] nvarchar(255) NOT NULL,
+    [TreatmentPlan] nvarchar(max),
+    [LabTests] nvarchar(max),
+    [Medicines] nvarchar(max)
+);
+GO
+
+INSERT INTO [ICD10Protocols] ([ICDCode], [Diagnosis], [TreatmentPlan], [LabTests], [Medicines]) VALUES 
+(N'J01', N'ViÍm xoang c?p', N'U?ng thu?c theo don. V? sinh mui b?ng nu?c mu?i sinh l˝ h‡ng ng‡y.', N'X-Quang Blondeau - Hirtz, N?i soi Tai Mui H?ng', N'Amoxicillin 500mg, Paracetamol 500mg, Loratadin 10mg'),
+(N'J03', N'ViÍm amidan c?p', N'U?ng thu?c theo don. S˙c h?ng nu?c mu?i sinh l˝, kiÍng d? l?nh.', N'XÈt nghi?m m·u co b?n, N?i soi Tai Mui H?ng', N'Cefuroxim 500mg, Ibuprofen 400mg, Alphachymotrypsin 4,2mg'),
+(N'I10', N'Tang huy?t ·p vÙ can', N'Duy trÏ u?ng thu?c huy?t ·p h‡ng ng‡y. KiÍng an m?n, t?p th? d?c nh? nh‡ng 30p/ng‡y.', N'–i?n t‚m d? (ECG), Sinh hÛa m·u', N'Amlodipine 5mg, Losartan 50mg'),
+(N'E11', N'–·i th·o du?ng type 2', N'Tu‚n th? nghiÍm ng?t ch? d? an kiÍng cho ngu?i ti?u du?ng. –o du?ng huy?t thu?ng xuyÍn.', N'–u?ng huy?t l˙c dÛi, HbA1c, T?ng ph‚n tÌch nu?c ti?u', N'Metformin 850mg, Gliclazide 30mg'),
+(N'K21', N'Tr‡o ngu?c d? d‡y th?c qu?n (GERD)', N'U?ng thu?c theo don. KhÙng an no tru?c khi ng? 3 ti?ng. KÍ cao g?i khi n?m.', N'N?i soi d? d‡y t· tr‡ng, Test vi khu?n HP', N'Omeprazole 20mg, Domperidon 10mg, Phosphalugel 20g'),
+(N'A09', N'TiÍu ch?y nhi?m tr˘ng', N'B˘ nu?c v‡ di?n gi?i tÌch c?c. An chÌn u?ng sÙi, chia nh? b?a an.', N'XÈt nghi?m ph‚n, XÈt nghi?m m·u co b?n', N'Oresol, Smecta, Ciprofloxacin 500mg'),
+(N'J18', N'ViÍm ph?i khÙng d?c hi?u', N'Ngh? ngoi, u?ng nhi?u nu?c. Theo dıi nh?p th? v‡ SpO2 thu?ng xuyÍn.', N'X-Quang ng?c th?ng, CÙng th?c m·u to‡n ph?n (CBC)', N'Azithromycin 500mg, Paracetamol 500mg, Acetylcysteine 200mg'),
+(N'J45', N'Hen ph? qu?n', N'Tr·nh c·c y?u t? kh?i ph·t (b?i, khÛi, d? nguyÍn). S? d?ng thu?c c?t con khi khÛ th?.', N'–o ch?c nang hÙ h?p, X-Quang ng?c th?ng', N'Salbutamol 100mcg (X?t), Budesonide/Formoterol 160/4.5mcg'),
+(N'K29', N'ViÍm d? d‡y c?p', N'An th?c an m?m, d? tiÍu. Tr·nh d? cay nÛng, ru?u bia. Chia nh? b?a an.', N'N?i soi d? d‡y t· tr‡ng, Test vi khu?n HP', N'Esomeprazole 40mg, Phosphalugel 20g');
 GO
 

@@ -66,38 +66,112 @@
 
                     <div class="row g-3">
                         <div class="col-md-12 mb-3">
-                            <label asp-for="Symptoms" class="form-label fw-bold"></label>
-                            <input asp-for="Symptoms" class="form-control bg-light border-0" placeholder="VD: Ho nhiều, đau rát họng..." />
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label asp-for="Symptoms" class="form-label fw-bold mb-0">Triệu chứng lâm sàng</label>
+                            </div>
+                            <div class="mb-2 d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Sốt cao">Sốt cao</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Ho khan">Ho khan</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Đau đầu">Đau đầu</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Mệt mỏi">Mệt mỏi</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Khó thở">Khó thở</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Symptoms" data-val="Đau tức ngực">Đau tức ngực</span>
+                            </div>
+                            <div class="input-group mb-2">
+                                <input asp-for="Symptoms" class="form-control bg-light border-0 p-3" placeholder="Nhập hoặc chọn triệu chứng nhanh..." />
+                                <button class="btn btn-primary px-4" type="button" id="btnSearchProtocol" onclick="autoSuggestICD10()">
+                                    <i class="fa-solid fa-search me-2"></i>Tìm phác đồ
+                                </button>
+                            </div>
                             <span asp-validation-for="Symptoms" class="text-danger small"></span>
                         </div>
                         
                         <div class="col-12 mb-3">
+                            <label class="form-label fw-bold text-primary"><i class="fa-solid fa-brain me-2"></i>Tra cứu mã bệnh (ICD-10) & Gợi ý Phác đồ</label>
+                            <select id="icd10Select" class="form-select border-primary bg-light" onchange="showSmartProtocol(this.value)">
+                                <option value="">-- Chọn mã bệnh ICD-10 --</option>
+                                @if (ViewBag.ICD10Protocols != null)
+                                {
+                                    foreach (var protocol in ViewBag.ICD10Protocols)
+                                    {
+                                        <option value="@protocol.ICDCode">@protocol.ICDCode - @protocol.Diagnosis</option>
+                                    }
+                                }
+                            </select>
+                            
+                            <div id="smartProtocolBox" class="mt-3 p-3 border border-success rounded bg-success bg-opacity-10 d-none shadow-sm transition-all">
+                                <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Phác đồ điều trị đề xuất</h6>
+                                <div class="row">
+                                    <div class="col-md-5 border-end border-success border-opacity-25">
+                                        <strong class="small text-muted text-uppercase d-block mb-1">Chỉ định Cận lâm sàng</strong>
+                                        <ul id="protocolLabTests" class="mb-2 ps-3 small text-dark" style="list-style-type: square;"></ul>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <strong class="small text-muted text-uppercase d-block mb-1">Đơn thuốc tự động</strong>
+                                        <ul id="protocolMedicines" class="mb-2 ps-3 small text-dark" style="list-style-type: square;"></ul>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-2 pt-2 border-top border-success border-opacity-25">
+                                    <button type="button" class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="applySmartProtocol()">
+                                        <i class="fa-solid fa-check me-1"></i>Áp dụng Phác đồ
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="medicalWarnings" class="mt-3 p-3 border border-danger rounded bg-danger bg-opacity-10 d-none shadow-sm transition-all" style="animation: headShake 1s;">
+                                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo Y Khoa Khẩn Cấp!</h6>
+                                <ul id="medicalWarningsList" class="mb-0 text-danger ps-3 small fw-bold"></ul>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label asp-for="Diagnosis" class="form-label fw-bold mb-0"></label>
-                                <button type="button" class="btn btn-sm btn-outline-danger btn-voice" data-target="Diagnosis" title="Nhấn để đọc">
-                                    <i class="fa-solid fa-microphone"></i> Voice-to-Text
+                                <label asp-for="Diagnosis" class="form-label fw-bold mb-0">Chẩn đoán sơ bộ</label>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-voice rounded-pill px-3" data-target="Diagnosis" title="Nhấn để đọc">
+                                    <i class="fa-solid fa-microphone me-1"></i> Voice-to-Text
                                 </button>
                             </div>
-                            <textarea asp-for="Diagnosis" class="form-control bg-light border-0" rows="2" placeholder="Chẩn đoán lâm sàng..."></textarea>
+                            <div class="mb-2 d-flex flex-wrap gap-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary border-primary quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="Diagnosis" data-val="Viêm họng cấp">Viêm họng cấp</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border-primary quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="Diagnosis" data-val="Viêm phế quản">Viêm phế quản</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border-primary quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="Diagnosis" data-val="Cảm cúm thông thường">Cảm cúm</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border-primary quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="Diagnosis" data-val="Rối loạn tiêu hóa">RL Tiêu hóa</span>
+                            </div>
+                            <textarea asp-for="Diagnosis" class="form-control bg-light border-0 p-3" rows="2" placeholder="Chẩn đoán lâm sàng..."></textarea>
                             <span asp-validation-for="Diagnosis" class="text-danger small"></span>
                         </div>
 
                         <div class="col-12 mb-3">
-                            <label asp-for="TreatmentPlan" class="form-label fw-bold"></label>
-                            <textarea asp-for="TreatmentPlan" class="form-control bg-light border-0" rows="3" placeholder="Đơn thuốc và hướng điều trị..."></textarea>
+                            <label asp-for="TreatmentPlan" class="form-label fw-bold">Hướng điều trị / Đơn thuốc</label>
+                            <div class="mb-2 d-flex flex-wrap gap-2">
+                                <span class="badge bg-success bg-opacity-10 text-success border-success quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="TreatmentPlan" data-val="Uống thuốc theo đơn.">Kê đơn ngoại trú</span>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border-warning quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="TreatmentPlan" data-val="Chỉ định xét nghiệm máu, X-Quang.">Chỉ định CLS</span>
+                                <span class="badge bg-danger bg-opacity-10 text-danger border-danger quick-select-diag" style="cursor: pointer; padding: 8px 12px;" data-target="TreatmentPlan" data-val="Nhập viện theo dõi.">Nhập viện nội trú</span>
+                            </div>
+                            <textarea asp-for="TreatmentPlan" class="form-control bg-light border-0 p-3" rows="3" placeholder="Đơn thuốc và hướng điều trị..."></textarea>
                             <span asp-validation-for="TreatmentPlan" class="text-danger small"></span>
                         </div>
 
                         <div class="col-12 mb-4">
-                            <label asp-for="Notes" class="form-label fw-bold"></label>
-                            <textarea asp-for="Notes" class="form-control bg-light border-0" rows="2" placeholder="Lời dặn bác sĩ..."></textarea>
+                            <label asp-for="Notes" class="form-label fw-bold">Lời dặn bác sĩ</label>
+                            <div class="mb-2 d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Notes" data-val="Nghỉ ngơi nhiều, uống nhiều nước.">Nghỉ ngơi</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Notes" data-val="Kiêng ăn đồ dầu mỡ, cay nóng.">Kiêng dầu mỡ</span>
+                                <span class="badge bg-light text-dark border quick-select" style="cursor: pointer; padding: 8px 12px;" data-target="Notes" data-val="Tái khám sau 3 ngày.">Tái khám 3 ngày</span>
+                            </div>
+                            <textarea asp-for="Notes" class="form-control bg-light border-0 p-3" rows="2" placeholder="Ghi chú thêm..."></textarea>
                             <span asp-validation-for="Notes" class="text-danger small"></span>
                         </div>
                     </div>
+                    
+                    <div id="hiddenLabTests"></div>
 
-                    <div class="d-flex justify-content-end border-top pt-4">
-                        <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm rounded-pill fw-bold">
-                            <i class="fa-solid fa-floppy-disk me-2"></i> Lưu Hồ Sơ & Hoàn Thành
+                    <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-2">
+                        <button type="button" class="btn btn-outline-info rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#labTestModal">
+                            <i class="fa-solid fa-microscope me-2"></i> Chỉ định nhanh CLS
+                        </button>
+                        <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm rounded-pill fw-bold" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none;">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Lưu Hồ Sơ Khám
                         </button>
                     </div>
                 </form>
@@ -106,9 +180,84 @@
     </div>
 </div>
 
+<!-- Modal Quick Lab Test -->
+<div class="modal fade" id="labTestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 16px;">
+            <div class="modal-header border-0 bg-info bg-opacity-10" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title text-info fw-bold"><i class="fa-solid fa-microscope me-2"></i>Chỉ Định Xét Nghiệm Nhanh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-3">Chọn các gói xét nghiệm thường quy:</p>
+                <div class="list-group">
+                    <label class="list-group-item d-flex gap-3 border-0 bg-light mb-2 rounded p-3 align-items-center" style="cursor:pointer;">
+                        <input class="form-check-input flex-shrink-0 lab-test-checkbox" type="checkbox" value="Xét nghiệm máu cơ bản" style="font-size: 1.2rem;">
+                        <span class="pt-1 form-checked-content">
+                            <strong>Xét nghiệm máu cơ bản</strong>
+                            <small class="d-block text-muted">Huyết đồ, Sinh hóa máu (Glucose, Ure, Creatinin)</small>
+                        </span>
+                    </label>
+                    <label class="list-group-item d-flex gap-3 border-0 bg-light mb-2 rounded p-3 align-items-center" style="cursor:pointer;">
+                        <input class="form-check-input flex-shrink-0 lab-test-checkbox" type="checkbox" value="X-Quang Phổi thẳng" style="font-size: 1.2rem;">
+                        <span class="pt-1 form-checked-content">
+                            <strong>X-Quang Phổi thẳng</strong>
+                            <small class="d-block text-muted">Chẩn đoán hình ảnh lồng ngực</small>
+                        </span>
+                    </label>
+                    <label class="list-group-item d-flex gap-3 border-0 bg-light mb-2 rounded p-3 align-items-center" style="cursor:pointer;">
+                        <input class="form-check-input flex-shrink-0 lab-test-checkbox" type="checkbox" value="Siêu âm Ổ bụng tổng quát" style="font-size: 1.2rem;">
+                        <span class="pt-1 form-checked-content">
+                            <strong>Siêu âm Ổ bụng tổng quát</strong>
+                            <small class="d-block text-muted">Kiểm tra gan, mật, thận, lách...</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-info text-white rounded-pill px-4" data-bs-dismiss="modal" onclick="addLabTestToPlan()">Thêm vào Hướng điều trị</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+        // Quick Select Logic
+        $('.quick-select, .quick-select-diag').click(function() {
+            var targetId = $(this).data('target');
+            var val = $(this).data('val');
+            var input = $('#' + targetId);
+            
+            var currentVal = input.val();
+            if (currentVal && !currentVal.endsWith(', ') && !currentVal.endsWith('. ')) {
+                input.val(currentVal + ', ' + val);
+            } else {
+                input.val(currentVal + val);
+            }
+            
+            // Visual feedback
+            $(this).addClass('bg-primary text-white').removeClass('bg-light text-dark');
+            setTimeout(() => {
+                $(this).removeClass('bg-primary text-white').addClass('bg-light text-dark');
+            }, 300);
+        });
+
+        function addLabTestToPlan() {
+            var planInput = $('#TreatmentPlan');
+            var currentVal = planInput.val();
+            var newVal = currentVal ? currentVal + '\n- Đã chỉ định CLS.' : '- Đã chỉ định CLS.';
+            planInput.val(newVal);
+
+            // Create hidden inputs for selected tests
+            $('#hiddenLabTests').empty();
+            $('.lab-test-checkbox:checked').each(function() {
+                $('#hiddenLabTests').append('<input type="hidden" name="selectedLabTests" value="'+ $(this).val() +'" />');
+            });
+        }
+
         // AI Voice to Text Feature
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -128,9 +277,9 @@
                     recognition.stop();
                 } else {
                     recognition.start();
-                    $('.btn-voice').removeClass('recording btn-danger').addClass('btn-outline-danger').html('<i class="fa-solid fa-microphone"></i> Voice-to-Text');
+                    $('.btn-voice').removeClass('recording btn-danger').addClass('btn-outline-danger').html('<i class="fa-solid fa-microphone me-1"></i> Voice-to-Text');
                     currentBtn.addClass('recording btn-danger').removeClass('btn-outline-danger');
-                    currentBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Đang nghe...');
+                    currentBtn.html('<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang nghe...');
                 }
             });
 
@@ -141,16 +290,261 @@
                     currentTarget.val(currentVal + (currentVal ? ' ' : '') + text + '.');
                 }
             };
-
+            
             recognition.onend = function() {
                 if (currentBtn) {
                     currentBtn.removeClass('recording btn-danger').addClass('btn-outline-danger');
-                    currentBtn.html('<i class="fa-solid fa-microphone"></i> Voice-to-Text');
+                    currentBtn.html('<i class="fa-solid fa-microphone me-1"></i> Voice-to-Text');
                 }
             };
         } else {
             console.log("Trình duyệt không hỗ trợ AI Voice-to-Text");
             $('.btn-voice').hide();
+        }
+
+        // ===== SMART PROTOCOL LOGIC (ICD-10) =====
+        const icdProtocols = {
+            @if (ViewBag.ICD10Protocols != null)
+            {
+                var protocols = ViewBag.ICD10Protocols as IEnumerable<HeThongBenhVien.Models.ICD10Protocol>;
+                if (protocols != null)
+                {
+                    foreach (var p in protocols)
+                    {
+                        string labsJson = "[]";
+                        if (!string.IsNullOrEmpty(p.LabTests))
+                        {
+                            var labArray = p.LabTests.Split(new[] { ",", ", " }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                            labsJson = System.Text.Json.JsonSerializer.Serialize(labArray);
+                        }
+
+                        string medsJson = "[]";
+                        if (!string.IsNullOrEmpty(p.Medicines))
+                        {
+                            var medArray = p.Medicines.Split(new[] { ",", ", " }, StringSplitOptions.RemoveEmptyEntries)
+                                .Select(m => new { name = m.Trim(), quantity = 10, dosage = "Sử dụng theo chỉ định của bác sĩ" })
+                                .ToArray();
+                            medsJson = System.Text.Json.JsonSerializer.Serialize(medArray);
+                        }
+                        
+                        <text>
+                        "@p.ICDCode": {
+                            diagnosis: "@Html.Raw(p.Diagnosis)",
+                            treatmentPlan: `@Html.Raw(p.TreatmentPlan)`,
+                            labTests: @Html.Raw(labsJson),
+                            medicines: @Html.Raw(medsJson)
+                        },
+                        </text>
+                    }
+                }
+            }
+        };
+
+        // Hàm auto-suggest ICD-10 dựa trên triệu chứng
+        function autoSuggestICD10() {
+            const text = $('#Symptoms').val().toLowerCase();
+            let predictedIcd = "";
+
+            if (text.includes("khó thở") && text.includes("ho")) {
+                predictedIcd = "J45"; // Hen phế quản
+            } else if (text.includes("ho") && text.includes("sốt") && text.includes("khó thở")) {
+                predictedIcd = "J18"; // Viêm phổi
+            } else if ((text.includes("đau họng") || text.includes("ho khan")) && text.includes("sốt")) {
+                predictedIcd = "J03"; // Viêm amidan
+            } else if (text.includes("sổ mũi") && text.includes("đau đầu")) {
+                predictedIcd = "J01"; // Viêm xoang
+            } else if (text.includes("đau tức ngực") && text.includes("khó thở")) {
+                predictedIcd = "I10"; // Tăng huyết áp (tạm thời gán nếu chưa có mã nhồi máu)
+            } else if (text.includes("đau bụng") || text.includes("tiêu chảy")) {
+                predictedIcd = "A09"; // Tiêu chảy
+            } else if (text.includes("buồn nôn") || text.includes("ợ chua")) {
+                predictedIcd = "K21"; // GERD
+            } else if (text.includes("đau dạ dày") || text.includes("đau thượng vị")) {
+                predictedIcd = "K29"; // Viêm dạ dày
+            } else if (text.includes("mệt mỏi") && text.includes("tiểu nhiều")) {
+                predictedIcd = "E11"; // Tiểu đường
+            } 
+            // Fallback rules for single keywords
+            else if (text.includes("sốt cao") || text.includes("sốt")) {
+                predictedIcd = "J03"; // Viêm amidan cấp
+            } else if (text.includes("ho khan") || text.includes("ho")) {
+                predictedIcd = "J03"; // Viêm amidan cấp
+            } else if (text.includes("đau đầu")) {
+                predictedIcd = "I10"; // Tăng huyết áp
+            } else if (text.includes("khó thở")) {
+                predictedIcd = "J45"; // Hen phế quản
+            } else if (text.includes("đau tức ngực")) {
+                predictedIcd = "I10"; // Tăng huyết áp
+            } else if (text.includes("mệt mỏi")) {
+                predictedIcd = "E11"; // Đái tháo đường
+            }
+
+            if (predictedIcd !== "") {
+                if ($('#icd10Select').val() !== predictedIcd) {
+                    $('#icd10Select').val(predictedIcd).change();
+                    // Hiển thị thông báo nhỏ báo cho bác sĩ biết AI vừa tự động chọn
+                    let toastHtml = `
+                        <div id="aiToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+                            <div class="toast show align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <i class="fa-solid fa-robot me-2"></i>AI đã tự động chọn phác đồ ICD-10 (${predictedIcd}) dựa trên triệu chứng.
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('#aiToast').remove();
+                    $('body').append(toastHtml);
+                    setTimeout(() => $('#aiToast').fadeOut(500, function() { $(this).remove(); }), 4000);
+                }
+            } else {
+                // Hiển thị thông báo không tìm thấy
+                let toastHtml = `
+                    <div id="aiToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+                        <div class="toast show align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    <i class="fa-solid fa-circle-exclamation me-2"></i>Chưa tìm thấy phác đồ phù hợp với từ khóa hiện tại.
+                                </div>
+                                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#aiToast').remove();
+                $('body').append(toastHtml);
+                setTimeout(() => $('#aiToast').fadeOut(500, function() { $(this).remove(); }), 3000);
+            }
+        }
+
+        $(document).ready(function() {
+            // Lắng nghe sự kiện gõ phím vào ô Triệu chứng lâm sàng
+            $('#Symptoms').on('input', function() {
+                // Sử dụng debounce để tránh gọi liên tục
+                clearTimeout(window.symptomTimeout);
+                window.symptomTimeout = setTimeout(autoSuggestICD10, 800);
+            });
+            
+            // Xử lý khi bấm vào thẻ quick-select (Triệu chứng nhanh)
+            $('.quick-select').click(function() {
+                // Gọi lại ngay sau khi text thay đổi
+                setTimeout(autoSuggestICD10, 200);
+            });
+        });
+
+        let currentProtocol = null;
+        
+        const patientAllergies = "@Html.Raw(Model.Appointment?.Patient?.Allergies ?? "")".toLowerCase();
+
+        // Thư viện quy tắc Tương tác thuốc (Mockup)
+        const drugInteractions = {
+            "ibuprofen": ["cefuroxim", "aspirin", "naproxen"],
+            "cefuroxim": ["ibuprofen", "aminoglycoside"],
+            "ciprofloxacin": ["tizanidine", "theophylline"],
+            "metformin": ["cimetidine", "cephalexin"],
+            "paracetamol": ["thuốc trị lao", "carbamazepine"]
+        };
+
+        function validateMedicalProtocol(medicines) {
+            let warnings = [];
+            
+            // 1. Kiểm tra dị ứng
+            if (patientAllergies && patientAllergies.trim() !== '') {
+                let allergies = patientAllergies.split(',').map(a => a.trim());
+                medicines.forEach(m => {
+                    let medName = m.name.toLowerCase();
+                    allergies.forEach(a => {
+                        if (medName.includes(a)) {
+                            warnings.push(`Bệnh nhân có tiền sử DỊ ỨNG với '${a.toUpperCase()}'. Tuyệt đối cẩn trọng khi kê '${m.name}'.`);
+                        }
+                    });
+                });
+            }
+
+            // 2. Kiểm tra tương tác thuốc
+            for (let i = 0; i < medicines.length; i++) {
+                let m1 = medicines[i].name.toLowerCase();
+                for (let key in drugInteractions) {
+                    if (m1.includes(key)) {
+                        let interactingDrugs = drugInteractions[key];
+                        for (let j = i + 1; j < medicines.length; j++) {
+                            let m2 = medicines[j].name.toLowerCase();
+                            interactingDrugs.forEach(id => {
+                                if (m2.includes(id)) {
+                                    warnings.push(`TƯƠNG TÁC THUỐC: Tránh kết hợp '${medicines[i].name}' và '${medicines[j].name}'. Nguy cơ suy thận/gan cấp hoặc giảm tác dụng điều trị!`);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+            return warnings;
+        }
+
+        function showSmartProtocol(icdCode) {
+            if (!icdCode || !icdProtocols[icdCode]) {
+                $('#smartProtocolBox').addClass('d-none');
+                $('#medicalWarnings').addClass('d-none');
+                currentProtocol = null;
+                return;
+            }
+            currentProtocol = icdProtocols[icdCode];
+            $('#smartProtocolBox').removeClass('d-none');
+            
+            let labsHtml = currentProtocol.labTests.map(l => `<li class="mb-1">${l}</li>`).join('');
+            $('#protocolLabTests').html(labsHtml);
+            
+            let medsHtml = currentProtocol.medicines.map(m => `<li class="mb-2"><strong>${m.name}</strong>: <span class="badge bg-primary bg-opacity-10 text-primary">${m.quantity} viên</span> <br><span class="text-muted" style="font-size:0.8rem"><i class="fa-solid fa-clock me-1"></i>${m.dosage}</span></li>`).join('');
+            $('#protocolMedicines').html(medsHtml);
+
+            // Chạy kiểm tra dị ứng & tương tác
+            let warnings = validateMedicalProtocol(currentProtocol.medicines);
+            if (warnings.length > 0) {
+                let wHtml = warnings.map(w => `<li class="mb-1">${w}</li>`).join('');
+                $('#medicalWarningsList').html(wHtml);
+                $('#medicalWarnings').removeClass('d-none');
+            } else {
+                $('#medicalWarnings').addClass('d-none');
+            }
+        }
+
+        function applySmartProtocol() {
+            if (!currentProtocol) return;
+            
+            // Điền thông tin vào các TextBox
+            $('#Diagnosis').val(currentProtocol.diagnosis);
+            $('#TreatmentPlan').val(currentProtocol.treatmentPlan + '\n- Đã chỉ định Cận lâm sàng & Tự động kê đơn thuốc theo phác đồ.');
+            
+            // Thêm Lab Tests vào danh sách ẩn
+            $('#hiddenLabTests').empty();
+            currentProtocol.labTests.forEach(test => {
+                $('#hiddenLabTests').append('<input type="hidden" name="selectedLabTests" value="'+ test +'" />');
+            });
+            
+            // Thêm chuỗi JSON đơn thuốc để gửi về Backend
+            $('#hiddenLabTests').append('<input type="hidden" name="smartPrescriptionsJson" value=\''+ JSON.stringify(currentProtocol.medicines) +'\' />');
+            
+            // Hiển thị Toast thông báo thành công
+            const toastHtml = `
+            <div class="toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1060;" id="protocolToast">
+                <div class="d-flex">
+                    <div class="toast-body fw-bold">
+                        <i class="fa-solid fa-check-circle me-2"></i>Đã áp dụng phác đồ thành công!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>`;
+            $('body').append(toastHtml);
+            const toastElement = document.getElementById('protocolToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            setTimeout(() => { $(toastElement).remove(); }, 3000);
+            
+            // Focus vào mục Hướng điều trị để bác sĩ xem lại
+            $('#TreatmentPlan').focus();
         }
     </script>
 }

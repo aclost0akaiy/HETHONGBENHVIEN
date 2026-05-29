@@ -18,7 +18,19 @@
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --bg-color: #f1f5f9;
+            --navbar-bg: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(0, 0, 0, 0.05);
             --sidebar-width: 280px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --text-dark: #f8fafc;
+            --text-light: #94a3b8;
+            --navbar-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -119,13 +131,14 @@
         /* Top Navbar */
         .top-navbar {
             height: 70px;
-            background: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background: var(--navbar-bg);
+            box-shadow: 0 2px 10px var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 30px;
             z-index: 999;
+            transition: background-color 0.3s;
         }
 
         .search-bar {
@@ -228,12 +241,12 @@
 
         /* Card Styles */
         .glass-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid var(--border-color);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
         }
 
         /* Responsive */
@@ -256,6 +269,25 @@
             background: #474761;
             border-radius: 10px;
         }
+        
+        @@keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        .heartbeat-icon {
+            animation: heartbeat 1.5s infinite;
+        }
+        @@keyframes blink-soft {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        .blink-soft {
+            animation: blink-soft 2s infinite;
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -275,54 +307,67 @@
                 </a>
             </li>
 
-            <div class="nav-section-title">Hệ thống & Người dùng</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTaiKhoan" ? "active" : "")">
-                <a href="@Url.Action("QuanLyTaiKhoan", "Admin")"><i class="fa-solid fa-users-gear"></i> Quản lý tài khoản</a>
+            <div class="nav-section-title">Giám sát Lâm sàng</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTiepDon" ? "active" : "")">
+                <a href="@Url.Action("QuanLyTiepDon", "Admin")"><i class="fa-solid fa-bell-concierge"></i> Giám sát Tiếp đón</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNhanSu" ? "active" : "")">
-                <a href="@Url.Action("QuanLyNhanSu", "Admin")"><i class="fa-solid fa-user-doctor"></i> Quản lý nhân sự</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyBenhNhan" ? "active" : "")">
+                <a href="@Url.Action("QuanLyBenhNhan", "Admin")"><i class="fa-solid fa-bed-pulse"></i> Quản lý Bệnh nhân</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoaPhong" ? "active" : "")">
-                <a href="@Url.Action("QuanLyKhoaPhong", "Admin")"><i class="fa-solid fa-hospital-user"></i> Quản lý khoa phòng</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyLichLamViec" ? "active" : "")">
-                <a href="@Url.Action("QuanLyLichLamViec", "Admin")"><i class="fa-solid fa-calendar-days"></i> Lịch làm việc</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyXetNghiem" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyCDHA" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyPhauThuat" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNganHangMau" ? "active" : "")">
+                <a href="#clinicalSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-stethoscope"></i> Dịch vụ Cận lâm sàng</span>
+                </a>
+                <ul class="collapse list-unstyled ps-4 mt-2" id="clinicalSubmenu" style="font-size: 0.9em;">
+                    <li><a href="@Url.Action("QuanLyXetNghiem", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-vial me-2"></i>Xét nghiệm</a></li>
+                    <li><a href="@Url.Action("QuanLyCDHA", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-x-ray me-2"></i>Chẩn đoán hình ảnh</a></li>
+                    <li><a href="@Url.Action("QuanLyPhauThuat", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-scissors me-2"></i>Phẫu thuật</a></li>
+                    <li><a href="@Url.Action("QuanLyNganHangMau", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-droplet me-2 text-danger"></i>Ngân hàng máu</a></li>
+                </ul>
             </li>
 
-            <div class="nav-section-title">Danh mục chuyên môn</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyDichVu" ? "active" : "")">
-                <a href="@Url.Action("QuanLyDichVu", "Admin")"><i class="fa-solid fa-stethoscope"></i> Dịch vụ khám chữa bệnh</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyGia" ? "active" : "")">
-                <a href="@Url.Action("QuanLyGia", "Admin")"><i class="fa-solid fa-money-bill-wave"></i> Bảng giá viện phí</a>
+            <div class="nav-section-title">Tài chính & Dược</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyVienPhi" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyBHYT" ? "active" : "")">
+                <a href="#financeSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-money-bill-wave"></i> Viện phí & BHYT</span>
+                </a>
+                <ul class="collapse list-unstyled ps-4 mt-2" id="financeSubmenu" style="font-size: 0.9em;">
+                    <li><a href="@Url.Action("QuanLyVienPhi", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Thu viện phí</a></li>
+                    <li><a href="@Url.Action("QuanLyBHYT", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-id-card me-2"></i>Bảo hiểm y tế</a></li>
+                    <li><a href="@Url.Action("QuanLyGia", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-tags me-2"></i>Bảng giá dịch vụ</a></li>
+                </ul>
             </li>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoDuoc" ? "active" : "")">
-                <a href="@Url.Action("QuanLyKhoDuoc", "Admin")"><i class="fa-solid fa-pills"></i> Quản lý kho dược</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyThietBi" ? "active" : "")">
-                <a href="@Url.Action("QuanLyThietBi", "Admin")"><i class="fa-solid fa-microscope"></i> Thiết bị y tế</a>
+                <a href="@Url.Action("QuanLyKhoDuoc", "Admin")"><i class="fa-solid fa-pills"></i> Quản lý Kho Dược</a>
             </li>
 
-            <div class="nav-section-title">Báo cáo & Phân tích</div>
+            <div class="nav-section-title">Báo cáo & Thống kê</div>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "ThongKeDoanhThu" ? "active" : "")">
-                <a href="@Url.Action("ThongKeDoanhThu", "Admin")"><i class="fa-solid fa-chart-line"></i> Thống kê doanh thu</a>
+                <a href="@Url.Action("ThongKeDoanhThu", "Admin")"><i class="fa-solid fa-chart-line"></i> Thống kê Doanh thu</a>
             </li>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "BaoCaoHoatDong" ? "active" : "")">
-                <a href="@Url.Action("BaoCaoHoatDong", "Admin")"><i class="fa-solid fa-chart-pie"></i> Báo cáo hoạt động</a>
+                <a href="@Url.Action("BaoCaoHoatDong", "Admin")"><i class="fa-solid fa-chart-pie"></i> Báo cáo Hoạt động</a>
             </li>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhGiaChatLuong" ? "active" : "")">
-                <a href="@Url.Action("DanhGiaChatLuong", "Admin")"><i class="fa-solid fa-star"></i> Đánh giá chất lượng</a>
+                <a href="@Url.Action("DanhGiaChatLuong", "Admin")"><i class="fa-solid fa-star text-warning"></i> Đánh giá Chất lượng</a>
             </li>
 
-            <div class="nav-section-title">Cài đặt</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" ? "active" : "")">
-                <a href="@Url.Action("CauHinhHeThong", "Admin")"><i class="fa-solid fa-gears"></i> Cấu hình hệ thống</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "SaoLuuDuLieu" ? "active" : "")">
-                <a href="@Url.Action("SaoLuuDuLieu", "Admin")"><i class="fa-solid fa-database"></i> Sao lưu dữ liệu</a>
-            </li>
+            <div class="nav-section-title">Hệ thống</div>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "NhatKyHeThong" ? "active" : "")">
-                <a href="@Url.Action("NhatKyHeThong", "Admin")"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hệ thống</a>
+                <a href="@Url.Action("NhatKyHeThong", "Admin")"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký Hệ thống</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTaiKhoan" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNhanSu" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoaPhong" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyLichLamViec" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyThietBi" ? "active" : "")">
+                <a href="#settingsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-gears"></i> Cài đặt & Cấu hình</span>
+                </a>
+                <ul class="collapse list-unstyled ps-4 mt-2" id="settingsSubmenu" style="font-size: 0.9em;">
+                    <li><a href="@Url.Action("QuanLyTaiKhoan", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-users-gear me-2"></i>Tài khoản</a></li>
+                    <li><a href="@Url.Action("QuanLyNhanSu", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-user-doctor me-2"></i>Nhân sự</a></li>
+                    <li><a href="@Url.Action("QuanLyKhoaPhong", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-hospital-user me-2"></i>Khoa phòng</a></li>
+                    <li><a href="@Url.Action("QuanLyLichLamViec", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-calendar-days me-2"></i>Lịch làm việc</a></li>
+                    <li><a href="@Url.Action("QuanLyThietBi", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-toolbox me-2"></i>Thiết bị</a></li>
+                    <li><a href="@Url.Action("CauHinhHeThong", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-server me-2"></i>Cấu hình lõi</a></li>
+                </ul>
             </li>
         </ul>
     </nav>
@@ -341,6 +386,9 @@
             </div>
 
             <div class="user-profile">
+                <div class="nav-icon me-3" id="adminThemeToggle" title="Chuyển đổi Sáng/Tối">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
                 <div class="nav-icon">
                     <i class="fa-regular fa-bell"></i>
                     <span class="badge-count bg-primary">3</span>
@@ -396,6 +444,31 @@
             $('#sidebarToggle').click(function() {
                 $('#sidebar').toggleClass('sidebar-hidden');
                 $('#main-content').toggleClass('main-content-expanded');
+            });
+
+            // Theme Toggle Logic
+            const themeToggle = document.getElementById('adminThemeToggle');
+            const icon = themeToggle.querySelector('i');
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if(savedTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                if(newTheme === 'dark') {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
             });
         });
     </script>

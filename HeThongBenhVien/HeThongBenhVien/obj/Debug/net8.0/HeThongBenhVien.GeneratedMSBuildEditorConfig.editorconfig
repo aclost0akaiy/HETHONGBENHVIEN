@@ -150,6 +150,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaVRpZXRCZW5oQW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CommandCenter.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENvbW1hbmRDZW50ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/DanhSach.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhbmhTYWNoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -232,6 +236,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Patient/AiDiagnosis.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF0aWVudFxBaURpYWdub3Npcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Patient/Booking.cshtml]

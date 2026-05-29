@@ -408,6 +408,13 @@ namespace HeThongBenhVien.Controllers
             ViewBag.AllMedicines = allMedicines;
             ViewBag.TotalMedicines = allMedicines.Count;
 
+            // Advanced Pharmacy Management: Cảnh báo sắp hết hạn / sắp hết tồn kho
+            var lowStockMedicines = allMedicines.Where(m => m.StockQuantity <= m.MinStock && m.IsActive).ToList();
+            var expiringMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            
+            ViewBag.LowStockMedicines = lowStockMedicines;
+            ViewBag.ExpiringMedicines = expiringMedicines;
+
             // Load all prescription details with patient relationships
             var allPrescriptionDetails = await _context.PrescriptionDetails
                 .Include(pd => pd.Prescription)
@@ -574,6 +581,53 @@ namespace HeThongBenhVien.Controllers
             ViewBag.TotalMedicines = await _context.Medicines.CountAsync();
             ViewBag.TotalDepartments = await _context.Departments.CountAsync();
             ViewBag.TotalEquipments = await _context.MedicalEquipments.CountAsync();
+
+            // 1. Phân tích loại bệnh (Pie Chart)
+            var rawDiseases = await _context.MedicalRecords
+                .Where(m => !string.IsNullOrEmpty(m.Diagnosis))
+                .Select(m => m.Diagnosis)
+                .ToListAsync();
+
+            var diseaseGroups = rawDiseases
+                .Select(d => {
+                    // Extract core disease name for grouping
+                    var parts = d.Split('-');
+                    if (parts.Length > 1) return parts[1].Trim();
+                    return d.Split(',')[0].Trim();
+                })
+                .GroupBy(d => d)
+                .Select(g => new { Label = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(6)
+                .ToList();
+                
+            ViewBag.DiseaseLabels = System.Text.Json.JsonSerializer.Serialize(diseaseGroups.Select(x => x.Label));
+            ViewBag.DiseaseData = System.Text.Json.JsonSerializer.Serialize(diseaseGroups.Select(x => x.Count));
+
+            // 2. Doanh thu theo phòng ban (Bar Chart) - Từ tiền thuốc
+            var departmentRevenueQuery = await _context.PrescriptionDetails
+                .Include(pd => pd.Prescription)
+                    .ThenInclude(p => p.MedicalRecord)
+                        .ThenInclude(mr => mr.Department)
+                .Where(pd => pd.Prescription != null 
+                          && pd.Prescription.MedicalRecord != null 
+                          && pd.Prescription.MedicalRecord.Department != null)
+                .Select(pd => new { 
+                    DepartmentName = pd.Prescription.MedicalRecord.Department.DepartmentName,
+                    Revenue = pd.Price * pd.Quantity
+                })
+                .ToListAsync();
+
+            var deptGroups = departmentRevenueQuery
+                .GroupBy(x => x.DepartmentName)
+                .Select(g => new { Label = g.Key, Total = g.Sum(x => x.Revenue) })
+                .OrderByDescending(x => x.Total)
+                .Take(5)
+                .ToList();
+
+            ViewBag.DoctorLabels = System.Text.Json.JsonSerializer.Serialize(deptGroups.Select(x => x.Label));
+            ViewBag.DoctorData = System.Text.Json.JsonSerializer.Serialize(deptGroups.Select(x => x.Total));
+
             return View();
         }
 

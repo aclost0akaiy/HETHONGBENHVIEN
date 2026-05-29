@@ -1,35 +1,143 @@
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Báo Cáo Hoạt Động"; }
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Báo Cáo Phân Tích Chuyên Sâu"; }
+
+<style>
+    /* Print Styles for PDF Export */
+    @@media print {
+        body * { visibility: hidden; }
+        .sidebar, .navbar, .btn, .d-none.d-print-block { display: none !important; }
+        #printArea, #printArea * { visibility: visible; }
+        #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+        .glass-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+        /* Add Medical Header specifically for printing */
+        .print-header { display: block !important; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; visibility: visible !important; }
+        .print-header * { visibility: visible; }
+    }
+    
+    .print-header { display: none; }
+</style>
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h2 class="h3 mb-1" style="font-weight:700;">Báo Cáo Hoạt Động</h2><p class="text-muted mb-0">Tổng quan hoạt động toàn bệnh viện</p></div>
-        <button class="btn btn-primary shadow-sm"><i class="fas fa-download me-1"></i> Xuất Báo Cáo</button>
+        <div><h2 class="h3 mb-1" style="font-weight:700;">Báo Cáo Phân Tích Chuyên Sâu</h2><p class="text-muted mb-0">Thống kê hiệu suất và tài chính phòng khám</p></div>
+        <button class="btn btn-primary shadow-sm" onclick="window.print()"><i class="fas fa-print me-1"></i> Xuất Báo Cáo PDF</button>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-user-injured fa-2x text-primary mb-2"></i><h3 class="fw-bold">@ViewBag.TotalPatients</h3><p class="text-muted mb-0">Bệnh Nhân</p></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-calendar-check fa-2x text-success mb-2"></i><h3 class="fw-bold">@ViewBag.TotalAppointments</h3><p class="text-muted mb-0">Lượt Khám</p></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-file-medical fa-2x text-info mb-2"></i><h3 class="fw-bold">@ViewBag.TotalRecords</h3><p class="text-muted mb-0">Hồ Sơ Bệnh Án</p></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-user-doctor fa-2x text-warning mb-2"></i><h3 class="fw-bold">@ViewBag.TotalDoctors</h3><p class="text-muted mb-0">Bác Sĩ</p></div></div>
-    </div>
+    <div id="printArea">
+        <!-- Print Header (Only visible when printing to PDF) -->
+        <div class="print-header">
+            <h2 style="margin:0;">BỆNH VIỆN ĐA KHOA QUỐC TẾ AN KHANG</h2>
+            <p style="margin:5px 0;">Địa chỉ: 123 Đường Y Tế, Quận Trung Tâm, TP.HCM</p>
+            <p style="margin:5px 0;">Điện thoại: 1900 1515 - Email: info@ankhanghospital.vn</p>
+            <h3 style="margin-top:20px; text-transform:uppercase;">BÁO CÁO PHÂN TÍCH HOẠT ĐỘNG CHUYÊN SÂU</h3>
+            <p>Ngày xuất báo cáo: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
 
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="glass-card p-4 h-100">
-                <h5 class="fw-bold mb-4"><i class="fas fa-chart-bar text-primary me-2"></i>Thống Kê Theo Bộ Phận</h5>
-                <div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-bold">Xét Nghiệm</span><span class="text-primary fw-bold">@ViewBag.TotalLabTests</span></div><div class="progress" style="height:8px;"><div class="progress-bar bg-primary" style="width:@(ViewBag.TotalLabTests > 0 ? 100 : 0)%"></div></div></div>
-                <div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-bold">Kho Dược (loại thuốc)</span><span class="text-success fw-bold">@ViewBag.TotalMedicines</span></div><div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:@(ViewBag.TotalMedicines > 0 ? 100 : 0)%"></div></div></div>
-                <div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-bold">Khoa Phòng</span><span class="text-info fw-bold">@ViewBag.TotalDepartments</span></div><div class="progress" style="height:8px;"><div class="progress-bar bg-info" style="width:@(ViewBag.TotalDepartments > 0 ? 100 : 0)%"></div></div></div>
-                <div class="mb-3"><div class="d-flex justify-content-between mb-1"><span class="fw-bold">Thiết Bị Y Tế</span><span class="text-warning fw-bold">@ViewBag.TotalEquipments</span></div><div class="progress" style="height:8px;"><div class="progress-bar bg-warning" style="width:@(ViewBag.TotalEquipments > 0 ? 100 : 0)%"></div></div></div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-user-injured fa-2x text-primary mb-2"></i><h3 class="fw-bold">@ViewBag.TotalPatients</h3><p class="text-muted mb-0">Tổng Bệnh Nhân</p></div></div>
+            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-calendar-check fa-2x text-success mb-2"></i><h3 class="fw-bold">@ViewBag.TotalAppointments</h3><p class="text-muted mb-0">Lượt Khám Lập</p></div></div>
+            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-file-medical fa-2x text-info mb-2"></i><h3 class="fw-bold">@ViewBag.TotalRecords</h3><p class="text-muted mb-0">Hồ Sơ Đã Xử Lý</p></div></div>
+            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-pills fa-2x text-warning mb-2"></i><h3 class="fw-bold">@ViewBag.TotalMedicines</h3><p class="text-muted mb-0">Loại Thuốc</p></div></div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Chart 1: Disease Pie Chart -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-4 text-center"><i class="fas fa-chart-pie text-primary me-2"></i>Tỷ Lệ Bệnh Nhân Theo Loại Bệnh</h5>
+                    <div style="height: 300px; display: flex; justify-content: center;">
+                        <canvas id="diseaseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart 2: Doctor Revenue Bar Chart -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-4 text-center"><i class="fas fa-chart-column text-success me-2"></i>Doanh Thu Phác Đồ Theo Khoa/Phòng</h5>
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="glass-card p-4 h-100">
-                <h5 class="fw-bold mb-4"><i class="fas fa-list-check text-success me-2"></i>Hoạt Động Gần Đây</h5>
-                <div class="d-flex mb-3 pb-3 border-bottom align-items-start"><div class="bg-primary bg-opacity-10 p-2 rounded text-primary me-3"><i class="fas fa-user-plus"></i></div><div><p class="fw-bold mb-0">Hệ thống đang vận hành ổn định</p><small class="text-muted">Tất cả module đã được kích hoạt</small></div></div>
-                <div class="d-flex mb-3 pb-3 border-bottom align-items-start"><div class="bg-success bg-opacity-10 p-2 rounded text-success me-3"><i class="fas fa-check-circle"></i></div><div><p class="fw-bold mb-0">@ViewBag.TotalRecords hồ sơ bệnh án đã xử lý</p><small class="text-muted">Tổng kết từ đầu hệ thống</small></div></div>
-                <div class="d-flex align-items-start"><div class="bg-info bg-opacity-10 p-2 rounded text-info me-3"><i class="fas fa-database"></i></div><div><p class="fw-bold mb-0">Dữ liệu được đồng bộ đầy đủ</p><small class="text-muted">Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small></div></div>
-            </div>
+        
+        <div class="mt-4 text-center d-none print-header" style="display:block !important; border-top: none;">
+            <p style="text-align: right; margin-top: 50px; font-style: italic;">Giám đốc Bệnh viện<br><br><br><br><strong>Ký và ghi rõ họ tên</strong></p>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data from Backend
+        const diseaseLabels = @Html.Raw(ViewBag.DiseaseLabels ?? "[]");
+        const diseaseData = @Html.Raw(ViewBag.DiseaseData ?? "[]");
+        
+        const doctorLabels = @Html.Raw(ViewBag.DoctorLabels ?? "[]");
+        const doctorData = @Html.Raw(ViewBag.DoctorData ?? "[]");
+
+        // 1. Render Pie Chart (Disease Stats)
+        const ctxDisease = document.getElementById('diseaseChart').getContext('2d');
+        new Chart(ctxDisease, {
+            type: 'pie',
+            data: {
+                labels: diseaseLabels.length > 0 ? diseaseLabels : ['Chưa có dữ liệu'],
+                datasets: [{
+                    data: diseaseData.length > 0 ? diseaseData : [1],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        // 2. Render Bar Chart (Doctor Revenue)
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRevenue, {
+            type: 'bar',
+            data: {
+                labels: doctorLabels.length > 0 ? doctorLabels : ['Chưa có dữ liệu'],
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: doctorData.length > 0 ? doctorData : [0],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' đ';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+}

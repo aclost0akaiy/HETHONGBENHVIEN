@@ -132,16 +132,44 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            let voices = [];
+            
+            // Hàm load danh sách giọng nói
+            function populateVoiceList() {
+                if (typeof speechSynthesis === 'undefined') {
+                    return;
+                }
+                voices = speechSynthesis.getVoices();
+            }
+            
+            if (typeof speechSynthesis !== 'undefined') {
+                populateVoiceList();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = populateVoiceList;
+                }
+            }
+
             // AI Text-to-Speech Feature
             $('.btn-call').click(function() {
                 const patientName = $(this).data('name');
-                const textToSpeak = "Xin mời bệnh nhân " + patientName + " vào phòng khám số 1.";
+                const textToSpeak = "Xin mời bệnh nhân " + patientName + ", vào phòng khám.";
                 
                 if ('speechSynthesis' in window) {
+                    // Hủy bỏ các giọng đọc trước đó nếu đang đọc
+                    window.speechSynthesis.cancel();
+                    
                     const utterance = new SpeechSynthesisUtterance(textToSpeak);
                     utterance.lang = 'vi-VN';
                     utterance.rate = 0.9;
                     utterance.pitch = 1.0;
+                    
+                    // Cố gắng tìm và gán chính xác giọng tiếng Việt
+                    if (voices.length > 0) {
+                        const vnVoice = voices.find(voice => voice.lang === 'vi-VN' || voice.lang === 'vi_VN' || voice.name.toLowerCase().includes('vietnamese') || voice.name.toLowerCase().includes('vietnam'));
+                        if (vnVoice) {
+                            utterance.voice = vnVoice;
+                        }
+                    }
                     
                     const btn = $(this);
                     btn.removeClass('btn-outline-warning').addClass('btn-warning');

@@ -15,6 +15,32 @@
         </button>
     </div>
 
+    @if (ViewBag.LowStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any())
+    {
+        <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger mb-4" role="alert">
+            <h5 class="fw-bold text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo: Thuốc dưới mức tồn kho tối thiểu!</h5>
+            <ul class="mb-0 mt-2 ps-4">
+                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines)
+                {
+                    <li><strong>@m.Name</strong> - Hiện có: <span class="badge bg-danger">@m.StockQuantity</span> (Tối thiểu: @m.MinStock)</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (ViewBag.ExpiringMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiringMedicines).Any())
+    {
+        <div class="alert alert-warning shadow-sm border-0 border-start border-4 border-warning mb-4" role="alert">
+            <h5 class="fw-bold text-warning-emphasis"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cảnh báo: Thuốc sắp hết hạn sử dụng (trong 30 ngày tới)!</h5>
+            <ul class="mb-0 mt-2 ps-4 text-dark">
+                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiringMedicines)
+                {
+                    <li><strong>@m.Name</strong> - Hạn SD: <strong>@(m.ExpiryDate?.ToString("dd/MM/yyyy"))</strong></li>
+                }
+            </ul>
+        </div>
+    }
+
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="glass-card p-3 border-start border-4 border-primary">
@@ -202,18 +228,6 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            var outOfStock = @(Model != null ? Model.Count(m => m.StockQuantity <= m.MinStock) : 0);
-            var expiring = @(Model != null ? Model.Count(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3)) : 0);
-            
-            if (outOfStock > 0 || expiring > 0) {
-                var msg = "CẢNH BÁO KHO DƯỢC:\n\n";
-                if (outOfStock > 0) msg += "⚠️ Có " + outOfStock + " loại thuốc dưới mức tồn kho tối thiểu!\n";
-                if (expiring > 0) msg += "⏰ Có " + expiring + " loại thuốc sắp hết hạn sử dụng (dưới 3 tháng)!\n";
-                msg += "\nVui lòng kiểm tra danh sách và bổ sung/xử lý kịp thời.";
-                
-                alert(msg);
-            }
-        });
+        // Các cảnh báo hiện đã được xử lý hiển thị trực tiếp trên giao diện UI (Alert Dashboard).
     </script>
 }

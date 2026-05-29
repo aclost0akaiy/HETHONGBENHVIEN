@@ -18,7 +18,24 @@
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --bg-color: #f1f5f9;
+            --sidebar-bg: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --header-bg: #ffffff;
+            --border-color: #e2e8f0;
             --sidebar-width: 280px;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #38bdf8;
+            --primary-dark: #0ea5e9;
+            --secondary-color: #1e293b;
+            --text-dark: #f8fafc;
+            --text-light: #94a3b8;
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --header-bg: #1e293b;
+            --border-color: #334155;
         }
 
         body {
@@ -26,6 +43,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* Sidebar Styles */
@@ -35,7 +53,7 @@
             top: 0;
             left: 0;
             height: 100vh;
-            background: #ffffff;
+            background: var(--sidebar-bg);
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
             z-index: 1000;
             transition: all 0.3s;
@@ -46,7 +64,7 @@
             padding: 20px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .sidebar-header i {
@@ -113,7 +131,7 @@
         /* Top Navbar */
         .top-navbar {
             height: 70px;
-            background: #ffffff;
+            background: var(--header-bg);
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             display: flex;
             justify-content: space-between;
@@ -222,10 +240,10 @@
 
         /* Card Styles */
         .glass-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             transition: transform 0.3s, box-shadow 0.3s;
         }
@@ -243,10 +261,73 @@
         .main-content-expanded {
             margin-left: 0 !important;
         }
+
+        @@keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        .heartbeat-icon {
+            animation: heartbeat 1.5s infinite;
+        }
+        @@keyframes blink-soft {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        .blink-soft {
+            animation: blink-soft 2s infinite;
+        }
+
+        /* System-wide Code Blue Alert */
+        #globalSystemAlert {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(239, 68, 68, 0.15);
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            animation: global-flash 1s infinite;
+        }
+        @@keyframes global-flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .system-alert-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: slideDown 0.3s ease-out;
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        @@keyframes slideDown {
+            from { top: -100px; }
+            to { top: 20px; }
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+    <div id="globalSystemAlert"></div>
+    <div class="system-alert-banner" id="systemAlertBanner"></div>
     
     <!-- Sidebar -->
     <nav id="sidebar">
@@ -255,64 +336,52 @@
             <h3>MediCare Pro</h3>
         </div>
 
-        <ul class="sidebar-menu">
+        <ul class="sidebar-menu pb-4">
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
                 <a href="@Url.Action("Dashboard", "Doctor")">
                     <i class="fa-solid fa-chart-pie"></i> Bảng điều khiển
                 </a>
             </li>
 
-            <div class="nav-section-title">Quản lý lâm sàng</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhSach" ? "active" : "")">
-                <a href="@Url.Action("DanhSach", "Doctor")"><i class="fa-solid fa-users"></i> Danh sách bệnh nhân</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CommandCenter" ? "active" : "")" style="background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444;">
+                <a href="@Url.Action("CommandCenter", "Doctor")" style="color: #ef4444;">
+                    <i class="fa-solid fa-tower-broadcast heartbeat-icon" style="color: #ef4444;"></i> Cảnh báo EWS <span class="badge bg-danger ms-auto blink-soft" style="font-size:10px;">LIVE</span>
+                </a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
-                <a href="@Url.Action("Dashboard", "Doctor")"><i class="fa-solid fa-calendar-check"></i> Lịch khám hôm nay</a>
+
+            <div class="nav-section-title">Module Chính</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhSach" || ViewContext.RouteData.Values["Action"]?.ToString() == "KhamBenh" ? "active" : "")">
+                <a href="@Url.Action("DanhSach", "Doctor")"><i class="fa-solid fa-stethoscope"></i> Khám Bệnh</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HoSoBenhAn" ? "active" : "")">
-                <a href="@Url.Action("HoSoBenhAn", "Doctor")"><i class="fa-solid fa-file-medical"></i> Hồ sơ bệnh án điện tử</a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "SinhHieu" || ViewContext.RouteData.Values["Action"]?.ToString() == "SinhHieuChiTiet" ? "active" : "")">
+                <a href="@Url.Action("SinhHieu", "Doctor")"><i class="fa-solid fa-heart-pulse"></i> Sinh Liệu Đã Lưu</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "KetQuaCanLamSang" || ViewContext.RouteData.Values["Action"]?.ToString() == "ChiDinhXetNghiem" ? "active" : "")">
+                <a href="@Url.Action("KetQuaCanLamSang", "Doctor")"><i class="fa-solid fa-vial"></i> Xét Nghiệm Đã Lưu</a>
             </li>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "KeDonThuoc" ? "active" : "")">
-                <a href="@Url.Action("KeDonThuoc", "Doctor")"><i class="fa-solid fa-prescription-bottle-medical"></i> Kê đơn thuốc</a>
+                <a href="@Url.Action("KeDonThuoc", "Doctor")"><i class="fa-solid fa-pills"></i> Nhà Thuốc (Kê Đơn)</a>
             </li>
 
-            <div class="nav-section-title">Cận lâm sàng & Điều trị</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "ChiDinhXetNghiem" ? "active" : "")">
-                <a href="@Url.Action("ChiDinhXetNghiem", "Doctor")"><i class="fa-solid fa-vial"></i> Chỉ định xét nghiệm</a>
+            <div class="nav-section-title">Quản Lý & Thống Kê</div>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HoSoBenhAn" ? "active" : "")">
+                <a href="@Url.Action("HoSoBenhAn", "Doctor")"><i class="fa-solid fa-file-medical"></i> Hồ Sơ Bệnh Án</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "KetQuaCanLamSang" ? "active" : "")">
-                <a href="@Url.Action("KetQuaCanLamSang", "Doctor")"><i class="fa-solid fa-x-ray"></i> Kết quả CĐHA & Xét nghiệm</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "SinhHieu" ? "active" : "")">
-                <a href="@Url.Action("SinhHieu", "Doctor")"><i class="fa-solid fa-heart-circle-bolt"></i> Theo dõi sinh hiệu</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "LichMo" ? "active" : "")">
-                <a href="@Url.Action("LichMo", "Doctor")"><i class="fa-solid fa-bed-pulse"></i> Quản lý lịch mổ / Thủ thuật</a>
-            </li>
-
-            <div class="nav-section-title">Dịch vụ & Hỗ trợ</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HenTaiKham" ? "active" : "")">
-                <a href="@Url.Action("HenTaiKham", "Doctor")"><i class="fa-solid fa-user-clock"></i> Hẹn tái khám</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyGiuong" ? "active" : "")">
-                <a href="@Url.Action("QuanLyGiuong", "Doctor")"><i class="fa-solid fa-bed"></i> Quản lý giường nội trú</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CanhBaoTinhTrang" ? "active" : "")">
-                <a href="@Url.Action("CanhBaoTinhTrang", "Doctor")"><i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo tương tác thuốc</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HoiChanOnline" ? "active" : "")">
-                <a href="@Url.Action("HoiChanOnline", "Doctor")"><i class="fa-solid fa-video"></i> Hội chẩn trực tuyến</a>
-            </li>
-
-            <div class="nav-section-title">Thống kê & Cài đặt</div>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "ThongKe" ? "active" : "")">
-                <a href="@Url.Action("ThongKe", "Doctor")"><i class="fa-solid fa-chart-line"></i> Thống kê báo cáo</a>
+                <a href="@Url.Action("ThongKe", "Doctor")"><i class="fa-solid fa-chart-line"></i> Báo Cáo & Thống Kê</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "ThongBao" ? "active" : "")">
-                <a href="@Url.Action("ThongBao", "Doctor")"><i class="fa-solid fa-bell"></i> Gửi thông báo bệnh nhân</a>
-            </li>
+
+            <div class="nav-section-title">Hệ Thống</div>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CaiDat" ? "active" : "")">
-                <a href="@Url.Action("CaiDat", "Doctor")"><i class="fa-solid fa-gear"></i> Cài đặt tài khoản</a>
+                <a href="#settingsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center" style="color: var(--text-light); text-decoration: none; padding: 12px 20px; font-weight: 500;">
+                    <span><i class="fa-solid fa-gear" style="width: 24px; text-align: center; margin-right: 10px;"></i> Cài Đặt (Mở Rộng)</span>
+                </a>
+                <ul class="collapse list-unstyled ps-4 mt-2" id="settingsSubmenu" style="font-size: 0.9em;">
+                    <li><a href="@Url.Action("CanhBaoTinhTrang", "Doctor")" class="text-secondary py-2 d-block text-decoration-none"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo dị ứng</a></li>
+                    <li><a href="@Url.Action("QuanLyGiuong", "Doctor")" class="text-secondary py-2 d-block text-decoration-none"><i class="fa-solid fa-bed-pulse me-2"></i>Quản lý giường nội trú</a></li>
+                    <li><a href="@Url.Action("HenTaiKham", "Doctor")" class="text-secondary py-2 d-block text-decoration-none"><i class="fa-solid fa-rotate-right me-2"></i>Hẹn tái khám</a></li>
+                    <li><a href="@Url.Action("CaiDat", "Doctor")" class="text-secondary py-2 d-block text-decoration-none"><i class="fa-solid fa-user-gear me-2"></i>Tài khoản</a></li>
+                </ul>
             </li>
         </ul>
     </nav>
@@ -331,6 +400,9 @@
             </div>
 
             <div class="user-profile">
+                <div class="nav-icon" id="theme-toggle" title="Chuyển đổi giao diện">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
                 <div class="nav-icon">
                     <i class="fa-regular fa-bell"></i>
                     <span class="badge-count">5</span>
@@ -395,8 +467,97 @@
                 $('#sidebar').toggleClass('sidebar-hidden');
                 $('#main-content').toggleClass('main-content-expanded');
             });
+
+            // Dark mode toggle
+            const themeToggleBtn = $('#theme-toggle');
+            const themeIcon = themeToggleBtn.find('i');
+            
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if(savedTheme === 'dark') {
+                themeIcon.removeClass('fa-moon').addClass('fa-sun');
+            }
+
+            themeToggleBtn.click(function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                if(newTheme === 'dark') {
+                    themeIcon.removeClass('fa-moon').addClass('fa-sun');
+                } else {
+                    themeIcon.removeClass('fa-sun').addClass('fa-moon');
+                }
+            });
         });
     </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const systemConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/commandHub")
+            .build();
+
+        const systemAlarmSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        systemAlarmSound.loop = true;
+        let systemCodeBlueActive = false;
+        let codeBlueTimeout = null;
+
+        function showGlobalCodeBlueAlert(bedNum, deptName, remainingTime) {
+            if(!systemCodeBlueActive) {
+                systemCodeBlueActive = true;
+                
+                const banner = document.getElementById('systemAlertBanner');
+                banner.innerHTML = `<i class="fa-solid fa-triangle-exclamation fa-beat me-3"></i> KHẨN CẤP: CODE BLUE - GIƯỜNG ${bedNum} (${deptName})`;
+                banner.style.display = 'block';
+                document.getElementById('globalSystemAlert').style.display = 'block';
+                
+                systemAlarmSound.play().catch(e => console.log("Auto-play prevented"));
+                
+                if (codeBlueTimeout) clearTimeout(codeBlueTimeout);
+                
+                codeBlueTimeout = setTimeout(() => {
+                    banner.style.display = 'none';
+                    document.getElementById('globalSystemAlert').style.display = 'none';
+                    systemAlarmSound.pause();
+                    systemAlarmSound.currentTime = 0;
+                    systemCodeBlueActive = false;
+                    localStorage.removeItem('activeCodeBlue');
+                }, remainingTime);
+            }
+        }
+
+        // Kiểm tra xem có alert nào đang dở dang không (khi chuyển trang)
+        const storedAlert = localStorage.getItem('activeCodeBlue');
+        if (storedAlert) {
+            try {
+                const alertData = JSON.parse(storedAlert);
+                const elapsed = Date.now() - alertData.timestamp;
+                if (elapsed < 10000) { // Nếu chưa quá 10 giây
+                    showGlobalCodeBlueAlert(alertData.bedNum, alertData.deptName, 10000 - elapsed);
+                } else {
+                    localStorage.removeItem('activeCodeBlue');
+                }
+            } catch (e) {
+                localStorage.removeItem('activeCodeBlue');
+            }
+        }
+
+        systemConnection.on("ReceiveCodeBlue", (bedId, bedNum, deptName) => {
+            // Lưu trạng thái vào localStorage để giữ alert khi chuyển trang
+            localStorage.setItem('activeCodeBlue', JSON.stringify({
+                bedNum: bedNum,
+                deptName: deptName,
+                timestamp: Date.now()
+            }));
+            
+            showGlobalCodeBlueAlert(bedNum, deptName, 10000);
+        });
+
+        systemConnection.start().catch(err => console.log("System SignalR error: " + err));
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -79,9 +79,17 @@
             <p class="text-muted mb-4">Hiện tại không có hồ sơ bệnh án nào phù hợp với tìm kiếm của bạn.</p>
             @if (!string.IsNullOrEmpty(ViewData["SearchString"]?.ToString()))
             {
-                <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2 rounded-pill">
-                    <i class="fa-solid fa-rotate-left me-2"></i>Xem tất cả hồ sơ
-                </a>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+                        <i class="fa-solid fa-rotate-left me-2"></i>Xem tất cả hồ sơ
+                    </a>
+                    <form action="@Url.Action("TaoHoSoKhamBenhNhanh", "Doctor")" method="post" class="d-inline">
+                        <input type="hidden" name="patientCode" value="@ViewData["SearchString"]" />
+                        <button type="submit" class="btn btn-success px-4 py-2 rounded-pill shadow-sm fw-bold">
+                            <i class="fa-solid fa-file-circle-plus me-2"></i>Tạo hồ sơ khám mới
+                        </button>
+                    </form>
+                </div>
             }
         </div>
     }

@@ -24,6 +24,7 @@ namespace HeThongBenhVien.Controllers
             {
                 if (User.IsInRole("Admin")) return RedirectToAction("Dashboard", "Admin");
                 if (User.IsInRole("Doctor")) return RedirectToAction("Dashboard", "Doctor");
+                if (User.IsInRole("BenhNhan") || User.IsInRole("Patient")) return RedirectToAction("Portal", "Patient");
             }
             return View();
         }
@@ -64,6 +65,8 @@ namespace HeThongBenhVien.Controllers
                         return RedirectToAction("Dashboard", "Admin");
                     else if (user.Role == "Doctor")
                         return RedirectToAction("Dashboard", "Doctor");
+                    else if (user.Role == "BenhNhan" || user.Role == "Patient")
+                        return RedirectToAction("Portal", "Patient");
                     
                     return RedirectToAction("Index", "Home");
                 }

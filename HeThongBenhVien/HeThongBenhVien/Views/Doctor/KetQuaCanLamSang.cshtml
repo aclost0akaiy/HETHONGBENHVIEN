@@ -2,76 +2,96 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Kết Quả Cận Lâm Sàng";
+    var groupedByPatient = Model.GroupBy(t => t.MedicalRecord).ToList();
 }
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Cập Nhật Kết Quả Xét Nghiệm</h2>
-            <p class="text-muted mb-0">Nhập kết quả xét nghiệm cho các bệnh nhân đang chờ.</p>
+            <p class="text-muted mb-0">Nhập kết quả xét nghiệm cho các bệnh nhân đang chờ theo từng nhóm.</p>
         </div>
     </div>
 
-    <div class="glass-card p-0 overflow-hidden">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th class="ps-4 py-3">Bệnh Nhân</th>
-                    <th class="py-3">Tên Xét Nghiệm</th>
-                    <th class="py-3">Trạng Thái</th>
-                    <th class="py-3">Kết Quả</th>
-                    <th class="py-3">Hành Động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td class="ps-4 fw-bold">
-                            @item.MedicalRecord?.Appointment?.Patient?.FullName <br />
-                            <small class="text-muted">Mã BN: @item.MedicalRecord?.Appointment?.Patient?.PatientCode</small>
-                        </td>
-                        <td>@item.TestName</td>
-                        <td>
-                            @if (item.Status == "Đã có kết quả")
+    @if (!groupedByPatient.Any())
+    {
+        <div class="glass-card p-5 text-center text-muted">
+            <i class="fa-solid fa-check-circle fs-1 text-success mb-3"></i>
+            <h5>Không có bệnh nhân chờ xét nghiệm.</h5>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+        @foreach (var group in groupedByPatient)
+        {
+            var record = group.Key;
+            if (record == null) continue;
+            
+            var tests = group.ToList();
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card h-100 position-relative shadow-sm hover-elevate">
+                    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-primary">@record.Appointment?.Patient?.FullName</h5>
+                            <small class="text-muted">Mã BN: @record.Appointment?.Patient?.PatientCode</small>
+                        </div>
+                        <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = record.Id })" class="btn btn-sm btn-outline-info rounded-pill" title="Xem Hồ Sơ">
+                            <i class="fa-solid fa-file-medical"></i>
+                        </a>
+                    </div>
+                    <div class="card-body p-3">
+                        <form asp-action="CapNhatKetQuaXetNghiemNhom" asp-controller="Doctor" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="MedicalRecordId" value="@record.Id" />
+                            
+                            <ul class="list-group list-group-flush mb-3">
+                            @for(int i = 0; i < tests.Count; i++)
                             {
-                                <span class="badge bg-success rounded-pill px-3 py-2">Đã có kết quả</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Chờ xét nghiệm</span>
-                            }
-                        </td>
-                        <td class="fw-bold">
-                            @item.Result
-                        </td>
-                        <td>
-                            @if (item.Status == "Đã có kết quả")
-                            {
-                                <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem Hồ Sơ</a>
-                            }
-                            else
-                            {
-                                <form asp-action="CapNhatKetQuaXetNghiem" asp-controller="Doctor" method="post" class="d-flex flex-column gap-2 m-0">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <input type="text" name="ketQua" class="form-control form-control-sm" placeholder="Nhập kết quả..." required />
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text"><i class="fa-solid fa-image"></i></span>
-                                        <input type="url" name="imageUrl" class="form-control" placeholder="Link ảnh X-Quang/Siêu âm (nếu có)" />
+                                var test = tests[i];
+                                <li class="list-group-item px-0 py-2 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark">@test.TestName</strong>
+                                        @if (test.Status == "Đã có kết quả") {
+                                            <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-2">Đã xong</span>
+                                        } else {
+                                            <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-2">Chờ KQ</span>
+                                        }
                                     </div>
-                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 mt-1">Cập nhật</button>
-                                </form>
+                                    
+                                    @if (test.Status != "Đã có kết quả") {
+                                        <input type="hidden" name="Tests[@i].Id" value="@test.Id" />
+                                        <div class="mb-2">
+                                            <input type="text" name="Tests[@i].Result" class="form-control form-control-sm bg-light" placeholder="Nhập kết quả..." required />
+                                        </div>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted" title="Tải ảnh lên"><i class="fa-solid fa-upload"></i></span>
+                                            <input type="file" name="Tests[@i].ImageFile" class="form-control bg-light" accept="image/*" />
+                                        </div>
+                                    } else {
+                                        <p class="mb-0 text-muted small"><i class="fa-solid fa-check text-success me-1"></i>Kết quả: @test.Result</p>
+                                    }
+                                </li>
                             }
-                        </td>
-                    </tr>
-                }
-                @if (!Model.Any())
-                {
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">Không có bệnh nhân chờ xét nghiệm.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                            </ul>
+                            
+                            @if(tests.Any(t => t.Status != "Đã có kết quả")) {
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm">
+                                    <i class="fa-solid fa-cloud-arrow-up me-2"></i>Cập nhật tất cả
+                                </button>
+                            }
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        </div>
+    }
 </div>
+
+@section Styles {
+    <style>
+        .hover-elevate { transition: transform 0.2s, box-shadow 0.2s; }
+        .hover-elevate:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
+    </style>
+}

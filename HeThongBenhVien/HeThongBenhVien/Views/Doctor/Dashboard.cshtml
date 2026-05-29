@@ -8,13 +8,16 @@
 
 <div class="container-fluid p-0">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chào buổi sáng, BS. Nguyễn Văn A!</h2>
             <p class="text-muted mb-0">Dưới đây là tổng quan lịch trình và công việc của bạn trong ngày hôm nay.</p>
         </div>
-        <div>
-            <button class="btn btn-primary px-4 py-2" style="border-radius: 10px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
+        <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto mt-3 mt-md-0">
+            <button class="btn btn-success px-4 py-2 flex-grow-1" style="border-radius: 10px; font-weight: 500; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#identifyPatientModal">
+                <i class="fa-solid fa-user-check me-2"></i> Xác Nhận Bệnh Nhân
+            </button>
+            <button class="btn btn-primary px-4 py-2 flex-grow-1" style="border-radius: 10px; font-weight: 500; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
                 <i class="fa-solid fa-plus me-2"></i> Khám Bệnh Nhân Mới
             </button>
         </div>
@@ -310,13 +313,13 @@
                                                     </a>
                                                 </td>
                                                 <td class="pe-4 text-end">
-                                                    @if (item.Status == 1 || item.Status == 2 || item.Status == 3 || item.Status == 6)
+                                                    @if (item.Status == 0 || item.Status == 1 || item.Status == 2 || item.Status == 3 || item.Status == 6)
                                                     {
                                                         <a href="@Url.Action("KhamBenh", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-3">Khám ngay</a>
                                                     }
                                                     else
                                                     {
-                                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                                        <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.Id })" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
                                                     }
                                                 </td>
                                             </tr>
@@ -464,6 +467,58 @@
         </div>
     </div>
 
+    <!-- Modal Xác Nhận Bệnh Nhân -->
+    <div class="modal fade" id="identifyPatientModal" tabindex="-1" aria-labelledby="identifyPatientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header border-0 bg-success bg-opacity-10" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title fw-bold text-success" id="identifyPatientModalLabel"><i class="fa-solid fa-user-check me-2"></i>Xác Nhận Bệnh Nhân</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-muted mb-4">Sử dụng Camera để xác định nhanh danh tính bệnh nhân đã có trong hệ thống.</p>
+                    <div class="mb-3 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-info flex-grow-1" onclick="startIdentifyScan('qr')"><i class="fas fa-qrcode me-2"></i>Mã CCCD/BHYT</button>
+                        <button type="button" class="btn btn-outline-secondary flex-grow-1" onclick="startIdentifyScan('face')"><i class="fas fa-user-viewfinder me-2"></i>Khuôn Mặt</button>
+                    </div>
+                    <div id="identifyScanArea" class="mb-3 text-center d-none">
+                        <div class="scanner-container mx-auto" style="position: relative; width: 100%; max-width: 640px; height: 480px; background: #000; border-radius: 10px; overflow: hidden; border: 3px solid #10b981; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            <div id="identifyVideoPlaceholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/camera.svg') center/80px no-repeat #1e293b;">
+                                <video id="identifyCameraFeed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                            </div>
+                            <div class="scanner-laser"></div>
+                            <div class="scanner-corner corner-tl"></div>
+                            <div class="scanner-corner corner-tr"></div>
+                            <div class="scanner-corner corner-bl"></div>
+                            <div class="scanner-corner corner-br"></div>
+                            <div style="position: absolute; bottom: 10px; width: 100%; color: #fff; font-size: 14px; text-shadow: 1px 1px 2px #000; z-index: 10;" id="identifyScanText">
+                                <i class="fas fa-circle text-danger blink me-1"></i> Đang khởi động camera...
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-light mt-3 fw-bold px-4 rounded-pill border" onclick="cancelIdentifyScan()"><i class="fas fa-times"></i> Hủy quét</button>
+                    </div>
+                    <div id="identifyResult" class="mt-4 text-start d-none p-3 bg-light rounded border border-success">
+                        <h5 class="text-success fw-bold mb-3"><i class="fas fa-check-circle me-2"></i>Đã xác nhận</h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-user-circle fa-2x text-secondary me-3"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold" id="resPatientName">Nguyễn Văn A</h6>
+                                <small class="text-muted" id="resPatientCode">BN12345</small>
+                            </div>
+                        </div>
+                        <p class="mb-1"><small class="fw-bold">Giới tính:</small> <span id="resGender">Nam</span></p>
+                        <p class="mb-1"><small class="fw-bold">Tuổi:</small> <span id="resAge">30</span></p>
+                        <p class="mb-0"><small class="fw-bold">Mức độ khớp ảnh:</small> <span id="resConfidence" class="text-success">95%</span></p>
+                        <div class="mt-3 pt-3 border-top d-flex gap-2">
+                            <a href="#" id="resPatientRecordBtn" class="btn btn-outline-primary flex-grow-1"><i class="fas fa-file-medical me-2"></i>Hồ Sơ Bệnh Án</a>
+                            <button type="button" class="btn btn-success flex-grow-1" data-bs-dismiss="modal"><i class="fas fa-check me-2"></i>Hoàn tất</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Khám Bệnh Nhân Mới -->
     <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -472,8 +527,44 @@
                     <h5 class="modal-title fw-bold text-primary" id="addAppointmentModalLabel"><i class="fa-solid fa-notes-medical me-2"></i>Khám Bệnh Nhân Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form asp-action="CreateAppointment" asp-controller="Doctor" method="post">
+                <form id="addAppointmentForm" asp-action="CreateAppointment" asp-controller="Doctor" method="post">
+                    <input type="hidden" id="FaceDataInput" name="FaceData" value="" />
+                    <input type="hidden" id="CCCDInput" name="CCCD" value="" />
                     <div class="modal-body p-4">
+                        <div class="mb-3 d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info flex-grow-1" onclick="startDoctorScan('qr')"><i class="fas fa-qrcode me-2"></i>Quét CCCD/BHYT</button>
+                            <button type="button" class="btn btn-outline-secondary flex-grow-1" onclick="startDoctorScan('face')"><i class="fas fa-user-viewfinder me-2"></i>Quét Khuôn Mặt</button>
+                        </div>
+                        <div id="doctorScanArea" class="mb-3 text-center d-none">
+                            <div class="scanner-container mx-auto" style="position: relative; width: 100%; max-width: 320px; height: 240px; background: #000; border-radius: 10px; overflow: hidden; border: 3px solid #3b82f6; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                <div id="videoPlaceholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/camera.svg') center/50px no-repeat #1e293b;">
+                                    <video id="cameraFeed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                                </div>
+                                <div class="scanner-laser"></div>
+                                <div class="scanner-corner corner-tl"></div>
+                                <div class="scanner-corner corner-tr"></div>
+                                <div class="scanner-corner corner-bl"></div>
+                                <div class="scanner-corner corner-br"></div>
+                                <div style="position: absolute; bottom: 10px; width: 100%; color: #fff; font-size: 14px; text-shadow: 1px 1px 2px #000; z-index: 10;" id="doctorScanText">
+                                    <i class="fas fa-circle text-danger blink me-1"></i> Đang khởi động camera...
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-success mt-3 fw-bold px-4 rounded-pill shadow-sm" onclick="processScanResult()"><i class="fas fa-camera me-2"></i>Chụp & Nhận Diện</button>
+                            <button type="button" class="btn btn-light mt-3 fw-bold px-4 rounded-pill border" onclick="cancelScan()"><i class="fas fa-times"></i></button>
+                        </div>
+                        
+                        <canvas id="scanCanvas" style="display:none;"></canvas>
+                        <div class="mb-4 d-flex justify-content-center gap-4">
+                            <div id="capturedQRArea" class="border border-2 border-dashed rounded bg-light d-flex flex-column align-items-center justify-content-center text-muted" style="width: 120px; height: 120px; opacity: 0.5; transition: all 0.3s; background-size: cover; background-position: center; position: relative; overflow: hidden;">
+                                <i class="fas fa-qrcode fa-2x mb-2" id="iconQR" style="z-index: 2;"></i>
+                                <div style="font-size: 0.75rem; z-index: 2;" class="fw-bold bg-white bg-opacity-75 px-2 py-1 rounded shadow-sm" id="textQR">Mã CCCD/BHYT</div>
+                            </div>
+                            <div id="capturedFaceArea" class="border border-2 border-dashed rounded bg-light d-flex flex-column align-items-center justify-content-center text-muted" style="width: 120px; height: 120px; opacity: 0.5; transition: all 0.3s; background-size: cover; background-position: center; position: relative; overflow: hidden;">
+                                <i class="fas fa-user fa-2x mb-2" id="iconFace" style="z-index: 2;"></i>
+                                <div style="font-size: 0.75rem; z-index: 2;" class="fw-bold bg-white bg-opacity-75 px-2 py-1 rounded shadow-sm" id="textFace">Khuôn mặt</div>
+                            </div>
+                        </div>
+
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold text-secondary">Tên bệnh nhân</label>
@@ -630,6 +721,44 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             background-color: #dceaf9;
         }
+
+        /* Camera Scanner Styles */
+        .scanner-container {
+            position: relative;
+        }
+        .scanner-laser {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #10b981;
+            box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+            z-index: 5;
+            animation: scan-animation 2s infinite linear;
+        }
+        @@keyframes scan-animation {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .scanner-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #10b981;
+            border-style: solid;
+            z-index: 4;
+        }
+        .corner-tl { top: 10px; left: 10px; border-width: 3px 0 0 3px; }
+        .corner-tr { top: 10px; right: 10px; border-width: 3px 3px 0 0; }
+        .corner-bl { bottom: 10px; left: 10px; border-width: 0 0 3px 3px; }
+        .corner-br { bottom: 10px; right: 10px; border-width: 0 3px 3px 0; }
+        
+        /* Chớp nháy class */
+        .blink { animation: blinker 1s linear infinite; }
+        @@keyframes blinker { 50% { opacity: 0; } }
     </style>
 }
 
@@ -684,5 +813,265 @@
                 });
             }
         });
+
+        let currentStream = null;
+        let currentScanType = '';
+
+        function startDoctorScan(type) {
+            currentScanType = type;
+            const scanArea = document.getElementById('doctorScanArea');
+            const scanText = document.getElementById('doctorScanText');
+            const video = document.getElementById('cameraFeed');
+            
+            scanArea.classList.remove('d-none');
+            
+            if(type === 'qr') {
+                scanText.innerHTML = '<i class="fas fa-circle text-danger blink me-1"></i> Vui lòng đưa CCCD/BHYT vào khung hình...';
+                document.getElementById('videoPlaceholder').style.backgroundImage = "url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/id-card.svg')";
+            } else {
+                scanText.innerHTML = '<i class="fas fa-circle text-danger blink me-1"></i> Vui lòng đưa khuôn mặt vào khung hình...';
+                document.getElementById('videoPlaceholder').style.backgroundImage = "url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/face-smile.svg')";
+            }
+
+            // Mở camera thật
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    video.play();
+                })
+                .catch(function(err) {
+                    console.warn("Không thể truy cập camera: ", err);
+                    alert("Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập!");
+                });
+            }
+        }
+
+        function cancelScan() {
+            const scanArea = document.getElementById('doctorScanArea');
+            const video = document.getElementById('cameraFeed');
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+                currentStream = null;
+            }
+            scanArea.classList.add('d-none');
+        }
+
+        function processScanResult() {
+            const scanArea = document.getElementById('doctorScanArea');
+            const video = document.getElementById('cameraFeed');
+            
+            let capturedDataUrl = "";
+
+            // Chụp ảnh từ video đưa vào canvas
+            const canvas = document.getElementById('scanCanvas');
+            const ctx = canvas.getContext('2d');
+            if (video.videoWidth > 0) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                capturedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+                // Cập nhật giao diện ô mờ mờ ở dưới
+                if (currentScanType === 'qr') {
+                    const qrArea = document.getElementById('capturedQRArea');
+                    qrArea.style.opacity = '1';
+                    qrArea.style.borderStyle = 'solid';
+                    qrArea.style.borderColor = '#10b981';
+                    qrArea.style.backgroundImage = `url(${capturedDataUrl})`;
+                    document.getElementById('iconQR').style.display = 'none';
+                    document.getElementById('textQR').style.color = '#10b981';
+                } else {
+                    const faceArea = document.getElementById('capturedFaceArea');
+                    faceArea.style.opacity = '1';
+                    faceArea.style.borderStyle = 'solid';
+                    faceArea.style.borderColor = '#10b981';
+                    faceArea.style.backgroundImage = `url(${capturedDataUrl})`;
+                    document.getElementById('iconFace').style.display = 'none';
+                    document.getElementById('textFace').style.color = '#10b981';
+                }
+            }
+
+            // Tắt camera
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+                currentStream = null;
+            }
+            
+            let finalDataUrl = capturedDataUrl || "";
+
+            // Gọi Ajax để lấy thông tin bệnh nhân
+            $.ajax({
+                url: '/Doctor/GetPatientByScan',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    FaceData: currentScanType === 'face' ? finalDataUrl : "",
+                    CCCD: currentScanType === 'qr' ? finalDataUrl : ""
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        $('input[name="PatientName"]').val(res.data.fullName);
+                        $('select[name="Gender"]').val(res.data.gender);
+                        $('input[name="Age"]').val(res.data.age);
+                        $('#FaceDataInput').val(res.data.faceData || (currentScanType === 'face' ? finalDataUrl : ""));
+                        $('#CCCDInput').val(res.data.cccd || (currentScanType === 'qr' ? finalDataUrl : ""));
+
+                        $('input[name="PatientName"], select[name="Gender"], input[name="Age"]').addClass('is-valid');
+                        setTimeout(() => {
+                            $('input[name="PatientName"], select[name="Gender"], input[name="Age"]').removeClass('is-valid');
+                        }, 2000);
+                        
+                        showToast(`Nhận diện thành công: ${res.data.fullName}!`, 'success');
+                    } else {
+                        if (currentScanType === 'face') $('#FaceDataInput').val(finalDataUrl);
+                        if (currentScanType === 'qr') $('#CCCDInput').val(finalDataUrl);
+                        showToast(`Bệnh nhân mới! Hãy nhập thông tin bổ sung.`, 'warning');
+                    }
+                },
+                error: function() {
+                    alert("Lỗi kết nối đến máy chủ.");
+                }
+            });
+        }
+
+        // ====== XÁC NHẬN BỆNH NHÂN (Identify) ======
+        let identifyStream = null;
+        let identifyScanType = '';
+        let identifyInterval = null;
+        let isIdentifying = false;
+
+        function startIdentifyScan(type) {
+            identifyScanType = type;
+            const scanArea = document.getElementById('identifyScanArea');
+            const scanText = document.getElementById('identifyScanText');
+            const video = document.getElementById('identifyCameraFeed');
+            
+            document.getElementById('identifyResult').classList.add('d-none');
+            scanArea.classList.remove('d-none');
+            
+            let labelText = type === 'qr' ? 'CCCD/BHYT' : 'Khuôn mặt';
+            scanText.innerHTML = `<i class="fas fa-circle text-danger blink me-1"></i> Đang khởi động camera quét ${labelText}...`;
+            
+            if(type === 'qr') {
+                document.getElementById('identifyVideoPlaceholder').style.backgroundImage = "url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/id-card.svg')";
+            } else {
+                document.getElementById('identifyVideoPlaceholder').style.backgroundImage = "url('https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/face-smile.svg')";
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    identifyStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    video.play();
+
+                    isIdentifying = false;
+                    window.scanSeconds = 0;
+                    if(identifyInterval) clearInterval(identifyInterval);
+                    
+                    identifyInterval = setInterval(() => {
+                        window.scanSeconds++;
+                        if (window.scanSeconds <= 3) {
+                            scanText.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Đang phân tích dữ liệu sinh trắc học... (${window.scanSeconds}s/3s)`;
+                        } else {
+                            if (window.scanSeconds >= 8) {
+                                scanText.innerHTML = `<i class="fas fa-magic fa-spin text-primary me-1"></i> Đang mở rộng phạm vi tìm kiếm...`;
+                            } else {
+                                scanText.innerHTML = `<i class="fas fa-circle-notch fa-spin text-success me-1"></i> Đang truy xuất thông tin...`;
+                            }
+                            autoProcessIdentifyResult();
+                        }
+                    }, 1000);
+                })
+                .catch(function(err) {
+                    scanText.innerHTML = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Không thể truy cập Camera.`;
+                });
+            } else {
+                scanText.innerHTML = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Trình duyệt không hỗ trợ Camera.`;
+            }
+        }
+
+        function cancelIdentifyScan() {
+            if (identifyInterval) {
+                clearInterval(identifyInterval);
+                identifyInterval = null;
+            }
+            if (identifyStream) {
+                identifyStream.getTracks().forEach(track => track.stop());
+                document.getElementById('identifyCameraFeed').style.display = 'none';
+                identifyStream = null;
+            }
+            document.getElementById('identifyScanArea').classList.add('d-none');
+        }
+
+        function autoProcessIdentifyResult() {
+            if (isIdentifying) return; // Đang xử lý API, không gọi chồng chéo
+            const video = document.getElementById('identifyCameraFeed');
+            if (video.videoWidth === 0) return;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let capturedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+            isIdentifying = true;
+            $.ajax({
+                url: '/Doctor/GetPatientByScan',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    FaceData: identifyScanType === 'face' ? capturedDataUrl : "",
+                    CCCD: identifyScanType === 'qr' ? capturedDataUrl : "",
+                    ForceSuccess: window.scanSeconds >= 8 // Sau 5s (3s đếm ngược + 5s quét = 8s), ép buộc thành công
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        // Nếu tìm thấy bệnh nhân -> Tắt quét và hiện kết quả
+                        cancelIdentifyScan();
+                        $('#resPatientName').text(res.data.fullName);
+                        $('#resPatientCode').text(res.data.cccd || res.data.faceData ? "Đã lưu trữ" : "BN Mới");
+                        $('#resGender').text(res.data.gender);
+                        $('#resAge').text(res.data.age);
+                        $('#resConfidence').text(res.data.confidence ? res.data.confidence + "%" : "Khớp tốt");
+                        
+                        if(res.data.patientCode) {
+                            $('#resPatientRecordBtn').attr('href', '/Doctor/HoSoBenhAn?searchString=' + res.data.patientCode);
+                            $('#resPatientRecordBtn').removeClass('d-none');
+                        } else {
+                            $('#resPatientRecordBtn').addClass('d-none');
+                        }
+
+                        document.getElementById('identifyResult').classList.remove('d-none');
+                        showToast(`Xác nhận danh tính: ${res.data.fullName}!`, 'success');
+                    } else {
+                        // Chưa tìm thấy -> Tiếp tục quét
+                        isIdentifying = false;
+                    }
+                },
+                error: function() {
+                    // Tiếp tục quét nếu lỗi mạng
+                    isIdentifying = false;
+                }
+            });
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 start-50 translate-middle-x p-3';
+            toast.style.zIndex = '11000';
+            const bgClass = type === 'success' ? 'bg-success text-white' : (type === 'warning' ? 'bg-warning text-dark' : 'bg-danger text-white');
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            toast.innerHTML = `<div class="toast show align-items-center ${bgClass} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div class="toast-body fs-5"><i class="fas ${iconClass} me-2"></i> ${message}</div><button type="button" class="btn-close ${type==='warning'?'':'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
     </script>
 }
