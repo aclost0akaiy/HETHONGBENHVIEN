@@ -66,6 +66,60 @@
             </div>
         </form>
     </div>
+    
+    @if (ViewBag.LabTests != null)
+    {
+        var labTests = ViewBag.LabTests as List<HeThongBenhVien.Models.LabTest>;
+        <div class="glass-card p-4 mt-4">
+            <h4 class="h5 mb-4 text-primary fw-bold"><i class="fas fa-flask me-2"></i>Lịch sử Xét nghiệm của Bệnh nhân</h4>
+            @if (labTests != null && labTests.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ngày tạo</th>
+                                <th>Tên Xét nghiệm</th>
+                                <th>Kết quả</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var test in labTests)
+                            {
+                                <tr>
+                                    <td>@test.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="fw-bold">@test.TestName</td>
+                                    <td>@(string.IsNullOrEmpty(test.Result) ? "Chưa có" : test.Result)</td>
+                                    <td>
+                                        @if (test.Status == "Chờ xét nghiệm")
+                                        {
+                                            <span class="badge bg-warning text-dark">Chờ XN</span>
+                                        }
+                                        else if (test.Status == "Đang xét nghiệm")
+                                        {
+                                            <span class="badge bg-info">Đang XN</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Đã có KQ</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-microscope fa-2x mb-2 opacity-50"></i>
+                    <p class="mb-0">Bệnh nhân này chưa có lịch sử xét nghiệm.</p>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 <style>

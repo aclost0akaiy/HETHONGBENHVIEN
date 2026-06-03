@@ -78,6 +78,62 @@
                 </form>
             </div>
         </div>
+
+        @if (ViewBag.LabTests != null)
+        {
+            var labTests = ViewBag.LabTests as List<HeThongBenhVien.Models.LabTest>;
+            <div class="col-xl-8 col-lg-9 mt-4">
+                <div class="glass-card p-4 border-top border-4 border-info">
+                    <h5 class="fw-bold text-info mb-4"><i class="fa-solid fa-microscope me-2"></i>Lịch sử Xét nghiệm</h5>
+                    @if (labTests != null && labTests.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ngày tạo</th>
+                                        <th>Tên Xét nghiệm</th>
+                                        <th>Kết quả</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var test in labTests)
+                                    {
+                                        <tr>
+                                            <td>@test.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td class="fw-bold">@test.TestName</td>
+                                            <td>@(string.IsNullOrEmpty(test.Result) ? "Chưa có" : test.Result)</td>
+                                            <td>
+                                                @if (test.Status == "Chờ xét nghiệm")
+                                                {
+                                                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Chờ XN</span>
+                                                }
+                                                else if (test.Status == "Đang xét nghiệm")
+                                                {
+                                                    <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3">Đang XN</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Đã có KQ</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="fa-solid fa-vial-virus fs-2 mb-2 opacity-50"></i>
+                            <p class="mb-0">Bệnh nhân này chưa có dữ liệu xét nghiệm.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
 

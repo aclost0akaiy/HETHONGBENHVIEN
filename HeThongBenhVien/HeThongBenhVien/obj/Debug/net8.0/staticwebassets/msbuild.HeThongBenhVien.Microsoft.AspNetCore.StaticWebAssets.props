@@ -1098,5 +1098,23 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\jquery\LICENSE.txt'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif'))">
+      <SourceType>Package</SourceType>
+      <SourceId>HeThongBenhVien</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/HeThongBenhVien</BasePath>
+      <RelativePath>uploads/bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>i615z02897</Fingerprint>
+      <Integrity>xkeG22XnVn2lmqMlBxh0vU7Mqit+7d3cVmndv4culWo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif'))</OriginalItemSpec>
+    </StaticWebAsset>
   </ItemGroup>
 </Project>

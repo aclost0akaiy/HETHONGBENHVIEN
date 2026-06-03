@@ -3202,3 +3202,7 @@ INSERT INTO [ICD10Protocols] ([ICDCode], [Diagnosis], [TreatmentPlan], [LabTests
 (N'K29', N'Viêm d? dày c?p', N'An th?c an m?m, d? tiêu. Tránh d? cay nóng, ru?u bia. Chia nh? b?a an.', N'N?i soi d? dày tá tràng, Test vi khu?n HP', N'Esomeprazole 40mg, Phosphalugel 20g');
 GO
 
+
+
+-- Báº£ng bá»• sung tá»« Model
+

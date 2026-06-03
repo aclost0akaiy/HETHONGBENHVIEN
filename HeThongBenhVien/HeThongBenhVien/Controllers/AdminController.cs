@@ -158,6 +158,21 @@ namespace HeThongBenhVien.Controllers
         {
             var benhNhan = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.Role == "BenhNhan");
             if (benhNhan == null) return NotFound();
+
+            // Lấy danh sách xét nghiệm của bệnh nhân này thông qua PatientCode
+            var patientLabTests = new List<LabTest>();
+            if (!string.IsNullOrEmpty(benhNhan.PatientCode))
+            {
+                patientLabTests = await _context.LabTests
+                    .Include(l => l.MedicalRecord)
+                        .ThenInclude(m => m.Appointment)
+                            .ThenInclude(a => a.Patient)
+                    .Where(l => l.MedicalRecord.Appointment.Patient.PatientCode == benhNhan.PatientCode)
+                    .OrderByDescending(l => l.CreatedAt)
+                    .ToListAsync();
+            }
+            
+            ViewBag.LabTests = patientLabTests;
             return View(benhNhan);
         }
 

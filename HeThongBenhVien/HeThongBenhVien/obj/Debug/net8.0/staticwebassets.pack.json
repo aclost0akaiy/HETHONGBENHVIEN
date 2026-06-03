@@ -245,6 +245,10 @@
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
     },
     {
+      "Id": "C:\\Users\\pc\\OneDrive\\Documents\\GitHub\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\wwwroot\\uploads\\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif",
+      "PackagePath": "staticwebassets\\uploads\\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.HeThongBenhVien.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

@@ -349,6 +349,13 @@ namespace HeThongBenhVien.Controllers
             ViewBag.LatestAppointmentStatus = latestAppointment?.Status ?? 0;
             ViewBag.HasAppointment = latestAppointment != null;
 
+            // Lấy danh sách xét nghiệm của bệnh nhân này
+            ViewBag.LabTests = await _context.LabTests
+                .Include(l => l.MedicalRecord)
+                .Where(l => l.MedicalRecord.Appointment.PatientId == id)
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
+
             return View(patient);
         }
 

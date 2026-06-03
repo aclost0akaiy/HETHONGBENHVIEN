@@ -1,7 +1,7 @@
 $efSchema = Get-Content -Path "ef_schema.sql" -Raw
 $benhVien = Get-Content -Path "BenhVien.sql" -Raw
 
-$tables = @("BloodBanks", "MedicalEquipments", "MedicalServices", "QualityReviews", "DiagnosticImages", "InsuranceCards", "Receptions", "Surgeries")
+$tables = @("BloodBanks", "MedicalEquipments", "MedicalServices", "QualityReviews", "DiagnosticImages", "InsuranceCards", "Receptions", "Surgeries", "ICD10Protocols")
 
 $appendStr = "`r`n`r`n-- Bảng bổ sung từ Model`r`n"
 foreach ($table in $tables) {
