@@ -1,118 +1,132 @@
 @{
-    ViewData["Title"] = "Hệ thống Quản lý Bệnh viện Toàn diện";
+    ViewData["Title"] = "QL Khám Chữa Bệnh";
 }
 
-<div class="container-fluid p-0">
+<div class="container-fluid p-0 hero-wrapper" style="overflow-x: hidden; position: relative; background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);">
+    <!-- Animated background bubbles -->
+    <div class="bg-bubble bubble-1"></div>
+    <div class="bg-bubble bubble-2"></div>
+    <div class="bg-bubble bubble-3"></div>
+
     <!-- Hero Section -->
-    <div class="row align-items-center min-vh-75 py-5">
-        <div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
-            <div class="badge bg-primary bg-opacity-10 text-primary mb-3 px-3 py-2 rounded-pill fw-bold" style="letter-spacing: 1px;">
-                GIẢI PHÁP Y TẾ SỐ #1
-            </div>
-            <h1 class="display-4 fw-bold mb-4" style="color: #0f172a; line-height: 1.2;">
-                Hệ sinh thái <br />
-                <span style="color: #0ea5e9;">Quản lý Bệnh viện</span><br />
-                thông minh.
-            </h1>
-            <p class="lead text-muted mb-5" style="font-size: 1.15rem; line-height: 1.7;">
-                MediCare mang đến trải nghiệm y tế tối ưu cho cả bệnh nhân và bác sĩ. Quản lý lịch khám, hồ sơ bệnh án và quy trình lâm sàng trên một nền tảng duy nhất, an toàn và bảo mật.
-            </p>
-            
-            <div class="d-flex gap-3 flex-wrap">
-                @if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    if (User.IsInRole("Admin"))
+    <div class="container position-relative z-1">
+        <div class="row align-items-center min-vh-75 py-5">
+            <div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5 hero-text-section">
+                <div class="badge-wrapper mb-4 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill fw-bold border border-primary border-opacity-25" style="letter-spacing: 1.5px; font-size: 0.9rem;">
+                        <i class="fa-solid fa-star me-1 text-warning"></i> GIẢI PHÁP Y TẾ SỐ #1
+                    </span>
+                </div>
+                
+                <h1 class="display-3 fw-bolder mb-4 animate-fade-in-up" style="color: #0f172a; line-height: 1.25; animation-delay: 0.2s;">
+                    Hệ sinh thái <br />
+                    <span class="text-gradient">QL Khám Chữa Bệnh</span><br />
+                    thông minh.
+                </h1>
+                
+                <p class="lead text-secondary mb-5 animate-fade-in-up" style="font-size: 1.2rem; line-height: 1.8; max-width: 90%; animation-delay: 0.3s;">
+                    MediCare mang đến trải nghiệm y tế tối ưu cho cả bệnh nhân và bác sĩ. Quản lý lịch khám, hồ sơ bệnh án và quy trình lâm sàng trên một nền tảng duy nhất, an toàn và bảo mật.
+                </p>
+                
+                <div class="d-flex gap-3 flex-wrap animate-fade-in-up" style="animation-delay: 0.4s;">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-primary btn-lg px-5 py-3 rounded-3 shadow-sm d-flex align-items-center fw-bold text-white" style="background-color: #0ea5e9; border: none;">
-                            <i class="fa-solid fa-chart-line me-2 fs-5"></i> Vào Bảng Điều Khiển
+                        if (User.IsInRole("Admin"))
+                        {
+                            <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-gradient btn-lg px-5 py-3 rounded-pill shadow-lg d-flex align-items-center fw-bold text-white transition-all">
+                                <i class="fa-solid fa-chart-line me-2 fs-5"></i> Vào Bảng Điều Khiển
+                            </a>
+                        }
+                        else if (User.IsInRole("Doctor"))
+                        {
+                            <a href="@Url.Action("Dashboard", "Doctor")" class="btn btn-gradient btn-lg px-5 py-3 rounded-pill shadow-lg d-flex align-items-center fw-bold text-white transition-all">
+                                <i class="fa-solid fa-user-doctor me-2 fs-5"></i> Khám Bệnh Ngay
+                            </a>
+                        }
+                        else 
+                        {
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-gradient btn-lg px-5 py-3 rounded-pill shadow-lg d-flex align-items-center fw-bold text-white transition-all">
+                                <i class="fa-solid fa-house me-2 fs-5"></i> Trang Chủ
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Account")" class="btn btn-gradient btn-lg px-5 py-3 rounded-pill shadow-lg d-flex align-items-center fw-bold text-white transition-all">
+                            <i class="fa-solid fa-right-to-bracket me-2 fs-5"></i> Đăng Nhập Hệ Thống
+                        </a>
+                        <a href="#" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow-sm d-flex align-items-center fw-bold text-dark border-0 hover-lift transition-all">
+                            <i class="fa-regular fa-circle-play me-2 fs-5 text-primary"></i> Xem Demo
                         </a>
                     }
-                    else if (User.IsInRole("Doctor"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Doctor")" class="btn btn-primary btn-lg px-5 py-3 rounded-3 shadow-sm d-flex align-items-center fw-bold text-white" style="background-color: #0ea5e9; border: none;">
-                            <i class="fa-solid fa-user-doctor me-2 fs-5"></i> Khám Bệnh Ngay
-                        </a>
-                    }
-                    else 
-                    {
-                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg px-5 py-3 rounded-3 shadow-sm d-flex align-items-center fw-bold text-white" style="background-color: #0ea5e9; border: none;">
-                            <i class="fa-solid fa-house me-2 fs-5"></i> Trang Chủ
-                        </a>
-                    }
-                }
-                else
-                {
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg px-5 py-3 rounded-3 shadow-sm d-flex align-items-center fw-bold text-white" style="background-color: #0ea5e9; border: none;">
-                        <i class="fa-solid fa-right-to-bracket me-2 fs-5"></i> Đăng Nhập Hệ Thống
-                    </a>
-                    <a href="#" class="btn btn-light btn-lg px-5 py-3 rounded-3 border d-flex align-items-center fw-bold text-dark" style="background-color: #ffffff;">
-                        <i class="fa-regular fa-circle-play me-2 fs-5 text-primary"></i> Xem Demo
-                    </a>
-                }
+                </div>
+
+                <div class="d-flex align-items-center mt-5 gap-4 animate-fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="d-flex -space-x-4 avatar-group">
+                        <img class="rounded-circle border border-3 border-white shadow" style="width: 50px; height: 50px; object-fit: cover; z-index: 3;" src="https://ui-avatars.com/api/?name=BV+1&background=0D8ABC&color=fff" alt="User 1">
+                        <img class="rounded-circle border border-3 border-white shadow" style="width: 50px; height: 50px; object-fit: cover; z-index: 2; margin-left: -15px;" src="https://ui-avatars.com/api/?name=BV+2&background=2ECA65&color=fff" alt="User 2">
+                        <img class="rounded-circle border border-3 border-white shadow" style="width: 50px; height: 50px; object-fit: cover; z-index: 1; margin-left: -15px;" src="https://ui-avatars.com/api/?name=BV+3&background=F39C12&color=fff" alt="User 3">
+                        <div class="rounded-circle border border-3 border-white shadow bg-light d-flex align-items-center justify-content-center fw-bold text-primary" style="width: 50px; height: 50px; z-index: 0; margin-left: -15px; font-size: 0.8rem;">
+                            50+
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex text-warning fs-5 mb-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <span class="text-secondary small fw-semibold">Hơn 50+ bệnh viện tin dùng</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center mt-5 gap-4">
-                <div class="d-flex -space-x-4">
-                    <img class="rounded-circle border border-2 border-white shadow-sm" style="width: 45px; height: 45px; object-fit: cover; z-index: 3;" src="https://ui-avatars.com/api/?name=User+1&background=random" alt="User 1">
-                    <img class="rounded-circle border border-2 border-white shadow-sm" style="width: 45px; height: 45px; object-fit: cover; z-index: 2; margin-left: -15px;" src="https://ui-avatars.com/api/?name=User+2&background=random" alt="User 2">
-                    <img class="rounded-circle border border-2 border-white shadow-sm" style="width: 45px; height: 45px; object-fit: cover; z-index: 1; margin-left: -15px;" src="https://ui-avatars.com/api/?name=User+3&background=random" alt="User 3">
-                </div>
-                <div>
-                    <div class="d-flex text-warning fs-5">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </div>
-                    <span class="text-muted small fw-medium">Hơn 50+ bệnh viện tin dùng</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6 position-relative text-center mt-5 mt-lg-0">
-            <!-- Decorative background elements -->
-            <div class="position-absolute top-50 start-50 translate-middle" style="width: 120%; height: 120%; background: radial-gradient(circle, rgba(14,165,233,0.1) 0%, rgba(255,255,255,0) 70%); z-index: -1;"></div>
-            
-            <div class="row g-4 position-relative z-1">
-                <!-- Card 1 -->
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card transition-all" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
-                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 24px;">
-                            <i class="fa-solid fa-file-medical"></i>
+            <div class="col-lg-6 position-relative text-center mt-5 mt-lg-0 animate-fade-in">
+                <!-- Decorative background elements -->
+                <div class="position-absolute top-50 start-50 translate-middle blob-shape shadow-lg" style="width: 110%; height: 110%; background: radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(255,255,255,0) 70%); z-index: -1;"></div>
+                
+                <div class="row g-4 position-relative z-1">
+                    <!-- Card 1 -->
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card glass-card">
+                            <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mb-4 shadow-sm transition-icon" style="width: 65px; height: 65px; font-size: 26px;">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">Hồ Sơ Điện Tử</h5>
+                            <p class="text-secondary mb-0 small" style="line-height: 1.6;">Lưu trữ và trích xuất bệnh án trực tuyến tức thì, an toàn chuẩn HIPAA.</p>
                         </div>
-                        <h5 class="fw-bold text-dark mb-2">Hồ Sơ Điện Tử</h5>
-                        <p class="text-muted mb-0 small">Lưu trữ và trích xuất bệnh án trực tuyến tức thì, an toàn chuẩn HIPAA.</p>
                     </div>
-                </div>
-                <!-- Card 2 -->
-                <div class="col-6" style="margin-top: 40px;">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card transition-all" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
-                        <div class="icon-box bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 24px;">
-                            <i class="fa-solid fa-calendar-check"></i>
+                    <!-- Card 2 -->
+                    <div class="col-6" style="margin-top: 50px;">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card glass-card">
+                            <div class="icon-box bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mb-4 shadow-sm transition-icon" style="width: 65px; height: 65px; font-size: 26px;">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">Lịch Khám Thông Minh</h5>
+                            <p class="text-secondary mb-0 small" style="line-height: 1.6;">Quản lý và sắp xếp lịch hẹn tự động, giảm thiểu thời gian chờ đợi.</p>
                         </div>
-                        <h5 class="fw-bold text-dark mb-2">Lịch Khám Thông Minh</h5>
-                        <p class="text-muted mb-0 small">Quản lý và sắp xếp lịch hẹn tự động, giảm thiểu thời gian chờ đợi.</p>
                     </div>
-                </div>
-                <!-- Card 3 -->
-                <div class="col-6" style="margin-top: -40px;">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card transition-all" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
-                        <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 24px;">
-                            <i class="fa-solid fa-pills"></i>
+                    <!-- Card 3 -->
+                    <div class="col-6" style="margin-top: -30px;">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card glass-card">
+                            <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center mb-4 shadow-sm transition-icon" style="width: 65px; height: 65px; font-size: 26px;">
+                                <i class="fa-solid fa-pills"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">Quản Lý Dược Phẩm</h5>
+                            <p class="text-secondary mb-0 small" style="line-height: 1.6;">Kiểm soát kho thuốc, kê đơn điện tử và cảnh báo tương tác thuốc tự động.</p>
                         </div>
-                        <h5 class="fw-bold text-dark mb-2">Quản Lý Dược Phẩm</h5>
-                        <p class="text-muted mb-0 small">Kiểm soát kho thuốc, kê đơn điện tử và cảnh báo tương tác thuốc tự động.</p>
                     </div>
-                </div>
-                <!-- Card 4 -->
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card transition-all" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
-                        <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 24px;">
-                            <i class="fa-solid fa-chart-pie"></i>
+                    <!-- Card 4 -->
+                    <div class="col-6" style="margin-top: 20px;">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 text-start h-100 feature-card glass-card">
+                            <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center mb-4 shadow-sm transition-icon" style="width: 65px; height: 65px; font-size: 26px;">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-3">Báo Cáo Quản Trị</h5>
+                            <p class="text-secondary mb-0 small" style="line-height: 1.6;">Hệ thống biểu đồ phân tích trực quan giúp tối ưu hiệu suất bệnh viện.</p>
                         </div>
-                        <h5 class="fw-bold text-dark mb-2">Báo Cáo Quản Trị</h5>
-                        <p class="text-muted mb-0 small">Hệ thống biểu đồ phân tích trực quan giúp tối ưu hiệu suất bệnh viện.</p>
                     </div>
                 </div>
             </div>
@@ -121,14 +135,157 @@
 </div>
 
 <style>
+    /* Dark mode support */
+    [data-theme="dark"] .hero-wrapper {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    }
+    [data-theme="dark"] .glass-card {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    [data-theme="dark"] .text-dark {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] h1 {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .bg-light {
+        background-color: #334155 !important;
+    }
+    [data-theme="dark"] .text-secondary {
+        color: #94a3b8 !important;
+    }
+
     .min-vh-75 {
         min-height: 75vh;
     }
+    
+    .text-gradient {
+        background: linear-gradient(90deg, #0ea5e9 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%);
+        border: none;
+        background-size: 200% auto;
+        transition: 0.5s;
+    }
+    
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3) !important;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
     .feature-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+    }
+
+    .feature-card:hover .transition-icon {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    .transition-icon {
         transition: all 0.3s ease;
     }
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    
+    .avatar-group img, .avatar-group div {
+        transition: transform 0.3s ease;
+    }
+    
+    .avatar-group img:hover, .avatar-group div:hover {
+        transform: translateY(-5px);
+        z-index: 10 !important;
+    }
+
+    /* Animations */
+    .animate-fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 1s forwards ease-in-out;
+    }
+
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Background Bubbles Animation */
+    .bg-bubble {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: 0;
+        animation: float 10s infinite ease-in-out alternate;
+    }
+    
+    .bubble-1 {
+        width: 300px;
+        height: 300px;
+        background: rgba(14, 165, 233, 0.15);
+        top: -10%;
+        left: -5%;
+        animation-delay: 0s;
+    }
+    
+    .bubble-2 {
+        width: 250px;
+        height: 250px;
+        background: rgba(59, 130, 246, 0.15);
+        bottom: 10%;
+        right: -5%;
+        animation-delay: -3s;
+    }
+    
+    .bubble-3 {
+        width: 200px;
+        height: 200px;
+        background: rgba(16, 185, 129, 0.1);
+        top: 40%;
+        left: 40%;
+        animation-delay: -6s;
+    }
+
+    @@keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+        100% {
+            transform: translate(30px, 30px) rotate(10deg);
+        }
     }
 </style>

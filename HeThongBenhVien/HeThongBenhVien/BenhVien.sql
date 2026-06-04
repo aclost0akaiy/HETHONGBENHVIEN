@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'QuanLyBenhVienDb')
@@ -3190,19 +3190,1778 @@ CREATE TABLE [ICD10Protocols] (
 );
 GO
 
-INSERT INTO [ICD10Protocols] ([ICDCode], [Diagnosis], [TreatmentPlan], [LabTests], [Medicines]) VALUES 
-(N'J01', N'Vi�m xoang c?p', N'U?ng thu?c theo don. V? sinh mui b?ng nu?c mu?i sinh l� h�ng ng�y.', N'X-Quang Blondeau - Hirtz, N?i soi Tai Mui H?ng', N'Amoxicillin 500mg, Paracetamol 500mg, Loratadin 10mg'),
-(N'J03', N'Vi�m amidan c?p', N'U?ng thu?c theo don. S�c h?ng nu?c mu?i sinh l�, ki�ng d? l?nh.', N'X�t nghi?m m�u co b?n, N?i soi Tai Mui H?ng', N'Cefuroxim 500mg, Ibuprofen 400mg, Alphachymotrypsin 4,2mg'),
-(N'I10', N'Tang huy?t �p v� can', N'Duy tr� u?ng thu?c huy?t �p h�ng ng�y. Ki�ng an m?n, t?p th? d?c nh? nh�ng 30p/ng�y.', N'�i?n t�m d? (ECG), Sinh h�a m�u', N'Amlodipine 5mg, Losartan 50mg'),
-(N'E11', N'��i th�o du?ng type 2', N'Tu�n th? nghi�m ng?t ch? d? an ki�ng cho ngu?i ti?u du?ng. �o du?ng huy?t thu?ng xuy�n.', N'�u?ng huy?t l�c d�i, HbA1c, T?ng ph�n t�ch nu?c ti?u', N'Metformin 850mg, Gliclazide 30mg'),
-(N'K21', N'Tr�o ngu?c d? d�y th?c qu?n (GERD)', N'U?ng thu?c theo don. Kh�ng an no tru?c khi ng? 3 ti?ng. K� cao g?i khi n?m.', N'N?i soi d? d�y t� tr�ng, Test vi khu?n HP', N'Omeprazole 20mg, Domperidon 10mg, Phosphalugel 20g'),
-(N'A09', N'Ti�u ch?y nhi?m tr�ng', N'B� nu?c v� di?n gi?i t�ch c?c. An ch�n u?ng s�i, chia nh? b?a an.', N'X�t nghi?m ph�n, X�t nghi?m m�u co b?n', N'Oresol, Smecta, Ciprofloxacin 500mg'),
-(N'J18', N'Vi�m ph?i kh�ng d?c hi?u', N'Ngh? ngoi, u?ng nhi?u nu?c. Theo d�i nh?p th? v� SpO2 thu?ng xuy�n.', N'X-Quang ng?c th?ng, C�ng th?c m�u to�n ph?n (CBC)', N'Azithromycin 500mg, Paracetamol 500mg, Acetylcysteine 200mg'),
-(N'J45', N'Hen ph? qu?n', N'Tr�nh c�c y?u t? kh?i ph�t (b?i, kh�i, d? nguy�n). S? d?ng thu?c c?t con khi kh� th?.', N'�o ch?c nang h� h?p, X-Quang ng?c th?ng', N'Salbutamol 100mcg (X?t), Budesonide/Formoterol 160/4.5mcg'),
-(N'K29', N'Vi�m d? d�y c?p', N'An th?c an m?m, d? ti�u. Tr�nh d? cay n�ng, ru?u bia. Chia nh? b?a an.', N'N?i soi d? d�y t� tr�ng, Test vi khu?n HP', N'Esomeprazole 40mg, Phosphalugel 20g');
+USE QuanLyBenhVienDb;
 GO
 
+INSERT INTO [ICD10Protocols] ([ICDCode], [Diagnosis], [TreatmentPlan], [LabTests], [Medicines]) VALUES 
+(N'J01', N'Viêm xoang cấp', N'Uống thuốc theo đơn. Vệ sinh mũi bằng nước muối sinh lý hàng ngày.', N'X-Quang Blondeau - Hirtz, Nội soi Tai Mũi Họng', N'Amoxicillin 500mg, Paracetamol 500mg, Loratadin 10mg'),
+(N'J03', N'Viêm amidan cấp', N'Uống thuốc theo đơn. Súc họng nước muối sinh lý, kiêng đồ lạnh.', N'Xét nghiệm máu cơ bản, Nội soi Tai Mũi Họng', N'Cefuroxim 500mg, Ibuprofen 400mg, Alphachymotrypsin 4,2mg'),
+(N'I10', N'Tăng huyết áp vô căn', N'Duy trì uống thuốc huyết áp hàng ngày. Kiêng ăn mặn, tập thể dục nhẹ nhàng 30p/ngày.', N'Điện tâm đồ (ECG), Sinh hóa máu', N'Amlodipine 5mg, Losartan 50mg'),
+(N'E11', N'Đái tháo đường type 2', N'Tuân thủ nghiêm ngặt chế độ ăn kiêng cho người tiểu đường. Đo đường huyết thường xuyên.', N'Đường huyết lúc đói, HbA1c, Tổng phân tích nước tiểu', N'Metformin 850mg, Gliclazide 30mg'),
+(N'K21', N'Trào ngược dạ dày thực quản (GERD)', N'Uống thuốc theo đơn. Không ăn no trước khi ngủ 3 tiếng. Kê cao gối khi nằm.', N'Nội soi dạ dày tá tràng, Test vi khuẩn HP', N'Omeprazole 20mg, Domperidon 10mg, Phosphalugel 20g'),
+(N'A09', N'Tiêu chảy nhiễm trùng', N'Bù nước và điện giải tích cực. Ăn chín uống sôi, chia nhỏ bữa ăn.', N'Xét nghiệm phân, Xét nghiệm máu cơ bản', N'Oresol, Smecta, Ciprofloxacin 500mg'),
+(N'J18', N'Viêm phổi không đặc hiệu', N'Nghỉ ngơi, uống nhiều nước. Theo dõi nhịp thở và SpO2 thường xuyên.', N'X-Quang ngực thẳng, Công thức máu toàn phần (CBC)', N'Azithromycin 500mg, Paracetamol 500mg, Acetylcysteine 200mg'),
+(N'J45', N'Hen phế quản', N'Tránh các yếu tố khởi phát (bụi, khói, dị nguyên). Sử dụng thuốc cắt cơn khi khó thở.', N'Đo chức năng hô hấp, X-Quang ngực thẳng', N'Salbutamol 100mcg (Xịt), Budesonide/Formoterol 160/4.5mcg'),
+(N'K29', N'Viêm dạ dày cấp', N'Ăn thức ăn mềm, dễ tiêu. Tránh đồ cay nóng, rượu bia. Chia nhỏ bữa ăn.', N'Nội soi dạ dày tá tràng, Test vi khuẩn HP', N'Esomeprazole 40mg, Phosphalugel 20g');
+GO
+
+-- Thêm tài khoản bệnh nhân demo
+INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode)
+VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Bệnh Nhân Demo', 'benhnhan@demo.com', '0900000000', NULL);
 
 
--- Bảng bổ sung từ Model
+
+USE QuanLyBenhVienDb;
+GO
+
+-- Bác sĩ phẫu thuật
+INSERT INTO Users (Username, Password, Role, FullName, Email, SDT) VALUES
+('bs.phauthuat1', '123', 'PhauThuat', N'BS. Nguyễn Văn A', 'bs.a@benhvien.com', '0901234567'),
+('bs.phauthuat2', '123', 'PhauThuat', N'BS. Trần Thị B', 'bs.b@benhvien.com', '0901234568'),
+('bs.phauthuat3', '123', 'PhauThuat', N'BS. Lê Văn C', 'bs.c@benhvien.com', '0901234569'),
+('bs.phauthuat4', '123', 'PhauThuat', N'BS. Phạm Thị D', 'bs.d@benhvien.com', '0901234570'),
+('bs.phauthuat5', '123', 'PhauThuat', N'BS. Hoàng Văn E', 'bs.e@benhvien.com', '0901234571');
+GO
+
+-- 20 loại mổ
+INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, Description, IsActive, CreatedAt) VALUES
+('PT001', N'Phẫu thuật ruột thừa nội soi', N'Phẫu thuật', 5000000, 80, N'Cắt ruột thừa bằng phương pháp nội soi', 1, GETDATE()),
+('PT002', N'Phẫu thuật nội soi túi mật', N'Phẫu thuật', 7000000, 80, N'Cắt bỏ túi mật qua nội soi', 1, GETDATE()),
+('PT003', N'Phẫu thuật thoát vị bẹn', N'Phẫu thuật', 4500000, 80, N'Phục hồi thành bụng do thoát vị bẹn', 1, GETDATE()),
+('PT004', N'Phẫu thuật trĩ Longo', N'Phẫu thuật', 8000000, 80, N'Cắt trĩ bằng phương pháp Longo', 1, GETDATE()),
+('PT005', N'Phẫu thuật cắt dạ dày', N'Phẫu thuật', 15000000, 80, N'Cắt bỏ một phần hoặc toàn bộ dạ dày', 1, GETDATE()),
+('PT006', N'Phẫu thuật thay khớp gối', N'Phẫu thuật', 12000000, 80, N'Thay thế khớp gối bị hỏng', 1, GETDATE()),
+('PT007', N'Phẫu thuật thay khớp háng', N'Phẫu thuật', 14000000, 80, N'Thay thế khớp háng bằng khớp nhân tạo', 1, GETDATE()),
+('PT008', N'Phẫu thuật kết hợp xương gãy', N'Phẫu thuật', 6000000, 80, N'Cố định xương gãy bằng đinh, nẹp vít', 1, GETDATE()),
+('PT009', N'Phẫu thuật lấy thai lần 1', N'Phẫu thuật', 5500000, 80, N'Mổ đẻ lần 1', 1, GETDATE()),
+('PT010', N'Phẫu thuật bóc u xơ tử cung', N'Phẫu thuật', 6500000, 80, N'Loại bỏ khối u xơ trong tử cung', 1, GETDATE()),
+('PT011', N'Phẫu thuật cắt tử cung', N'Phẫu thuật', 9000000, 80, N'Cắt bỏ tử cung do bệnh lý', 1, GETDATE()),
+('PT012', N'Phẫu thuật u nang buồng trứng', N'Phẫu thuật', 7500000, 80, N'Bóc tách hoặc cắt bỏ u nang buồng trứng', 1, GETDATE()),
+('PT013', N'Phẫu thuật mộng thịt', N'Phẫu thuật', 1500000, 80, N'Cắt bỏ mộng thịt ở mắt', 1, GETDATE()),
+('PT014', N'Phẫu thuật đục thủy tinh thể (Phaco)', N'Phẫu thuật', 4000000, 80, N'Thay thủy tinh thể nhân tạo', 1, GETDATE()),
+('PT015', N'Phẫu thuật cắt amidan', N'Phẫu thuật', 3500000, 80, N'Cắt bỏ amidan viêm nhiễm', 1, GETDATE()),
+('PT016', N'Phẫu thuật nội soi xoang mũi', N'Phẫu thuật', 8500000, 80, N'Điều trị viêm xoang qua nội soi', 1, GETDATE()),
+('PT017', N'Phẫu thuật nạo VA', N'Phẫu thuật', 2000000, 80, N'Nạo bỏ tổ chức VA bị viêm', 1, GETDATE()),
+('PT018', N'Phẫu thuật vá nhĩ', N'Phẫu thuật', 5000000, 80, N'Vá lại màng nhĩ bị rách', 1, GETDATE()),
+('PT019', N'Phẫu thuật u tuyến giáp', N'Phẫu thuật', 10000000, 80, N'Cắt bỏ một phần hoặc toàn bộ tuyến giáp', 1, GETDATE()),
+('PT020', N'Phẫu thuật bóc u mỡ/u bã đậu', N'Phẫu thuật', 1000000, 80, N'Tiểu phẫu bóc tách khối u lành tính', 1, GETDATE());
+GO
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [MedicineUnits] (
+        [Id] int NOT NULL IDENTITY,
+        [UnitName] nvarchar(50) NOT NULL,
+        [DefaultPrice] decimal(18,2) NOT NULL,
+        CONSTRAINT [PK_MedicineUnits] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [Patients] (
+        [Id] int NOT NULL IDENTITY,
+        [FullName] nvarchar(100) NOT NULL,
+        [Gender] nvarchar(max) NOT NULL,
+        [Age] int NOT NULL,
+        [PatientCode] nvarchar(20) NOT NULL,
+        CONSTRAINT [PK_Patients] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [Users] (
+        [Id] int NOT NULL IDENTITY,
+        [Username] nvarchar(50) NOT NULL,
+        [Password] nvarchar(255) NOT NULL,
+        [Role] nvarchar(50) NOT NULL,
+        [FullName] nvarchar(100) NOT NULL,
+        [Email] nvarchar(100) NOT NULL,
+        [SDT] nvarchar(20) NOT NULL,
+        CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [Appointments] (
+        [Id] int NOT NULL IDENTITY,
+        [PatientId] int NOT NULL,
+        [Reason] nvarchar(200) NOT NULL,
+        [AppointmentTime] datetime2 NOT NULL,
+        [Status] int NOT NULL,
+        CONSTRAINT [PK_Appointments] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Appointments_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [MedicalRecords] (
+        [Id] int NOT NULL IDENTITY,
+        [AppointmentId] int NOT NULL,
+        [Symptoms] nvarchar(max) NOT NULL,
+        [Vitals] nvarchar(max) NOT NULL,
+        [Diagnosis] nvarchar(max) NOT NULL,
+        [TreatmentPlan] nvarchar(max) NOT NULL,
+        [Notes] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_MedicalRecords] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_MedicalRecords_Appointments_AppointmentId] FOREIGN KEY ([AppointmentId]) REFERENCES [Appointments] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [LabTests] (
+        [Id] int NOT NULL IDENTITY,
+        [MedicalRecordId] int NOT NULL,
+        [TestName] nvarchar(max) NOT NULL,
+        [Status] nvarchar(max) NOT NULL,
+        [Result] nvarchar(max) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [CompletedAt] datetime2 NULL,
+        CONSTRAINT [PK_LabTests] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_LabTests_MedicalRecords_MedicalRecordId] FOREIGN KEY ([MedicalRecordId]) REFERENCES [MedicalRecords] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [Prescriptions] (
+        [Id] int NOT NULL IDENTITY,
+        [MedicalRecordId] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [Status] nvarchar(max) NOT NULL,
+        CONSTRAINT [PK_Prescriptions] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Prescriptions_MedicalRecords_MedicalRecordId] FOREIGN KEY ([MedicalRecordId]) REFERENCES [MedicalRecords] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE TABLE [PrescriptionDetails] (
+        [Id] int NOT NULL IDENTITY,
+        [PrescriptionId] int NOT NULL,
+        [MedicineName] nvarchar(max) NOT NULL,
+        [Quantity] int NOT NULL,
+        [Unit] nvarchar(max) NOT NULL,
+        [DosageInstruction] nvarchar(max) NOT NULL,
+        [Price] decimal(18,2) NOT NULL,
+        CONSTRAINT [PK_PrescriptionDetails] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_PrescriptionDetails_Prescriptions_PrescriptionId] FOREIGN KEY ([PrescriptionId]) REFERENCES [Prescriptions] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE INDEX [IX_Appointments_PatientId] ON [Appointments] ([PatientId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE INDEX [IX_LabTests_MedicalRecordId] ON [LabTests] ([MedicalRecordId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE INDEX [IX_MedicalRecords_AppointmentId] ON [MedicalRecords] ([AppointmentId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE INDEX [IX_PrescriptionDetails_PrescriptionId] ON [PrescriptionDetails] ([PrescriptionId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    CREATE INDEX [IX_Prescriptions_MedicalRecordId] ON [Prescriptions] ([MedicalRecordId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260510141003_InitialCreate'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260510141003_InitialCreate', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512064306_AddMedicalModules'
+)
+BEGIN
+    CREATE TABLE [MedicalEquipments] (
+        [Id] int NOT NULL IDENTITY,
+        [EquipmentCode] nvarchar(max) NOT NULL,
+        [EquipmentName] nvarchar(max) NOT NULL,
+        [Category] nvarchar(max) NOT NULL,
+        [Quantity] int NOT NULL,
+        [Status] nvarchar(max) NOT NULL,
+        [LastMaintenanceDate] datetime2 NOT NULL,
+        CONSTRAINT [PK_MedicalEquipments] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512064306_AddMedicalModules'
+)
+BEGIN
+    CREATE TABLE [MedicalServices] (
+        [Id] int NOT NULL IDENTITY,
+        [ServiceCode] nvarchar(max) NOT NULL,
+        [ServiceName] nvarchar(max) NOT NULL,
+        [Description] nvarchar(max) NOT NULL,
+        [Price] decimal(18,2) NOT NULL,
+        [IsActive] bit NOT NULL,
+        CONSTRAINT [PK_MedicalServices] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512064306_AddMedicalModules'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260512064306_AddMedicalModules', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512071233_AddMedicineModel'
+)
+BEGIN
+    CREATE TABLE [Medicines] (
+        [Id] int NOT NULL IDENTITY,
+        [Name] nvarchar(200) NOT NULL,
+        [Price] decimal(18,2) NOT NULL,
+        CONSTRAINT [PK_Medicines] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512071233_AddMedicineModel'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260512071233_AddMedicineModel', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512072916_AddPatientCodeToUser'
+)
+BEGIN
+    ALTER TABLE [Users] ADD [PatientCode] nvarchar(20) NOT NULL DEFAULT N'';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512072916_AddPatientCodeToUser'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260512072916_AddPatientCodeToUser', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512105202_AddVitalSignsTable'
+)
+BEGIN
+    CREATE TABLE [VitalSigns] (
+        [Id] int NOT NULL IDENTITY,
+        [AppointmentId] int NOT NULL,
+        [Pulse] nvarchar(max) NULL,
+        [Temperature] nvarchar(max) NULL,
+        [BloodPressure] nvarchar(max) NULL,
+        [SpO2] nvarchar(max) NULL,
+        [NurseName] nvarchar(max) NULL,
+        [RecordedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_VitalSigns] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_VitalSigns_Appointments_AppointmentId] FOREIGN KEY ([AppointmentId]) REFERENCES [Appointments] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512105202_AddVitalSignsTable'
+)
+BEGIN
+    CREATE INDEX [IX_VitalSigns_AppointmentId] ON [VitalSigns] ([AppointmentId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260512105202_AddVitalSignsTable'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260512105202_AddVitalSignsTable', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [Category] nvarchar(100) NOT NULL DEFAULT N'';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [ExpiryDate] datetime2 NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [IsActive] bit NOT NULL DEFAULT CAST(0 AS bit);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [Manufacturer] nvarchar(200) NOT NULL DEFAULT N'';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [MinStock] int NOT NULL DEFAULT 0;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [StockQuantity] int NOT NULL DEFAULT 0;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    ALTER TABLE [Medicines] ADD [Unit] nvarchar(50) NOT NULL DEFAULT N'';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [BloodBanks] (
+        [Id] int NOT NULL IDENTITY,
+        [BagCode] nvarchar(20) NOT NULL,
+        [BloodType] nvarchar(5) NOT NULL,
+        [Component] nvarchar(20) NOT NULL,
+        [VolumeMl] int NOT NULL,
+        [DonorName] nvarchar(100) NOT NULL,
+        [DonorPhone] nvarchar(20) NOT NULL,
+        [CollectionDate] datetime2 NOT NULL,
+        [ExpiryDate] datetime2 NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [Notes] nvarchar(200) NOT NULL,
+        CONSTRAINT [PK_BloodBanks] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [Departments] (
+        [Id] int NOT NULL IDENTITY,
+        [DepartmentCode] nvarchar(50) NOT NULL,
+        [DepartmentName] nvarchar(100) NOT NULL,
+        [Description] nvarchar(200) NOT NULL,
+        [HeadDoctor] nvarchar(100) NOT NULL,
+        [TotalBeds] int NOT NULL,
+        [OccupiedBeds] int NOT NULL,
+        [Phone] nvarchar(20) NOT NULL,
+        [IsActive] bit NOT NULL,
+        CONSTRAINT [PK_Departments] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [DiagnosticImages] (
+        [Id] int NOT NULL IDENTITY,
+        [RequestCode] nvarchar(20) NOT NULL,
+        [PatientId] int NOT NULL,
+        [ImageType] nvarchar(100) NOT NULL,
+        [BodyPart] nvarchar(200) NOT NULL,
+        [RequestedBy] nvarchar(100) NOT NULL,
+        [Result] nvarchar(1000) NOT NULL,
+        [Conclusion] nvarchar(500) NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [RequestDate] datetime2 NOT NULL,
+        [CompletedDate] datetime2 NULL,
+        CONSTRAINT [PK_DiagnosticImages] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_DiagnosticImages_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [HospitalFees] (
+        [Id] int NOT NULL IDENTITY,
+        [FeeCode] nvarchar(50) NOT NULL,
+        [FeeName] nvarchar(200) NOT NULL,
+        [Category] nvarchar(100) NOT NULL,
+        [Price] decimal(18,2) NOT NULL,
+        [InsuranceCoverage] decimal(18,2) NOT NULL,
+        [Description] nvarchar(500) NOT NULL,
+        [IsActive] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_HospitalFees] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [InsuranceCards] (
+        [Id] int NOT NULL IDENTITY,
+        [CardNumber] nvarchar(20) NOT NULL,
+        [PatientId] int NOT NULL,
+        [RegisteredHospital] nvarchar(200) NOT NULL,
+        [StartDate] datetime2 NOT NULL,
+        [EndDate] datetime2 NOT NULL,
+        [CoveragePercent] int NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_InsuranceCards] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_InsuranceCards_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [QualityReviews] (
+        [Id] int NOT NULL IDENTITY,
+        [Department] nvarchar(100) NOT NULL,
+        [ReviewerName] nvarchar(100) NOT NULL,
+        [ServiceScore] int NOT NULL,
+        [CleanlinessScore] int NOT NULL,
+        [StaffScore] int NOT NULL,
+        [FacilityScore] int NOT NULL,
+        [WaitTimeScore] int NOT NULL,
+        [Comment] nvarchar(1000) NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_QualityReviews] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [Receptions] (
+        [Id] int NOT NULL IDENTITY,
+        [ReceptionCode] nvarchar(20) NOT NULL,
+        [PatientId] int NOT NULL,
+        [Department] nvarchar(100) NOT NULL,
+        [Priority] nvarchar(50) NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [QueueNumber] int NOT NULL,
+        [Reason] nvarchar(500) NOT NULL,
+        [CheckInTime] datetime2 NOT NULL,
+        [CheckOutTime] datetime2 NULL,
+        CONSTRAINT [PK_Receptions] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Receptions_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE TABLE [Surgeries] (
+        [Id] int NOT NULL IDENTITY,
+        [SurgeryCode] nvarchar(20) NOT NULL,
+        [PatientId] int NOT NULL,
+        [SurgeryName] nvarchar(200) NOT NULL,
+        [SurgeryType] nvarchar(100) NOT NULL,
+        [Surgeon] nvarchar(100) NOT NULL,
+        [AssistantTeam] nvarchar(200) NOT NULL,
+        [Anesthesia] nvarchar(100) NOT NULL,
+        [OperatingRoom] nvarchar(50) NOT NULL,
+        [ScheduledDate] datetime2 NOT NULL,
+        [DurationMinutes] int NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [Notes] nvarchar(1000) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_Surgeries] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Surgeries_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE INDEX [IX_DiagnosticImages_PatientId] ON [DiagnosticImages] ([PatientId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE INDEX [IX_InsuranceCards_PatientId] ON [InsuranceCards] ([PatientId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE INDEX [IX_Receptions_PatientId] ON [Receptions] ([PatientId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    CREATE INDEX [IX_Surgeries_PatientId] ON [Surgeries] ([PatientId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260514083138_AddMedicineColumns'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260514083138_AddMedicineColumns', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260515032737_AddAdmissionFieldsToMedicalRecord'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [AdmissionDate] datetime2 NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260515032737_AddAdmissionFieldsToMedicalRecord'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [DischargeDate] datetime2 NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260515032737_AddAdmissionFieldsToMedicalRecord'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [RoomFee] decimal(18,2) NOT NULL DEFAULT 0.0;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260515032737_AddAdmissionFieldsToMedicalRecord'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260515032737_AddAdmissionFieldsToMedicalRecord', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    DECLARE @var0 sysname;
+    SELECT @var0 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[MedicalRecords]') AND [c].[name] = N'Vitals');
+    IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [MedicalRecords] DROP CONSTRAINT [' + @var0 + '];');
+    ALTER TABLE [MedicalRecords] DROP COLUMN [Vitals];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [BedNumber] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [DepartmentId] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    CREATE INDEX [IX_MedicalRecords_DepartmentId] ON [MedicalRecords] ([DepartmentId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD CONSTRAINT [FK_MedicalRecords_Departments_DepartmentId] FOREIGN KEY ([DepartmentId]) REFERENCES [Departments] ([Id]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260521094600_RemoveOldVitalsFromMedicalRecor'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260521094600_RemoveOldVitalsFromMedicalRecor', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260526032202_AddSurgeryFieldsAndMissingTables'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [SurgeonId] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260526032202_AddSurgeryFieldsAndMissingTables'
+)
+BEGIN
+    ALTER TABLE [MedicalRecords] ADD [SurgeryFeeId] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260526032202_AddSurgeryFieldsAndMissingTables'
+)
+BEGIN
+    DECLARE @var1 sysname;
+    SELECT @var1 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Departments]') AND [c].[name] = N'Phone');
+    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Departments] DROP CONSTRAINT [' + @var1 + '];');
+    ALTER TABLE [Departments] ALTER COLUMN [Phone] nvarchar(10) NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260526032202_AddSurgeryFieldsAndMissingTables'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260526032202_AddSurgeryFieldsAndMissingTables', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
+USE QuanLyBenhVienDb;
+GO
+
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 1', N'Nam', 30, 'DS1', '');
+DECLARE @Pid1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 2', N'Nam', 30, 'DS2', '');
+DECLARE @Pid2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 3', N'Nam', 30, 'DS3', '');
+DECLARE @Pid3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 4', N'Nam', 30, 'DS4', '');
+DECLARE @Pid4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 5', N'Nam', 30, 'DS5', '');
+DECLARE @Pid5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 6', N'Nam', 30, 'DS6', '');
+DECLARE @Pid6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân chờ khám 7', N'Nam', 30, 'DS7', '');
+DECLARE @Pid7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Đau đầu', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 1', N'Nữ', 40, 'HS1', '');
+DECLARE @Pid_HS1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS1 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triệu chứng 1', N'Chẩn đoán 1', N'Điều trị 1', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 2', N'Nữ', 40, 'HS2', '');
+DECLARE @Pid_HS2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS2 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triệu chứng 2', N'Chẩn đoán 2', N'Điều trị 2', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 3', N'Nữ', 40, 'HS3', '');
+DECLARE @Pid_HS3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS3 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triệu chứng 3', N'Chẩn đoán 3', N'Điều trị 3', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 4', N'Nữ', 40, 'HS4', '');
+DECLARE @Pid_HS4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS4 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triệu chứng 4', N'Chẩn đoán 4', N'Điều trị 4', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 5', N'Nữ', 40, 'HS5', '');
+DECLARE @Pid_HS5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS5 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triệu chứng 5', N'Chẩn đoán 5', N'Điều trị 5', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 6', N'Nữ', 40, 'HS6', '');
+DECLARE @Pid_HS6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS6 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triệu chứng 6', N'Chẩn đoán 6', N'Điều trị 6', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 7', N'Nữ', 40, 'HS7', '');
+DECLARE @Pid_HS7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS7 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triệu chứng 7', N'Chẩn đoán 7', N'Điều trị 7', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 8', N'Nữ', 40, 'HS8', '');
+DECLARE @Pid_HS8 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS8 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triệu chứng 8', N'Chẩn đoán 8', N'Điều trị 8', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 9', N'Nữ', 40, 'HS9', '');
+DECLARE @Pid_HS9 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS9 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triệu chứng 9', N'Chẩn đoán 9', N'Điều trị 9', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 10', N'Nữ', 40, 'HS10', '');
+DECLARE @Pid_HS10 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS10 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triệu chứng 10', N'Chẩn đoán 10', N'Điều trị 10', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 11', N'Nữ', 40, 'HS11', '');
+DECLARE @Pid_HS11 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS11 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triệu chứng 11', N'Chẩn đoán 11', N'Điều trị 11', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 12', N'Nữ', 40, 'HS12', '');
+DECLARE @Pid_HS12 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS12 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triệu chứng 12', N'Chẩn đoán 12', N'Điều trị 12', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 13', N'Nữ', 40, 'HS13', '');
+DECLARE @Pid_HS13 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS13 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triệu chứng 13', N'Chẩn đoán 13', N'Điều trị 13', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 14', N'Nữ', 40, 'HS14', '');
+DECLARE @Pid_HS14 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS14 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triệu chứng 14', N'Chẩn đoán 14', N'Điều trị 14', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 15', N'Nữ', 40, 'HS15', '');
+DECLARE @Pid_HS15 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS15 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triệu chứng 15', N'Chẩn đoán 15', N'Điều trị 15', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 16', N'Nữ', 40, 'HS16', '');
+DECLARE @Pid_HS16 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS16 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triệu chứng 16', N'Chẩn đoán 16', N'Điều trị 16', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 17', N'Nữ', 40, 'HS17', '');
+DECLARE @Pid_HS17 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS17 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triệu chứng 17', N'Chẩn đoán 17', N'Điều trị 17', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 18', N'Nữ', 40, 'HS18', '');
+DECLARE @Pid_HS18 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS18 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triệu chứng 18', N'Chẩn đoán 18', N'Điều trị 18', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 19', N'Nữ', 40, 'HS19', '');
+DECLARE @Pid_HS19 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS19 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triệu chứng 19', N'Chẩn đoán 19', N'Điều trị 19', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân khám xong 20', N'Nữ', 40, 'HS20', '');
+DECLARE @Pid_HS20 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'Khám định kỳ', GETDATE(), 4);
+DECLARE @Aid_HS20 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triệu chứng 20', N'Chẩn đoán 20', N'Điều trị 20', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 1', N'Nam', 50, 'NT1', '');
+DECLARE @Pid_NT1 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT1 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 1, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 2', N'Nam', 50, 'NT2', '');
+DECLARE @Pid_NT2 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT2 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 2, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 3', N'Nam', 50, 'NT3', '');
+DECLARE @Pid_NT3 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT3 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 3, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 4', N'Nam', 50, 'NT4', '');
+DECLARE @Pid_NT4 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT4 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 4, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 5', N'Nam', 50, 'NT5', '');
+DECLARE @Pid_NT5 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT5 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 5, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 6', N'Nam', 50, 'NT6', '');
+DECLARE @Pid_NT6 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT6 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 6, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 7', N'Nam', 50, 'NT7', '');
+DECLARE @Pid_NT7 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT7 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 7, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 8', N'Nam', 50, 'NT8', '');
+DECLARE @Pid_NT8 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT8 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 8, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 9', N'Nam', 50, 'NT9', '');
+DECLARE @Pid_NT9 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT9 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 9, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 10', N'Nam', 50, 'NT10', '');
+DECLARE @Pid_NT10 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT10 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 10, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 11', N'Nam', 50, 'NT11', '');
+DECLARE @Pid_NT11 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT11 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 11, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 12', N'Nam', 50, 'NT12', '');
+DECLARE @Pid_NT12 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT12 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 12, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 13', N'Nam', 50, 'NT13', '');
+DECLARE @Pid_NT13 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT13 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 13, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 14', N'Nam', 50, 'NT14', '');
+DECLARE @Pid_NT14 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT14 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 14, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 15', N'Nam', 50, 'NT15', '');
+DECLARE @Pid_NT15 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT15 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 15, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 16', N'Nam', 50, 'NT16', '');
+DECLARE @Pid_NT16 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT16 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 16, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 17', N'Nam', 50, 'NT17', '');
+DECLARE @Pid_NT17 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT17 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 17, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 18', N'Nam', 50, 'NT18', '');
+DECLARE @Pid_NT18 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT18 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 18, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 19', N'Nam', 50, 'NT19', '');
+DECLARE @Pid_NT19 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT19 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 19, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 20', N'Nam', 50, 'NT20', '');
+DECLARE @Pid_NT20 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT20 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 20, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 21', N'Nam', 50, 'NT21', '');
+DECLARE @Pid_NT21 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT21 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 21, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 22', N'Nam', 50, 'NT22', '');
+DECLARE @Pid_NT22 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT22 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 22, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 23', N'Nam', 50, 'NT23', '');
+DECLARE @Pid_NT23 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT23 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 23, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 24', N'Nam', 50, 'NT24', '');
+DECLARE @Pid_NT24 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT24 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 24, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 25', N'Nam', 50, 'NT25', '');
+DECLARE @Pid_NT25 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT25 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 25, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 26', N'Nam', 50, 'NT26', '');
+DECLARE @Pid_NT26 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT26 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 26, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 27', N'Nam', 50, 'NT27', '');
+DECLARE @Pid_NT27 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT27 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 27, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 28', N'Nam', 50, 'NT28', '');
+DECLARE @Pid_NT28 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT28 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 28, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 29', N'Nam', 50, 'NT29', '');
+DECLARE @Pid_NT29 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT29 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 29, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 30', N'Nam', 50, 'NT30', '');
+DECLARE @Pid_NT30 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT30 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 30, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 31', N'Nam', 50, 'NT31', '');
+DECLARE @Pid_NT31 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT31 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 31, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 32', N'Nam', 50, 'NT32', '');
+DECLARE @Pid_NT32 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT32 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 32, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 33', N'Nam', 50, 'NT33', '');
+DECLARE @Pid_NT33 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT33 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 33, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 34', N'Nam', 50, 'NT34', '');
+DECLARE @Pid_NT34 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT34 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 34, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 35', N'Nam', 50, 'NT35', '');
+DECLARE @Pid_NT35 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT35 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 35, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 36', N'Nam', 50, 'NT36', '');
+DECLARE @Pid_NT36 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT36 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 36, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 37', N'Nam', 50, 'NT37', '');
+DECLARE @Pid_NT37 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT37 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 37, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 38', N'Nam', 50, 'NT38', '');
+DECLARE @Pid_NT38 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT38 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 38, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 39', N'Nam', 50, 'NT39', '');
+DECLARE @Pid_NT39 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT39 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 39, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 40', N'Nam', 50, 'NT40', '');
+DECLARE @Pid_NT40 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT40 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 40, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 41', N'Nam', 50, 'NT41', '');
+DECLARE @Pid_NT41 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT41 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 41, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 42', N'Nam', 50, 'NT42', '');
+DECLARE @Pid_NT42 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT42 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 42, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 43', N'Nam', 50, 'NT43', '');
+DECLARE @Pid_NT43 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT43 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 43, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 44', N'Nam', 50, 'NT44', '');
+DECLARE @Pid_NT44 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT44 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 44, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 45', N'Nam', 50, 'NT45', '');
+DECLARE @Pid_NT45 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT45 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 45, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 46', N'Nam', 50, 'NT46', '');
+DECLARE @Pid_NT46 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT46 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 46, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 47', N'Nam', 50, 'NT47', '');
+DECLARE @Pid_NT47 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT47 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 47, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 48', N'Nam', 50, 'NT48', '');
+DECLARE @Pid_NT48 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT48 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 48, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 49', N'Nam', 50, 'NT49', '');
+DECLARE @Pid_NT49 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT49 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 49, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bệnh nhân nội trú 50', N'Nam', 50, 'NT50', '');
+DECLARE @Pid_NT50 INT = SCOPE_IDENTITY();
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cấp cứu', GETDATE(), 4);
+DECLARE @Aid_NT50 INT = SCOPE_IDENTITY();
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 50, GETDATE(), 0);
+GO
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+CREATE TABLE [MedicineUnits] (
+    [Id] int NOT NULL IDENTITY,
+    [UnitName] nvarchar(50) NOT NULL,
+    [DefaultPrice] decimal(18,2) NOT NULL,
+    CONSTRAINT [PK_MedicineUnits] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [Patients] (
+    [Id] int NOT NULL IDENTITY,
+    [FullName] nvarchar(100) NOT NULL,
+    [Gender] nvarchar(max) NOT NULL,
+    [Age] int NOT NULL,
+    [PatientCode] nvarchar(20) NOT NULL,
+    CONSTRAINT [PK_Patients] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [Users] (
+    [Id] int NOT NULL IDENTITY,
+    [Username] nvarchar(50) NOT NULL,
+    [Password] nvarchar(255) NOT NULL,
+    [Role] nvarchar(50) NOT NULL,
+    [FullName] nvarchar(100) NOT NULL,
+    [Email] nvarchar(100) NOT NULL,
+    [SDT] nvarchar(20) NOT NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [Appointments] (
+    [Id] int NOT NULL IDENTITY,
+    [PatientId] int NOT NULL,
+    [Reason] nvarchar(200) NOT NULL,
+    [AppointmentTime] datetime2 NOT NULL,
+    [Status] int NOT NULL,
+    CONSTRAINT [PK_Appointments] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Appointments_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [MedicalRecords] (
+    [Id] int NOT NULL IDENTITY,
+    [AppointmentId] int NOT NULL,
+    [Symptoms] nvarchar(max) NOT NULL,
+    [Vitals] nvarchar(max) NOT NULL,
+    [Diagnosis] nvarchar(max) NOT NULL,
+    [TreatmentPlan] nvarchar(max) NOT NULL,
+    [Notes] nvarchar(max) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_MedicalRecords] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_MedicalRecords_Appointments_AppointmentId] FOREIGN KEY ([AppointmentId]) REFERENCES [Appointments] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [LabTests] (
+    [Id] int NOT NULL IDENTITY,
+    [MedicalRecordId] int NOT NULL,
+    [TestName] nvarchar(max) NOT NULL,
+    [Status] nvarchar(max) NOT NULL,
+    [Result] nvarchar(max) NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [CompletedAt] datetime2 NULL,
+    CONSTRAINT [PK_LabTests] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_LabTests_MedicalRecords_MedicalRecordId] FOREIGN KEY ([MedicalRecordId]) REFERENCES [MedicalRecords] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [Prescriptions] (
+    [Id] int NOT NULL IDENTITY,
+    [MedicalRecordId] int NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [Status] nvarchar(max) NOT NULL,
+    CONSTRAINT [PK_Prescriptions] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Prescriptions_MedicalRecords_MedicalRecordId] FOREIGN KEY ([MedicalRecordId]) REFERENCES [MedicalRecords] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [PrescriptionDetails] (
+    [Id] int NOT NULL IDENTITY,
+    [PrescriptionId] int NOT NULL,
+    [MedicineName] nvarchar(max) NOT NULL,
+    [Quantity] int NOT NULL,
+    [Unit] nvarchar(max) NOT NULL,
+    [DosageInstruction] nvarchar(max) NOT NULL,
+    [Price] decimal(18,2) NOT NULL,
+    CONSTRAINT [PK_PrescriptionDetails] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_PrescriptionDetails_Prescriptions_PrescriptionId] FOREIGN KEY ([PrescriptionId]) REFERENCES [Prescriptions] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_Appointments_PatientId] ON [Appointments] ([PatientId]);
+GO
+
+CREATE INDEX [IX_LabTests_MedicalRecordId] ON [LabTests] ([MedicalRecordId]);
+GO
+
+CREATE INDEX [IX_MedicalRecords_AppointmentId] ON [MedicalRecords] ([AppointmentId]);
+GO
+
+CREATE INDEX [IX_PrescriptionDetails_PrescriptionId] ON [PrescriptionDetails] ([PrescriptionId]);
+GO
+
+CREATE INDEX [IX_Prescriptions_MedicalRecordId] ON [Prescriptions] ([MedicalRecordId]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260510141003_InitialCreate', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+CREATE TABLE [MedicalEquipments] (
+    [Id] int NOT NULL IDENTITY,
+    [EquipmentCode] nvarchar(max) NOT NULL,
+    [EquipmentName] nvarchar(max) NOT NULL,
+    [Category] nvarchar(max) NOT NULL,
+    [Quantity] int NOT NULL,
+    [Status] nvarchar(max) NOT NULL,
+    [LastMaintenanceDate] datetime2 NOT NULL,
+    CONSTRAINT [PK_MedicalEquipments] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [MedicalServices] (
+    [Id] int NOT NULL IDENTITY,
+    [ServiceCode] nvarchar(max) NOT NULL,
+    [ServiceName] nvarchar(max) NOT NULL,
+    [Description] nvarchar(max) NOT NULL,
+    [Price] decimal(18,2) NOT NULL,
+    [IsActive] bit NOT NULL,
+    CONSTRAINT [PK_MedicalServices] PRIMARY KEY ([Id])
+);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260512064306_AddMedicalModules', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+CREATE TABLE [Medicines] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(200) NOT NULL,
+    [Price] decimal(18,2) NOT NULL,
+    CONSTRAINT [PK_Medicines] PRIMARY KEY ([Id])
+);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260512071233_AddMedicineModel', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [Users] ADD [PatientCode] nvarchar(20) NOT NULL DEFAULT N'';
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260512072916_AddPatientCodeToUser', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+CREATE TABLE [VitalSigns] (
+    [Id] int NOT NULL IDENTITY,
+    [AppointmentId] int NOT NULL,
+    [Pulse] nvarchar(max) NULL,
+    [Temperature] nvarchar(max) NULL,
+    [BloodPressure] nvarchar(max) NULL,
+    [SpO2] nvarchar(max) NULL,
+    [NurseName] nvarchar(max) NULL,
+    [RecordedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_VitalSigns] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_VitalSigns_Appointments_AppointmentId] FOREIGN KEY ([AppointmentId]) REFERENCES [Appointments] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_VitalSigns_AppointmentId] ON [VitalSigns] ([AppointmentId]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260512105202_AddVitalSignsTable', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [Medicines] ADD [Category] nvarchar(100) NOT NULL DEFAULT N'';
+GO
+
+ALTER TABLE [Medicines] ADD [ExpiryDate] datetime2 NULL;
+GO
+
+ALTER TABLE [Medicines] ADD [IsActive] bit NOT NULL DEFAULT CAST(0 AS bit);
+GO
+
+ALTER TABLE [Medicines] ADD [Manufacturer] nvarchar(200) NOT NULL DEFAULT N'';
+GO
+
+ALTER TABLE [Medicines] ADD [MinStock] int NOT NULL DEFAULT 0;
+GO
+
+ALTER TABLE [Medicines] ADD [StockQuantity] int NOT NULL DEFAULT 0;
+GO
+
+ALTER TABLE [Medicines] ADD [Unit] nvarchar(50) NOT NULL DEFAULT N'';
+GO
+
+CREATE TABLE [BloodBanks] (
+    [Id] int NOT NULL IDENTITY,
+    [BagCode] nvarchar(20) NOT NULL,
+    [BloodType] nvarchar(5) NOT NULL,
+    [Component] nvarchar(20) NOT NULL,
+    [VolumeMl] int NOT NULL,
+    [DonorName] nvarchar(100) NOT NULL,
+    [DonorPhone] nvarchar(20) NOT NULL,
+    [CollectionDate] datetime2 NOT NULL,
+    [ExpiryDate] datetime2 NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [Notes] nvarchar(200) NOT NULL,
+    CONSTRAINT [PK_BloodBanks] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [Departments] (
+    [Id] int NOT NULL IDENTITY,
+    [DepartmentCode] nvarchar(50) NOT NULL,
+    [DepartmentName] nvarchar(100) NOT NULL,
+    [Description] nvarchar(200) NOT NULL,
+    [HeadDoctor] nvarchar(100) NOT NULL,
+    [TotalBeds] int NOT NULL,
+    [OccupiedBeds] int NOT NULL,
+    [Phone] nvarchar(20) NOT NULL,
+    [IsActive] bit NOT NULL,
+    CONSTRAINT [PK_Departments] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [DiagnosticImages] (
+    [Id] int NOT NULL IDENTITY,
+    [RequestCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [ImageType] nvarchar(100) NOT NULL,
+    [BodyPart] nvarchar(200) NOT NULL,
+    [RequestedBy] nvarchar(100) NOT NULL,
+    [Result] nvarchar(1000) NOT NULL,
+    [Conclusion] nvarchar(500) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [RequestDate] datetime2 NOT NULL,
+    [CompletedDate] datetime2 NULL,
+    CONSTRAINT [PK_DiagnosticImages] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_DiagnosticImages_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [HospitalFees] (
+    [Id] int NOT NULL IDENTITY,
+    [FeeCode] nvarchar(50) NOT NULL,
+    [FeeName] nvarchar(200) NOT NULL,
+    [Category] nvarchar(100) NOT NULL,
+    [Price] decimal(18,2) NOT NULL,
+    [InsuranceCoverage] decimal(18,2) NOT NULL,
+    [Description] nvarchar(500) NOT NULL,
+    [IsActive] bit NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_HospitalFees] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [InsuranceCards] (
+    [Id] int NOT NULL IDENTITY,
+    [CardNumber] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [RegisteredHospital] nvarchar(200) NOT NULL,
+    [StartDate] datetime2 NOT NULL,
+    [EndDate] datetime2 NOT NULL,
+    [CoveragePercent] int NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_InsuranceCards] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_InsuranceCards_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [QualityReviews] (
+    [Id] int NOT NULL IDENTITY,
+    [Department] nvarchar(100) NOT NULL,
+    [ReviewerName] nvarchar(100) NOT NULL,
+    [ServiceScore] int NOT NULL,
+    [CleanlinessScore] int NOT NULL,
+    [StaffScore] int NOT NULL,
+    [FacilityScore] int NOT NULL,
+    [WaitTimeScore] int NOT NULL,
+    [Comment] nvarchar(1000) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_QualityReviews] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [Receptions] (
+    [Id] int NOT NULL IDENTITY,
+    [ReceptionCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [Department] nvarchar(100) NOT NULL,
+    [Priority] nvarchar(50) NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [QueueNumber] int NOT NULL,
+    [Reason] nvarchar(500) NOT NULL,
+    [CheckInTime] datetime2 NOT NULL,
+    [CheckOutTime] datetime2 NULL,
+    CONSTRAINT [PK_Receptions] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Receptions_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE TABLE [Surgeries] (
+    [Id] int NOT NULL IDENTITY,
+    [SurgeryCode] nvarchar(20) NOT NULL,
+    [PatientId] int NOT NULL,
+    [SurgeryName] nvarchar(200) NOT NULL,
+    [SurgeryType] nvarchar(100) NOT NULL,
+    [Surgeon] nvarchar(100) NOT NULL,
+    [AssistantTeam] nvarchar(200) NOT NULL,
+    [Anesthesia] nvarchar(100) NOT NULL,
+    [OperatingRoom] nvarchar(50) NOT NULL,
+    [ScheduledDate] datetime2 NOT NULL,
+    [DurationMinutes] int NOT NULL,
+    [Status] nvarchar(20) NOT NULL,
+    [Notes] nvarchar(1000) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Surgeries] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Surgeries_Patients_PatientId] FOREIGN KEY ([PatientId]) REFERENCES [Patients] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_DiagnosticImages_PatientId] ON [DiagnosticImages] ([PatientId]);
+GO
+
+CREATE INDEX [IX_InsuranceCards_PatientId] ON [InsuranceCards] ([PatientId]);
+GO
+
+CREATE INDEX [IX_Receptions_PatientId] ON [Receptions] ([PatientId]);
+GO
+
+CREATE INDEX [IX_Surgeries_PatientId] ON [Surgeries] ([PatientId]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260514083138_AddMedicineColumns', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [AdmissionDate] datetime2 NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [DischargeDate] datetime2 NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [RoomFee] decimal(18,2) NOT NULL DEFAULT 0.0;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260515032737_AddAdmissionFieldsToMedicalRecord', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+DECLARE @var0 sysname;
+SELECT @var0 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[MedicalRecords]') AND [c].[name] = N'Vitals');
+IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [MedicalRecords] DROP CONSTRAINT [' + @var0 + '];');
+ALTER TABLE [MedicalRecords] DROP COLUMN [Vitals];
+GO
+
+ALTER TABLE [MedicalRecords] ADD [BedNumber] int NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [DepartmentId] int NULL;
+GO
+
+CREATE INDEX [IX_MedicalRecords_DepartmentId] ON [MedicalRecords] ([DepartmentId]);
+GO
+
+ALTER TABLE [MedicalRecords] ADD CONSTRAINT [FK_MedicalRecords_Departments_DepartmentId] FOREIGN KEY ([DepartmentId]) REFERENCES [Departments] ([Id]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260521094600_RemoveOldVitalsFromMedicalRecor', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [SurgeonId] int NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [SurgeryFeeId] int NULL;
+GO
+
+DECLARE @var1 sysname;
+SELECT @var1 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Departments]') AND [c].[name] = N'Phone');
+IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Departments] DROP CONSTRAINT [' + @var1 + '];');
+ALTER TABLE [Departments] ALTER COLUMN [Phone] nvarchar(10) NOT NULL;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260526032202_AddSurgeryFieldsAndMissingTables', N'8.0.0');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+DECLARE @var2 sysname;
+SELECT @var2 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'SDT');
+IF @var2 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT [' + @var2 + '];');
+ALTER TABLE [Users] ALTER COLUMN [SDT] nvarchar(20) NULL;
+GO
+
+DECLARE @var3 sysname;
+SELECT @var3 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'Email');
+IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT [' + @var3 + '];');
+ALTER TABLE [Users] ALTER COLUMN [Email] nvarchar(100) NULL;
+GO
+
+ALTER TABLE [Users] ADD [PatientCode] nvarchar(20) NULL;
+GO
+
+ALTER TABLE [Patients] ADD [Allergies] nvarchar(max) NULL;
+GO
+
+ALTER TABLE [Patients] ADD [CCCD] nvarchar(20) NULL;
+GO
+
+ALTER TABLE [Patients] ADD [FaceData] nvarchar(max) NULL;
+GO
+
+DECLARE @var4 sysname;
+SELECT @var4 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[MedicalRecords]') AND [c].[name] = N'Notes');
+IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [MedicalRecords] DROP CONSTRAINT [' + @var4 + '];');
+ALTER TABLE [MedicalRecords] ALTER COLUMN [Notes] nvarchar(max) NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [DigitalSignature] nvarchar(max) NULL;
+GO
+
+ALTER TABLE [MedicalRecords] ADD [IsLocked] bit NOT NULL DEFAULT CAST(0 AS bit);
+GO
+
+ALTER TABLE [LabTests] ADD [ImageUrl] nvarchar(max) NULL;
+GO
+
+CREATE TABLE [ICD10Protocols] (
+    [ICDCode] nvarchar(50) NOT NULL,
+    [Diagnosis] nvarchar(255) NOT NULL,
+    [TreatmentPlan] nvarchar(max) NULL,
+    [LabTests] nvarchar(max) NULL,
+    [Medicines] nvarchar(max) NULL,
+    CONSTRAINT [PK_ICD10Protocols] PRIMARY KEY ([ICDCode])
+);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260603133351_UpdateSchema_Final', N'8.0.0');
+GO
+
+COMMIT;
+GO
 
