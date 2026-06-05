@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'QuanLyBenhVienDb')
@@ -4965,3 +4965,81 @@ GO
 COMMIT;
 GO
 
+
+-- Thêm tài khoản bệnh nhân demo
+INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
+VALUES
+('benhnhan_demo', '123456', N'Nguyễn Văn Bệnh Nhân', 'BenhNhan', 'bn.demo@benhvien.com', '0999888777', NULL);
+GO
+
+-- Thêm 10 tài khoản bệnh nhân mẫu
+INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
+VALUES
+('benhnhan_01', '123456', N'Lê Thị Hương', 'BenhNhan', 'huong.lt@gmail.com', '0912345671', 'BN1297'),
+('benhnhan_02', '123456', N'Trần Đình Trọng', 'BenhNhan', 'trong.td@gmail.com', '0912345672', 'BN1298'),
+('benhnhan_03', '123456', N'Phạm Thu Hà', 'BenhNhan', 'ha.pt@gmail.com', '0912345673', 'BN1299'),
+('benhnhan_04', '123456', N'Nguyễn Văn Toàn', 'BenhNhan', 'toan.nv@gmail.com', '0912345674', 'BN1300'),
+('benhnhan_05', '123456', N'Vũ Hoàng Long', 'BenhNhan', 'long.vh@gmail.com', '0912345675', 'BN1301'),
+('benhnhan_06', '123456', N'Đặng Phương Nam', 'BenhNhan', 'nam.dp@gmail.com', '0912345676', 'BN1302'),
+('benhnhan_07', '123456', N'Bùi Thị Xuân', 'BenhNhan', 'xuan.bt@gmail.com', '0912345677', 'BN1303'),
+('benhnhan_08', '123456', N'Hồ Quang Hiếu', 'BenhNhan', 'hieu.hq@gmail.com', '0912345678', 'BN1304'),
+('benhnhan_09', '123456', N'Ngô Thanh Vân', 'BenhNhan', 'van.nt@gmail.com', '0912345679', 'BN1305'),
+('benhnhan_10', '123456', N'Lý Công Uẩn', 'BenhNhan', 'uan.lc@gmail.com', '0912345680', 'BN1306');
+GO
+
+-- Thêm 20 tài khoản bệnh nhân nữa
+INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
+VALUES
+('benhnhan_11', '123456', N'Đinh Bộ Lĩnh', 'BenhNhan', 'linh.db@gmail.com', '0912345681', 'BN1307'),
+('benhnhan_12', '123456', N'Lê Hoàn', 'BenhNhan', 'hoan.le@gmail.com', '0912345682', 'BN1308'),
+('benhnhan_13', '123456', N'Lý Thường Kiệt', 'BenhNhan', 'kiet.lt@gmail.com', '0912345683', 'BN1309'),
+('benhnhan_14', '123456', N'Trần Hưng Đạo', 'BenhNhan', 'dao.th@gmail.com', '0912345684', 'BN1310'),
+('benhnhan_15', '123456', N'Lê Lợi', 'BenhNhan', 'loi.le@gmail.com', '0912345685', 'BN1311'),
+('benhnhan_16', '123456', N'Nguyễn Trãi', 'BenhNhan', 'trai.nt@gmail.com', '0912345686', 'BN1312'),
+('benhnhan_17', '123456', N'Quang Trung', 'BenhNhan', 'trung.q@gmail.com', '0912345687', 'BN1313'),
+('benhnhan_18', '123456', N'Nguyễn Du', 'BenhNhan', 'du.nguyen@gmail.com', '0912345688', 'BN1314'),
+('benhnhan_19', '123456', N'Hồ Xuân Hương', 'BenhNhan', 'huong.hx@gmail.com', '0912345689', 'BN1315'),
+('benhnhan_20', '123456', N'Bà Huyện Thanh Quan', 'BenhNhan', 'quan.bht@gmail.com', '0912345690', 'BN1316'),
+('benhnhan_21', '123456', N'Chu Văn An', 'BenhNhan', 'an.cv@gmail.com', '0912345691', 'BN1317'),
+('benhnhan_22', '123456', N'Lương Thế Vinh', 'BenhNhan', 'vinh.lt@gmail.com', '0912345692', 'BN1318'),
+('benhnhan_23', '123456', N'Trần Quốc Toản', 'BenhNhan', 'toan.tq@gmail.com', '0912345693', 'BN1319'),
+('benhnhan_24', '123456', N'Phạm Ngũ Lão', 'BenhNhan', 'lao.pn@gmail.com', '0912345694', 'BN1320'),
+('benhnhan_25', '123456', N'Ngô Quyền', 'BenhNhan', 'quyen.ngo@gmail.com', '0912345695', 'BN1321'),
+('benhnhan_26', '123456', N'Hai Bà Trưng', 'BenhNhan', 'trung.hb@gmail.com', '0912345696', 'BN1322'),
+('benhnhan_27', '123456', N'Bà Triệu', 'BenhNhan', 'trieu.ba@gmail.com', '0912345697', 'BN1323'),
+('benhnhan_28', '123456', N'Trần Bình Trọng', 'BenhNhan', 'trong.tb@gmail.com', '0912345698', 'BN1324'),
+('benhnhan_29', '123456', N'Nguyễn Huệ', 'BenhNhan', 'hue.nguyen@gmail.com', '0912345699', 'BN1325'),
+('benhnhan_30', '123456', N'Lê Thánh Tông', 'BenhNhan', 'tong.lt@gmail.com', '0912345700', 'BN1326');
+GO
+
+-- ==========================================
+-- SCRIPT THÊM 20 BỆNH NHÂN TÁI KHÁM VÀ TÀI KHOẢN
+-- ==========================================
+DECLARE @i INT = 1;
+DECLARE @NewPatientId INT;
+DECLARE @PatientCode NVARCHAR(50);
+DECLARE @FullName NVARCHAR(100);
+
+WHILE @i <= 20
+BEGIN
+    SET @PatientCode = 'TK' + CAST(@i + 100 AS NVARCHAR(10));
+    SET @FullName = N'Bệnh nhân tái khám ' + CAST(@i AS NVARCHAR(10));
+    
+    -- Thêm tài khoản đăng nhập (Role = 'BenhNhan')
+    INSERT INTO [Users] ([Username], [Password], [Role], [FullName], [Email], [SDT], [PatientCode])
+    VALUES (@PatientCode, '123456', 'BenhNhan', @FullName, @PatientCode + '@benhvien.vn', '0900000' + CAST((100+@i) AS NVARCHAR(3)), @PatientCode);
+    
+    -- Thêm thông tin bệnh nhân
+    INSERT INTO [Patients] ([FullName], [Gender], [Age], [PatientCode], [CCCD], [Allergies])
+    VALUES (@FullName, CASE WHEN @i % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 25 + @i, @PatientCode, '00109900' + CAST((100+@i) AS NVARCHAR(3)), '');
+    
+    SET @NewPatientId = SCOPE_IDENTITY();
+    
+    -- Thêm lịch hẹn (Status = 8 nghĩa là Hẹn tái khám)
+    -- Ngày tái khám phân bổ quanh ngày 05/06/2026
+    INSERT INTO [Appointments] ([PatientId], [AppointmentTime], [Reason], [Status])
+    VALUES (@NewPatientId, DATEADD(day, (@i % 7) - 3, '2026-06-05 08:30:00'), N'Tái khám sau phẫu thuật / điều trị', 8);
+    
+    SET @i = @i + 1;
+END
+GO

@@ -923,6 +923,16 @@ namespace HeThongBenhVien.Controllers
         public async Task<IActionResult> QuanLyGiuong(int? deptId)
         {
             var departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
+            
+            // Tính toán lại số giường thực tế đang sử dụng cho từng khoa để hiển thị chính xác
+            foreach (var dept in departments)
+            {
+                dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => 
+                    r.DepartmentId == dept.Id && 
+                    r.AdmissionDate != null && 
+                    r.DischargeDate == null);
+            }
+            
             ViewBag.Departments = departments;
             
             int selectedDeptId = deptId ?? (departments.FirstOrDefault()?.Id ?? 0);

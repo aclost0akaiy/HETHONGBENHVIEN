@@ -1,0 +1,568 @@
+@{
+    ViewData["Title"] = "Sơ Đồ Bệnh Viện";
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="fa-solid fa-map-location-dot"></i> Sơ Đồ Bệnh Viện</h2>
+        <p class="text-muted mb-1">Xem vị trí của bạn và tìm đường đi đến khuôn viên bệnh viện một cách dễ dàng.</p>
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-circle-info"></i> Nếu định vị chưa chính xác, bạn có thể <b>kéo thả ghim màu xanh</b> để tự chọn lại vị trí.</span>
+    </div>
+
+    <!-- Google Maps Style UI Container -->
+    <div class="position-relative shadow-sm rounded-4 overflow-hidden mb-4 bg-light" style="height: 65vh; min-height: 480px;">
+        
+        <!-- Leaflet Map Container (Full size) -->
+        <div id="hospitalMap" style="width: 100%; height: 100%; z-index: 1;"></div>
+        
+        <!-- Google Maps Left Side Panel -->
+        <div id="searchPanel" class="position-absolute d-flex flex-column" style="top: 10px; left: 10px; width: calc(100% - 20px); max-width: 380px; max-height: calc(100% - 20px); z-index: 1000; pointer-events: none;">
+            
+            <!-- Main Search Box -->
+            <div class="bg-white rounded-3 shadow-lg d-flex flex-column overflow-hidden" style="pointer-events: auto; transition: all 0.3s ease;">
+                
+                <!-- Inputs Container -->
+                <div class="p-2 position-relative">
+                    <div class="d-flex align-items-center">
+                        <button class="btn border-0 text-muted px-3" id="menuBtn" title="Menu"><i class="fa-solid fa-bars"></i></button>
+                        <button class="btn border-0 text-dark px-3" id="backBtn" title="Quay lại" style="display:none;"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div class="flex-grow-1 position-relative me-2">
+                            <input type="text" id="destinationInput" class="form-control border-0 shadow-none px-2 py-2 fw-medium" autocomplete="off" placeholder="Tìm kiếm địa điểm...">
+                            <button class="btn border-0 text-muted px-2 position-absolute end-0 top-50 translate-middle-y" id="clearSearchBtn" style="display: none; z-index: 10;" title="Xóa"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="vr my-2" id="searchDivider"></div>
+                        <button class="btn border-0 text-primary px-3" id="searchRouteBtn" title="Tìm đường"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                </div>
+
+                <!-- Box gợi ý tìm kiếm -->
+                <div id="autocompleteDropdown" class="list-group border-0 rounded-0" style="display: none; max-height: 40vh; overflow-y: auto;"></div>
+                
+                <!-- Route Summary (Time & Distance) -->
+                <div id="routeSummary" class="p-3 bg-primary bg-opacity-10 border-top" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="text-primary fw-bold mb-0" id="routeTime"></h4>
+                            <div class="text-muted small fw-medium mt-1" id="routeDistance"></div>
+                        </div>
+                        <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold"><i class="fa-solid fa-location-arrow me-2"></i>Đi</button>
+                    </div>
+                </div>
+                
+                <!-- Turn by turn instructions -->
+                <div id="routeInstructions" class="overflow-auto p-0 bg-white" style="display: none; max-height: 35vh; border-top: 1px solid #eee;">
+                    <ul class="list-group list-group-flush" id="instructionsList"></ul>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Float Status -->
+        <div id="locationStatus" class="position-absolute top-50 start-50 translate-middle bg-white px-4 py-2 rounded-pill shadow-lg" style="display: none; z-index: 1050;">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="ms-2 fw-bold text-primary" id="statusText">Đang định vị...</span>
+            </div>
+        </div>
+        
+        <!-- Float Buttons (Bottom Right) -->
+        <div class="position-absolute d-flex flex-column gap-2" style="bottom: 30px; right: 20px; z-index: 1000;">
+            <button id="findMeBtn" class="btn btn-light bg-white shadow border-0 text-secondary" style="width: 45px; height: 45px; border-radius: 8px;" title="Vị trí của tôi">
+                <i class="fa-solid fa-location-crosshairs fa-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-hospital fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Khu Khám Bệnh</h5>
+                    <p class="text-muted small">Tòa nhà A, Tầng 1-3. Nơi tiếp nhận và khám bệnh ban đầu.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-bed-pulse fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Khu Điều Trị Nội Trú</h5>
+                    <p class="text-muted small">Tòa nhà B & C. Dành cho bệnh nhân lưu trú dài ngày.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-truck-medical fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Khu Cấp Cứu</h5>
+                    <p class="text-muted small">Tầng 1 Tòa nhà A. Hoạt động 24/7 với lối vào riêng biệt.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="@Url.Action("Portal", "Patient")" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Cổng thông tin
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tọa độ khởi tạo mặc định nếu chưa có vị trí
+        var defaultPos = [21.0067825, 105.8385012];
+
+        // Khởi tạo bản đồ (Tắt zoom mặc định để đổi vị trí)
+        var map = L.map('hospitalMap', {zoomControl: false}).setView(defaultPos, 16);
+        L.control.zoom({position: 'bottomright'}).addTo(map);
+
+        // Thêm layer bản đồ từ OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var userMarker = null;
+        var userCircle = null;
+        
+        var statusDiv = document.getElementById('locationStatus');
+        var findMeBtn = document.getElementById('findMeBtn');
+
+        // Hàm đặt ghim cho người dùng
+        function putUserMarker(userPos, userRadius, isAccurate) {
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            if (userCircle) {
+                map.removeLayer(userCircle);
+                userCircle = null;
+            }
+
+            // Icon cho người dùng (Marker màu xanh dương)
+            var userIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            userMarker = L.marker(userPos, {icon: userIcon, draggable: true}).addTo(map)
+                .bindPopup('<b>Vị trí của bạn</b><br><small class="text-primary">Kéo thả ghim này để chỉnh sửa sai số.</small>').openPopup();
+                
+            // Chỉ hiển thị vòng tròn sai số nếu có bán kính lớn và chưa được tự chỉnh sửa
+            if (userRadius > 0 && !isAccurate) {
+                userCircle = L.circle(userPos, {
+                    radius: userRadius,
+                    color: '#4285F4',
+                    fillColor: '#4285F4',
+                    fillOpacity: 0.15
+                }).addTo(map);
+            }
+
+            // Khi người dùng tự kéo thả ghim để sửa lỗi
+            userMarker.on('dragend', function(e) {
+                if (userCircle) {
+                    map.removeLayer(userCircle); // Tắt vòng tròn sai số đi
+                    userCircle = null;
+                }
+                
+                var newPos = userMarker.getLatLng();
+                // Lưu vị trí mới vào Local Storage
+                localStorage.setItem('savedUserLat', newPos.lat);
+                localStorage.setItem('savedUserLng', newPos.lng);
+
+                userMarker.bindPopup('<b>Vị trí đã được lưu!</b>').openPopup();
+                map.setView(newPos);
+            });
+
+            map.setView(userPos, 16);
+        }
+
+        // Hàm tìm vị trí bằng Geolocation
+        function locateUserForce() {
+            if (!navigator.geolocation) {
+                alert("Trình duyệt của bạn không hỗ trợ định vị.");
+                return;
+            }
+
+            statusDiv.style.display = 'block';
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+                var userRadius = position.coords.accuracy;
+                var userPos = [userLat, userLng];
+
+                // Khi cố tình ấn định vị lại, ta xóa cache cũ
+                localStorage.removeItem('savedUserLat');
+                localStorage.removeItem('savedUserLng');
+
+                putUserMarker(userPos, userRadius, false);
+                statusDiv.style.display = 'none';
+
+            }, function(error) {
+                statusDiv.style.display = 'none';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        alert("Bạn đã từ chối cung cấp vị trí. Hãy cho phép trình duyệt truy cập vị trí của bạn.");
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        alert("Thông tin vị trí không khả dụng.");
+                        break;
+                    case error.TIMEOUT:
+                        alert("Yêu cầu lấy vị trí đã quá thời gian.");
+                        break;
+                    default:
+                        alert("Đã xảy ra lỗi không xác định khi lấy vị trí.");
+                        break;
+                }
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        }
+
+        // Tự động kiểm tra vị trí cũ khi tải trang
+        var savedLat = localStorage.getItem('savedUserLat');
+        var savedLng = localStorage.getItem('savedUserLng');
+
+        if (savedLat && savedLng) {
+            // Nếu đã từng kéo thả lưu vị trí, gọi lại vị trí đó mà không hiện vòng sai số
+            putUserMarker([parseFloat(savedLat), parseFloat(savedLng)], 0, true);
+        } else {
+            // Nếu chưa có, tự động định vị
+            locateUserForce();
+        }
+
+        // Gắn sự kiện vào nút định vị lại
+        findMeBtn.addEventListener('click', function() {
+            locateUserForce();
+        });
+
+        // Tích hợp Tìm kiếm thông minh (Autocomplete) và Chỉ đường
+        window.routeControl = null;
+        var destinationInput = document.getElementById('destinationInput');
+        var autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        var clearSearchBtn = document.getElementById('clearSearchBtn');
+        var selectedDest = null; 
+        var searchTimeout = null;
+
+        destinationInput.addEventListener('input', function() {
+            clearSearchBtn.style.display = this.value.length > 0 ? 'inline-block' : 'none';
+            clearTimeout(searchTimeout);
+            selectedDest = null;
+            var query = this.value.trim();
+            
+            if (query.length < 2) {
+                autocompleteDropdown.style.display = 'none';
+                return;
+            }
+            
+            // Debounce tìm kiếm 500ms
+            searchTimeout = setTimeout(function() {
+                var pos = userMarker ? userMarker.getLatLng() : null;
+                
+                // Sử dụng Photon API (dựa trên ElasticSearch) hỗ trợ Fuzzy Search (tìm kiếm gần đúng, sai chính tả, không dấu)
+                var url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=15`;
+                if (pos) {
+                    url += `&lat=${pos.lat}&lon=${pos.lng}`; // Ưu tiên vị trí hiện tại
+                }
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(data => {
+                        autocompleteDropdown.innerHTML = '';
+                        if (data && data.features && data.features.length > 0) {
+                            
+                            // Thuật toán Haversine tính khoảng cách đường chim bay
+                            function getDistance(lat1, lon1, lat2, lon2) {
+                                var R = 6371; // km
+                                var dLat = (lat2 - lat1) * Math.PI / 180;
+                                var dLon = (lon2 - lon1) * Math.PI / 180;
+                                var a = 0.5 - Math.cos(dLat)/2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+                                return R * 2 * Math.asin(Math.sqrt(a));
+                            }
+
+                            // Chuyển đổi cấu trúc GeoJSON của Photon
+                            var results = data.features.map(f => {
+                                var prop = f.properties;
+                                var name = prop.name || "";
+                                var addressParts = [];
+                                if (prop.housenumber && prop.street) addressParts.push(prop.housenumber + " " + prop.street);
+                                else if (prop.street) addressParts.push(prop.street);
+                                if (prop.district) addressParts.push(prop.district);
+                                if (prop.city) addressParts.push(prop.city);
+                                if (prop.state) addressParts.push(prop.state);
+                                
+                                var address = addressParts.join(", ");
+                                var displayName = name ? (address ? name + ", " + address : name) : (address || "Địa điểm chưa xác định");
+                                
+                                var lat = f.geometry.coordinates[1];
+                                var lon = f.geometry.coordinates[0];
+                                
+                                var distance = pos ? getDistance(pos.lat, pos.lng, lat, lon) : 99999;
+                                
+                                return {
+                                    name: name || addressParts[0] || "Địa điểm",
+                                    display_name: displayName,
+                                    lat: lat,
+                                    lon: lon,
+                                    distance: distance,
+                                    country: prop.country
+                                };
+                            });
+
+                            // Đã loại bỏ bộ lọc tên quốc gia vì Photon thỉnh thoảng trả về sai định dạng ngôn ngữ, 
+                            // thay vào đó sử dụng khoảng cách để loại bỏ các kết quả lạc sang nước ngoài (> 500km)
+                            results = results.filter(r => r.distance < 500);
+
+                            // Sắp xếp ưu tiên từ gần nhất -> xa nhất
+                            results.sort((a, b) => a.distance - b.distance);
+                            
+                            // Lọc ra 5 kết quả tốt nhất sau khi sắp xếp
+                            var topResults = results.slice(0, 5);
+
+                            topResults.forEach(item => {
+                                var btn = document.createElement('button');
+                                btn.className = 'list-group-item list-group-item-action text-start px-4 py-3 border-0 border-bottom';
+                                
+                                // Tag hiển thị khoảng cách
+                                var distTag = '';
+                                if (item.distance !== 99999) {
+                                    var distStr = item.distance < 1 ? Math.round(item.distance * 1000) + ' m' : item.distance.toFixed(1) + ' km';
+                                    distTag = `<span class="badge bg-light text-secondary ms-2 border"><i class="fa-solid fa-location-arrow fa-rotate-270 me-1"></i>${distStr}</span>`;
+                                }
+
+                                btn.innerHTML = `<i class="fa-solid fa-location-dot text-danger me-2"></i> <strong>${item.name}</strong> ${distTag}<br><small class="text-muted ms-4">${item.display_name}</small>`;
+                                btn.onclick = function() {
+                                    destinationInput.value = item.display_name;
+                                    selectedDest = {
+                                        lat: item.lat,
+                                        lng: item.lon,
+                                        name: item.display_name
+                                    };
+                                    autocompleteDropdown.style.display = 'none';
+                                    document.getElementById('searchRouteBtn').click();
+                                };
+                                autocompleteDropdown.appendChild(btn);
+                            });
+                            
+                            if (topResults.length > 0) {
+                                autocompleteDropdown.style.display = 'block';
+                            } else {
+                                autocompleteDropdown.style.display = 'none';
+                            }
+                        } else {
+                            autocompleteDropdown.style.display = 'none';
+                        }
+                    });
+            }, 500);
+        });
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            if (!destinationInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.style.display = 'none';
+            }
+        });
+
+        clearSearchBtn.addEventListener('click', function() {
+            destinationInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            autocompleteDropdown.style.display = 'none';
+            destinationInput.focus();
+            if (window.routeControl) {
+                map.removeControl(window.routeControl);
+                window.routeControl = null;
+            }
+            selectedDest = null;
+        });
+
+        // Click trên bản đồ để chọn điểm đến nhanh (Tính năng nâng cao)
+        map.on('click', function(e) {
+            if (!userMarker) return; // Nếu chưa định vị, không cho chỉ đường
+            
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+            
+            // Lấy tên địa điểm (Reverse Geocoding)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=vi`)
+                .then(r => r.json())
+                .then(data => {
+                    var placeName = data.display_name || "Địa điểm đã chọn";
+                    destinationInput.value = placeName;
+                    clearSearchBtn.style.display = 'inline-block';
+                    selectedDest = { lat: lat, lng: lng, name: placeName };
+                    document.getElementById('searchRouteBtn').click();
+                })
+                .catch(() => {
+                    // Fallback khi lỗi mạng
+                    destinationInput.value = "Tọa độ: " + lat.toFixed(4) + ", " + lng.toFixed(4);
+                    clearSearchBtn.style.display = 'inline-block';
+                    selectedDest = { lat: lat, lng: lng, name: "Tọa độ đã chọn" };
+                    document.getElementById('searchRouteBtn').click();
+                });
+        });
+
+        function doRouting(destLat, destLng, destName) {
+            if (window.routeControl) {
+                map.removeControl(window.routeControl);
+            }
+            var userLatLng = userMarker.getLatLng();
+            
+            // Chuyển UI sang chế độ Navigation (Google Maps Style)
+            document.getElementById('menuBtn').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('searchDivider').style.display = 'none';
+            document.getElementById('searchRouteBtn').style.display = 'none';
+            
+            window.routeControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLatLng.lat, userLatLng.lng),
+                    L.latLng(destLat, destLng)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                fitSelectedRoutes: true,
+                show: false, // Tắt hoàn toàn hộp thoại mặc định xấu xí của Leaflet Routing Machine
+                lineOptions: {
+                    styles: [{color: '#0066ff', opacity: 0.8, weight: 6}] // Đường viền xanh dày giống hệt Google Maps
+                },
+                createMarker: function(i, wp, nWps) {
+                    if (i === 1) { 
+                        return L.marker(wp.latLng, {
+                            icon: L.icon({
+                                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        }).bindPopup("<b>Điểm đến:</b><br>" + destName).openPopup();
+                    }
+                    return null; 
+                }
+            }).on('routingerror', function(e) {
+                alert("Không thể tìm được đường đi. Chi tiết lỗi: " + (e.error ? e.error.message : 'Unknown'));
+            }).on('routesfound', function(e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+                var timeMin = Math.round(summary.totalTime / 60);
+                var distKm = (summary.totalDistance / 1000).toFixed(1);
+                
+                // Hiển thị phần tóm tắt
+                document.getElementById('routeSummary').style.display = 'block';
+                var hours = Math.floor(timeMin / 60);
+                var mins = timeMin % 60;
+                document.getElementById('routeTime').innerText = (hours > 0 ? hours + ' giờ ' : '') + mins + ' phút';
+                document.getElementById('routeDistance').innerText = distKm + ' km';
+                
+                // Hiển thị chi tiết rẽ
+                var instructions = routes[0].instructions;
+                var instHtml = '';
+                instructions.forEach(function(inst) {
+                    var text = inst.text || 'Đi thẳng';
+                    var dist = inst.distance > 0 ? Math.round(inst.distance) + 'm' : '';
+                    instHtml += `<li class="list-group-item py-3 border-0 border-bottom"><div class="d-flex"><i class="fa-solid fa-diamond-turn-right text-muted mt-1 me-3" style="width: 20px; text-align: center;"></i><span>${text} <strong class="text-primary small ms-1">${dist}</strong></span></div></li>`;
+                });
+                document.getElementById('instructionsList').innerHTML = instHtml;
+                document.getElementById('routeInstructions').style.display = 'block';
+            }).addTo(map);
+        }
+
+        // Sự kiện nút Quay lại (Back)
+        document.getElementById('backBtn').addEventListener('click', function() {
+            if (window.routeControl) {
+                map.removeControl(window.routeControl);
+                window.routeControl = null;
+            }
+            // Khôi phục UI
+            document.getElementById('menuBtn').style.display = 'block';
+            this.style.display = 'none';
+            document.getElementById('searchDivider').style.display = 'block';
+            document.getElementById('searchRouteBtn').style.display = 'block';
+            
+            document.getElementById('routeSummary').style.display = 'none';
+            document.getElementById('routeInstructions').style.display = 'none';
+            
+            destinationInput.value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            selectedDest = null;
+            
+            // Đưa map về vị trí hiện tại
+            if (userMarker) {
+                map.setView(userMarker.getLatLng(), 16);
+            }
+        });
+
+        document.getElementById('searchRouteBtn').addEventListener('click', function() {
+            var dest = destinationInput.value.trim();
+            if (!dest) {
+                alert("Vui lòng nhập địa điểm muốn đến.");
+                return;
+            }
+            if (!userMarker) {
+                alert("Chưa xác định được vị trí của bạn.");
+                return;
+            }
+
+            var btn = document.getElementById('searchRouteBtn');
+            var originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+            btn.disabled = true;
+
+            if (selectedDest) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                doRouting(selectedDest.lat, selectedDest.lng, selectedDest.name);
+            } else {
+                // Fallback khi người dùng bấm Enter mà không chọn gợi ý
+                var viewbox = '';
+                var pos = userMarker.getLatLng();
+                viewbox = `&viewbox=${pos.lng-0.5},${pos.lat+0.5},${pos.lng+0.5},${pos.lat-0.5}&bounded=1`;
+                
+                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(dest) + '&countrycodes=vn&accept-language=vi&limit=1' + viewbox)
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        if (data && data.length > 0) {
+                            doRouting(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].display_name);
+                        } else {
+                            alert("Không tìm thấy địa điểm này trên bản đồ. Vui lòng thử từ khóa khác rõ ràng hơn.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        alert("Có lỗi xảy ra khi tìm đường. Vui lòng thử lại sau.");
+                    });
+            }
+        });
+        
+        // Thêm sự kiện ấn Enter trong ô input
+        document.getElementById('destinationInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchRouteBtn').click();
+            }
+        });
+    });
+</script>

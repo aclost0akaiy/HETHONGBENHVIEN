@@ -169,7 +169,7 @@ namespace HeThongBenhVien.Controllers
             return View(model);
         }
 
-        public IActionResult AiDiagnosis()
+        public IActionResult HospitalMap()
         {
             return View();
         }

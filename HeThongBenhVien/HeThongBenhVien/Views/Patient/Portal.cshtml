@@ -73,19 +73,15 @@
                 </div>
             </div>
         </div>
-        <!-- AI Trợ Lý Y Tế -->
+        <!-- Sơ Đồ Bệnh Viện -->
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);" onclick="location.href='@Url.Action("AiDiagnosis", "Patient")'">
-                <div class="card-body text-center p-4 position-relative overflow-hidden">
-                    <!-- AI Decoration -->
-                    <div class="position-absolute" style="top: -10px; right: -10px; opacity: 0.05;">
-                        <i class="fa-solid fa-microchip" style="font-size: 8rem;"></i>
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
+                <div class="card-body text-center p-4">
+                    <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fa-solid fa-map-location-dot fa-2x text-secondary"></i>
                     </div>
-                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex p-3 mb-3 shadow">
-                        <i class="fa-solid fa-brain fa-2x"></i>
-                    </div>
-                    <h5 class="card-title fw-bold text-dark">AI Chẩn Đoán Sơ Bộ</h5>
-                    <p class="card-text text-muted">Nhập triệu chứng của bạn, AI sẽ phân tích và gợi ý chuyên khoa phù hợp để đặt lịch ngay.</p>
+                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Sơ Đồ Bệnh Viện</h5>
+                    <p class="card-text" style="color: var(--link-color);">Xem sơ đồ các khoa phòng, tìm đường đi trong khuôn viên bệnh viện một cách dễ dàng.</p>
                 </div>
             </div>
         </div>
