@@ -20,19 +20,40 @@ namespace HeThongBenhVien.Controllers
 
         public IActionResult Dashboard()
         {
-            // Tổng lượt khám
-            var totalAppointments = _context.Appointments.Count();
+            var today = DateTime.Today;
+            var yesterday = today.AddDays(-1);
 
-            // Doanh thu ngày: Sum of PrescriptionDetail (Price * Quantity)
-            var dailyRevenue = _context.PrescriptionDetails.Sum(pd => pd.Price * pd.Quantity);
+            // Tổng lượt khám (Today vs Yesterday)
+            var appointmentsToday = _context.Appointments.Count(a => a.AppointmentTime.Date == today);
+            var appointmentsYesterday = _context.Appointments.Count(a => a.AppointmentTime.Date == yesterday);
+            var totalAppointments = _context.Appointments.Count(); // Giữ nguyên tổng hoặc dùng số hôm nay. Đề bài hay dùng tổng.
+            var apptPercent = appointmentsYesterday == 0 ? (appointmentsToday > 0 ? 100 : 0) : Math.Round((double)(appointmentsToday - appointmentsYesterday) / appointmentsYesterday * 100, 1);
 
-            // Giường trống: Patient count (represented as patient count, normalize to /500)
-            var patientOccupancy = _context.Patients.Count();
+            // Doanh thu ngày
+            var revenueToday = _context.Prescriptions
+                .Where(p => p.CreatedAt.Date == today)
+                .SelectMany(p => p.PrescriptionDetails)
+                .Sum(pd => pd.Price * pd.Quantity);
+            var revenueYesterday = _context.Prescriptions
+                .Where(p => p.CreatedAt.Date == yesterday)
+                .SelectMany(p => p.PrescriptionDetails)
+                .Sum(pd => pd.Price * pd.Quantity);
+            var revPercent = revenueYesterday == 0 ? (revenueToday > 0 ? 100 : 0) : Math.Round((double)(revenueToday - revenueYesterday) / revenueYesterday * 100, 1);
 
-            // Ca cấp cứu: Appointments with Status==6 or reason contains "cấp cứu" AND Status != 4,5
+            // Công suất giường
+            var patientOccupancy = _context.Departments.Sum(d => d.OccupiedBeds);
+            var totalBeds = _context.Departments.Sum(d => d.TotalBeds);
+            if (totalBeds == 0) totalBeds = 500;
+            var occupancyRate = Math.Round((double)patientOccupancy / totalBeds * 100, 1);
+
+            // Ca cấp cứu
             var emergencyCases = _context.Appointments.Count(a => 
-                a.Status == 6 || 
-                (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu") && a.Status != 4 && a.Status != 5));
+                (a.Status == 6 || (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"))) && a.Status != 4 && a.Status != 5);
+            var emergencyToday = _context.Appointments.Count(a => 
+                (a.Status == 6 || (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"))) && a.Status != 4 && a.Status != 5 && a.AppointmentTime.Date == today);
+            var emergencyYesterday = _context.Appointments.Count(a => 
+                (a.Status == 6 || (a.Reason != null && a.Reason.ToLower().Contains("cấp cứu"))) && a.Status != 4 && a.Status != 5 && a.AppointmentTime.Date == yesterday);
+            var emergencyPercent = emergencyYesterday == 0 ? (emergencyToday > 0 ? 100 : 0) : Math.Round((double)(emergencyToday - emergencyYesterday) / emergencyYesterday * 100, 1);
 
             var startDate = DateTime.Today.AddDays(-6);
             var endDate = DateTime.Today.AddDays(1);
@@ -67,9 +88,15 @@ namespace HeThongBenhVien.Controllers
                 .ToArray();
 
             ViewBag.TotalAppointments = totalAppointments;
-            ViewBag.DailyRevenue = dailyRevenue;
+            ViewBag.DailyRevenue = revenueToday; // Thay bằng doanh thu hôm nay
             ViewBag.PatientOccupancy = patientOccupancy;
+            ViewBag.TotalBeds = totalBeds;
             ViewBag.EmergencyCases = emergencyCases;
+
+            ViewBag.ApptPercent = apptPercent;
+            ViewBag.RevPercent = revPercent;
+            ViewBag.OccupancyRate = occupancyRate;
+            ViewBag.EmergencyPercent = emergencyPercent;
             ViewBag.WeeklyChartLabels = labels;
             ViewBag.WeeklyChartCounts = counts;
             ViewBag.WeeklyChartRevenues = revenues;
