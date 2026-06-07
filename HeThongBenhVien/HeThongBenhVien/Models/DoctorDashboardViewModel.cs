@@ -18,5 +18,6 @@ namespace HeThongBenhVien.Models
         public int CurrentMonth { get; set; }
         public int CurrentYear { get; set; }
         public string SearchString { get; set; } = string.Empty;
+        public List<Patient> Patients { get; set; } = new List<Patient>();
     }
 }

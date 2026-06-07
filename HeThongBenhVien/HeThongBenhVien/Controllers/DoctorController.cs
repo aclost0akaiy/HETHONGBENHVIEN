@@ -74,6 +74,10 @@ namespace HeThongBenhVien.Controllers
             int currentMonth = month ?? DateTime.Now.Month;
             int currentYear = year ?? DateTime.Now.Year;
 
+            var patients = await _context.Patients
+                .OrderBy(p => p.FullName)
+                .ToListAsync();
+
             var viewModel = new DoctorDashboardViewModel
             {
                 TodayPatientsCount = unexaminedCount,
@@ -83,7 +87,8 @@ namespace HeThongBenhVien.Controllers
                 UpcomingAppointments = upcomingAppointments,
                 CurrentMonth = currentMonth,
                 CurrentYear = currentYear,
-                SearchString = searchString ?? string.Empty
+                SearchString = searchString ?? string.Empty,
+                Patients = patients
             };
 
             try
@@ -120,6 +125,42 @@ namespace HeThongBenhVien.Controllers
             }
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendNotification(int patientId, string message)
+        {
+            if (patientId <= 0 || string.IsNullOrWhiteSpace(message))
+            {
+                TempData["DoctorNotificationError"] = "Vui lòng chọn bệnh nhân và nhập nội dung thông báo.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null)
+            {
+                TempData["DoctorNotificationError"] = "Bệnh nhân không tồn tại.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            var username = User?.Identity?.Name;
+            var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            var notification = new Notification
+            {
+                PatientId = patientId,
+                DoctorId = currentDoctor?.Id ?? 0,
+                Message = message.Trim(),
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["DoctorNotificationSuccess"] = $"Thông báo đã gửi đến bệnh nhân {patient.FullName}.";
+            return RedirectToAction(nameof(Dashboard));
         }
 
         [HttpPost]

@@ -38,7 +38,11 @@ namespace HeThongBenhVien.Controllers
                 .Where(p => p.CreatedAt.Date == yesterday)
                 .SelectMany(p => p.PrescriptionDetails)
                 .Sum(pd => pd.Price * pd.Quantity);
+<<<<<<< HEAD
             var revPercent = revenueYesterday == 0 ? (revenueToday > 0 ? 100 : 0) : Math.Round((revenueToday - revenueYesterday) / revenueYesterday * 100, 1);
+=======
+            var revPercent = revenueYesterday == 0 ? (revenueToday > 0 ? 100 : 0) : Math.Round((double)(revenueToday - revenueYesterday) / (double)revenueYesterday * 100, 1);
+>>>>>>> 682021d1f6890df18be639f95c9869d44d475435
 
             // Công suất giường
             var patientOccupancy = _context.MedicalRecords.Count(r => r.AdmissionDate != null && r.DischargeDate == null);
