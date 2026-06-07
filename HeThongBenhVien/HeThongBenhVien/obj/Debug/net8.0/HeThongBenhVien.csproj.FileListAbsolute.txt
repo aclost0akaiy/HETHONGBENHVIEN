@@ -418,3 +418,4 @@ D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\SixLabors.ImageSharp.dll
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\pc\OneDrive\Documents\GitHub\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\SixLabors.ImageSharp.dll
+D:\HethongBenhvien\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\SixLabors.ImageSharp.dll

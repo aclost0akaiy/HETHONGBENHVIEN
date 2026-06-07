@@ -467,6 +467,80 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
+                    <div>
+                        <h5 class="fw-bold mb-1" style="color: #1e293b;">Gửi thông báo cho bệnh nhân</h5>
+                        <p class="text-muted mb-0">Chọn bệnh nhân hoặc tìm theo tên, sau đó nhập nội dung thông báo để gửi.</p>
+                    </div>
+                    <div>
+                        @if (TempData["DoctorNotificationSuccess"] != null)
+                        {
+                            <div class="alert alert-success mb-0">@TempData["DoctorNotificationSuccess"]</div>
+                        }
+                        @if (TempData["DoctorNotificationError"] != null)
+                        {
+                            <div class="alert alert-danger mb-0">@TempData["DoctorNotificationError"]</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="row gx-4 gy-3">
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tìm bệnh nhân</label>
+                            <input id="patientSearch" type="text" class="form-control" placeholder="Nhập tên bệnh nhân..." oninput="filterPatientTable()" />
+                        </div>
+                        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-uppercase small">
+                                    <tr>
+                                        <th style="width: 10%;">#</th>
+                                        <th>Tên bệnh nhân</th>
+                                        <th class="text-end">Tuổi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientTableBody">
+                                    @for (int i = 0; i < Model.Patients.Count; i++)
+                                    {
+                                        var patient = Model.Patients[i];
+                                        <tr class="patient-row" data-id="@patient.Id" data-name="@(patient.FullName?.ToLower() ?? string.Empty)" onclick="selectPatient(this)">
+                                            <td>@(i + 1)</td>
+                                            <td>@patient.FullName</td>
+                                            <td class="text-end">@patient.Age</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="glass-card h-100 p-4 border-start border-4 border-info">
+                            <h6 class="fw-bold text-info mb-3">Thông tin bệnh nhân</h6>
+                            <div id="selectedPatientInfo" class="mb-4">
+                                <p class="text-muted">Chưa có bệnh nhân được chọn.</p>
+                            </div>
+                            <form method="post" asp-action="SendNotification">
+                                <input type="hidden" id="SelectedPatientId" name="patientId" value="" />
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Tên bệnh nhân</label>
+                                    <input id="SelectedPatientName" type="text" class="form-control" disabled />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nội dung thông báo</label>
+                                    <textarea name="message" class="form-control" rows="5" placeholder="Nhập nội dung thông báo..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Gửi thông báo</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Xác Nhận Bệnh Nhân -->
     <div class="modal fade" id="identifyPatientModal" tabindex="-1" aria-labelledby="identifyPatientModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1061,6 +1135,41 @@
                     isIdentifying = false;
                 }
             });
+        }
+
+        function filterPatientTable() {
+            const query = document.getElementById('patientSearch').value.toLowerCase();
+            document.querySelectorAll('#patientTableBody tr.patient-row').forEach(row => {
+                const name = row.getAttribute('data-name') || '';
+                row.style.display = name.includes(query) ? '' : 'none';
+            });
+        }
+
+        function selectPatient(row) {
+            document.querySelectorAll('#patientTableBody tr.patient-row').forEach(r => r.classList.remove('table-primary'));
+            row.classList.add('table-primary');
+
+            const patientId = row.getAttribute('data-id');
+            const patientName = row.querySelector('td:nth-child(2)').textContent.trim();
+            const age = row.querySelector('td:nth-child(3)').textContent.trim();
+
+            document.getElementById('SelectedPatientId').value = patientId;
+            document.getElementById('SelectedPatientName').value = patientName;
+            document.getElementById('selectedPatientInfo').innerHTML = `
+                <div class="mb-3">
+                    <div class="fw-semibold">Bệnh nhân:</div>
+                    <div>${patientName}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="fw-semibold">Tuổi:</div>
+                    <div>${age}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="fw-semibold">Lưu ý:</div>
+                    <div>Nhập nội dung cụ thể để bệnh nhân nhìn thấy khi đăng nhập.</div>
+                </div>
+            `;
+            document.getElementById('SelectedPatientName').focus();
         }
 
         function showToast(message, type) {

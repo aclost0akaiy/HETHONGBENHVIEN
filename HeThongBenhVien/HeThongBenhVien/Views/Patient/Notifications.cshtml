@@ -57,30 +57,35 @@
                             </div>
                         }
                     }
+
+                    <div class="mt-4">
+                        <h5 class="fw-bold" style="color: var(--text-color);">Thông báo mới từ bác sĩ</h5>
+                        @{
+                            var notifications = ViewBag.Notifications as List<HeThongBenhVien.Models.Notification>;
+                        }
+                        @if (notifications != null && notifications.Any())
+                        {
+                            foreach (var note in notifications)
+                            {
+                                <div class="alert border-0 rounded-4 p-3 mb-3 shadow-sm" style="background-color: rgba(14, 165, 233, 0.08); border-left: 5px solid #0ea5e9 !important;">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="fw-bold text-info mb-1">@note.Doctor?.FullName</h6>
+                                            <small class="text-muted">@note.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0" style="color: var(--text-color);">@note.Message</p>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary">Bạn chưa có thông báo nào mới từ bác sĩ.</div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background-color: var(--card-bg);">
-                <div class="card-body p-4 text-center">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" class="img-fluid mb-3" style="width: 120px; opacity: 0.8;" />
-                    <h5 class="fw-bold mb-3" style="color: var(--text-color);">Tùy chỉnh thông báo</h5>
-                    <div class="form-check form-switch text-start mb-3">
-                        <input class="form-check-input" type="checkbox" id="smsNotif" checked>
-                        <label class="form-check-label" for="smsNotif" style="color: var(--text-color);">Thông báo qua SMS</label>
-                    </div>
-                    <div class="form-check form-switch text-start mb-3">
-                        <input class="form-check-input" type="checkbox" id="zaloNotif" checked>
-                        <label class="form-check-label" for="zaloNotif" style="color: var(--text-color);">Thông báo qua Zalo</label>
-                    </div>
-                    <div class="form-check form-switch text-start mb-3">
-                        <input class="form-check-input" type="checkbox" id="appNotif" checked>
-                        <label class="form-check-label" for="appNotif" style="color: var(--text-color);">Thông báo trên App</label>
-                    </div>
-                    <button class="btn btn-primary w-100 rounded-pill mt-3">Lưu Cài Đặt</button>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

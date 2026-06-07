@@ -226,7 +226,7 @@
             </div>
 
             <!-- Form đăng nhập -->
-            <form id="loginForm" method="post" action="/Account/Login" @@submit="validateForm">
+            <form id="loginForm" method="post" action="/Account/Login" v-on:submit="validateForm">
                 @Html.AntiForgeryToken()
                 
                 @if (!ViewData.ModelState.IsValid)

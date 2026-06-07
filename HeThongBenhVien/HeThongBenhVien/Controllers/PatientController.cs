@@ -138,8 +138,15 @@ namespace HeThongBenhVien.Controllers
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync();
 
+            var notifications = await _context.Notifications
+                .Include(n => n.Doctor)
+                .Where(n => n.PatientId == currentPatientId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
             ViewBag.UpcomingAppointments = upcomingAppointments;
             ViewBag.RecentPrescription = recentPrescription;
+            ViewBag.Notifications = notifications;
 
             return View();
         }
