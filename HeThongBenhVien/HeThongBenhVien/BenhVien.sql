@@ -5043,3 +5043,156 @@ BEGIN
     SET @i = @i + 1;
 END
 GO
+
+-- =============================================
+-- Thêm dữ liệu 27 bệnh nhân khám trong tháng 6/2026
+-- =============================================
+USE QuanLyBenhVienDb;
+GO
+
+DECLARE @i INT = 1;
+DECLARE @PatientId INT;
+DECLARE @AppointmentId INT;
+DECLARE @MedicalRecordId INT;
+DECLARE @PrescriptionId INT;
+
+WHILE @i <= 27
+BEGIN
+    -- 1. Insert Patient
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
+    VALUES (N'Bệnh nhân tháng 6 số ' + CAST(@i AS NVARCHAR), 
+            CASE WHEN @i % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+            20 + (@i % 40), 
+            N'BN062026_' + CAST(@i AS NVARCHAR), 
+            '001080000' + RIGHT('000' + CAST(@i AS NVARCHAR), 3));
+    
+    SET @PatientId = SCOPE_IDENTITY();
+
+    -- 2. Insert Appointment (Tháng 6/2026, Status 5 = Hoàn thành)
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status)
+    VALUES (@PatientId, N'Khám sức khỏe tổng quát tháng 6', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 5);
+
+    SET @AppointmentId = SCOPE_IDENTITY();
+
+    -- 3. Insert MedicalRecord
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked)
+    VALUES (@AppointmentId, N'Mệt mỏi, nhức đầu', 
+            CASE WHEN @i % 3 = 0 THEN N'Cảm cúm' WHEN @i % 3 = 1 THEN N'Viêm họng' ELSE N'Suy nhược cơ thể' END, 
+            N'Kê đơn thuốc, nghỉ ngơi', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 1);
+            
+    SET @MedicalRecordId = SCOPE_IDENTITY();
+
+    -- 4. Insert Prescription
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status)
+    VALUES (@MedicalRecordId, DATEFROMPARTS(2026, 6, (@i % 28) + 1), N'Đã kê đơn');
+    
+    SET @PrescriptionId = SCOPE_IDENTITY();
+
+    -- 5. Insert PrescriptionDetails (doanh thu)
+    INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price)
+    VALUES (@PrescriptionId, N'Paracetamol 500mg', 10, N'Viên', N'Ngày 2 lần', 5000);
+    
+    INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price)
+    VALUES (@PrescriptionId, N'Vitamin C 500mg', 10, N'Viên', N'Ngày 2 lần', 3000);
+
+    SET @i = @i + 1;
+END
+GO
+
+
+-- =============================================
+-- Thêm dữ liệu 23 tiếp đón mẫu cho mục Quản Lý Tiếp Đón
+-- =============================================
+USE QuanLyBenhVienDb;
+GO
+
+DECLARE @r INT = 1;
+DECLARE @RPatientId INT;
+DECLARE @Today DATETIME = GETDATE();
+
+WHILE @r <= 23
+BEGIN
+    -- Tạo bệnh nhân mới cho tiếp đón
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
+    VALUES (N'Bệnh nhân tiếp đón ' + CAST(@r AS NVARCHAR), 
+            CASE WHEN @r % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+            20 + (@r % 40), 
+            N'TD_' + FORMAT(@Today, 'yyyyMMdd') + '_' + CAST(@r AS NVARCHAR), 
+            '001080000' + RIGHT('000' + CAST(@r AS NVARCHAR), 3));
+    
+    SET @RPatientId = SCOPE_IDENTITY();
+
+    -- Thêm vào Receptions
+    INSERT INTO Receptions (ReceptionCode, PatientId, Department, Priority, Status, QueueNumber, Reason, CheckInTime, CheckOutTime)
+    VALUES (
+        N'TD' + FORMAT(@Today, 'yyyyMMdd') + RIGHT('000' + CAST(@r AS NVARCHAR), 3),
+        @RPatientId,
+        CASE WHEN @r % 4 = 0 THEN N'Khoa Nhi' 
+             WHEN @r % 4 = 1 THEN N'Khoa Sản' 
+             WHEN @r % 4 = 2 THEN N'Khoa Cấp Cứu' 
+             ELSE N'Khoa Nội Tổng Hợp' END,
+        CASE WHEN @r % 5 = 0 THEN N'Cấp cứu' 
+             WHEN @r % 3 = 0 THEN N'Ưu tiên' 
+             ELSE N'Bình thường' END,
+        CASE WHEN @r <= 8 THEN N'Đã khám' 
+             WHEN @r <= 12 THEN N'Đang khám' 
+             ELSE N'Đang chờ' END,
+        @r,
+        CASE WHEN @r % 2 = 0 THEN N'Đau bụng, buồn nôn' ELSE N'Sốt cao, ho khan' END,
+        DATEADD(MINUTE, -(@r * 15), @Today), -- Lùi dần thời gian để có giờ đến khác nhau
+        CASE WHEN @r <= 8 THEN DATEADD(MINUTE, -(@r * 15) + 30, @Today) ELSE NULL END
+    );
+
+    SET @r = @r + 1;
+END
+GO
+
+
+-- =============================================
+-- Thêm dữ liệu 26 yêu cầu Chẩn đoán hình ảnh
+-- =============================================
+USE QuanLyBenhVienDb;
+GO
+
+DECLARE @iCDHA INT = 1;
+DECLARE @CDHAPatientId INT;
+DECLARE @Now DATETIME = GETDATE();
+
+WHILE @iCDHA <= 26
+BEGIN
+    -- Tạo bệnh nhân mới cho độc lập
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
+    VALUES (N'Bệnh nhân CĐHA ' + CAST(@iCDHA AS NVARCHAR), 
+            CASE WHEN @iCDHA % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+            25 + (@iCDHA % 30), 
+            N'CDHA_BN_' + CAST(@iCDHA AS NVARCHAR), 
+            '001080000' + RIGHT('000' + CAST(@iCDHA AS NVARCHAR), 3));
+    
+    SET @CDHAPatientId = SCOPE_IDENTITY();
+
+    -- Thêm vào DiagnosticImages
+    INSERT INTO DiagnosticImages (RequestCode, PatientId, ImageType, BodyPart, RequestedBy, Result, Conclusion, Status, RequestDate, CompletedDate)
+    VALUES (
+        N'CDHA' + FORMAT(@Now, 'yyyyMMdd') + RIGHT('000' + CAST(@iCDHA AS NVARCHAR), 3),
+        @CDHAPatientId,
+        CASE WHEN @iCDHA % 4 = 0 THEN N'X-Quang'
+             WHEN @iCDHA % 4 = 1 THEN N'Siêu âm'
+             WHEN @iCDHA % 4 = 2 THEN N'CT Scanner'
+             ELSE N'MRI' END,
+        CASE WHEN @iCDHA % 3 = 0 THEN N'Ngực'
+             WHEN @iCDHA % 3 = 1 THEN N'Bụng'
+             ELSE N'Sọ não' END,
+        CASE WHEN @iCDHA % 2 = 0 THEN N'BS. Nguyễn Văn A' ELSE N'BS. Trần Thị B' END,
+        CASE WHEN @iCDHA <= 12 THEN N'Hình ảnh bình thường, các chỉ số trong giới hạn' ELSE N'' END,
+        CASE WHEN @iCDHA <= 12 THEN N'Không phát hiện bất thường' ELSE N'' END,
+        CASE WHEN @iCDHA <= 12 THEN N'Có kết quả'
+             WHEN @iCDHA <= 18 THEN N'Đang chụp'
+             ELSE N'Chờ chụp' END,
+        DATEADD(MINUTE, -(@iCDHA * 30), @Now),
+        CASE WHEN @iCDHA <= 12 THEN DATEADD(MINUTE, -(@iCDHA * 30) + 45, @Now) ELSE NULL END
+    );
+
+    SET @iCDHA = @iCDHA + 1;
+END
+GO
+

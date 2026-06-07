@@ -1,0 +1,20 @@
+DANH SÁCH 5 CHỨC NĂNG CHUYÊN NGHIỆP, NÂNG CAO (ĐẢM BẢO KHÔNG TRÙNG LẶP VỚI CÁC TÍNH NĂNG ĐANG CÓ):
+
+1. AI NHẬN DIỆN VÀ PHÂN TÍCH HÌNH ẢNH Y KHOA (AI DIAGNOSTIC IMAGING)
+- Hiện tại dự án đã có module Chẩn Đoán Hình Ảnh, nhưng ta sẽ nâng cấp "Pro" hơn: Tích hợp AI Vision (nhận diện hình ảnh).
+- Mô tả: Khi kỹ thuật viên tải ảnh X-Quang hoặc CT lên, hệ thống gọi API AI chuyên y tế để tự động quét, khoanh vùng đỏ các vị trí nghi ngờ có khối u, tổn thương hoặc gãy xương. Chức năng này sẽ gây ấn tượng cực mạnh về mặt công nghệ (AI/Machine Learning).
+
+2. BỆNH ÁN ĐIỆN TỬ CHỐNG LÀM GIẢ BẰNG BLOCKCHAIN VÀ KÝ SỐ (BLOCKCHAIN EHR & DIGITAL SIGNATURE)
+- Mô tả: Bệnh án sau khi bác sĩ chốt và ký số sẽ được mã hóa (Hash) và đẩy một bản ghi mã hóa lên mạng lưới Blockchain (có thể dùng testnet hoặc giả lập chuỗi khối). Việc này đảm bảo tính "bất biến" của hồ sơ y tế, không ai kể cả DBA (Quản trị viên Database) có thể sửa lén dữ liệu bệnh án cũ mà không để lại dấu vết. 
+
+3. HỆ THỐNG GỌI SỐ TỰ ĐỘNG BẰNG GIỌNG NÓI TIẾNG VIỆT (TEXT-TO-SPEECH QUEUEING)
+- Mô tả: Ở các bệnh viện lớn luôn có loa gọi số. Ta sẽ tích hợp API Text-To-Speech (như Google TTS hoặc Zalo AI) vào màn hình Tiếp đón và màn hình Bác sĩ. Khi bác sĩ bấm nút "Gọi bệnh nhân tiếp theo", hệ thống không chỉ đổi số trên màn hình (bằng SignalR) mà còn phát ra giọng nói đọc tên: "Mời bệnh nhân Nguyễn Văn A vào phòng khám số 3". Rất trực quan và thực tế.
+
+4. TELEMEDICINE: KHÁM BỆNH TỪ XA QUA VIDEO CALL TRỰC TIẾP
+- Mô tả: Bệnh nhân không cần đến bệnh viện. Tích hợp công nghệ WebRTC (ZegoCloud hoặc Jitsi) thẳng vào web. Đến giờ hẹn, bác sĩ và bệnh nhân bấm nút tham gia phòng khám ảo, gọi Video Call trực tiếp ngay trên trình duyệt mà không cần cài thêm Zoom/Google Meet.
+
+5. CHATBOT Y TẾ TỰ ĐỘNG KHAI THÁC TRIỆU CHỨNG (MEDICAL NLP CHATBOT)
+- Mô tả: Một con Bot (như bong bóng chat góc phải) dùng AI (Natural Language Processing) tích hợp vào cổng Bệnh nhân. Khi bệnh nhân nhắn: "Tôi bị đau quặn bụng dưới bên phải kèm buồn nôn", Chatbot tự động chẩn đoán sơ bộ là nghi ngờ "Viêm ruột thừa" và gợi ý bệnh nhân đăng ký khám gấp ở "Khoa Cấp Cứu" hoặc "Khoa Ngoại". Giảm tải cực lớn cho nhân viên điều phối.
+
+-------------------
+Đánh giá: 5 tính năng này hoàn toàn khác biệt với các module Quản lý/Thống kê/Viện phí thông thường. Bạn hãy gửi file này cho cô giáo xem thử nhé. Mức độ "Pro" là khỏi bàn!

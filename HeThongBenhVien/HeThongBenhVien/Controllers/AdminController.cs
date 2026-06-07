@@ -38,13 +38,21 @@ namespace HeThongBenhVien.Controllers
                 .Where(p => p.CreatedAt.Date == yesterday)
                 .SelectMany(p => p.PrescriptionDetails)
                 .Sum(pd => pd.Price * pd.Quantity);
-            var revPercent = revenueYesterday == 0 ? (revenueToday > 0 ? 100 : 0) : Math.Round((double)(revenueToday - revenueYesterday) / revenueYesterday * 100, 1);
+            var revPercent = revenueYesterday == 0 ? (revenueToday > 0 ? 100 : 0) : Math.Round((revenueToday - revenueYesterday) / revenueYesterday * 100, 1);
 
             // Công suất giường
-            var patientOccupancy = _context.Departments.Sum(d => d.OccupiedBeds);
+            var patientOccupancy = _context.MedicalRecords.Count(r => r.AdmissionDate != null && r.DischargeDate == null);
             var totalBeds = _context.Departments.Sum(d => d.TotalBeds);
             if (totalBeds == 0) totalBeds = 500;
             var occupancyRate = Math.Round((double)patientOccupancy / totalBeds * 100, 1);
+
+            // Tiến độ tải khoa phòng
+            var departments = _context.Departments.ToList();
+            foreach (var d in departments)
+            {
+                d.OccupiedBeds = _context.MedicalRecords.Count(r => r.DepartmentId == d.Id && r.AdmissionDate != null && r.DischargeDate == null);
+            }
+            ViewBag.DepartmentLoads = departments.OrderByDescending(d => d.TotalBeds > 0 ? (d.OccupiedBeds * 100 / d.TotalBeds) : 0).Take(4).ToList();
 
             // Ca cấp cứu
             var emergencyCases = _context.Appointments.Count(a => 
@@ -319,6 +327,13 @@ namespace HeThongBenhVien.Controllers
         public async Task<IActionResult> QuanLyKhoaPhong()
         {
             var list = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
+            foreach (var dept in list)
+            {
+                dept.OccupiedBeds = await _context.MedicalRecords.CountAsync(r => 
+                    r.DepartmentId == dept.Id && 
+                    r.AdmissionDate != null && 
+                    r.DischargeDate == null);
+            }
             return View(list);
         }
 

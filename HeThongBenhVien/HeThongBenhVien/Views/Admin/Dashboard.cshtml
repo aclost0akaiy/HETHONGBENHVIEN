@@ -262,46 +262,31 @@
                     <button class="btn btn-sm btn-light border"><i class="fa-solid fa-arrows-rotate me-1"></i>Làm mới</button>
                 </div>
                 
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="fw-bold text-dark">Khoa Cấp Cứu</span>
-                        <span class="fw-bold text-danger">95%</span>
-                    </div>
-                    <div class="progress" style="height: 10px; border-radius: 5px;">
-                        <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <small class="text-muted mt-1 d-block">Quá tải - Cần tăng cường nhân sự</small>
-                </div>
+                @if (ViewBag.DepartmentLoads != null)
+                {
+                    foreach (var load in ViewBag.DepartmentLoads)
+                    {
+                        int loadPercent = load.TotalBeds > 0 ? (int)Math.Round((double)load.OccupiedBeds / load.TotalBeds * 100) : 0;
+                        string colorClass = "success";
+                        if (loadPercent >= 90) colorClass = "danger";
+                        else if (loadPercent >= 75) colorClass = "warning";
+                        else if (loadPercent >= 50) colorClass = "info";
 
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="fw-bold text-dark">Khoa Hồi Sức Tích Cực (ICU)</span>
-                        <span class="fw-bold text-warning">78%</span>
-                    </div>
-                    <div class="progress" style="height: 10px; border-radius: 5px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="fw-bold text-dark">Khoa Nhi</span>
-                        <span class="fw-bold text-success">45%</span>
-                    </div>
-                    <div class="progress" style="height: 10px; border-radius: 5px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="fw-bold text-dark">Khoa Phụ Sản</span>
-                        <span class="fw-bold text-info">60%</span>
-                    </div>
-                    <div class="progress" style="height: 10px; border-radius: 5px;">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold text-dark">@load.DepartmentName</span>
+                                <span class="fw-bold text-@colorClass">@loadPercent%</span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 5px;">
+                                <div class="progress-bar bg-@colorClass @(loadPercent >= 90 ? "progress-bar-striped progress-bar-animated" : "")" role="progressbar" style="width: @loadPercent%" aria-valuenow="@loadPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            @if (loadPercent >= 90)
+                            {
+                                <small class="text-muted mt-1 d-block">Quá tải - Cần tăng cường nhân sự</small>
+                            }
+                        </div>
+                    }
+                }
                 
                 <div class="mt-auto pt-3 border-top text-center">
                     <a href="@Url.Action("QuanLyKhoaPhong", "Admin")" class="text-primary text-decoration-none fw-bold">Chi tiết công suất <i class="fa-solid fa-angle-right ms-1"></i></a>
