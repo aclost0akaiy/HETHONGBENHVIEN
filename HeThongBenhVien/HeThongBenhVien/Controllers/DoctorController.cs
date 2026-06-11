@@ -67,8 +67,20 @@ namespace HeThongBenhVien.Controllers
 
             var upcomingAppointments = await _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.Status != 4 && a.Status != 5)
+                .Where(a => a.Status != 4 && a.Status != 5 && a.Status != 0) // Danh sách chờ khám (Đang chờ, ưu tiên, v.v...)
                 .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            var pendingOnlineAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == 0) // Chưa đến (Mới đặt lịch online)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            var confirmedAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == 9) // Đã xác nhận hẹn online
+                .OrderBy(a => a.AppointmentTime) // Bệnh nhân tới trước hiện đầu
                 .ToListAsync();
 
             int currentMonth = month ?? DateTime.Now.Month;
@@ -85,6 +97,8 @@ namespace HeThongBenhVien.Controllers
                 WaitingResultsCount = waitingCount,
                 EmergencyCount = emergencyCount,
                 UpcomingAppointments = upcomingAppointments,
+                PendingOnlineAppointments = pendingOnlineAppointments,
+                ConfirmedAppointments = confirmedAppointments,
                 CurrentMonth = currentMonth,
                 CurrentYear = currentYear,
                 SearchString = searchString ?? string.Empty,
@@ -124,6 +138,16 @@ namespace HeThongBenhVien.Controllers
                 viewModel.CurrentUserId = currentUser?.Id;
             }
 
+            // Lấy danh sách PatientCode của các tài khoản (Role Patient)
+            var patientCodesWithAccounts = await _context.Users
+                .Where(u => u.Role == "Patient" && !string.IsNullOrEmpty(u.PatientCode))
+                .Select(u => u.PatientCode)
+                .ToListAsync();
+
+            // Lọc Patients để chỉ lấy những người có tài khoản
+            var patientsWithAccounts = patients.Where(p => patientCodesWithAccounts.Contains(p.PatientCode)).ToList();
+            ViewBag.PatientsWithAccounts = patientsWithAccounts;
+
             return View(viewModel);
         }
 
@@ -144,6 +168,14 @@ namespace HeThongBenhVien.Controllers
                 return RedirectToAction(nameof(Dashboard));
             }
 
+            var hasAccount = await _context.Users
+                .AnyAsync(u => u.Role == "Patient" && u.PatientCode == patient.PatientCode);
+            if (!hasAccount)
+            {
+                TempData["DoctorNotificationError"] = "Bệnh nhân này chưa có tài khoản, không thể gửi thông báo.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
             var username = User?.Identity?.Name;
             var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
@@ -160,6 +192,47 @@ namespace HeThongBenhVien.Controllers
             await _context.SaveChangesAsync();
 
             TempData["DoctorNotificationSuccess"] = $"Thông báo đã gửi đến bệnh nhân {patient.FullName}.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmOnlineAppointment(int appointmentId, DateTime newAppointmentTime, string message)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null || appointment.Patient == null)
+            {
+                TempData["DoctorNotificationError"] = "Không tìm thấy lịch khám hoặc bệnh nhân.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            // Cập nhật lịch khám
+            appointment.AppointmentTime = newAppointmentTime;
+            appointment.Status = 9; // Đã xác nhận hẹn (Online Confirmed)
+            await _context.SaveChangesAsync();
+
+            // Gửi thông báo
+            var username = User?.Identity?.Name;
+            var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                var notification = new Notification
+                {
+                    PatientId = appointment.PatientId,
+                    DoctorId = currentDoctor?.Id ?? 0,
+                    Message = message.Trim(),
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["DoctorNotificationSuccess"] = $"Đã xác nhận lịch và gửi thông báo cho bệnh nhân {appointment.Patient.FullName}.";
             return RedirectToAction(nameof(Dashboard));
         }
 
@@ -1083,16 +1156,112 @@ namespace HeThongBenhVien.Controllers
 
             return View(viewModel);
         }
-        public IActionResult CanhBaoTinhTrang() { return View(); }
+        public async Task<IActionResult> CanhBaoTinhTrang() 
+        { 
+            var recentVitals = await _context.VitalSigns
+                .Include(v => v.Appointment).ThenInclude(a => a.Patient)
+                .OrderByDescending(v => v.RecordedAt)
+                .Take(100) // limit to recent to avoid heavy memory processing
+                .ToListAsync();
+
+            var codeBlues = recentVitals.Where(v => 
+                (double.TryParse(v.Pulse, out double pulse) && pulse < 40) ||
+                (double.TryParse(v.SpO2, out double spo2) && spo2 < 85)
+            ).Take(10).ToList();
+
+            var tempAlerts = recentVitals.Where(v => 
+                double.TryParse(v.Temperature, out double temp) && temp >= 39.0
+            ).Take(10).ToList();
+
+            var labAlerts = await _context.LabTests
+                .Include(l => l.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient)
+                .Where(l => l.Result != null && l.Result.Contains("báo động"))
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            var appIds = codeBlues.Select(c => c.AppointmentId)
+                .Concat(tempAlerts.Select(t => t.AppointmentId))
+                .Distinct().ToList();
+
+            var medRecords = await _context.MedicalRecords
+                .Include(m => m.Department)
+                .Where(m => appIds.Contains(m.AppointmentId))
+                .ToDictionaryAsync(m => m.AppointmentId, m => m);
+
+            ViewBag.CodeBlues = codeBlues;
+            ViewBag.TempAlerts = tempAlerts;
+            ViewBag.LabAlerts = labAlerts;
+            ViewBag.MedRecords = medRecords;
+
+            return View(); 
+        }
         
         public async Task<IActionResult> HenTaiKham() 
         { 
             var appointments = await _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.Status == 8)
+                .Where(a => a.Status == 8 && a.Patient != null && _context.Users.Any(u => u.PatientCode == a.Patient.PatientCode))
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
+            
+            ViewBag.NotifiedPatientIds = await _context.Notifications.Select(n => n.PatientId).Distinct().ToListAsync();
+            
             return View(appointments); 
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendNotificationHenTaiKham(int patientId, string message)
+        {
+            if (patientId <= 0 || string.IsNullOrWhiteSpace(message))
+            {
+                TempData["DoctorNotificationError"] = "Vui lòng chọn bệnh nhân và nhập nội dung thông báo.";
+                return RedirectToAction(nameof(HenTaiKham));
+            }
+
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null)
+            {
+                TempData["DoctorNotificationError"] = "Bệnh nhân không tồn tại.";
+                return RedirectToAction(nameof(HenTaiKham));
+            }
+
+            var username = User?.Identity?.Name;
+            var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            var notification = new Notification
+            {
+                PatientId = patientId,
+                DoctorId = currentDoctor?.Id ?? 0,
+                Message = message.Trim(),
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["DoctorNotificationSuccess"] = $"Thông báo đã gửi đến bệnh nhân {patient.FullName}.";
+            return RedirectToAction(nameof(HenTaiKham));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateHenTaiKham(int appointmentId, DateTime newAppointmentTime)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment != null)
+            {
+                appointment.AppointmentTime = newAppointmentTime;
+                await _context.SaveChangesAsync();
+                TempData["DoctorNotificationSuccess"] = "Đã cập nhật ngày giờ hẹn khám thành công.";
+            }
+            else
+            {
+                TempData["DoctorNotificationError"] = "Không tìm thấy lịch hẹn.";
+            }
+            return RedirectToAction(nameof(HenTaiKham));
         }
         
         public IActionResult HoiChanOnline() { return View(); }

@@ -16,6 +16,21 @@
         </div>
     </div>
 
+    @if (TempData["DoctorNotificationSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["DoctorNotificationSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["DoctorNotificationError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["DoctorNotificationError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="glass-card p-0 overflow-hidden">
         <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
@@ -44,10 +59,19 @@
                             }
                         </td>
                         <td>@item.Reason</td>
-                        <td><span class="badge bg-secondary rounded-pill">Chưa gửi SMS</span></td>
+                        <td>
+                            @if (ViewBag.NotifiedPatientIds != null && ((List<int>)ViewBag.NotifiedPatientIds).Contains(item.PatientId))
+                            {
+                                <span class="badge bg-success rounded-pill">Đã gửi SMS</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary rounded-pill">Chưa gửi SMS</span>
+                            }
+                        </td>
                         <td class="pe-4">
-                            <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-bell me-1"></i> Gửi SMS</button>
-                            <a href="@Url.Action("EditPatient", "Doctor", new { id = item.PatientId })" class="btn btn-sm btn-info text-white ms-1"><i class="fa-solid fa-pen-to-square"></i> Cập nhật</a>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="openNotificationModal(@item.PatientId, '@item.Patient?.FullName')"><i class="fa-solid fa-bell me-1"></i> Gửi SMS</button>
+                            <button type="button" class="btn btn-sm btn-info text-white ms-1" onclick="openUpdateAppointmentModal(@item.Id, '@item.AppointmentTime.ToString("yyyy-MM-ddTHH:mm")')"><i class="fa-solid fa-pen-to-square"></i> Cập nhật</button>
                         </td>
                     </tr>
                 }
@@ -61,3 +85,73 @@
         </table>
     </div>
 </div>
+
+<!-- Modal Gửi Thông Báo -->
+<div class="modal fade" id="sendNotificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gửi Thông Báo Cho Bệnh Nhân</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="SendNotificationHenTaiKham" asp-controller="Doctor" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="notifPatientId" name="patientId" />
+                    <div class="mb-3">
+                        <label class="form-label">Bệnh nhân</label>
+                        <input type="text" id="notifPatientName" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung thông báo</label>
+                        <textarea name="message" class="form-control" rows="4" required placeholder="Nhập nội dung thông báo/SMS..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-1"></i> Gửi Thông Báo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cập Nhật Lịch Hẹn -->
+<div class="modal fade" id="updateAppointmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cập Nhật Lịch Hẹn Khám</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateHenTaiKham" asp-controller="Doctor" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="updateAppointmentId" name="appointmentId" />
+                    <div class="mb-3">
+                        <label class="form-label">Ngày và Giờ Hẹn Khám Mới</label>
+                        <input type="datetime-local" id="updateAppointmentTime" name="newAppointmentTime" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save me-1"></i> Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openNotificationModal(patientId, patientName) {
+        document.getElementById('notifPatientId').value = patientId;
+        document.getElementById('notifPatientName').value = patientName;
+        var myModal = new bootstrap.Modal(document.getElementById('sendNotificationModal'));
+        myModal.show();
+    }
+
+    function openUpdateAppointmentModal(appointmentId, currentTime) {
+        document.getElementById('updateAppointmentId').value = appointmentId;
+        document.getElementById('updateAppointmentTime').value = currentTime;
+        var updateModal = new bootstrap.Modal(document.getElementById('updateAppointmentModal'));
+        updateModal.show();
+    }
+</script>

@@ -121,18 +121,39 @@
         <div class="col-xl-7 mb-4">
             <div class="glass-card h-100">
                 <!-- Nav Tabs -->
-                <ul class="nav nav-tabs border-bottom" role="tablist" style="padding: 0 1rem; margin-bottom: 0;">
+                <!-- Nav Pills (Button-like tabs) -->
+                <ul class="nav nav-pills gap-2" role="tablist" style="padding: 1rem;">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-pane" type="button" role="tab" aria-controls="schedule-pane" aria-selected="true" style="border: none; padding: 1rem 1.5rem; font-weight: 600; color: #64748b;">
+                        <button class="nav-link active px-4 py-2 rounded-pill fw-bold shadow-sm" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-pane" type="button" role="tab" aria-controls="schedule-pane" aria-selected="true" style="transition: all 0.3s;">
                             <i class="fa-solid fa-calendar-days me-2"></i>Lịch trực tháng
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-pane" type="button" role="tab" aria-controls="appointment-pane" aria-selected="false" style="border: none; padding: 1rem 1.5rem; font-weight: 600; color: #64748b;">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-pane" type="button" role="tab" aria-controls="appointment-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
                             <i class="fa-solid fa-list-check me-2"></i>Danh sách chờ khám
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab" aria-controls="pending-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
+                            <i class="fa-solid fa-globe me-2"></i>BN Đặt Lịch Khám
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="confirmed-tab" data-bs-toggle="tab" data-bs-target="#confirmed-pane" type="button" role="tab" aria-controls="confirmed-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
+                            <i class="fa-solid fa-check-double me-2"></i>Lịch Hẹn Khám
+                        </button>
+                    </li>
                 </ul>
+                
+                <style>
+                    .nav-pills .nav-link.active {
+                        background-color: var(--primary-color) !important;
+                        color: white !important;
+                    }
+                    .nav-pills .nav-link:not(.active):hover {
+                        background-color: #e2e8f0 !important;
+                    }
+                </style>
 
                 <!-- Tab Content -->
                 <div class="tab-content">
@@ -241,10 +262,16 @@
                         <div class="p-0">
                             <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
                                 <span style="color: #1e293b; font-weight: 600;">Danh sách chờ khám tiếp theo</span>
-                                <a href="#" class="text-decoration-none" style="color: #0ea5e9; font-size: 14px; font-weight: 500;">Xem tất cả</a>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="input-group input-group-sm" style="width: 250px;">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                        <input type="text" id="waitingListSearch" class="form-control border-start-0 bg-light" placeholder="Tìm tên bệnh nhân..." onkeyup="filterWaitingList()">
+                                    </div>
+                                    <a href="#" class="text-decoration-none" style="color: #0ea5e9; font-size: 14px; font-weight: 500;">Xem tất cả</a>
+                                </div>
                             </div>
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                                <table class="table table-hover align-middle mb-0" id="waitingListTable" style="font-size: 14px;">
                                     <thead class="table-light">
                                         <tr>
                                             <th class="ps-4 border-0">STT</th>
@@ -293,13 +320,13 @@
                                                 _ => "Không xác định"
                                             };
 
-                                            <tr>
+                                            <tr class="waiting-item">
                                                 <td class="ps-4 font-weight-bold text-primary">@(stt.ToString("D2"))</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; color: #64748b; font-weight: bold;">@initials</div>
                                                         <div>
-                                                            <div style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
+                                                            <div class="waiting-name" style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
                                                             <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.PatientCode</div>
                                                         </div>
                                                     </div>
@@ -324,6 +351,109 @@
                                                 </td>
                                             </tr>
                                             stt++;
+                                        }
+                                        <tr id="waitingListNoResult" class="d-none">
+                                            <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy bệnh nhân nào.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
+                                <span class="text-muted small" id="waitingListInfo">Đang hiển thị...</span>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0" id="waitingListPagination">
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Online Appointment Tab -->
+                    <div class="tab-pane fade" id="pending-pane" role="tabpanel" aria-labelledby="pending-tab">
+                        <div class="p-0">
+                            <div class="p-4 border-bottom">
+                                <span style="color: #1e293b; font-weight: 600;"><i class="fa-solid fa-globe text-primary me-2"></i>Bệnh nhân đặt lịch trực tuyến (Chưa xác nhận)</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">Bệnh nhân</th>
+                                            <th class="border-0">Lý do khám</th>
+                                            <th class="border-0">Thời gian (Mong muốn)</th>
+                                            <th class="pe-4 border-0 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.PendingOnlineAppointments)
+                                        {
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <div style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
+                                                    <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.CCCD</div>
+                                                </td>
+                                                <td>@item.Reason</td>
+                                                <td><span class="text-primary fw-bold">@item.AppointmentTime.ToString("dd/MM/yyyy HH:mm")</span></td>
+                                                <td class="pe-4 text-end">
+                                                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3" onclick="openConfirmModal(@item.Id, '@item.Patient?.FullName', '@item.AppointmentTime.ToString("yyyy-MM-ddTHH:mm")')">
+                                                        <i class="fa-solid fa-check me-1"></i> Xác nhận & Gửi SMS
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                        @if (!Model.PendingOnlineAppointments.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Không có lịch đặt trực tuyến nào đang chờ.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirmed Appointment Tab -->
+                    <div class="tab-pane fade" id="confirmed-pane" role="tabpanel" aria-labelledby="confirmed-tab">
+                        <div class="p-0">
+                            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                                <span style="color: #1e293b; font-weight: 600;"><i class="fa-solid fa-check-double text-success me-2"></i>Lịch hẹn khám đã xác nhận</span>
+                                <small class="text-muted">Sắp xếp theo thời gian đến sớm nhất</small>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">STT</th>
+                                            <th class="border-0">Bệnh nhân</th>
+                                            <th class="border-0">Lý do khám</th>
+                                            <th class="border-0">Thời gian khám</th>
+                                            <th class="border-0">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ int confirmedStt = 1; }
+                                        @foreach (var item in Model.ConfirmedAppointments)
+                                        {
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-success">@(confirmedStt.ToString("D2"))</td>
+                                                <td>
+                                                    <div style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
+                                                    <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.PatientCode</div>
+                                                </td>
+                                                <td>@item.Reason</td>
+                                                <td><span class="fw-bold text-primary">@item.AppointmentTime.ToString("dd/MM/yyyy HH:mm")</span></td>
+                                                <td>
+                                                    <span class="badge bg-success rounded-pill"><i class="fa-solid fa-calendar-check me-1"></i>Đã xác nhận hẹn</span>
+                                                </td>
+                                            </tr>
+                                            confirmedStt++;
+                                        }
+                                        @if (!Model.ConfirmedAppointments.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted"><i class="fa-solid fa-calendar-xmark me-2 text-muted"></i>Không có lịch hẹn nào được xác nhận.</td>
+                                            </tr>
                                         }
                                     </tbody>
                                 </table>
@@ -503,9 +633,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="patientTableBody">
-                                    @for (int i = 0; i < Model.Patients.Count; i++)
+                                    @{
+                                        var patientsList = ViewBag.PatientsWithAccounts as List<Patient> ?? new List<Patient>();
+                                    }
+                                    @for (int i = 0; i < patientsList.Count; i++)
                                     {
-                                        var patient = Model.Patients[i];
+                                        var patient = patientsList[i];
                                         <tr class="patient-row" data-id="@patient.Id" data-name="@(patient.FullName?.ToLower() ?? string.Empty)" onclick="selectPatient(this)">
                                             <td>@(i + 1)</td>
                                             <td>@patient.FullName</td>
@@ -682,6 +815,39 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Xác Nhận Lịch Đặt Trực Tuyến -->
+    <div class="modal fade" id="confirmOnlineModal" tabindex="-1" aria-labelledby="confirmOnlineModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header border-0 bg-success bg-opacity-10" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title fw-bold text-success" id="confirmOnlineModalLabel"><i class="fa-solid fa-check-circle me-2"></i>Xác Nhận & Gửi SMS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="ConfirmOnlineAppointment" asp-controller="Doctor" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="confirmAppointmentId" name="appointmentId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh nhân</label>
+                            <input type="text" id="confirmPatientName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ngày và Giờ Khám</label>
+                            <input type="datetime-local" id="confirmAppointmentTime" name="newAppointmentTime" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nội dung SMS</label>
+                            <textarea name="message" class="form-control" rows="3" placeholder="Ví dụ: Bệnh viện ABC xác nhận lịch hẹn của bạn vào lúc..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-success px-4"><i class="fa-solid fa-paper-plane me-2"></i> Xác nhận & Gửi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @functions {
@@ -839,7 +1005,116 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // ====== PHÂN TRANG & TÌM KIẾM DANH SÁCH CHỜ ======
+        const ITEMS_PER_PAGE = 10;
+        let waitingCurrentPage = 1;
+        let waitingFilteredRows = [];
+
+        function initWaitingListPagination() {
+            const allRows = Array.from(document.querySelectorAll('#waitingListTable tbody tr.waiting-item'));
+            waitingFilteredRows = allRows;
+            renderWaitingPage(1);
+        }
+
+        function filterWaitingList() {
+            const query = (document.getElementById('waitingListSearch')?.value || '').toLowerCase().trim();
+            const allRows = Array.from(document.querySelectorAll('#waitingListTable tbody tr.waiting-item'));
+            waitingFilteredRows = allRows.filter(row => {
+                const name = (row.querySelector('.waiting-name')?.textContent || '').toLowerCase();
+                return name.includes(query);
+            });
+            renderWaitingPage(1);
+        }
+
+        function renderWaitingPage(page) {
+            waitingCurrentPage = page;
+            const allRows = Array.from(document.querySelectorAll('#waitingListTable tbody tr.waiting-item'));
+            // Ẩn tất cả
+            allRows.forEach(row => row.style.display = 'none');
+
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageRows = waitingFilteredRows.slice(start, end);
+            pageRows.forEach(row => row.style.display = '');
+
+            // Cập nhật số thứ tự
+            pageRows.forEach((row, idx) => {
+                const sttCell = row.querySelector('td:first-child');
+                if (sttCell) sttCell.textContent = String(start + idx + 1).padStart(2, '0');
+            });
+
+            // Hiển thị/ẩn row "không tìm thấy"
+            const noResult = document.getElementById('waitingListNoResult');
+            if (noResult) noResult.classList.toggle('d-none', waitingFilteredRows.length > 0);
+
+            // Cập nhật info
+            const infoEl = document.getElementById('waitingListInfo');
+            if (infoEl) {
+                const total = waitingFilteredRows.length;
+                const from = total === 0 ? 0 : start + 1;
+                const to = Math.min(end, total);
+                infoEl.textContent = `Hiển thị ${from}–${to} trong tổng số ${total} bệnh nhân`;
+            }
+
+            // Render pagination
+            renderWaitingPagination();
+        }
+
+        function renderWaitingPagination() {
+            const totalPages = Math.ceil(waitingFilteredRows.length / ITEMS_PER_PAGE);
+            const pagination = document.getElementById('waitingListPagination');
+            if (!pagination) return;
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Prev
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${waitingCurrentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="renderWaitingPage(${waitingCurrentPage - 1}); return false;">&laquo;</a>`;
+            pagination.appendChild(prevLi);
+
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === waitingCurrentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="renderWaitingPage(${i}); return false;">${i}</a>`;
+                pagination.appendChild(li);
+            }
+
+            // Next
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${waitingCurrentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="renderWaitingPage(${waitingCurrentPage + 1}); return false;">&raquo;</a>`;
+            pagination.appendChild(nextLi);
+        }
+
+        // ====== MỞ MODAL XÁC NHẬN LỊCH ONLINE ======
+        function openConfirmModal(appointmentId, patientName, appointmentTimeStr) {
+            document.getElementById('confirmAppointmentId').value = appointmentId;
+            document.getElementById('confirmPatientName').value = patientName;
+            document.getElementById('confirmAppointmentTime').value = appointmentTimeStr;
+
+            const dt = new Date(appointmentTimeStr);
+            const formatted = dt.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const smsField = document.querySelector('#confirmOnlineModal textarea[name="message"]');
+            if (smsField) {
+                smsField.value = `Bệnh viện xác nhận lịch khám của bạn vào lúc ${formatted}. Vui lòng đến đúng giờ.`;
+            }
+
+            var modal = new bootstrap.Modal(document.getElementById('confirmOnlineModal'));
+            modal.show();
+        }
+
         $(document).ready(function() {
+            // Khởi tạo phân trang khi tab danh sách chờ được mở
+            document.getElementById('appointment-tab')?.addEventListener('shown.bs.tab', function() {
+                initWaitingListPagination();
+            });
+            // Nếu tab danh sách chờ đang active từ đầu thì cũng init
+            if (document.getElementById('appointment-pane')?.classList.contains('active')) {
+                initWaitingListPagination();
+            }
             setInterval(function() {
                 $('.blink').fadeTo(750, 0).fadeTo(750, 1);
             }, 1500);

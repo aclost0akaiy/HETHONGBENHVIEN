@@ -20,32 +20,102 @@ namespace HeThongBenhVien.Controllers
             _context = context;
         }
 
+        private async Task<int> GetCurrentPatientId()
+        {
+            var username = User?.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                if (user != null && !string.IsNullOrEmpty(user.PatientCode))
+                {
+                    var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == user.PatientCode);
+                    if (patient != null) return patient.Id;
+                }
+            }
+            return currentPatientId;
+        }
+
         public async Task<IActionResult> Portal()
         {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == currentPatientId);
+            int pid = await GetCurrentPatientId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == pid);
             ViewBag.PatientName = patient?.FullName ?? "Bệnh nhân Mock";
+            ViewBag.UnreadNotificationCount = await _context.Notifications
+                .CountAsync(n => n.PatientId == pid && !n.IsRead);
             return View();
+        }
+
+        private async Task<List<PatientBookingStatusItem>> GetPatientBookingStatuses(int patientId)
+        {
+            var bookings = await _context.Appointments
+                .Where(a => a.PatientId == patientId && (a.Status == 0 || a.Status == 9))
+                .OrderByDescending(a => a.AppointmentTime)
+                .ToListAsync();
+
+            var notifications = await _context.Notifications
+                .Include(n => n.Doctor)
+                .Where(n => n.PatientId == patientId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            return bookings.Select(a =>
+            {
+                Notification? matched = null;
+                if (a.Status == 9)
+                {
+                    var datePart = a.AppointmentTime.ToString("dd/MM/yyyy");
+                    var timePart = a.AppointmentTime.ToString("HH:mm");
+                    matched = notifications.FirstOrDefault(n =>
+                        n.Message.Contains(datePart) || n.Message.Contains(timePart));
+                }
+
+                return new PatientBookingStatusItem
+                {
+                    Appointment = a,
+                    DoctorSms = matched?.Message,
+                    DoctorName = matched?.Doctor?.FullName
+                };
+            }).ToList();
         }
 
         [HttpGet]
         public async Task<IActionResult> Booking()
         {
-            ViewBag.Departments = await _context.Departments.ToListAsync();
+            int pid = await GetCurrentPatientId();
+            ViewBag.MyBookings = await GetPatientBookingStatuses(pid);
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Booking(string FullName, string PhoneNumber, string Reason, int? DepartmentId, DateTime AppointmentTime)
+        public async Task<IActionResult> Booking(string FullName, string PhoneNumber, string Reason, DateTime AppointmentTime)
         {
-            // Find patient by Phone (stored in CCCD for now, or just create new)
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.CCCD == PhoneNumber);
+            Patient? patient = null;
+
+            // 1. Ưu tiên: Nếu bệnh nhân đang đăng nhập, lấy đúng Patient record của họ
+            var loggedInUsername = User?.Identity?.Name;
+            if (!string.IsNullOrEmpty(loggedInUsername))
+            {
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUsername);
+                if (currentUser != null && !string.IsNullOrEmpty(currentUser.PatientCode))
+                {
+                    patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == currentUser.PatientCode);
+                }
+            }
+
+            // 2. Nếu chưa tìm được, tìm theo số điện thoại (lưu ở CCCD field)
+            if (patient == null)
+            {
+                patient = await _context.Patients.FirstOrDefaultAsync(p => p.CCCD == PhoneNumber);
+            }
+
+            // 3. Nếu không có, tạo bệnh nhân mới
             if (patient == null)
             {
                 patient = new Patient
                 {
                     FullName = FullName,
-                    CCCD = PhoneNumber, // temporary use CCCD to store Phone
+                    CCCD = PhoneNumber, // Lưu tạm SĐT vào CCCD
                     Age = 30, // Default
                     Gender = "Khác",
                     PatientCode = "BN" + DateTime.Now.ToString("yyMMddHHmmss")
@@ -70,27 +140,28 @@ namespace HeThongBenhVien.Controllers
                 .Where(a => a.AppointmentTime.Date == model.AppointmentTime.Date)
                 .CountAsync();
                 
-            TempData["SuccessMessage"] = $"Đặt lịch thành công! Số thứ tự điện tử (E-ticket) của bạn là: {countToday:D3}";
+            TempData["PendingMessage"] = $"Yêu cầu đặt lịch đã được gửi! Số thứ tự điện tử (E-ticket): {countToday:D3}. Vui lòng chờ bác sĩ xác nhận.";
             return RedirectToAction(nameof(Booking));
         }
 
         public async Task<IActionResult> EHR()
         {
+            int pid = await GetCurrentPatientId();
             // Lấy danh sách hồ sơ bệnh án của bệnh nhân
             var records = await _context.MedicalRecords
                 .Include(m => m.Appointment)
                 .Include(m => m.Department)
-                .Where(m => m.Appointment != null && m.Appointment.PatientId == currentPatientId)
+                .Where(m => m.Appointment != null && m.Appointment.PatientId == pid)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
 
             ViewBag.Prescriptions = await _context.Prescriptions
                 .Include(p => p.PrescriptionDetails)
-                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == currentPatientId)
+                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == pid)
                 .ToListAsync();
                 
             ViewBag.LabTests = await _context.LabTests
-                .Where(l => l.MedicalRecord != null && l.MedicalRecord.Appointment.PatientId == currentPatientId)
+                .Where(l => l.MedicalRecord != null && l.MedicalRecord.Appointment.PatientId == pid)
                 .ToListAsync();
 
             return View(records);
@@ -98,12 +169,13 @@ namespace HeThongBenhVien.Controllers
 
         public async Task<IActionResult> Payment()
         {
+            int pid = await GetCurrentPatientId();
             // Lấy các đơn thuốc chưa thanh toán (Status = "Đã kê đơn")
             var unpaidPrescriptions = await _context.Prescriptions
                 .Include(p => p.PrescriptionDetails)
                 .Include(p => p.MedicalRecord)
                     .ThenInclude(m => m.Appointment)
-                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == currentPatientId && p.Status == "Đã kê đơn")
+                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == pid && p.Status == "Đã kê đơn")
                 .ToListAsync();
 
             return View(unpaidPrescriptions);
@@ -124,9 +196,23 @@ namespace HeThongBenhVien.Controllers
 
         public async Task<IActionResult> Notifications()
         {
+            int pid = await GetCurrentPatientId();
+
+            var unreadNotifications = await _context.Notifications
+                .Where(n => n.PatientId == pid && !n.IsRead)
+                .ToListAsync();
+            foreach (var note in unreadNotifications)
+            {
+                note.IsRead = true;
+            }
+            if (unreadNotifications.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
+
             // 1. Nhắc lịch tái khám (Lấy các Appointment sắp tới của bệnh nhân)
             var upcomingAppointments = await _context.Appointments
-                .Where(a => a.PatientId == currentPatientId && a.AppointmentTime > DateTime.Now)
+                .Where(a => a.PatientId == pid && a.AppointmentTime > DateTime.Now)
                 .OrderBy(a => a.AppointmentTime)
                 .Take(5)
                 .ToListAsync();
@@ -134,13 +220,13 @@ namespace HeThongBenhVien.Controllers
             // 2. Lấy đơn thuốc gần nhất để nhắc uống thuốc
             var recentPrescription = await _context.Prescriptions
                 .Include(p => p.PrescriptionDetails)
-                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == currentPatientId)
+                .Where(p => p.MedicalRecord != null && p.MedicalRecord.Appointment.PatientId == pid)
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync();
 
             var notifications = await _context.Notifications
                 .Include(n => n.Doctor)
-                .Where(n => n.PatientId == currentPatientId)
+                .Where(n => n.PatientId == pid)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
@@ -163,7 +249,8 @@ namespace HeThongBenhVien.Controllers
         {
             if (ModelState.IsValid)
             {
-                var patient = await _context.Patients.FindAsync(currentPatientId);
+                int pid = await GetCurrentPatientId();
+                var patient = await _context.Patients.FindAsync(pid);
                 model.ReviewerName = patient?.FullName ?? "Bệnh nhân ẩn danh";
                 model.Status = "Chờ xử lý";
                 

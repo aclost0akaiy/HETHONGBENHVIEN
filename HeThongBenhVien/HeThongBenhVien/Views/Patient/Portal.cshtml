@@ -1,99 +1,185 @@
 @{
     ViewData["Title"] = "Cổng Thông Tin Bệnh Nhân";
+    var unreadCount = ViewBag.UnreadNotificationCount as int? ?? 0;
+    var patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
 }
 
-<div class="container mt-4">
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-primary"><i class="fa-solid fa-user-injured"></i> Cổng Thông Tin Bệnh Nhân</h1>
-        <p class="lead" style="color: var(--text-color);">Trải nghiệm dịch vụ y tế thông minh, nhanh chóng và tiện lợi.</p>
+<div class="portal-hero text-center mb-5">
+    <div class="portal-hero-icon mb-3">
+        <i class="fa-solid fa-user-injured"></i>
     </div>
+    <h1 class="display-5 fw-bold mb-2">Cổng Thông Tin Bệnh Nhân</h1>
+    <p class="lead mb-1" style="color: var(--link-color);">Xin chào, <strong class="text-primary">@patientName</strong>!</p>
+    <p class="mb-0" style="color: var(--link-color);">Trải nghiệm dịch vụ y tế thông minh, nhanh chóng và tiện lợi.</p>
+</div>
 
+<div class="container pb-5">
     <div class="row g-4">
-        <!-- Đặt lịch khám -->
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Booking", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-regular fa-calendar-check fa-2x text-primary"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Đặt Lịch Khám</h5>
-                    <p class="card-text" style="color: var(--link-color);">Đặt lịch hẹn trực tuyến, chọn bác sĩ và nhận số thứ tự điện tử (E-ticket) ngay lập tức.</p>
+            <div class="portal-card" onclick="location.href='@Url.Action("Booking", "Patient")'">
+                <div class="portal-card-icon bg-primary-soft">
+                    <i class="fa-regular fa-calendar-check text-primary"></i>
                 </div>
+                <h5 class="fw-bold">Đặt Lịch Khám</h5>
+                <p>Đặt lịch hẹn trực tuyến và nhận số thứ tự điện tử (E-ticket) ngay lập tức.</p>
+                <span class="portal-card-link">Đặt ngay <i class="fa-solid fa-arrow-right ms-1"></i></span>
             </div>
         </div>
 
-        <!-- Hồ sơ sức khỏe -->
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("EHR", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-solid fa-file-medical fa-2x text-success"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Hồ Sơ Sức Khỏe (EHR)</h5>
-                    <p class="card-text" style="color: var(--link-color);">Xem lịch sử khám bệnh, đơn thuốc, và tải kết quả xét nghiệm/X-Quang mọi lúc mọi nơi.</p>
+            <div class="portal-card" onclick="location.href='@Url.Action("EHR", "Patient")'">
+                <div class="portal-card-icon bg-success-soft">
+                    <i class="fa-solid fa-file-medical text-success"></i>
                 </div>
+                <h5 class="fw-bold">Hồ Sơ Sức Khỏe (EHR)</h5>
+                <p>Xem lịch sử khám bệnh, đơn thuốc và tải kết quả xét nghiệm mọi lúc mọi nơi.</p>
+                <span class="portal-card-link">Xem hồ sơ <i class="fa-solid fa-arrow-right ms-1"></i></span>
             </div>
         </div>
 
-        <!-- Thanh toán viện phí -->
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Payment", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-solid fa-qrcode fa-2x text-warning"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Thanh Toán QR Viện Phí</h5>
-                    <p class="card-text" style="color: var(--link-color);">Thanh toán không tiền mặt qua mã QR động (Momo, VNPay) an toàn và cực kỳ nhanh chóng.</p>
+            <div class="portal-card" onclick="location.href='@Url.Action("Payment", "Patient")'">
+                <div class="portal-card-icon bg-warning-soft">
+                    <i class="fa-solid fa-qrcode text-warning"></i>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Nhắc nhở tự động -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Notifications", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-solid fa-bell fa-2x text-info"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Nhắc Nhở Tự Động</h5>
-                    <p class="card-text" style="color: var(--link-color);">Hệ thống tự động gửi thông báo nhắc lịch tái khám, nhắc uống thuốc đúng giờ qua App và Zalo.</p>
-                </div>
+                <h5 class="fw-bold">Thanh Toán QR Viện Phí</h5>
+                <p>Thanh toán không tiền mặt qua mã QR (Momo, VNPay) an toàn và nhanh chóng.</p>
+                <span class="portal-card-link">Thanh toán <i class="fa-solid fa-arrow-right ms-1"></i></span>
             </div>
         </div>
 
-        <!-- Đánh giá chất lượng -->
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("Rating", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-solid fa-star fa-2x text-danger"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Đánh Giá Dịch Vụ</h5>
-                    <p class="card-text" style="color: var(--link-color);">Chấm điểm bác sĩ, phòng khám sau mỗi lượt khám để giúp chúng tôi nâng cao chất lượng.</p>
+            <div class="portal-card portal-card-notify" onclick="location.href='@Url.Action("Notifications", "Patient")'">
+                <div class="portal-card-icon bg-info-soft position-relative">
+                    <i class="fa-solid fa-bell text-info"></i>
+                    @if (unreadCount > 0)
+                    {
+                        <span class="notify-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
+                    }
                 </div>
+                <h5 class="fw-bold">Nhắc Nhở Tự Động</h5>
+                <p>Thông báo nhắc lịch tái khám, uống thuốc và tin nhắn từ bác sĩ qua App.</p>
+                <span class="portal-card-link">
+                    @if (unreadCount > 0)
+                    {
+                        <span class="text-danger fw-semibold">@unreadCount thông báo mới</span>
+                    }
+                    else
+                    {
+                        <span>Xem nhắc nhở</span>
+                    }
+                    <i class="fa-solid fa-arrow-right ms-1"></i>
+                </span>
             </div>
         </div>
-        <!-- Sơ Đồ Bệnh Viện -->
+
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow transition-all" style="cursor: pointer; background-color: var(--footer-bg);" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
-                <div class="card-body text-center p-4">
-                    <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                        <i class="fa-solid fa-map-location-dot fa-2x text-secondary"></i>
-                    </div>
-                    <h5 class="card-title fw-bold" style="color: var(--text-color);">Sơ Đồ Bệnh Viện</h5>
-                    <p class="card-text" style="color: var(--link-color);">Xem sơ đồ các khoa phòng, tìm đường đi trong khuôn viên bệnh viện một cách dễ dàng.</p>
+            <div class="portal-card" onclick="location.href='@Url.Action("Rating", "Patient")'">
+                <div class="portal-card-icon bg-danger-soft">
+                    <i class="fa-solid fa-star text-danger"></i>
                 </div>
+                <h5 class="fw-bold">Đánh Giá Dịch Vụ</h5>
+                <p>Chấm điểm bác sĩ, phòng khám để giúp chúng tôi nâng cao chất lượng.</p>
+                <span class="portal-card-link">Đánh giá <i class="fa-solid fa-arrow-right ms-1"></i></span>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="portal-card" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
+                <div class="portal-card-icon bg-secondary-soft">
+                    <i class="fa-solid fa-map-location-dot text-secondary"></i>
+                </div>
+                <h5 class="fw-bold">Sơ Đồ Bệnh Viện</h5>
+                <p>Xem sơ đồ các khoa phòng, tìm đường đi trong khuôn viên bệnh viện dễ dàng.</p>
+                <span class="portal-card-link">Xem sơ đồ <i class="fa-solid fa-arrow-right ms-1"></i></span>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .hover-shadow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    .portal-hero {
+        padding: 3rem 1rem 1rem;
+        background: linear-gradient(180deg, rgba(14,165,233,0.06) 0%, transparent 100%);
+        border-radius: 0 0 40px 40px;
     }
-    .transition-all {
+    .portal-hero-icon {
+        width: 80px; height: 80px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        border-radius: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.2rem; color: white;
+        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+    }
+    .portal-card {
+        background: var(--footer-bg);
+        border-radius: 20px;
+        padding: 1.75rem;
+        height: 100%;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.04);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
         transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .portal-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(14, 165, 233, 0.15);
+        border-color: rgba(14, 165, 233, 0.2);
+    }
+    .portal-card h5 { color: var(--text-color); margin-bottom: 0.75rem; }
+    .portal-card p {
+        color: var(--link-color);
+        font-size: 0.9rem;
+        flex-grow: 1;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    .portal-card-icon {
+        width: 64px; height: 64px;
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+    }
+    .bg-primary-soft { background: rgba(14, 165, 233, 0.1); }
+    .bg-success-soft { background: rgba(16, 185, 129, 0.1); }
+    .bg-warning-soft { background: rgba(245, 158, 11, 0.1); }
+    .bg-info-soft { background: rgba(6, 182, 212, 0.1); }
+    .bg-danger-soft { background: rgba(239, 68, 68, 0.1); }
+    .bg-secondary-soft { background: rgba(100, 116, 139, 0.1); }
+    .portal-card-link {
+        color: #0ea5e9;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    .notify-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--footer-bg);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        animation: badge-pulse 2s infinite;
+    }
+    @@keyframes badge-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    .portal-card-notify:hover .notify-badge {
+        animation: none;
+        transform: scale(1.05);
     }
 </style>

@@ -1,61 +1,246 @@
 @model HeThongBenhVien.Models.Appointment
+@using HeThongBenhVien.Models
 @{
     ViewData["Title"] = "Đặt Lịch Khám Trực Tuyến";
-    var departments = ViewBag.Departments as List<HeThongBenhVien.Models.Department>;
+    var myBookings = ViewBag.MyBookings as List<PatientBookingStatusItem> ?? new List<PatientBookingStatusItem>();
 }
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 style="color: var(--text-color);"><i class="fa-regular fa-calendar-check text-primary"></i> Đặt Lịch Khám Trực Tuyến</h2>
-        <a asp-action="Portal" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
-    </div>
-    
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fa-solid fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
 
-    <div class="card shadow-sm border-0 rounded-4" style="background-color: var(--navbar-bg);">
-        <div class="card-body p-5">
-            <h5 class="card-title text-center text-primary mb-4">Vui lòng điền thông tin để đặt lịch hẹn</h5>
-            <form asp-action="Booking" method="post">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Họ và Tên</label>
-                        <input type="text" class="form-control" name="FullName" placeholder="Ví dụ: Nguyễn Văn A" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Số Điện Thoại</label>
-                        <input type="tel" class="form-control" name="PhoneNumber" placeholder="0912345678" required>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label" style="color: var(--text-color)">Lý do khám (Triệu chứng)</label>
-                        <textarea name="Reason" class="form-control" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Chuyên Khoa (Gợi ý)</label>
-                        <select name="DepartmentId" class="form-select">
-                            <option value="">-- Chọn chuyên khoa --</option>
-                            @if (departments != null)
+<div class="container mt-4 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--text-color);">
+                <i class="fa-regular fa-calendar-check text-primary me-2"></i>Đặt Lịch Khám Trực Tuyến
+            </h2>
+            <p class="text-muted mb-0">Điền thông tin và theo dõi trạng thái xác nhận từ bác sĩ</p>
+        </div>
+        <a asp-action="Portal" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="booking-form-card shadow-sm">
+                <div class="booking-form-header">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Thông tin đặt lịch</span>
+                </div>
+                <div class="p-4 p-md-5">
+                    <form asp-action="Booking" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Họ và Tên</label>
+                                <input type="text" class="form-control form-control-lg booking-input" name="FullName" placeholder="Nguyễn Văn A" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Số Điện Thoại</label>
+                                <input type="tel" class="form-control form-control-lg booking-input" name="PhoneNumber" placeholder="0912345678" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Lý do khám (Triệu chứng)</label>
+                                <textarea name="Reason" class="form-control booking-input" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Ngày & Giờ Khám (mong muốn)</label>
+                                <input name="AppointmentTime" type="datetime-local" class="form-control form-control-lg booking-input" required>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Gửi yêu cầu đặt lịch
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (TempData["PendingMessage"] != null)
+                    {
+                        <div class="alert alert-warning border-0 rounded-4 mt-4 d-flex align-items-start gap-3 shadow-sm" role="alert">
+                            <div class="pending-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-warning">Đã gửi yêu cầu — Chờ xác nhận</h6>
+                                <p class="mb-0 small">@TempData["PendingMessage"]</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="booking-status-card shadow-sm h-100">
+                <div class="booking-status-header">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Lịch hẹn của bạn</span>
+                </div>
+                <div class="p-4">
+                    @if (myBookings.Any())
+                    {
+                        <div class="booking-timeline">
+                            @foreach (var item in myBookings)
                             {
-                                foreach (var dept in departments)
-                                {
-                                    <option value="@dept.Id">@dept.DepartmentName</option>
-                                }
+                                var apt = item.Appointment;
+                                var isPending = apt.Status == 0;
+                                <div class="booking-item @(isPending ? "booking-pending" : "booking-confirmed")">
+                                    <div class="booking-item-icon">
+                                        <i class="fa-solid @(isPending ? "fa-clock" : "fa-circle-check")"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                            <h6 class="fw-bold mb-0">@apt.Reason</h6>
+                                            @if (isPending)
+                                            {
+                                                <span class="badge rounded-pill status-badge-pending">
+                                                    <i class="fa-solid fa-spinner fa-spin-pulse me-1"></i>Chờ xác nhận
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge rounded-pill status-badge-confirmed">
+                                                    <i class="fa-solid fa-check me-1"></i>Đã xác nhận
+                                                </span>
+                                            }
+                                        </div>
+                                        <p class="mb-1 small text-muted">
+                                            <i class="fa-regular fa-calendar me-1"></i>
+                                            @apt.AppointmentTime.ToString("HH:mm — dd/MM/yyyy")
+                                        </p>
+
+                                        @if (!isPending)
+                                        {
+                                            <div class="success-banner mt-3">
+                                                <i class="fa-solid fa-circle-check me-2"></i>
+                                                <strong>Đặt lịch thành công!</strong> Bác sĩ đã xác nhận lịch khám của bạn.
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(item.DoctorSms))
+                                            {
+                                                <div class="sms-bubble mt-3">
+                                                    <div class="sms-bubble-header">
+                                                        <i class="fa-solid fa-comment-sms me-2"></i>
+                                                        SMS từ @(item.DoctorName ?? "Bác sĩ")
+                                                    </div>
+                                                    <p class="mb-0">@item.DoctorSms</p>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <p class="mb-0 small text-muted mt-2">
+                                                <i class="fa-solid fa-info-circle me-1"></i>
+                                                Bác sĩ sẽ xem xét và gửi SMS xác nhận ngày giờ khám.
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
                             }
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" style="color: var(--text-color)">Ngày & Giờ Khám</label>
-                        <input name="AppointmentTime" type="datetime-local" class="form-control" required>
-                    </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-booking text-center py-5">
+                            <div class="empty-icon mb-3">
+                                <i class="fa-regular fa-calendar-xmark"></i>
+                            </div>
+                            <h6 class="fw-bold text-muted">Chưa có lịch hẹn nào</h6>
+                            <p class="text-muted small mb-0">Điền form bên trái để đặt lịch khám trực tuyến</p>
+                        </div>
+                    }
                 </div>
-                <div class="mt-4 text-center">
-                    <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill"><i class="fa-solid fa-check"></i> Xác nhận đặt lịch</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .booking-form-card, .booking-status-card {
+        background: var(--footer-bg);
+        border-radius: 20px;
+        border: 1px solid rgba(14, 165, 233, 0.12);
+        overflow: hidden;
+    }
+    .booking-form-header, .booking-status-header {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .booking-status-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .booking-input {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .booking-input:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+    }
+    .pending-icon {
+        width: 42px; height: 42px;
+        background: rgba(245, 158, 11, 0.15);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #f59e0b; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .booking-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .booking-item:hover { transform: translateY(-2px); }
+    .booking-pending {
+        background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.03) 100%);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    .booking-confirmed {
+        background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.03) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .booking-item-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    .booking-pending .booking-item-icon { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .booking-confirmed .booking-item-icon { background: rgba(16,185,129,0.15); color: #10b981; }
+    .status-badge-pending { background: #fef3c7; color: #b45309; font-weight: 600; }
+    .status-badge-confirmed { background: #d1fae5; color: #047857; font-weight: 600; }
+    .success-banner {
+        background: rgba(16, 185, 129, 0.12);
+        border-left: 4px solid #10b981;
+        padding: 0.75rem 1rem;
+        border-radius: 0 12px 12px 0;
+        font-size: 0.875rem;
+        color: #047857;
+    }
+    .sms-bubble {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 16px;
+        padding: 1rem;
+        position: relative;
+    }
+    .sms-bubble-header {
+        font-weight: 600;
+        color: #0369a1;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .empty-icon {
+        width: 72px; height: 72px;
+        margin: 0 auto;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; color: #94a3b8;
+    }
+</style>

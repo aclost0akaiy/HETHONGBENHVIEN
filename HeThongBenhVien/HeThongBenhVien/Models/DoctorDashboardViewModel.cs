@@ -10,6 +10,9 @@ namespace HeThongBenhVien.Models
         public int EmergencyCount { get; set; }
         
         public List<Appointment> UpcomingAppointments { get; set; } = new List<Appointment>();
+        public List<Appointment> PendingOnlineAppointments { get; set; } = new List<Appointment>();
+        public List<Appointment> ConfirmedAppointments { get; set; } = new List<Appointment>();
+        
         // Weekly work schedule entries (for the current week displayed on dashboard)
         public List<LichLamViec> WorkSchedules { get; set; } = new List<LichLamViec>();
 

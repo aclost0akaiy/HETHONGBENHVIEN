@@ -1,6 +1,10 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Cảnh Báo Khẩn Cấp";
+    var codeBlues = ViewBag.CodeBlues as List<HeThongBenhVien.Models.VitalSign> ?? new List<HeThongBenhVien.Models.VitalSign>();
+    var tempAlerts = ViewBag.TempAlerts as List<HeThongBenhVien.Models.VitalSign> ?? new List<HeThongBenhVien.Models.VitalSign>();
+    var labAlerts = ViewBag.LabAlerts as List<HeThongBenhVien.Models.LabTest> ?? new List<HeThongBenhVien.Models.LabTest>();
+    var medRecords = ViewBag.MedRecords as Dictionary<int, HeThongBenhVien.Models.MedicalRecord> ?? new Dictionary<int, HeThongBenhVien.Models.MedicalRecord>();
 }
 
 <div class="container-fluid p-0">
@@ -13,32 +17,71 @@
 
     <div class="row">
         <div class="col-12">
-            <div class="alert alert-danger border-0 glass-card bg-danger bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #dc3545 !important;">
-                <i class="fa-solid fa-triangle-exclamation fs-1 text-danger me-4 blink"></i>
-                <div>
-                    <h4 class="fw-bold text-danger mb-1">Báo Động Code Blue - Phòng Hồi Sức Tích Cực (ICU 1)</h4>
-                    <p class="m-0 text-dark">Bệnh nhân <strong class="text-danger">Trần Anh Tú (Giường 05)</strong> có dấu hiệu ngưng tim ngưng thở. Mạch < 40 l/p, SpO2 < 85%. Yêu cầu hỗ trợ khẩn cấp!</p>
+            
+            @if(!codeBlues.Any() && !tempAlerts.Any() && !labAlerts.Any())
+            {
+                <div class="alert alert-success border-0 glass-card bg-success bg-opacity-10 d-flex align-items-center" style="border-left: 5px solid #198754 !important;">
+                    <i class="fa-solid fa-check-circle fs-1 text-success me-4"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Không có cảnh báo</h5>
+                        <p class="m-0 text-dark">Hiện tại tất cả bệnh nhân đều có chỉ số ổn định.</p>
+                    </div>
                 </div>
-                <button class="btn btn-danger ms-auto px-4 fw-bold">Xác Nhận Đã Nhận</button>
-            </div>
+            }
 
-            <div class="alert alert-warning border-0 glass-card bg-warning bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #ffc107 !important;">
-                <i class="fa-solid fa-bell fs-1 text-warning me-4"></i>
-                <div>
-                    <h5 class="fw-bold text-dark mb-1">Cảnh Báo Sinh Hiệu - Khoa Nội Tiêu Hóa</h5>
-                    <p class="m-0 text-dark">Bệnh nhân <strong>Lê Thị Mai (Giường 12)</strong>: Nhiệt độ tăng cao 39.5°C liên tục trong 2 giờ qua.</p>
+            @foreach (var alert in codeBlues)
+            {
+                var departmentName = "Chưa rõ khoa";
+                var bedString = "";
+                if (medRecords.ContainsKey(alert.AppointmentId))
+                {
+                    var mRec = medRecords[alert.AppointmentId];
+                    if (mRec.Department != null) departmentName = mRec.Department.DepartmentName;
+                    if (mRec.BedNumber.HasValue) bedString = $" (Giường {mRec.BedNumber.Value:D2})";
+                }
+                
+                <div class="alert alert-danger border-0 glass-card bg-danger bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #dc3545 !important;">
+                    <i class="fa-solid fa-triangle-exclamation fs-1 text-danger me-4 blink"></i>
+                    <div>
+                        <h4 class="fw-bold text-danger mb-1">Báo Động Code Blue - @departmentName</h4>
+                        <p class="m-0 text-dark">Bệnh nhân <strong class="text-danger">@(alert.Appointment?.Patient?.FullName)@bedString</strong> có dấu hiệu nguy kịch. Mạch @alert.Pulse l/p, SpO2 @alert.SpO2%. Yêu cầu hỗ trợ khẩn cấp!</p>
+                    </div>
+                    <button class="btn btn-danger ms-auto px-4 fw-bold">Xác Nhận Đã Nhận</button>
                 </div>
-                <button class="btn btn-outline-warning text-dark border-warning ms-auto px-4 fw-bold">Xem Hồ Sơ</button>
-            </div>
+            }
 
-            <div class="alert alert-info border-0 glass-card bg-info bg-opacity-10 d-flex align-items-center" style="border-left: 5px solid #0dcaf0 !important;">
-                <i class="fa-solid fa-flask-vial fs-1 text-info me-4"></i>
-                <div>
-                    <h5 class="fw-bold text-dark mb-1">Kết quả XN Bất thường</h5>
-                    <p class="m-0 text-dark">Bệnh nhân <strong>Nguyễn Văn Hùng</strong>: Chỉ số Men gan (AST, ALT) vượt ngưỡng báo động (> 1000 U/L).</p>
+            @foreach (var alert in tempAlerts)
+            {
+                var departmentName = "Chưa rõ khoa";
+                var bedString = "";
+                if (medRecords.ContainsKey(alert.AppointmentId))
+                {
+                    var mRec = medRecords[alert.AppointmentId];
+                    if (mRec.Department != null) departmentName = mRec.Department.DepartmentName;
+                    if (mRec.BedNumber.HasValue) bedString = $" (Giường {mRec.BedNumber.Value:D2})";
+                }
+                
+                <div class="alert alert-warning border-0 glass-card bg-warning bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #ffc107 !important;">
+                    <i class="fa-solid fa-bell fs-1 text-warning me-4"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Cảnh Báo Sinh Hiệu - @departmentName</h5>
+                        <p class="m-0 text-dark">Bệnh nhân <strong>@(alert.Appointment?.Patient?.FullName)@bedString</strong>: Nhiệt độ tăng cao @alert.Temperature°C.</p>
+                    </div>
+                    <a href="/Doctor/ChiTietBenhAn/@(medRecords.ContainsKey(alert.AppointmentId) ? medRecords[alert.AppointmentId].Id : "")" class="btn btn-outline-warning text-dark border-warning ms-auto px-4 fw-bold">Xem Hồ Sơ</a>
                 </div>
-                <button class="btn btn-outline-info text-dark border-info ms-auto px-4 fw-bold">Xem Kết Quả</button>
-            </div>
+            }
+
+            @foreach (var alert in labAlerts)
+            {
+                <div class="alert alert-info border-0 glass-card bg-info bg-opacity-10 d-flex align-items-center mb-4" style="border-left: 5px solid #0dcaf0 !important;">
+                    <i class="fa-solid fa-flask-vial fs-1 text-info me-4"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Kết quả XN Bất thường</h5>
+                        <p class="m-0 text-dark">Bệnh nhân <strong>@(alert.MedicalRecord?.Appointment?.Patient?.FullName)</strong>: @alert.Result</p>
+                    </div>
+                    <a href="/Doctor/ChiTietBenhAn/@alert.MedicalRecordId" class="btn btn-outline-info text-dark border-info ms-auto px-4 fw-bold">Xem Kết Quả</a>
+                </div>
+            }
         </div>
     </div>
 </div>

@@ -18,3 +18,35 @@ DANH SÁCH 5 CHỨC NĂNG CHUYÊN NGHIỆP, NÂNG CAO (ĐẢM BẢO KHÔNG TRÙN
 
 -------------------
 Đánh giá: 5 tính năng này hoàn toàn khác biệt với các module Quản lý/Thống kê/Viện phí thông thường. Bạn hãy gửi file này cho cô giáo xem thử nhé. Mức độ "Pro" là khỏi bàn!
+
+Cập nhật Đặt lịch khám và Bảng điều khiển Bác sĩ
+Dưới đây là kế hoạch chi tiết cho các thay đổi trên giao diện Bệnh nhân và Bác sĩ.
+
+Các thay đổi dự kiến
+1. Đặt lịch khám (Bệnh nhân)
+Bỏ chọn Chuyên khoa: Xóa bỏ phần chọn "Chuyên khoa (Gợi ý)" trong trang Views/Patient/Booking.cshtml.
+Chuyển thông báo thành công: Di chuyển dòng thông báo đặt lịch thành công xuống phía dưới cùng của form, ngay dưới nút "Xác nhận đặt lịch".
+2. Bảng điều khiển Bác sĩ (Dashboard)
+Xóa thanh tìm kiếm trên cùng: Bỏ thanh tìm kiếm "Tìm kiếm bệnh nhân, mã hồ sơ..." nằm trên cùng của bảng điều khiển.
+Tạo nút bấm rõ ràng cho các Tab: Chỉnh sửa giao diện của 2 mục Lịch trực tháng và Danh sách chờ khám trong Views/Doctor/Dashboard.cshtml để chúng trông giống các nút bấm rõ ràng hơn, giúp bác sĩ dễ dàng nhận biết.
+Tìm kiếm và Phân trang cho Danh sách chờ:
+Thêm một thanh tìm kiếm theo tên bệnh nhân ngay trên bảng "Danh sách chờ khám tiếp theo".
+Thêm tính năng phân trang (tối đa 10 bệnh nhân mỗi trang). Chức năng này sẽ được xử lý bằng JavaScript để chuyển trang và tìm kiếm mượt mà không cần tải lại trang.
+Cập nhật phần Gửi thông báo (dưới cùng):
+Chỉnh sửa danh sách bệnh nhân ở phần "Gửi thông báo cho bệnh nhân" để chỉ hiển thị những bệnh nhân đã có tài khoản (tương tự như trang Hẹn Tái Khám).
+Đảm bảo khi bác sĩ gửi SMS từ đây, thông báo sẽ được lưu đúng ID bệnh nhân để khi bệnh nhân đăng nhập vào sẽ thấy được thông báo này.
+3. Quy trình Quản lý lịch hẹn mới
+Thêm Tab "BN Đặt Lịch Khám":
+Hiển thị danh sách các bệnh nhân đã đặt lịch online (Trạng thái: "Chưa đến").
+Có một nút để bác sĩ gửi SMS chốt ngày giờ khám. Khi bấm xác nhận, hệ thống sẽ gửi SMS cho bệnh nhân và chuyển trạng thái lịch hẹn thành "Đã xác nhận".
+Thêm Tab "Lịch Hẹn Khám":
+Hiển thị danh sách các lịch hẹn đã được bác sĩ xác nhận.
+Sắp xếp danh sách sao cho bệnh nhân tới trước (thời gian sớm hơn) hiện lên đầu, và bệnh nhân tới sau hiện ở dưới.
+Câu hỏi mở (Cần xác nhận)
+Chức năng tìm kiếm và phân trang tôi sẽ dùng JavaScript để xử lý trực tiếp trên giao diện cho nhanh và mượt, bạn có đồng ý với cách này không?
+Kế hoạch kiểm tra (Verification Plan)
+Kiểm tra trang Booking.cshtml xem đã mất ô "Chuyên khoa" và thông báo nằm ở dưới chưa.
+Kiểm tra Dashboard.cshtml xem thanh tìm kiếm trên cùng đã mất, các tab trông giống nút bấm chưa.
+Thử nghiệm tính năng tìm kiếm và phân trang ở danh sách chờ khám.
+Kiểm tra phần Gửi thông báo ở cuối trang xem có đúng là chỉ hiện bệnh nhân có tài khoản, và bệnh nhân nhận được thông báo không.
+Kiểm tra 2 tab mới ("BN Đặt Lịch Khám" và "Lịch Hẹn Khám") hoạt động và sắp xếp đúng logic.

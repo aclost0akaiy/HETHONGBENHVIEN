@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Nhắc Nhở Tự Động";
+    ViewData["Title"] = "Nhắc Nhở";
     var upcomingAppointments = ViewBag.UpcomingAppointments as List<HeThongBenhVien.Models.Appointment>;
     var recentPrescription = ViewBag.RecentPrescription as HeThongBenhVien.Models.Prescription;
 }
@@ -7,8 +7,8 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold" style="color: var(--text-color);"><i class="fa-solid fa-bell text-info me-2"></i>Nhắc Nhở Tự Động</h2>
-            <p class="text-muted mb-0">Theo dõi lịch uống thuốc và hẹn tái khám của bạn.</p>
+            <h2 class="fw-bold" style="color: var(--text-color);"><i class="fa-solid fa-bell text-info me-2"></i>Nhắc Nhở</h2>
+            <p class="text-muted mb-0">Theo dõi lịch uống thuốc, hẹn tái khám và thông báo từ bác sĩ.</p>
         </div>
         <a href="@Url.Action("Portal", "Patient")" class="btn btn-outline-primary rounded-pill px-4">
             <i class="fa-solid fa-arrow-left me-2"></i>Quay Lại
