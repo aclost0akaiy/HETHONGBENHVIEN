@@ -1,93 +1,1477 @@
-@model HeThongBenhVien.Models.QualityReview
+@model HeThongBenhVien.Models.Feedback
 @{
-    ViewData["Title"] = "Đánh Giá Dịch Vụ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Đánh giá dịch vụ y tế";
 }
 
-<div class="container mt-4 pb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold" style="color: var(--text-color);"><i class="fa-solid fa-star text-warning me-2"></i>Đánh Giá Dịch Vụ</h2>
-            <p class="text-muted mb-0">Phản hồi của bạn giúp chúng tôi cải thiện chất lượng tốt hơn.</p>
-        </div>
-        <a href="@Url.Action("Portal", "Patient")" class="btn btn-outline-primary rounded-pill px-4">
-            <i class="fa-solid fa-arrow-left me-2"></i>Quay Lại
-        </a>
+@section Styles {
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --primary-color: #0F766E;
+            --primary-dark: #0d645e;
+            --primary-light: #e0f2fe;
+            --warning-color: #D97706;
+            --warning-bg: #FEF3C7;
+            --success-color: #059669;
+            --success-bg: #D1FAE5;
+            --danger-color: #EF4444;
+            --danger-bg: #FEE2E2;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-500: #64748b;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--slate-800);
+        }
+
+        .rating-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Modern Custom Tabs */
+        .custom-tabs {
+            border-bottom: 2px solid var(--slate-200);
+            display: flex;
+            gap: 24px;
+            margin-bottom: 30px;
+            padding: 0;
+            list-style: none;
+        }
+
+        .custom-tabs .tab-item {
+            position: relative;
+        }
+
+        .custom-tabs .tab-link {
+            background: none;
+            border: none;
+            color: var(--slate-500);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 12px 4px;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .custom-tabs .tab-link:hover {
+            color: var(--slate-800);
+        }
+
+        .custom-tabs .tab-link.active {
+            color: var(--primary-color);
+        }
+
+        .custom-tabs .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        /* Card container */
+        .card-premium {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 16px;
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Star Rating Form Elements */
+        .overall-box {
+            background-color: #f0f7ff;
+            border: 1px solid #d0e7ff;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .star-rating-interactive, .star-rating-sub {
+            color: #cbd5e1;
+            font-size: 1.8rem;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        .star-rating-sub {
+            font-size: 1.4rem;
+            margin: 4px 0;
+            justify-content: flex-start;
+        }
+
+        .star-rating-interactive i, .star-rating-sub i {
+            transition: transform 0.15s, color 0.15s;
+        }
+
+        .star-rating-interactive i:hover {
+            transform: scale(1.15);
+        }
+
+        .star-rating-interactive i.active, .star-rating-sub i.active {
+            color: #F59E0B;
+        }
+
+        /* Criteria button groups */
+        .eval-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .eval-btn-group button {
+            background-color: #ffffff;
+            border: 1px solid var(--slate-300);
+            color: var(--slate-700);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .eval-btn-group button:hover {
+            background-color: var(--slate-100);
+            border-color: var(--slate-500);
+        }
+
+        .eval-btn-group button.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(15, 118, 110, 0.25);
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--slate-300);
+            border-radius: 12px;
+            background-color: var(--slate-50);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-zone:hover {
+            background-color: #f0fdf4;
+            border-color: var(--primary-color);
+        }
+
+        .upload-zone-icon {
+            font-size: 2rem;
+            color: var(--slate-500);
+            margin-bottom: 8px;
+        }
+
+        .thumbnail-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .thumb-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--box-shadow);
+        }
+
+        .thumb-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-remove-thumb {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239, 68, 68, 0.85);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-remove-thumb:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+
+        /* History Card */
+        .history-card {
+            background: #ffffff;
+            border: 1px solid var(--slate-200);
+            border-radius: 16px;
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--slate-100);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .history-date {
+            font-size: 0.85rem;
+            color: var(--slate-500);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-badge-pending {
+            background-color: var(--warning-bg);
+            color: var(--warning-color);
+        }
+
+        .status-badge-replied {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+        }
+
+        .history-dept {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--slate-800);
+            margin-bottom: 6px;
+        }
+
+        .history-stars {
+            color: #F59E0B;
+            display: flex;
+            gap: 2px;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+        }
+
+        .history-comment {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--slate-700);
+            background-color: var(--slate-50);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .history-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .history-img-item {
+            width: 70px;
+            height: 70px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--slate-200);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .history-img-item:hover {
+            transform: scale(1.05);
+        }
+
+        .history-img-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Timeline Chat Thread inside card */
+        .comments-thread {
+            border-top: 1px solid var(--slate-100);
+            padding-top: 16px;
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .thread-item {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .patient-reply {
+            align-self: flex-end;
+            background-color: var(--slate-100);
+            color: var(--slate-800);
+            border-bottom-right-radius: 2px;
+        }
+
+        .admin-reply {
+            align-self: flex-start;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-bottom-left-radius: 2px;
+        }
+
+        .thread-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            opacity: 0.85;
+            font-weight: 600;
+        }
+
+        .thread-sender {
+            text-transform: uppercase;
+        }
+
+        .thread-message {
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        /* Chat input bar for thread replies */
+        .thin-reply-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px solid var(--slate-100);
+            padding-top: 15px;
+        }
+
+        .thin-reply-input {
+            flex: 1;
+            border: 1px solid var(--slate-300);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .thin-reply-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-thin-send {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-thin-send:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Inline Actions */
+        .inline-actions {
+            display: inline-flex;
+            gap: 8px;
+            margin-right: 12px;
+        }
+
+        .inline-action-btn {
+            background: none;
+            border: none;
+            color: var(--slate-500);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: color 0.15s;
+            padding: 2px;
+        }
+
+        .inline-action-btn:hover {
+            color: var(--slate-800);
+        }
+
+        .inline-action-btn.edit-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .inline-action-btn.delete-btn:hover {
+            color: var(--danger-color);
+        }
+
+        .form-label-premium {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate-700);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--slate-500);
+        }
+    </style>
+}
+
+<div class="container mt-4 pb-5 rating-container">
+    <div class="mb-4 text-center text-sm-start">
+        <h2 class="fw-bold text-slate-800 m-0">Đánh giá dịch vụ y tế</h2>
+        <p class="text-slate-500 mt-1 mb-0">Ý kiến của bạn giúp chúng tôi cải thiện chất lượng phục vụ mỗi ngày.</p>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fa-solid fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    <!-- Navigation Tabs -->
+    <ul class="custom-tabs" id="ratingTab" role="tablist">
+        <li class="tab-item" role="presentation">
+            <button class="tab-link active" id="new-review-tab" type="button" role="tab" onclick="switchTab('new-review-pane'); resetFormOnTabSwitch();">Gửi Đánh Giá Mới</button>
+        </li>
+        <li class="tab-item" role="presentation">
+            <button class="tab-link" id="history-tab" type="button" role="tab" onclick="switchTab('history-pane'); loadMyReviews();">Lịch Sử Đánh Giá</button>
+        </li>
+    </ul>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card border-0 shadow-lg rounded-4" style="background-color: var(--card-bg);">
-                <div class="card-body p-5 text-center">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135690.png" class="img-fluid mb-4 rounded-circle bg-light p-2 shadow-sm" style="width: 120px;" />
-                    <h5 class="fw-bold mb-1" style="color: var(--text-color);">Đánh giá trải nghiệm khám bệnh</h5>
+    <!-- Tabs Content -->
+    <div class="tab-content" id="ratingTabContent">
+        <!-- TAB 1: GỬI ĐÁNH GIÁ MỚI -->
+        <div class="tab-pane fade show active" id="new-review-pane" role="tabpanel">
+            <div class="card-premium">
+                <form id="reviewSubmitForm" autocomplete="off" onsubmit="return false;">
+                    <input type="hidden" id="reviewId" value="0">
                     
-                    <form asp-action="Rating" method="post" id="ratingForm">
-                        <input type="hidden" asp-for="Department" value="Khám Tổng Hợp" />
-                        <input type="hidden" asp-for="CleanlinessScore" id="cScore" value="5" />
-                        <input type="hidden" asp-for="StaffScore" id="sScore" value="5" />
-                        <input type="hidden" asp-for="FacilityScore" id="fScore" value="5" />
-                        <input type="hidden" asp-for="WaitTimeScore" id="wScore" value="5" />
-                        <input type="hidden" asp-for="ServiceScore" id="mainScore" value="0" />
+                    <!-- KHOA PHÒNG -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium" for="departmentSelect">Khoa / Phòng điều trị <span class="text-danger">*</span></label>
+                        <select class="form-select" id="departmentSelect" name="DepartmentId" required>
+                            <option value="">Chọn khoa/phòng bạn đã thăm khám</option>
+                            @if (ViewBag.Departments != null)
+                            {
+                                foreach (HeThongBenhVien.Models.Department dept in (IEnumerable<HeThongBenhVien.Models.Department>)ViewBag.Departments)
+                                {
+                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                }
+                            }
+                        </select>
+                    </div>
 
-                        <h4 class="fw-bold mb-3" style="color: var(--text-color);">Bạn cảm thấy hài lòng không?</h4>
-                        <div class="d-flex justify-content-center gap-3 mb-4 rating-stars">
-                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(1)"></i>
-                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(2)"></i>
-                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(3)"></i>
-                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(4)"></i>
-                            <i class="fa-regular fa-star fa-2x text-warning" style="cursor:pointer;" onclick="rate(5)"></i>
+                    <!-- MỨC ĐỘ HÀI LÒNG TỔNG QUÁT -->
+                    <div class="mb-4">
+                        <div class="overall-box">
+                            <label class="form-label fw-bold text-slate-800 m-0">ĐÁNH GIÁ TỔNG QUÁT <span class="text-danger">*</span></label>
+                            <div class="star-rating-interactive" id="overallScoreStars">
+                                <i class="fa-regular fa-star" data-val="1"></i>
+                                <i class="fa-regular fa-star" data-val="2"></i>
+                                <i class="fa-regular fa-star" data-val="3"></i>
+                                <i class="fa-regular fa-star" data-val="4"></i>
+                                <i class="fa-regular fa-star" data-val="5"></i>
+                            </div>
+                            <input type="hidden" id="overallScoreInput" value="0">
+                            <span class="text-warning small fw-bold d-block mt-2" id="overallScoreText">Chọn số sao để đánh giá</span>
                         </div>
+                    </div>
 
-                        <div class="form-group text-start mb-4">
-                            <label class="fw-bold mb-2" style="color: var(--text-color);">Góp ý thêm (Tùy chọn)</label>
-                            <textarea asp-for="Comment" class="form-control rounded-3" rows="4" placeholder="Chia sẻ trải nghiệm của bạn với bác sĩ và nhân viên y tế..."></textarea>
+                    <!-- THÁI ĐỘ PHỤ VỤ & VỆ SINH SẠCH SẼ -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label form-label-premium">Thái độ phục vụ <span class="text-danger">*</span></label>
+                            <div class="star-rating-sub" id="thaiDoStars">
+                                <i class="fa-regular fa-star" data-val="1"></i>
+                                <i class="fa-regular fa-star" data-val="2"></i>
+                                <i class="fa-regular fa-star" data-val="3"></i>
+                                <i class="fa-regular fa-star" data-val="4"></i>
+                                <i class="fa-regular fa-star" data-val="5"></i>
+                            </div>
+                            <input type="hidden" id="thaiDoInput" value="0">
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-premium">Vệ sinh sạch sẽ <span class="text-danger">*</span></label>
+                            <div class="star-rating-sub" id="veSinhStars">
+                                <i class="fa-regular fa-star" data-val="1"></i>
+                                <i class="fa-regular fa-star" data-val="2"></i>
+                                <i class="fa-regular fa-star" data-val="3"></i>
+                                <i class="fa-regular fa-star" data-val="4"></i>
+                                <i class="fa-regular fa-star" data-val="5"></i>
+                            </div>
+                            <input type="hidden" id="veSinhInput" value="0">
+                        </div>
+                    </div>
 
-                        <button type="button" class="btn btn-primary w-100 rounded-pill py-3 fw-bold fs-5 shadow" onclick="submitRating()">
-                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi Đánh Giá
+                    <!-- CHUYÊN MÔN BÁC SĨ -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium">Chuyên môn bác sĩ <span class="text-danger">*</span></label>
+                        <div class="eval-btn-group" id="btnGroupChuyenMon">
+                            <button type="button" data-val="Kém">Kém</button>
+                            <button type="button" data-val="Trung bình">Trung bình</button>
+                            <button type="button" data-val="Tốt">Tốt</button>
+                            <button type="button" data-val="Xuất sắc">Xuất sắc</button>
+                        </div>
+                        <input type="hidden" id="chuyenMonInput" value="">
+                    </div>
+
+                    <!-- CƠ SỞ VẬT CHẤT -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium">Cơ sở vật chất <span class="text-danger">*</span></label>
+                        <div class="eval-btn-group" id="btnGroupCSVC">
+                            <button type="button" data-val="Kém">Kém</button>
+                            <button type="button" data-val="Trung bình">Trung bình</button>
+                            <button type="button" data-val="Tốt">Tốt</button>
+                        </div>
+                        <input type="hidden" id="csvcInput" value="">
+                    </div>
+
+                    <!-- THỜI GIAN CHỜ ĐỢI -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium">Thời gian chờ đợi <span class="text-danger">*</span></label>
+                        <div class="eval-btn-group" id="btnGroupThoiGianCho">
+                            <button type="button" data-val="< 15p">&lt; 15p</button>
+                            <button type="button" data-val="15-30p">15-30p</button>
+                            <button type="button" data-val="30-60p">30-60p</button>
+                            <button type="button" data-val="1h-2h">1h-2h</button>
+                            <button type="button" data-val="> 2h">&gt; 2h</button>
+                        </div>
+                        <input type="hidden" id="thoiGianChoInput" value="">
+                    </div>
+
+                    <!-- NỘI DUNG CHI TIẾT -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium" for="commentTextarea">Ý kiến đóng góp / Nội dung nhận xét chi tiết <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="commentTextarea" rows="4" placeholder="Nhập ý kiến đóng góp của bạn về dịch vụ..." required></textarea>
+                    </div>
+
+                    <!-- ĐÍNH KÈM HÌNH ẢNH -->
+                    <div class="mb-4">
+                        <label class="form-label form-label-premium">Hình ảnh đính kèm (Tối đa 10 ảnh, tùy chọn)</label>
+                        <div class="upload-zone" id="dropzoneClickable">
+                            <i class="fa-solid fa-camera-retro upload-zone-icon"></i>
+                            <div class="fw-semibold text-slate-700">Nhấn để tải lên hoặc kéo thả ảnh vào đây</div>
+                            <div class="text-muted small">(Định dạng .jpg, .png, .jpeg, .gif tối đa 5MB mỗi ảnh)</div>
+                        </div>
+                        <input type="file" id="imageFilesInput" accept="image/*" multiple class="d-none">
+                        <div class="thumbnail-container" id="uploadThumbnailsContainer"></div>
+                    </div>
+
+                    <!-- CHO PHÉP LIÊN HỆ -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="allowContactCheckbox" checked>
+                        <label class="form-check-label text-slate-700" for="allowContactCheckbox">
+                            Tôi đồng ý để bệnh viện liên hệ trao đổi thêm thông tin nếu cần thiết.
+                        </label>
+                    </div>
+
+                    <!-- SUBMIT BUTTON -->
+                    <div class="mt-4 pt-2">
+                        <button type="button" class="btn btn-primary w-100 py-2.5 fw-bold" id="btnSubmitReviewForm" onclick="submitReviewForm()" style="background-color: var(--primary-color); border-color: var(--primary-color);">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Gửi đánh giá
                         </button>
-                    </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: LỊCH SỬ ĐÁNH GIÁ -->
+        <div class="tab-pane fade" id="history-pane" role="tabpanel">
+            <!-- Stats overview cards row -->
+            <div class="row g-3 mb-4">
+                <div class="col-4">
+                    <div class="card text-center border-slate-200 py-3 shadow-sm bg-white rounded-3">
+                        <span class="h3 fw-bold text-primary mb-0" id="statTotal">00</span>
+                        <span class="text-muted small d-block">Tổng đánh giá</span>
+                    </div>
                 </div>
+                <div class="col-4">
+                    <div class="card text-center border-slate-200 py-3 shadow-sm bg-white rounded-3">
+                        <span class="h3 fw-bold text-success mb-0" id="statReplied">00</span>
+                        <span class="text-muted small d-block">Đã phản hồi</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card text-center border-slate-200 py-3 shadow-sm bg-white rounded-3">
+                        <span class="h3 fw-bold text-warning mb-0" id="statPending">00</span>
+                        <span class="text-muted small d-block">Đang chờ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List items container -->
+            <div id="historyReviewsList">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-teal" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load more button -->
+            <div class="text-center mt-4 d-none" id="loadMoreContainer">
+                <button type="button" class="btn btn-outline-primary btn-sm px-4" id="btnLoadMore" onclick="loadMoreReviews()">Xem thêm lịch sử</button>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    let currentRating = 0;
-    function rate(stars) {
-        currentRating = stars;
-        document.getElementById('mainScore').value = stars;
-        document.getElementById('cScore').value = stars;
-        document.getElementById('sScore').value = stars;
-        document.getElementById('fScore').value = stars;
-        document.getElementById('wScore').value = stars;
-        
-        const starElements = document.querySelectorAll('.rating-stars i');
-        starElements.forEach((el, index) => {
-            if (index < stars) {
-                el.classList.remove('fa-regular');
-                el.classList.add('fa-solid');
-            } else {
-                el.classList.remove('fa-solid');
-                el.classList.add('fa-regular');
+<!-- Lightbox Modal for Image Expansion -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="modal-body text-center p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1051; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"></button>
+                <img id="lightboxTargetImg" src="" class="img-fluid rounded-3 shadow-lg" style="max-height: 85vh; border: 3px solid white;">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // SweetAlert2 Toast customization
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
             }
         });
-    }
 
-    function submitRating() {
-        if (currentRating === 0) {
-            alert('Vui lòng chọn số sao để đánh giá!');
-            return;
+        // Config variables
+        const defaultPatientPhone = "@ViewBag.PatientPhone";
+        const defaultPatientName = "@ViewBag.PatientName";
+        const currentUserId = "@ViewBag.CurrentUserId";
+
+        // Global arrays
+        let uploadedFiles = [];
+        let existingImagesKeep = [];
+        let reviewsList = [];
+        let currentPage = 1;
+        const pageSize = 5;
+        let totalRecords = 0;
+
+        // Modals instances
+        let lightboxModalInstance;
+
+        // Validation helpers
+        function showFieldError(selector, message, isOverallBox = false) {
+            let el = $(selector);
+            if (isOverallBox) {
+                el.addClass('border-danger');
+                if (el.parent().find('.invalid-feedback').length === 0) {
+                    el.after(`<div class="invalid-feedback text-danger d-block mt-1 fw-semibold text-center">${message}</div>`);
+                }
+            } else {
+                el.addClass('is-invalid');
+                if (el.next('.invalid-feedback').length === 0) {
+                    el.after(`<div class="invalid-feedback text-danger d-block mt-1">${message}</div>`);
+                }
+            }
         }
-        document.getElementById('ratingForm').submit();
-    }
-</script>
+
+        function clearFieldError(selector, isOverallBox = false) {
+            let el = $(selector);
+            if (isOverallBox) {
+                el.removeClass('border-danger');
+                el.parent().find('.invalid-feedback').remove();
+            } else {
+                el.removeClass('is-invalid');
+                el.next('.invalid-feedback').remove();
+            }
+        }
+
+        $(document).ready(function () {
+            lightboxModalInstance = new bootstrap.Modal(document.getElementById('lightboxModal'));
+
+            // Real-time validation clear handlers
+            $('#departmentSelect').on('change', function () {
+                if ($(this).val()) {
+                    clearFieldError('#departmentSelect');
+                }
+            });
+
+            $('#commentTextarea').on('input', function () {
+                if ($(this).val().trim()) {
+                    clearFieldError('#commentTextarea');
+                }
+            });
+
+            // Bind interactive star rating behaviors
+            bindInteractiveStars('#overallScoreStars', '#overallScoreInput', true);
+            bindInteractiveStars('#thaiDoStars', '#thaiDoInput', false);
+            bindInteractiveStars('#veSinhStars', '#veSinhInput', false);
+
+            // Bind Criteria Button Groups
+            bindCriteriaButtons('#btnGroupChuyenMon', '#chuyenMonInput');
+            bindCriteriaButtons('#btnGroupCSVC', '#csvcInput');
+            bindCriteriaButtons('#btnGroupThoiGianCho', '#thoiGianChoInput');
+
+            // Setup file upload zone clicks
+            $('#dropzoneClickable').on('click', function (e) {
+                if (e.target.id !== 'imageFilesInput' && !$(e.target).closest('.thumb-preview-item').length) {
+                    $('#imageFilesInput').click();
+                }
+            });
+
+            $('#imageFilesInput').on('change', function () {
+                processSelectedFiles(this.files);
+                this.value = ''; // Clear to allow uploading the same file again
+            });
+
+            // Setup drag and drop behaviors
+            let dropZone = document.getElementById('dropzoneClickable');
+            if (dropZone) {
+                dropZone.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    $(this).css('border-color', 'var(--primary-color)').css('background-color', '#f0fdf4');
+                });
+                dropZone.addEventListener('dragleave', function (e) {
+                    $(this).css('border-color', 'var(--slate-300)').css('background-color', 'var(--slate-50)');
+                });
+                dropZone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    $(this).css('border-color', 'var(--slate-300)').css('background-color', 'var(--slate-50)');
+                    if (e.dataTransfer.files.length > 0) {
+                        processSelectedFiles(e.dataTransfer.files);
+                    }
+                });
+            }
+
+            // Load counts initially
+            loadStats();
+        });
+
+        // Interactive stars handler
+        function bindInteractiveStars(containerSelector, hiddenInputSelector, isOverall) {
+            $(containerSelector + ' i').on('click', function () {
+                let val = parseInt($(this).data('val'));
+                let currentVal = parseInt($(hiddenInputSelector).val());
+
+                if (!isOverall && val === currentVal) {
+                    // Toggle off for criteria ratings
+                    $(hiddenInputSelector).val('0');
+                    $(containerSelector + ' i').removeClass('fa-solid active').addClass('fa-regular');
+                } else {
+                    $(hiddenInputSelector).val(val);
+                    $(containerSelector + ' i').each(function (index) {
+                        if (index < val) {
+                            $(this).removeClass('fa-regular').addClass('fa-solid active');
+                        } else {
+                            $(this).removeClass('fa-solid active').addClass('fa-regular');
+                        }
+                    });
+                    
+                    if (isOverall) {
+                        clearFieldError(hiddenInputSelector, true);
+                        let texts = ["Kém", "Yếu", "Trung bình", "Tốt", "Tuyệt vời"];
+                        $('#overallScoreText').text(texts[val - 1]).removeClass('text-warning').addClass('text-success');
+                    } else {
+                        clearFieldError(hiddenInputSelector);
+                    }
+                }
+            });
+        }
+
+        // Criteria buttons handler
+        function bindCriteriaButtons(groupSelector, hiddenInputSelector) {
+            $(groupSelector + ' button').on('click', function () {
+                let val = $(this).data('val');
+                let currentVal = $(hiddenInputSelector).val();
+
+                if (val === currentVal) {
+                    // Toggle off
+                    $(hiddenInputSelector).val('');
+                    $(this).removeClass('active');
+                } else {
+                    $(groupSelector + ' button').removeClass('active');
+                    $(this).addClass('active');
+                    $(hiddenInputSelector).val(val);
+                    clearFieldError(hiddenInputSelector);
+                }
+            });
+        }
+
+        // Process selected files
+        function processSelectedFiles(filesList) {
+            let limit = 10 - (existingImagesKeep.length + uploadedFiles.length);
+            if (filesList.length > limit) {
+                Toast.fire({ icon: 'warning', title: `Chỉ có thể tải lên tối đa 10 hình ảnh. Còn lại ${limit} lượt.` });
+            }
+
+            let allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            for (let i = 0; i < Math.min(filesList.length, limit); i++) {
+                let file = filesList[i];
+                let ext = file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedExtensions.includes(ext)) {
+                    Toast.fire({ icon: 'error', title: `Định dạng tệp của '${file.name}' không hợp lệ!` });
+                    continue;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    Toast.fire({ icon: 'error', title: `Dung lượng tệp '${file.name}' vượt quá 5MB!` });
+                    continue;
+                }
+
+                uploadedFiles.push(file);
+            }
+            renderThumbnails();
+        }
+
+        // Render uploads thumbnails
+        function renderThumbnails() {
+            let container = $('#uploadThumbnailsContainer');
+            container.empty();
+
+            // Render existing images kept
+            existingImagesKeep.forEach((imgUrl, index) => {
+                container.append(`
+                    <div class="thumb-preview-item">
+                        <img src="${imgUrl}">
+                        <button type="button" class="btn-remove-thumb" onclick="removeExistingImage(${index})">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `);
+            });
+
+            // Render newly uploaded files
+            uploadedFiles.forEach((file, index) => {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    container.append(`
+                        <div class="thumb-preview-item">
+                            <img src="${e.target.result}">
+                            <button type="button" class="btn-remove-thumb" onclick="removeNewFile(${index})">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeExistingImage(index) {
+            existingImagesKeep.splice(index, 1);
+            renderThumbnails();
+        }
+
+        function removeNewFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderThumbnails();
+        }
+
+        // Reset fields state
+        function resetFormOnTabSwitch() {
+            $('#reviewId').val('0');
+            $('#reviewSubmitForm')[0].reset();
+            
+            // Reset ratings inputs
+            $('#overallScoreInput').val('0');
+            $('#overallScoreText').text('Chọn số sao để đánh giá').removeClass('text-success').addClass('text-warning');
+            $('#overallScoreStars i').removeClass('fa-solid active').addClass('fa-regular');
+            
+            $('#thaiDoInput').val('0');
+            $('#thaiDoStars i').removeClass('fa-solid active').addClass('fa-regular');
+            
+            $('#veSinhInput').val('0');
+            $('#veSinhStars i').removeClass('fa-solid active').addClass('fa-regular');
+            
+            // Reset criteria buttons
+            $('#chuyenMonInput').val('');
+            $('#btnGroupChuyenMon button').removeClass('active');
+            
+            $('#csvcInput').val('');
+            $('#btnGroupCSVC button').removeClass('active');
+            
+            $('#thoiGianChoInput').val('');
+            $('#btnGroupThoiGianCho button').removeClass('active');
+
+            // Clear files
+            uploadedFiles = [];
+            existingImagesKeep = [];
+            renderThumbnails();
+
+            // Clear errors
+            clearFieldError('#departmentSelect');
+            clearFieldError('#overallScoreInput', true);
+            clearFieldError('#thaiDoInput');
+            clearFieldError('#veSinhInput');
+            clearFieldError('#chuyenMonInput');
+            clearFieldError('#csvcInput');
+            clearFieldError('#thoiGianChoInput');
+            clearFieldError('#commentTextarea');
+
+            // Reset submit button state
+            $('#btnSubmitReviewForm').html('<i class="fa-solid fa-paper-plane me-1"></i> Gửi đánh giá');
+        }
+
+        // Switch tab helper
+        function switchTab(paneId) {
+            $('.tab-link').removeClass('active');
+            $('.tab-pane').removeClass('show active');
+
+            if (paneId === 'new-review-pane') {
+                $('#new-review-tab').addClass('active');
+            } else {
+                $('#history-tab').addClass('active');
+            }
+            $('#' + paneId).addClass('show active');
+        }
+
+        // Load stats numbers
+        function loadStats() {
+            $.ajax({
+                url: '/Patient/Rating/GetMyFeedback',
+                type: 'GET',
+                data: { page: 1, pageSize: 1 },
+                success: function (res) {
+                    if (res.success) {
+                        $('#statTotal').text(res.totalCount.toString().padStart(2, '0'));
+                        
+                        // Let's call details endpoint or count locally
+                        $.ajax({
+                            url: '/Patient/Rating/GetMyFeedback',
+                            type: 'GET',
+                            data: { page: 1, pageSize: 1000 },
+                            success: function (statsRes) {
+                                if (statsRes.success) {
+                                    let items = statsRes.data;
+                                    let pending = items.filter(x => x.status === "Pending").length;
+                                    let replied = items.filter(x => x.status === "Responded" || x.status === "Closed").length;
+                                    
+                                    $('#statPending').text(pending.toString().padStart(2, '0'));
+                                    $('#statReplied').text(replied.toString().padStart(2, '0'));
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Switch and load reviews
+        function loadMyReviews() {
+            currentPage = 1;
+            $('#historyReviewsList').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-teal" style="color: var(--primary-color);" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            `);
+
+            $.ajax({
+                url: '/Patient/Rating/GetMyFeedback',
+                type: 'GET',
+                data: { page: currentPage, pageSize: pageSize },
+                success: function (res) {
+                    if (res.success) {
+                        reviewsList = res.data;
+                        totalRecords = res.totalCount;
+                        renderReviewsList(false);
+                        
+                        if (reviewsList.length < totalRecords) {
+                            $('#loadMoreContainer').removeClass('d-none');
+                        } else {
+                            $('#loadMoreContainer').addClass('d-none');
+                        }
+                    } else {
+                        $('#historyReviewsList').html('<div class="empty-state"><i class="fa-regular fa-face-frown fa-3x mb-3 text-slate-300"></i><p class="m-0 fw-semibold">Không thể tải dữ liệu lịch sử.</p></div>');
+                    }
+                },
+                error: function() {
+                    $('#historyReviewsList').html('<div class="empty-state"><i class="fa-regular fa-face-frown fa-3x mb-3 text-slate-300"></i><p class="m-0 fw-semibold">Không thể tải dữ liệu lịch sử.</p></div>');
+                }
+            });
+        }
+
+        // Paginated load more Reviews
+        function loadMoreReviews() {
+            currentPage++;
+            let btn = $('#btnLoadMore');
+            let originalText = btn.text();
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Đang tải...');
+
+            $.ajax({
+                url: '/Patient/Rating/GetMyFeedback',
+                type: 'GET',
+                data: { page: currentPage, pageSize: pageSize },
+                success: function (res) {
+                    btn.prop('disabled', false).text(originalText);
+                    if (res.success) {
+                        reviewsList = reviewsList.concat(res.data);
+                        renderReviewsList(true); // append mode
+
+                        if (reviewsList.length >= totalRecords) {
+                            $('#loadMoreContainer').addClass('d-none');
+                        }
+                    }
+                },
+                error: function () {
+                    btn.prop('disabled', false).text(originalText);
+                    Toast.fire({ icon: 'error', title: 'Lỗi tải trang dữ liệu tiếp theo!' });
+                }
+            });
+        }
+
+        // Render reviews HTML
+        function renderReviewsList(append) {
+            let container = $('#historyReviewsList');
+            if (!append) {
+                container.empty();
+            }
+
+            let itemsToRender = append ? reviewsList.slice((currentPage - 1) * pageSize) : reviewsList;
+
+            if (reviewsList.length === 0) {
+                container.html(`
+                    <div class="empty-state card border-dashed py-5 rounded-3">
+                        <i class="fa-solid fa-receipt fa-3x mb-3 text-slate-300"></i>
+                        <h6 class="fw-bold text-slate-700">Chưa có lịch sử đánh giá nào</h6>
+                        <p class="text-slate-500 mb-0 small">Bạn chưa gửi bất kỳ đánh giá nào lên hệ thống bệnh viện.</p>
+                    </div>
+                `);
+                return;
+            }
+
+            $.each(itemsToRender, function (index, item) {
+                let isReplied = item.status === "Responded" || item.status === "Closed";
+                let badgeClass = isReplied ? "status-badge-replied" : "status-badge-pending";
+                let badgeText = isReplied ? '<i class="fa-solid fa-check-circle"></i> Đã phản hồi' : '<i class="fa-solid fa-clock"></i> Chờ phản hồi';
+
+                // Stars rating UI
+                let overallScore = item.ratingOverall || 0;
+                let starsHtml = "";
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= overallScore) {
+                        starsHtml += '<i class="fa-solid fa-star"></i>';
+                    } else {
+                        starsHtml += '<i class="fa-regular fa-star"></i>';
+                    }
+                }
+
+                // Inline edit/delete actions (only if Admin has NOT responded)
+                let inlineActionsHtml = "";
+                if (!isReplied) {
+                    inlineActionsHtml = `
+                        <span class="inline-actions">
+                            <a href="javascript:void(0)" onclick="populateEditReview(${item.id})" class="inline-action-btn edit-btn" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i> Sửa</a>
+                            <a href="javascript:void(0)" onclick="confirmDeleteReview(${item.id})" class="inline-action-btn delete-btn" title="Xóa"><i class="fa-solid fa-trash"></i> Xóa</a>
+                        </span>
+                    `;
+                } else {
+                    inlineActionsHtml = `
+                        <span class="inline-actions text-muted small me-2"><i class="fa-solid fa-lock me-1"></i>Đã khóa chỉnh sửa</span>
+                    `;
+                }
+
+                // Images previews
+                let imagesHtml = "";
+                if (item.images && item.images.length > 0) {
+                    imagesHtml += '<div class="history-images">';
+                    $.each(item.images, function (i, imgUrl) {
+                        imagesHtml += `
+                            <div class="history-img-item" onclick="viewLightbox('${imgUrl}')">
+                                <img src="${imgUrl}">
+                            </div>
+                        `;
+                    });
+                    imagesHtml += '</div>';
+                }
+
+                // Timeline response threads
+                let threadHtml = "";
+                if (item.responses && item.responses.length > 0) {
+                    threadHtml += '<div class="comments-thread">';
+                    $.each(item.responses, function (i, t) {
+                        let isAdmin = t.sender === "Admin";
+                        let rowClass = isAdmin ? "admin-reply" : "patient-reply";
+                        let senderName = isAdmin ? "Ban Quản Trị CarePulse" : "Bạn";
+
+                        threadHtml += `
+                            <div class="thread-item ${rowClass}">
+                                <div class="thread-meta-row">
+                                    <span class="thread-sender">${senderName}</span>
+                                    <span class="thread-time">${t.createdAt}</span>
+                                </div>
+                                <div class="thread-message">${t.content}</div>
+                            </div>
+                        `;
+                    });
+                    threadHtml += '</div>';
+                }
+
+                // Reply input box
+                let replyBoxHtml = `
+                    <div class="thin-reply-bar" id="replyBar_${item.id}">
+                        <input type="text" class="thin-reply-input" placeholder="Viết phản hồi của bạn..." id="replyInput_${item.id}">
+                        <button type="button" class="btn-thin-send" id="btnSendReply_${item.id}" onclick="submitPatientReply(${item.id})">Gửi</button>
+                    </div>
+                `;
+
+                let infoRowHtml = `
+                    <div class="d-flex flex-wrap gap-3 mb-2 small text-muted border-top border-bottom py-2 my-2">
+                        <span><strong>Thái độ:</strong> ${item.thaiDo}★</span>
+                        <span><strong>Vệ sinh:</strong> ${item.veSinh}★</span>
+                        <span><strong>Chuyên môn:</strong> ${item.chuyenMon || "N/A"}</span>
+                        <span><strong>CSVC:</strong> ${item.csvc || "N/A"}</span>
+                        <span><strong>Thời gian chờ:</strong> ${item.thoiGianCho || "N/A"}</span>
+                    </div>
+                `;
+
+                let cardHtml = `
+                    <div class="history-card" id="reviewCard_${item.id}">
+                        <div class="history-header">
+                            <span class="history-date">${item.createdAt}</span>
+                            <div class="d-flex align-items-center">
+                                ${inlineActionsHtml}
+                                <span class="status-badge ${badgeClass}">${badgeText}</span>
+                            </div>
+                        </div>
+                        <div class="history-dept">${item.departmentName}</div>
+                        <div class="history-stars">${starsHtml}</div>
+                        ${infoRowHtml}
+                        <div class="history-comment">${item.content}</div>
+                        
+                        ${imagesHtml}
+                        ${threadHtml}
+                        ${replyBoxHtml}
+                    </div>
+                `;
+
+                container.append(cardHtml);
+            });
+        }
+
+        // View image modal
+        function viewLightbox(url) {
+            $('#lightboxTargetImg').attr('src', url);
+            lightboxModalInstance.show();
+        }
+
+        // Delete review
+        function confirmDeleteReview(reviewId) {
+            Swal.fire({
+                title: 'Xóa đánh giá?',
+                text: "Bạn có chắc chắn muốn xóa vĩnh viễn đánh giá này không?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--slate-500)',
+                confirmButtonText: 'Đồng ý xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Patient/Rating/DeleteReview',
+                        type: 'POST',
+                        data: { id: reviewId },
+                        success: function (res) {
+                            if (res.success) {
+                                Toast.fire({ icon: 'success', title: res.message });
+                                loadStats();
+                                loadMyReviews();
+                            } else {
+                                Swal.fire('Lỗi', res.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Populate edit form
+        function populateEditReview(reviewId) {
+            let item = reviewsList.find(x => x.id === reviewId);
+            if (!item) return;
+
+            resetFormOnTabSwitch();
+            switchTab('new-review-pane');
+
+            // Populate form fields
+            $('#reviewId').val(item.id);
+            $('#departmentSelect').val(item.departmentId);
+            
+            // Set Overall Stars
+            $('#overallScoreInput').val(item.ratingOverall);
+            let texts = ["Kém", "Yếu", "Trung bình", "Tốt", "Tuyệt vời"];
+            $('#overallScoreText').text(texts[item.ratingOverall - 1]).removeClass('text-warning').addClass('text-success');
+            $('#overallScoreStars i').each(function (index) {
+                if (index < item.ratingOverall) {
+                    $(this).removeClass('fa-regular').addClass('fa-solid active');
+                }
+            });
+
+            // Set Thai Do Stars
+            $('#thaiDoInput').val(item.thaiDo);
+            $('#thaiDoStars i').each(function (index) {
+                if (index < item.thaiDo) {
+                    $(this).removeClass('fa-regular').addClass('fa-solid active');
+                }
+            });
+
+            // Set Ve Sinh Stars
+            $('#veSinhInput').val(item.veSinh);
+            $('#veSinhStars i').each(function (index) {
+                if (index < item.veSinh) {
+                    $(this).removeClass('fa-regular').addClass('fa-solid active');
+                }
+            });
+
+            // Set criteria buttons
+            if (item.chuyenMon) {
+                $('#chuyenMonInput').val(item.chuyenMon);
+                $(`#btnGroupChuyenMon button[data-val="${item.chuyenMon}"]`).addClass('active');
+            }
+            if (item.csvc) {
+                $('#csvcInput').val(item.csvc);
+                $(`#btnGroupCSVC button[data-val="${item.csvc}"]`).addClass('active');
+            }
+            if (item.thoiGianCho) {
+                $('#thoiGianChoInput').val(item.thoiGianCho);
+                $(`#btnGroupThoiGianCho button[data-val="${item.thoiGianCho}"]`).addClass('active');
+            }
+
+            $('#commentTextarea').val(item.content);
+            $('#allowContactCheckbox').prop('checked', item.allowContact);
+
+            // Populate existing images
+            existingImagesKeep = [...item.images];
+            renderThumbnails();
+
+            // Update submit button text
+            $('#btnSubmitReviewForm').html('<i class="fa-solid fa-save me-1"></i> Lưu thay đổi');
+        }
+
+        // Submit form (Create / Update)
+        function submitReviewForm() {
+            // Validate inputs
+            let departmentId = $('#departmentSelect').val();
+            let overallScore = $('#overallScoreInput').val();
+            let thaiDo = $('#thaiDoInput').val();
+            let veSinh = $('#veSinhInput').val();
+            let chuyenMon = $('#chuyenMonInput').val();
+            let csvc = $('#csvcInput').val();
+            let thoiGianCho = $('#thoiGianChoInput').val();
+            let comment = $('#commentTextarea').val().trim();
+
+            let hasError = false;
+
+            if (!departmentId) {
+                showFieldError('#departmentSelect', 'Vui lòng chọn khoa/phòng điều trị');
+                hasError = true;
+            }
+            if (overallScore === '0') {
+                showFieldError('#overallScoreInput', 'Vui lòng chọn đánh giá tổng quát', true);
+                hasError = true;
+            }
+            if (thaiDo === '0') {
+                showFieldError('#thaiDoInput', 'Vui lòng đánh giá thái độ phục vụ');
+                hasError = true;
+            }
+            if (veSinh === '0') {
+                showFieldError('#veSinhInput', 'Vui lòng đánh giá vệ sinh sạch sẽ');
+                hasError = true;
+            }
+            if (!chuyenMon) {
+                showFieldError('#chuyenMonInput', 'Vui lòng đánh giá chuyên môn bác sĩ');
+                hasError = true;
+            }
+            if (!csvc) {
+                showFieldError('#csvcInput', 'Vui lòng đánh giá cơ sở vật chất');
+                hasError = true;
+            }
+            if (!thoiGianCho) {
+                showFieldError('#thoiGianChoInput', 'Vui lòng đánh giá thời gian chờ đợi');
+                hasError = true;
+            }
+            if (!comment) {
+                showFieldError('#commentTextarea', 'Vui lòng nhập nội dung nhận xét chi tiết');
+                hasError = true;
+            }
+
+            if (hasError) {
+                Toast.fire({ icon: 'warning', title: 'Vui lòng điền đầy đủ thông tin bắt buộc!' });
+                return;
+            }
+
+            let reviewId = $('#reviewId').val();
+            let isEdit = reviewId !== '0';
+            let url = isEdit ? '/Patient/Rating/UpdateReview' : '/Patient/Rating/SubmitFeedback';
+
+            let formData = new FormData();
+            formData.append("Id", reviewId);
+            formData.append("DepartmentId", departmentId);
+            formData.append("RatingOverall", overallScore);
+            formData.append("ThaiDo", thaiDo);
+            formData.append("VeSinh", veSinh);
+            formData.append("ChuyenMon", chuyenMon);
+            formData.append("CSVC", csvc);
+            formData.append("ThoiGianCho", thoiGianCho);
+            formData.append("Content", comment);
+            formData.append("AllowContact", $('#allowContactCheckbox').is(':checked'));
+
+            // Add newly selected files
+            uploadedFiles.forEach(file => {
+                formData.append("reviewerFiles", file);
+            });
+
+            // Add existing images to keep if editing
+            if (isEdit) {
+                existingImagesKeep.forEach(imgUrl => {
+                    formData.append("keepImages", imgUrl);
+                });
+            }
+
+            let btnSubmit = $('#btnSubmitReviewForm');
+            let originalBtnHtml = btnSubmit.html();
+            btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> Đang gửi...');
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (res) {
+                    btnSubmit.prop('disabled', false).html(originalBtnHtml);
+                    if (res.success) {
+                        Swal.fire({
+                            title: 'Thành công!',
+                            text: res.message,
+                            icon: 'success',
+                            confirmButtonColor: 'var(--primary-color)'
+                        }).then(() => {
+                            resetFormOnTabSwitch();
+                            switchTab('history-pane');
+                            loadStats();
+                            loadMyReviews();
+                        });
+                    } else {
+                        Swal.fire('Lỗi', res.message, 'error');
+                    }
+                },
+                error: function () {
+                    btnSubmit.prop('disabled', false).html(originalBtnHtml);
+                    Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ.', 'error');
+                }
+            });
+        }
+
+        // Submit reply message in chat timeline
+        function submitPatientReply(reviewId) {
+            let input = $(`#replyInput_${reviewId}`);
+            let content = input.val().trim();
+
+            if (!content) {
+                Toast.fire({ icon: 'warning', title: 'Vui lòng nhập nội dung phản hồi!' });
+                return;
+            }
+
+            let btnSend = $(`#btnSendReply_${reviewId}`);
+            let originalText = btnSend.text();
+            btnSend.prop('disabled', true).text('...');
+
+            $.ajax({
+                url: '/Patient/Rating/SendReply',
+                type: 'POST',
+                data: {
+                    feedbackId: reviewId,
+                    content: content
+                },
+                success: function (res) {
+                    btnSend.prop('disabled', false).text(originalText);
+                    if (res.success) {
+                        input.val('');
+                        Toast.fire({ icon: 'success', title: res.message });
+                        
+                        // Dynamically append new bubble to thread
+                        let card = $(`#reviewCard_${reviewId}`);
+                        let threadContainer = card.find('.comments-thread');
+                        if (threadContainer.length === 0) {
+                            // Create container if first reply
+                            card.find('.history-comment').after('<div class="comments-thread"></div>');
+                            threadContainer = card.find('.comments-thread');
+                        }
+
+                        threadContainer.append(`
+                            <div class="thread-item patient-reply">
+                                <div class="thread-meta-row">
+                                    <span class="thread-sender">Bạn</span>
+                                    <span class="thread-time">${res.data.createdAt}</span>
+                                </div>
+                                <div class="thread-message">${res.data.content}</div>
+                            </div>
+                        `);
+                    } else {
+                        Swal.fire('Lỗi', res.message, 'error');
+                    }
+                },
+                error: function () {
+                    btnSend.prop('disabled', false).text(originalText);
+                    Swal.fire('Lỗi hệ thống', 'Không thể gửi phản hồi.', 'error');
+                }
+            });
+        }
+    </script>
+}

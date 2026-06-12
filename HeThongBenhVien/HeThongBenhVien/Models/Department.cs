@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; // 1. THÊM DÒNG NÀY Ở ĐẦU FILE
 
 namespace HeThongBenhVien.Models
 {
@@ -14,6 +15,14 @@ namespace HeThongBenhVien.Models
         [Required]
         [StringLength(100)]
         public string DepartmentName { get; set; } = string.Empty;
+
+        // 2. THÊM ATTRIBUTE NÀY ĐỂ CHẶN ENTITY FRAMEWORK TRUY VẤN XUỐNG DB
+        [NotMapped]
+        public string Name
+        {
+            get => DepartmentName;
+            set => DepartmentName = value;
+        }
 
         [Required]
         [StringLength(200)]

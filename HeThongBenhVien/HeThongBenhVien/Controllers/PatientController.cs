@@ -144,30 +144,7 @@ namespace HeThongBenhVien.Controllers
             return View();
         }
 
-        [HttpGet]
-        public IActionResult Rating()
-        {
-            return View();
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rating(QualityReview model)
-        {
-            if (ModelState.IsValid)
-            {
-                var patient = await _context.Patients.FindAsync(currentPatientId);
-                model.ReviewerName = patient?.FullName ?? "Bệnh nhân ẩn danh";
-                model.Status = "Chờ xử lý";
-                
-                _context.QualityReviews.Add(model);
-                await _context.SaveChangesAsync();
-                
-                TempData["SuccessMessage"] = "Cảm ơn bạn đã đánh giá dịch vụ. Chúng tôi sẽ ghi nhận và cải thiện tốt hơn!";
-                return RedirectToAction(nameof(Rating));
-            }
-            return View(model);
-        }
 
         public IActionResult AiDiagnosis()
         {
