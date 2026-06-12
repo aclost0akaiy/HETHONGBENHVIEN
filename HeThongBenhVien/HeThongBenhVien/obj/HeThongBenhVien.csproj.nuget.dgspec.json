@@ -63,6 +63,10 @@
             "SixLabors.ImageSharp": {
               "target": "Package",
               "version": "[2.1.9, )"
+            },
+            "SixLabors.ImageSharp.Drawing": {
+              "target": "Package",
+              "version": "[1.0.0, )"
             }
           },
           "imports": [

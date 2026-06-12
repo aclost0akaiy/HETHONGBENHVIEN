@@ -77,12 +77,22 @@
                                     
                                     @if (test.Status != "Đã có kết quả") {
                                         <input type="hidden" name="Tests[@i].Id" value="@test.Id" />
+                                        <input type="hidden" name="Tests[@i].AiImageUrl" id="ai-img-url-@i" value="" />
                                         <div class="mb-2">
-                                            <input type="text" name="Tests[@i].Result" class="form-control form-control-sm bg-light" placeholder="Nhập kết quả..." required />
+                                            <input type="text" name="Tests[@i].Result" id="result-input-@i" class="form-control form-control-sm bg-light" placeholder="Nhập kết quả..." required />
                                         </div>
-                                        <div class="input-group input-group-sm">
+                                        <div class="input-group input-group-sm mb-2">
                                             <span class="input-group-text bg-light text-muted" title="Tải ảnh lên"><i class="fa-solid fa-upload"></i></span>
-                                            <input type="file" name="Tests[@i].ImageFile" class="form-control bg-light" accept="image/*" />
+                                            <input type="file" name="Tests[@i].ImageFile" id="file-input-@i" class="form-control bg-light" accept="image/*" />
+                                            <button type="button" class="btn btn-danger btn-sm text-white fw-bold btn-scan-ai" data-index="@i" style="background: linear-gradient(45deg, #ff416c, #ff4b2b); border: none; box-shadow: 0 2px 5px rgba(255, 65, 108, 0.4);">
+                                                <i class="fa-solid fa-microchip me-1"></i> Quét AI Vision
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Preview container -->
+                                        <div id="ai-preview-container-@i" class="ai-preview-container d-none position-relative overflow-hidden rounded mb-2 border border-danger">
+                                            <img id="ai-preview-img-@i" src="" class="img-fluid w-100" />
+                                            <div class="ai-scanner"></div>
                                         </div>
                                     } else {
                                         <p class="mb-0 text-muted small"><i class="fa-solid fa-check text-success me-1"></i>Kết quả: @test.Result</p>
@@ -109,5 +119,111 @@
     <style>
         .hover-elevate { transition: transform 0.2s, box-shadow 0.2s; }
         .hover-elevate:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
+        
+        .ai-preview-container {
+            max-height: 250px;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .ai-preview-container img {
+            object-fit: contain;
+            max-height: 250px;
+        }
+        .ai-scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #00ffcc;
+            box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc;
+            animation: scan 1.5s linear infinite;
+            display: none;
+            z-index: 10;
+        }
+        @@keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        .scanning .ai-scanner {
+            display: block;
+        }
+        .btn-scan-ai:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
     </style>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.btn-scan-ai').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const index = this.getAttribute('data-index');
+                const fileInput = document.getElementById(`file-input-${index}`);
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Vui lòng chọn một ảnh (X-Quang/CT) trước khi quét AI!');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const previewContainer = document.getElementById(`ai-preview-container-${index}`);
+                const previewImg = document.getElementById(`ai-preview-img-${index}`);
+                const aiImgUrlInput = document.getElementById(`ai-img-url-${index}`);
+                const resultInput = document.getElementById(`result-input-${index}`);
+                
+                // Show local preview immediately and start scanning animation
+                previewImg.src = URL.createObjectURL(file);
+                previewContainer.classList.remove('d-none');
+                previewContainer.classList.add('scanning');
+                
+                // Disable button during scan
+                this.disabled = true;
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang phân tích...';
+
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('imageFile', file);
+
+                try {
+                    // Fake delay to show off the scanning animation
+                    await new Promise(r => setTimeout(r, 1500));
+
+                    const response = await fetch('@Url.Action("AnalyzeImageAi", "Doctor")', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Stop scanning animation
+                    previewContainer.classList.remove('scanning');
+
+                    if (data.success) {
+                        // Update UI with AI results
+                        previewImg.src = data.imageUrl + '?t=' + new Date().getTime(); // cache buster
+                        aiImgUrlInput.value = data.imageUrl;
+                        resultInput.value = data.resultText;
+                        
+                        // Flash success border
+                        previewContainer.classList.replace('border-danger', 'border-success');
+                    } else {
+                        alert(data.message || 'Lỗi khi phân tích ảnh bằng AI.');
+                    }
+                } catch (err) {
+                    previewContainer.classList.remove('scanning');
+                    alert('Không thể kết nối đến AI server.');
+                    console.error(err);
+                } finally {
+                    // Restore button
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            });
+        });
+    </script>
 }

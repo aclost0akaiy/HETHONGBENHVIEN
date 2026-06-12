@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.Fonts;
+using System.IO;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace HeThongBenhVien.Controllers
 {
@@ -42,6 +49,17 @@ namespace HeThongBenhVien.Controllers
         public int Id { get; set; }
         public string? Result { get; set; }
         public IFormFile? ImageFile { get; set; }
+        public string? AiImageUrl { get; set; }
+    }
+
+    public class GeminiVisionResponse
+    {
+        public string finding { get; set; } = "Bình thường";
+        public double confidence { get; set; } = 100.0;
+        public int x { get; set; } = 0;
+        public int y { get; set; } = 0;
+        public int width { get; set; } = 0;
+        public int height { get; set; } = 0;
     }
 
     [Authorize(Roles = "Doctor,Admin")]
@@ -907,7 +925,11 @@ namespace HeThongBenhVien.Controllers
                     test.Status = "Đã có kết quả";
                     test.CompletedAt = System.DateTime.Now;
 
-                    if (item.ImageFile != null && item.ImageFile.Length > 0)
+                    if (!string.IsNullOrWhiteSpace(item.AiImageUrl))
+                    {
+                        test.ImageUrl = item.AiImageUrl;
+                    }
+                    else if (item.ImageFile != null && item.ImageFile.Length > 0)
                     {
                         string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
                         if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -935,6 +957,123 @@ namespace HeThongBenhVien.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(KetQuaCanLamSang));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AnalyzeImageAi(IFormFile imageFile, [FromServices] IConfiguration config)
+        {
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return Json(new { success = false, message = "Không có ảnh được tải lên" });
+            }
+
+            try
+            {
+                string apiKey = config["GeminiApiKey"];
+                if (string.IsNullOrEmpty(apiKey))
+                    return Json(new { success = false, message = "Chưa cấu hình Gemini API Key" });
+
+                // convert image to base64
+                string base64Image;
+                using (var ms = new MemoryStream())
+                {
+                    await imageFile.CopyToAsync(ms);
+                    base64Image = Convert.ToBase64String(ms.ToArray());
+                }
+
+                // create payload
+                var payload = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            parts = new object[]
+                            {
+                                new { text = "Bạn là chuyên gia chẩn đoán hình ảnh. Hãy phân tích thật kỹ ảnh X-Quang/CT này và xác định chính xác MỘT tổn thương rõ ràng nhất (nếu có). Trả về DƯỚI DẠNG JSON với đúng định dạng sau, KHÔNG thêm markdown hoặc text giải thích:\n{\"finding\": \"Mô tả ngắn gọn và chính xác bất thường\", \"confidence\": 98.5, \"x\": 10, \"y\": 20, \"width\": 30, \"height\": 40}\nLưu ý: tọa độ (x, y) là GÓC TRÊN BÊN TRÁI của vùng bất thường, (width, height) là KÍCH THƯỚC vùng đó. Tất cả là số nguyên (0-100) tượng trưng cho PHẦN TRĂM (%) của ảnh để vẽ khung đỏ khoanh VỪA KHÍT vùng tổn thương. Cẩn thận tính toán tọa độ. Nếu ảnh bình thường, trả về finding là 'Bình thường, không phát hiện dấu hiệu bệnh lý' và confidence 100, x, y, width, height là 0." },
+                                new { inline_data = new { mime_type = imageFile.ContentType, data = base64Image } }
+                            }
+                        }
+                    },
+                    generationConfig = new { response_mime_type = "application/json" }
+                };
+
+                using var client = new HttpClient();
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={apiKey}", content);
+                
+                string responseString = await response.Content.ReadAsStringAsync();
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Json(new { success = false, message = "Lỗi từ Gemini API: " + responseString });
+                }
+
+                using JsonDocument doc = JsonDocument.Parse(responseString);
+                string jsonResultText = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text").GetString();
+
+                if (jsonResultText != null)
+                {
+                    jsonResultText = jsonResultText.Trim();
+                    if (jsonResultText.StartsWith("```json")) jsonResultText = jsonResultText.Substring(7);
+                    if (jsonResultText.EndsWith("```")) jsonResultText = jsonResultText.Substring(0, jsonResultText.Length - 3);
+                    jsonResultText = jsonResultText.Trim();
+                }
+
+                var aiResult = JsonSerializer.Deserialize<GeminiVisionResponse>(jsonResultText ?? "{}");
+
+                if (aiResult == null)
+                    throw new Exception("Không thể parse kết quả JSON từ AI");
+
+                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = "ai_" + Guid.NewGuid().ToString() + "_" + Path.GetFileName(imageFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var imageStream = imageFile.OpenReadStream())
+                {
+                    using (var image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream))
+                    {
+                        if (aiResult.width > 0 && aiResult.height > 0)
+                        {
+                            int x = (int)(image.Width * aiResult.x / 100.0);
+                            int y = (int)(image.Height * aiResult.y / 100.0);
+                            int boxWidth = (int)(image.Width * aiResult.width / 100.0);
+                            int boxHeight = (int)(image.Height * aiResult.height / 100.0);
+
+                            var rect = new SixLabors.ImageSharp.Rectangle(x, y, boxWidth, boxHeight);
+                            var options = new DrawingOptions();
+                            
+                            image.Mutate(ctx => ctx.Draw(options, SixLabors.ImageSharp.Color.Red, 5f, rect));
+
+                            try
+                            {
+                                var font = SystemFonts.CreateFont("Arial", 36, FontStyle.Bold);
+                                string label = $"{aiResult.finding} - {aiResult.confidence}%";
+                                image.Mutate(ctx => ctx.DrawText(label, font, SixLabors.ImageSharp.Color.Red, new PointF(x, y - 40)));
+                            }
+                            catch { }
+                        }
+
+                        await image.SaveAsync(filePath);
+                    }
+                }
+
+                return Json(new { 
+                    success = true, 
+                    imageUrl = "/uploads/" + uniqueFileName, 
+                    resultText = $"{aiResult.finding} - Độ tin cậy: {aiResult.confidence}%" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi xử lý ảnh: " + ex.Message });
+            }
         }
 
         public async Task<IActionResult> KetQuaCanLamSang()
