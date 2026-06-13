@@ -348,8 +348,8 @@
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "BaoCaoHoatDong" ? "active" : "")">
                 <a href="@Url.Action("BaoCaoHoatDong", "Admin")"><i class="fa-solid fa-chart-pie"></i> Báo cáo Hoạt động</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhGiaChatLuong" ? "active" : "")">
-                <a href="@Url.Action("DanhGiaChatLuong", "Admin")"><i class="fa-solid fa-star text-warning"></i> Đánh giá Chất lượng</a>
+            <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Rating" ? "active" : "")">
+                <a href="/Admin/Rating"><i class="fa-solid fa-star text-warning"></i> Đánh giá Chất lượng</a>
             </li>
 
             <div class="nav-section-title">Hệ thống</div>

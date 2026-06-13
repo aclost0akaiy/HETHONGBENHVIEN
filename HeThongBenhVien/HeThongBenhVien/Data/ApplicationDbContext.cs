@@ -34,8 +34,11 @@ namespace HeThongBenhVien.Data
         public DbSet<Surgery> Surgeries { get; set; }
         public DbSet<BloodBank> BloodBanks { get; set; }
         public DbSet<QualityReview> QualityReviews { get; set; }
+        public DbSet<ReviewImage> ReviewImages { get; set; }
+        public DbSet<ReviewThread> ReviewThreads { get; set; }
         public DbSet<ICD10Protocol> ICD10Protocols { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Response> Responses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

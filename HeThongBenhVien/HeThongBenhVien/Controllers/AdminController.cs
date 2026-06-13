@@ -834,33 +834,7 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyNganHangMau));
         }
 
-        // ==========================================
-        // ĐÁNH GIÁ CHẤT LƯỢNG
-        // ==========================================
-        public async Task<IActionResult> DanhGiaChatLuong()
-        {
-            var list = await _context.QualityReviews.OrderByDescending(q => q.CreatedAt).ToListAsync();
-            return View(list);
-        }
 
-        [HttpPost][ValidateAntiForgeryToken]
-        public async Task<IActionResult> ThemDanhGia(QualityReview review)
-        {
-            if (!string.IsNullOrEmpty(review.Department))
-            {
-                _context.QualityReviews.Add(review);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(DanhGiaChatLuong));
-        }
-
-        [HttpPost][ValidateAntiForgeryToken]
-        public async Task<IActionResult> XoaDanhGia(int id)
-        {
-            var item = await _context.QualityReviews.FindAsync(id);
-            if (item != null) { _context.QualityReviews.Remove(item); await _context.SaveChangesAsync(); }
-            return RedirectToAction(nameof(DanhGiaChatLuong));
-        }
 
         // ==========================================
         // SAO LƯU & NHẬT KÝ

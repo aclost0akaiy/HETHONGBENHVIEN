@@ -1,63 +1,1310 @@
-@model IEnumerable<HeThongBenhVien.Models.QualityReview>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Đánh Giá Chất Lượng"; }
+@model IEnumerable<HeThongBenhVien.Models.Feedback>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Đánh Giá Chất Lượng Dịch Vụ";
+}
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h2 class="h3 mb-1" style="font-weight:700;">Đánh Giá Chất Lượng</h2><p class="text-muted mb-0">Đánh giá và cải thiện chất lượng dịch vụ bệnh viện</p></div>
-        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus me-1"></i> Thêm Đánh Giá</button>
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f8fafc;
+    }
+
+    :root {
+        --primary-color: #0F766E;
+        --primary-dark: #0d645e;
+        --primary-light: #e0f2fe;
+        --warning-color: #D97706;
+        --warning-bg: #FEF3C7;
+        --success-color: #059669;
+        --success-bg: #D1FAE5;
+        --danger-color: #EF4444;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-500: #64748b;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --border-radius: 10px;
+        --box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Stats Grid styling - VỪA PHẢI */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 2fr 0.7fr 0.7fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    @@media (max-width: 992px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .stat-card-overall {
+        padding: 10px 12px;
+    }
+
+    .rating-large {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1;
+    }
+
+    .rating-max {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-left: 2px;
+    }
+
+    .stars-gold {
+        color: #F59E0B;
+        font-size: 0.75rem;
+        display: flex;
+        gap: 2px;
+    }
+
+    .criteria-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 12px;
+        row-gap: 6px;
+        margin-top: 10px;
+    }
+
+    @@media (max-width: 576px) {
+        .criteria-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .criteria-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .criteria-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .criteria-bar {
+        height: 3px;
+        background-color: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .criteria-fill {
+        height: 100%;
+        background-color: var(--primary-color);
+        border-radius: 10px;
+        width: 0%;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* SỐ VỪA PHẢI - KHÔNG TO QUÁ */
+    .card-number {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0F766E;
+        margin: 2px 0;
+        line-height: 1;
+    }
+
+    .card-number.text-warning {
+        color: var(--warning-color);
+    }
+
+    .growth-badge {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #10B981;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    /* Filter bar */
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 10px 14px;
+        margin-bottom: 20px;
+    }
+
+    /* Custom badge status */
+    .badge-status {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-status-unanswered {
+        background-color: var(--warning-bg);
+        color: var(--warning-color);
+    }
+
+    .badge-status-answered {
+        background-color: var(--success-bg);
+        color: var(--success-color);
+    }
+
+    .badge-department {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .score-text {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.85rem;
+    }
+
+    /* Table */
+    .table-premium th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        background-color: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table-premium td {
+        vertical-align: middle;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 10px 10px;
+    }
+
+    .table-premium tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Avatar */
+    .avatar-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e2f1f1;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    /* Action buttons */
+    .btn-action-icon {
+        border: none;
+        background: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--slate-500);
+        transition: all 0.15s;
+    }
+
+    .btn-action-icon:hover {
+        background-color: #f1f5f9;
+        color: var(--primary-color);
+    }
+
+    .btn-action-icon.btn-action-delete:hover {
+        background-color: #fee2e2;
+        color: var(--danger-color);
+    }
+
+    /* Modal */
+    .modal-premium .modal-content {
+        border-radius: 14px;
+        border: none;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+
+    .modal-premium .modal-header {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 14px 20px;
+    }
+
+    .modal-premium .modal-body {
+        padding: 20px;
+    }
+
+    .detail-card-left {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+    .modal-stars-gold {
+        color: #F59E0B;
+        font-size: 0.9rem;
+        display: flex;
+        gap: 2px;
+    }
+
+    .detail-comment-box {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .detail-image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .detail-image-item {
+        aspect-ratio: 1;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+    }
+
+    .detail-image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Chat thread */
+    .chat-thread-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        height: 280px;
+        overflow-y: auto;
+        background-color: #f8fafc;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .chat-bubble-patient {
+        align-self: flex-start;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        border-bottom-left-radius: 2px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .chat-bubble-admin {
+        align-self: flex-end;
+        background-color: #e0f2fe;
+        color: #0369a1;
+        border-radius: 10px;
+        border-bottom-right-radius: 2px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .chat-meta {
+        font-size: 0.65rem;
+        color: var(--slate-500);
+        margin-top: 2px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .suggestions-wrapper {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .suggestion-btn {
+        background-color: #ffffff;
+        border: 1px solid #86efac;
+        color: var(--success-color);
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 12px;
+        cursor: pointer;
+        margin: 2px;
+    }
+
+    .nav-pills-premium .nav-link {
+        color: var(--slate-700);
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 4px 12px;
+    }
+
+    .nav-pills-premium .nav-link.active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .btn-teal-action {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        font-weight: 600;
+        border: none;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+    }
+
+    .btn-teal-action:hover {
+        background-color: var(--primary-dark);
+        color: #ffffff;
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(15, 23, 42, 0.9);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-overlay.active {
+        display: flex;
+    }
+
+    .lightbox-img-wrapper {
+        position: relative;
+        max-width: 85%;
+        max-height: 85%;
+    }
+
+    .lightbox-img-wrapper img {
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: 8px;
+        border: 3px solid #ffffff;
+    }
+
+    .btn-lightbox-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+    }
+
+    .btn-lightbox-prev { left: -45px; }
+    .btn-lightbox-next { right: -45px; }
+
+    .btn-lightbox-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        font-size: 1.6rem;
+        cursor: pointer;
+    }
+
+    @@media (max-width: 768px) {
+        .btn-lightbox-prev { left: 10px; }
+        .btn-lightbox-next { right: 10px; }
+        .btn-lightbox-close { top: 10px; right: 10px; }
+    }
+</style>
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Breadcrumb / Header Title -->
+    <div class="mb-4">
+        <h4 class="fw-bold text-slate-800 m-0">Quản Lý Đánh Giá & Ý Kiến Khách Hàng</h4>
+        <p class="text-slate-500 mt-1 mb-0">Theo dõi, thống kê và phản hồi các đánh giá dịch vụ y tế từ bệnh nhân.</p>
     </div>
 
-    @if(Model.Any()){
-    <div class="row g-3 mb-4">
-        <div class="col-md-2"><div class="glass-card p-3 text-center"><i class="fas fa-concierge-bell text-primary fs-4 mb-1"></i><h4 class="fw-bold m-0">@(Model.Average(r => r.ServiceScore).ToString("F1"))</h4><small class="text-muted">Dịch vụ</small></div></div>
-        <div class="col-md-2"><div class="glass-card p-3 text-center"><i class="fas fa-broom text-success fs-4 mb-1"></i><h4 class="fw-bold m-0">@(Model.Average(r => r.CleanlinessScore).ToString("F1"))</h4><small class="text-muted">Vệ sinh</small></div></div>
-        <div class="col-md-2"><div class="glass-card p-3 text-center"><i class="fas fa-user-nurse text-info fs-4 mb-1"></i><h4 class="fw-bold m-0">@(Model.Average(r => r.StaffScore).ToString("F1"))</h4><small class="text-muted">Nhân viên</small></div></div>
-        <div class="col-md-2"><div class="glass-card p-3 text-center"><i class="fas fa-building text-warning fs-4 mb-1"></i><h4 class="fw-bold m-0">@(Model.Average(r => r.FacilityScore).ToString("F1"))</h4><small class="text-muted">Cơ sở VC</small></div></div>
-        <div class="col-md-2"><div class="glass-card p-3 text-center"><i class="fas fa-clock text-danger fs-4 mb-1"></i><h4 class="fw-bold m-0">@(Model.Average(r => r.WaitTimeScore).ToString("F1"))</h4><small class="text-muted">Thời gian chờ</small></div></div>
-        <div class="col-md-2"><div class="glass-card p-3 text-center border border-2 border-primary"><i class="fas fa-star text-primary fs-4 mb-1"></i><h4 class="fw-bold m-0 text-primary">@(((Model.Average(r=>r.ServiceScore)+Model.Average(r=>r.CleanlinessScore)+Model.Average(r=>r.StaffScore)+Model.Average(r=>r.FacilityScore)+Model.Average(r=>r.WaitTimeScore))/5).ToString("F1"))</h4><small class="text-muted fw-bold">Tổng TB</small></div></div>
-    </div>}
+    <!-- STATS BLOCKS -->
+    <div class="stats-grid">
+        <!-- Main stats summary -->
+        <div class="stat-card stat-card-overall">
+            <div>
+                <span class="text-slate-500 small fw-semibold text-uppercase">Mức độ hài lòng chung</span>
+                <div class="d-flex align-items-baseline gap-2 mt-2 mb-1">
+                    <span class="rating-large" id="overallRatingVal">0.0</span>
+                    <span class="rating-max">/ 5.0</span>
+                </div>
+                <div class="stars-gold" id="overallRatingStars">
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+            </div>
+            
+            <div class="criteria-list mt-3">
+                <div class="criteria-item">
+                    <div class="criteria-header">
+                        <span>Thái độ phục vụ</span>
+                        <span id="lblAvgStaff">0.0/10</span>
+                    </div>
+                    <div class="criteria-bar">
+                        <div class="criteria-fill" id="barAvgStaff" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="criteria-item">
+                    <div class="criteria-header">
+                        <span>Chuyên môn bác sĩ</span>
+                        <span id="lblAvgService">0.0/10</span>
+                    </div>
+                    <div class="criteria-bar">
+                        <div class="criteria-fill" id="barAvgService" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="criteria-item">
+                    <div class="criteria-header">
+                        <span>Vệ sinh sạch sẽ</span>
+                        <span id="lblAvgCleanliness">0.0/10</span>
+                    </div>
+                    <div class="criteria-bar">
+                        <div class="criteria-fill" id="barAvgCleanliness" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="criteria-item">
+                    <div class="criteria-header">
+                        <span>Cơ sở vật chất</span>
+                        <span id="lblAvgFacility">0.0/10</span>
+                    </div>
+                    <div class="criteria-bar">
+                        <div class="criteria-fill" id="barAvgFacility" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="criteria-item">
+                    <div class="criteria-header">
+                        <span>Thời gian chờ đợi</span>
+                        <span id="lblAvgWaitTime">0.0/10</span>
+                    </div>
+                    <div class="criteria-bar">
+                        <div class="criteria-fill" id="barAvgWaitTime" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="glass-card p-4">
+        <!-- Total count card -->
+        <div class="stat-card">
+            <div>
+                <span class="text-slate-500 small fw-semibold text-uppercase">Tổng số đánh giá</span>
+                <div class="card-number" id="statsTotalCount">0</div>
+            </div>
+            <div class="growth-badge mt-2">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                <span>+12% so với tháng trước</span>
+            </div>
+        </div>
+
+        <!-- Pending response count card -->
+        <div class="stat-card" style="border-left: 4px solid var(--warning-color);">
+            <div>
+                <span class="text-slate-500 small fw-semibold text-uppercase">Chưa phản hồi</span>
+                <div class="card-number text-warning" id="statsUnrepliedCount">0</div>
+            </div>
+            <div class="text-slate-500 small mt-2">
+                Chiếm khoảng <strong class="text-slate-700" id="statsUnrepliedPercent">0</strong>% tổng số nhận xét
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-card">
+        <div class="row g-3 align-items-center">
+            <!-- Search Keyword -->
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" class="form-control border-start-0" id="txtKeyword" placeholder="Tìm tên, ý kiến, khoa phòng..." oninput="loadFeedbackList(1)">
+                </div>
+            </div>
+            
+            <!-- Department Filter -->
+            <div class="col-md-3">
+                <select class="form-select form-select-sm" id="ddlDepartment" onchange="loadFeedbackList(1)">
+                    <option value="All">Tất cả khoa phòng</option>
+                    @if (ViewBag.Departments != null)
+                    {
+                        foreach (var dept in (IEnumerable<HeThongBenhVien.Models.Department>)ViewBag.Departments)
+                        {
+                            <option value="@dept.DepartmentName">@dept.DepartmentName</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Stars Filter -->
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="ddlStars" onchange="loadFeedbackList(1)">
+                    <option value="All">Tất cả số sao</option>
+                    <option value="5">5 ★★★★★</option>
+                    <option value="4">4 ★★★★</option>
+                    <option value="3">3 ★★★</option>
+                    <option value="2">2 ★★</option>
+                    <option value="1">1 ★</option>
+                </select>
+            </div>
+
+            <!-- Status Tabs -->
+            <div class="col-md-4 d-flex justify-content-md-end">
+                <ul class="nav nav-pills nav-pills-premium gap-2" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill" type="button" onclick="filterByStatus('All')">Tất cả</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill" type="button" onclick="filterByStatus('Chưa phản hồi')">Chưa phản hồi</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill" type="button" onclick="filterByStatus('Đã phản hồi')">Đã phản hồi</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DATA TABLE -->
+    <div class="card border-slate-200 shadow-sm rounded-4 overflow-hidden bg-white">
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light"><tr><th>Khoa</th><th>Người ĐG</th><th>DV</th><th>VS</th><th>NV</th><th>CSVC</th><th>TGC</th><th>TB</th><th>Trạng Thái</th><th class="text-center">Xóa</th></tr></thead>
-                <tbody>
-                @if(Model.Any()){ foreach(var item in Model){
-                    var avg = (item.ServiceScore+item.CleanlinessScore+item.StaffScore+item.FacilityScore+item.WaitTimeScore)/5.0;
-                <tr>
-                    <td class="fw-bold">@item.Department</td>
-                    <td>@item.ReviewerName</td>
-                    <td class="text-center">@item.ServiceScore</td>
-                    <td class="text-center">@item.CleanlinessScore</td>
-                    <td class="text-center">@item.StaffScore</td>
-                    <td class="text-center">@item.FacilityScore</td>
-                    <td class="text-center">@item.WaitTimeScore</td>
-                    <td class="text-center"><span class="badge @(avg >= 7 ? "bg-success" : avg >= 5 ? "bg-warning text-dark" : "bg-danger") fs-6">@avg.ToString("F1")</span></td>
-                    <td>@if(item.Status=="Chờ xử lý"){<span class="badge bg-warning text-dark">Chờ xử lý</span>}else{<span class="badge bg-success">Đã xử lý</span>}</td>
-                    <td class="text-center"><form asp-action="XoaDanhGia" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Xóa?');"><i class="fas fa-trash"></i></button></form></td>
-                </tr>
-                }}else{<tr><td colspan="10" class="text-center py-5 text-muted"><i class="fas fa-star fa-3x mb-3 text-warning"></i><p>Chưa có đánh giá nào.</p></td></tr>}
+            <table class="table table-premium m-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 60px;">STT</th>
+                        <th style="width: 110px;">Ngày gửi</th>
+                        <th style="width: 200px;">Bệnh nhân</th>
+                        <th style="width: 140px;">Khoa khám</th>
+                        <th style="width: 80px;">Đánh giá</th>
+                        <th>Ý kiến nhận xét</th>
+                        <th style="width: 130px;">Trạng thái</th>
+                        <th class="text-center" style="width: 100px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="tblFeedbackBody">
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <div class="spinner-border spinner-border-sm me-2 text-teal" role="status"></div>
+                            Đang tải danh sách đánh giá...
+                        </td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Table Pagination Footer -->
+        <div class="px-4 py-3 border-top border-slate-100 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-slate-500 small" id="paginationSummary">Hiển thị 0 - 0 trên 0 phản hồi</span>
+            <nav>
+                <ul class="pagination pagination-sm m-0 gap-1" id="paginationControls">
+                    <!-- Pagination links injected via JS -->
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-star me-2"></i>Thêm Đánh Giá</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-    <form asp-action="ThemDanhGia" method="post">@Html.AntiForgeryToken()
-        <div class="modal-body">
-            <div class="mb-3"><label class="form-label fw-bold">Khoa Đánh Giá</label><select name="Department" class="form-select"><option>Khoa Nội</option><option>Khoa Ngoại</option><option>Khoa Sản</option><option>Khoa Nhi</option><option>Khoa Cấp Cứu</option><option>Khoa Xét Nghiệm</option></select></div>
-            <div class="mb-3"><label class="form-label fw-bold">Người Đánh Giá</label><input name="ReviewerName" class="form-control" required/></div>
-            <div class="row">
-                <div class="col-6 mb-3"><label class="form-label fw-bold">Dịch vụ (1-10)</label><input name="ServiceScore" type="number" min="1" max="10" class="form-control" value="7"/></div>
-                <div class="col-6 mb-3"><label class="form-label fw-bold">Vệ sinh (1-10)</label><input name="CleanlinessScore" type="number" min="1" max="10" class="form-control" value="7"/></div>
-                <div class="col-6 mb-3"><label class="form-label fw-bold">Nhân viên (1-10)</label><input name="StaffScore" type="number" min="1" max="10" class="form-control" value="7"/></div>
-                <div class="col-6 mb-3"><label class="form-label fw-bold">Cơ sở VC (1-10)</label><input name="FacilityScore" type="number" min="1" max="10" class="form-control" value="7"/></div>
-                <div class="col-6 mb-3"><label class="form-label fw-bold">Thời gian chờ (1-10)</label><input name="WaitTimeScore" type="number" min="1" max="10" class="form-control" value="7"/></div>
+<!-- DETAILS MODAL -->
+<div class="modal fade modal-premium" id="modalDetail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold text-slate-800">Chi Tiết Đánh Giá Chất Lượng</h5>
+                    <span class="badge rounded-pill mt-2 py-1 px-3 fs-7 border" id="lblDetailStatus">Chưa xác định</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="mb-3"><label class="form-label fw-bold">Nhận xét</label><textarea name="Comment" class="form-control" rows="3"></textarea></div>
+            
+            <div class="modal-body">
+                <div class="row g-4">
+                    <!-- LEFT COLUMN: Patient Info & Rating Scores -->
+                    <div class="col-lg-5">
+                        <div class="detail-card-left">
+                            <h6 class="fw-bold text-slate-800 mb-3"><i class="fa-regular fa-id-card me-2 text-teal"></i>Thông Tin Đánh Giá</h6>
+                            
+                            <div class="mb-3">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Họ tên bệnh nhân</label>
+                                <input type="text" class="form-control form-control-sm bg-white" id="detailReviewerName" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Số điện thoại</label>
+                                <input type="text" class="form-control form-control-sm bg-white" id="detailReviewerPhone" readonly>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="text-slate-500 small fw-semibold text-uppercase">Khoa điều trị</label>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="detailDepartment" readonly>
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-slate-500 small fw-semibold text-uppercase">Thời gian khám</label>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="detailVisitDate" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 border-top pt-3 border-slate-200">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Đánh giá chung (Overall)</label>
+                                <div class="modal-stars-gold mt-1" id="detailOverallStars">
+                                    <i class="fa-regular fa-star" data-star="1"></i>
+                                    <i class="fa-regular fa-star" data-star="2"></i>
+                                    <i class="fa-regular fa-star" data-star="3"></i>
+                                    <i class="fa-regular fa-star" data-star="4"></i>
+                                    <i class="fa-regular fa-star" data-star="5"></i>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Tóm tắt tiêu chí phụ</label>
+                                <textarea class="form-control form-control-sm bg-white text-muted" id="detailRatingReason" rows="2" style="font-size: 0.85rem;" readonly></textarea>
+                            </div>
+                            
+                            <div class="mb-3 border-top pt-3 border-slate-200">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Nội dung nhận xét</label>
+                                <div class="detail-comment-box" id="detailCommentText">Không có nội dung.</div>
+                            </div>
+                            
+                            <!-- Image Attachments List -->
+                            <div class="mb-2 d-none" id="detailAttachmentBlock">
+                                <label class="text-slate-500 small fw-semibold text-uppercase">Hình ảnh đính kèm</label>
+                                <div class="detail-image-grid" id="detailImagesGrid">
+                                    <!-- Injected via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RIGHT COLUMN: Timeline Thread & Reply Form -->
+                    <div class="col-lg-7 d-flex flex-column justify-content-between">
+                        <div>
+                            <h6 class="fw-bold text-slate-800 mb-3"><i class="fa-regular fa-comments me-2 text-teal"></i>Lịch Sử Trao Đổi (Thread)</h6>
+                            <div class="chat-thread-container" id="chatThreadContainer">
+                                <!-- Timeline items injected via JS -->
+                            </div>
+                        </div>
+                        
+                        <!-- Reply Panel -->
+                        <div class="mt-3">
+                            <!-- Suggestion Reply Box -->
+                            <div class="suggestions-wrapper" id="suggestionWrapper">
+                                <div class="small fw-bold text-slate-500 text-uppercase mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1 text-success"></i>Gợi ý phản hồi nhanh:</div>
+                                <div id="responseSuggestions" class="d-flex flex-wrap gap-1">
+                                    <!-- Dynamic buttons injected via JS -->
+                                </div>
+                            </div>
+                            
+                            <!-- Response Input Form -->
+                            <div>
+                                <label class="text-slate-500 small fw-semibold text-uppercase mb-1" for="txtAdminReply">Nội dung phản hồi (Admin)</label>
+                                <textarea class="form-control" id="txtAdminReply" rows="3" placeholder="Nhập nội dung phản hồi chính thức cho bệnh nhân..."></textarea>
+                                <div class="text-end mt-2">
+                                    <button type="button" class="btn btn-sm px-4 btn-teal-action" id="btnSubmitAdminResponse">Gửi phản hồi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
-    </form>
-</div></div></div>
+    </div>
+</div>
+
+<!-- COMPRESSED MULTI-IMAGE LIGHTBOX OVERLAY -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+    <div class="lightbox-img-wrapper">
+        <button type="button" class="btn-lightbox-close" onclick="closeLightbox()">&times;</button>
+        <img id="lightboxImage" src="">
+        <button type="button" class="btn-lightbox-nav btn-lightbox-prev" onclick="navigateLightbox(-1)" id="btnLightboxPrev"><i class="fa-solid fa-chevron-left"></i></button>
+        <button type="button" class="btn-lightbox-nav btn-lightbox-next" onclick="navigateLightbox(1)" id="btnLightboxNext"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // SweetAlert2 Toast configuration
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        // Pagination and filter states
+        let currentPage = 1;
+        const pageSize = 10;
+        let currentStatusFilter = "All";
+
+        // Image lightbox states
+        let activeDetailImages = [];
+        let currentLightboxIndex = 0;
+
+        $(document).ready(function () {
+            // Load initial view data
+            loadStats();
+            loadFeedbackList(1);
+            
+            // Lightbox keys handler
+            $(document).on('keydown', function(e) {
+                if (!$('#lightboxOverlay').hasClass('active')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+        });
+
+        // Filter status tab pills trigger
+        function filterByStatus(statusVal) {
+            currentStatusFilter = statusVal;
+            $('.nav-pills-premium .nav-link').removeClass('active');
+            let tabIndex = statusVal === "All" ? 0 : (statusVal === "Chưa phản hồi" ? 1 : 2);
+            $('.nav-pills-premium .nav-link').eq(tabIndex).addClass('active');
+            loadFeedbackList(1);
+        }
+
+        // Fetch stats cards aggregates
+        function loadStats() {
+            $.ajax({
+                url: '/Admin/Rating/GetFeedbackDashboardStats',
+                type: 'GET',
+                success: function (res) {
+                    if (res.success) {
+                        $('#overallRatingVal').text(res.avgOverall.toFixed(1));
+                        
+                        let starsHtml = "";
+                        let fullStars = Math.floor(res.avgOverall);
+                        let hasHalf = (res.avgOverall - fullStars) >= 0.25;
+                        for (let i = 1; i <= 5; i++) {
+                            if (i <= fullStars) {
+                                starsHtml += '<i class="fa-solid fa-star"></i>';
+                            } else if (i === fullStars + 1 && hasHalf) {
+                                starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+                            } else {
+                                starsHtml += '<i class="fa-regular fa-star"></i>';
+                            }
+                        }
+                        $('#overallRatingStars').html(starsHtml);
+
+                        $('#lblAvgStaff').text((res.avgStaff).toFixed(1) + '/10');
+                        $('#barAvgStaff').css('width', (res.avgStaff * 10) + '%');
+
+                        $('#lblAvgService').text((res.avgService).toFixed(1) + '/10');
+                        $('#barAvgService').css('width', (res.avgService * 10) + '%');
+
+                        $('#lblAvgCleanliness').text((res.avgCleanliness).toFixed(1) + '/10');
+                        $('#barAvgCleanliness').css('width', (res.avgCleanliness * 10) + '%');
+
+                        $('#lblAvgFacility').text((res.avgFacility).toFixed(1) + '/10');
+                        $('#barAvgFacility').css('width', (res.avgFacility * 10) + '%');
+
+                        $('#lblAvgWaitTime').text((res.avgWaitTime).toFixed(1) + '/10');
+                        $('#barAvgWaitTime').css('width', (res.avgWaitTime * 10) + '%');
+
+                        $('#statsTotalCount').text(res.totalCount);
+                        $('#statsUnrepliedCount').text(res.unrepliedCount);
+                        $('#statsUnrepliedPercent').text(res.unrepliedPercent);
+                    }
+                }
+            });
+        }
+
+        // Load feedback list data
+        function loadFeedbackList(page) {
+            currentPage = page;
+            let keyword = $('#txtKeyword').val();
+            let depts = $('#ddlDepartment').val();
+            let stars = $('#ddlStars').val();
+
+            let reqData = {
+                khoa: depts,
+                soSao: stars === "All" ? null : parseInt(stars),
+                trangThai: currentStatusFilter,
+                keyword: keyword,
+                page: currentPage,
+                pageSize: pageSize
+            };
+
+            $.ajax({
+                url: '/Admin/Rating/GetListFeedback',
+                type: 'GET',
+                data: reqData,
+                success: function (res) {
+                    if (res.success) {
+                        renderTableBody(res.data, (currentPage - 1) * pageSize);
+                        renderPagination(res.totalCount, page);
+                    }
+                }
+            });
+        }
+
+        // Render table rows
+        function renderTableBody(data, startStt) {
+            var body = $('#tblFeedbackBody');
+            body.empty();
+
+            if (data.length === 0) {
+                body.html('<tr><td colspan="8" class="text-center text-muted py-5"><i class="fa-regular fa-face-frown fa-2x mb-2 d-block"></i>Không tìm thấy đánh giá nào phù hợp.</td></tr>');
+                return;
+            }
+
+            $.each(data, function (index, item) {
+                let sttStr = (startStt + index + 1).toString().padStart(2, '0');
+                
+                let initials = "?";
+                if (item.reviewerName) {
+                    let nameParts = item.reviewerName.trim().split(" ");
+                    if (nameParts.length === 1) {
+                        initials = nameParts[0].charAt(0).toUpperCase();
+                    } else if (nameParts.length > 1) {
+                        initials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+                    }
+                }
+
+                let displayScoreVal = item.displayScore.toFixed(1) + ' ★';
+                
+                let statusBadgeHtml = "";
+                if (item.status === "Đã phản hồi") {
+                    statusBadgeHtml = `<span class="badge-status badge-status-answered"><i class="fa-regular fa-circle-check"></i> Đã phản hồi</span>`;
+                } else {
+                    statusBadgeHtml = `<span class="badge-status badge-status-unanswered"><i class="fa-regular fa-clock"></i> Chưa phản hồi</span>`;
+                }
+
+                let commentShort = item.comment;
+                if (commentShort.length > 55) {
+                    commentShort = commentShort.substring(0, 55) + "...";
+                }
+
+                var rowHtml = `
+                    <tr>
+                        <td class="text-center fw-medium text-slate-500">${sttStr}</td>
+                        <td class="text-slate-500">${item.createdAt}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-circle">${initials}</div>
+                                <div>
+                                    <div class="fw-bold text-slate-800">${item.reviewerName}</div>
+                                    ${item.reviewerPhone ? `<div style="font-size: 0.75rem; color:#64748b;"><i class="fa-solid fa-phone me-1"></i>${item.reviewerPhone}</div>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge-department">${item.department}</span></td>
+                        <td><span class="score-text">${displayScoreVal}</span></td>
+                        <td class="text-slate-700" title="${item.comment}">${commentShort}</td>
+                        <td>${statusBadgeHtml}</td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                <button class="btn-action-icon" onclick="openDetailModal(${item.id})" title="Xem chi tiết & Phản hồi">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                                <button class="btn-action-icon btn-action-delete" onclick="deleteFeedbackReview(${item.id})" title="Xóa đánh giá">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                body.append(rowHtml);
+            });
+        }
+
+        // Render pagination buttons
+        function renderPagination(totalCount, activePage) {
+            let totalPages = Math.ceil(totalCount / pageSize);
+            
+            let start = totalCount === 0 ? 0 : (activePage - 1) * pageSize + 1;
+            let end = Math.min(activePage * pageSize, totalCount);
+            $('#paginationSummary').text(`Hiển thị ${start} - ${end} trên ${totalCount} phản hồi`);
+
+            let controls = $('#paginationControls');
+            controls.empty();
+
+            if (totalPages <= 1) return;
+
+            let prevClass = activePage === 1 ? "disabled" : "";
+            controls.append(`<li class="page-item ${prevClass}"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" href="#" onclick="loadFeedbackList(${activePage - 1}); return false;"><i class="fa-solid fa-chevron-left"></i></a></li>`);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let activeClass = activePage === i ? "active" : "";
+                let activeStyles = activePage === i ? "background-color: var(--primary-color); border-color: var(--primary-color); color: #ffffff;" : "color: var(--primary-color);";
+                controls.append(`<li class="page-item ${activeClass}"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; ${activeStyles}" href="#" onclick="loadFeedbackList(${i}); return false;">${i}</a></li>`);
+            }
+
+            let nextClass = activePage === totalPages ? "disabled" : "";
+            controls.append(`<li class="page-item ${nextClass}"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" href="#" onclick="loadFeedbackList(${activePage + 1}); return false;"><i class="fa-solid fa-chevron-right"></i></a></li>`);
+        }
+
+        // Open Detail Modal
+        function openDetailModal(id) {
+            $.ajax({
+                url: `/Admin/Rating/GetFeedbackDetail/${id}`,
+                type: 'GET',
+                success: function (res) {
+                    if (res.success) {
+                        var item = res.data;
+                        
+                        // Populate left details column
+                        $('#detailReviewerName').val(item.reviewerName || "Ẩn danh");
+                        $('#detailReviewerPhone').val(item.reviewerPhone || "");
+                        $('#detailDepartment').val(item.department);
+                        setReadonlyStars('detailOverall', item.overallScore || 0);
+                        $('#detailRatingReason').val(item.ratingReason || "");
+
+                        let visitDateFormatted = item.visitDate ? item.visitDate.split('-').reverse().join('/') : "";
+                        $('#detailVisitDate').val(visitDateFormatted);
+                        $('#detailCommentText').text(item.comment || "Không có nội dung nhận xét.");
+
+                        // Populate images list
+                        let grid = $('#detailImagesGrid');
+                        grid.empty();
+                        activeDetailImages = item.images || [];
+                        
+                        if (activeDetailImages.length > 0) {
+                            $('#detailAttachmentBlock').removeClass('d-none');
+                            activeDetailImages.forEach((imgUrl, idx) => {
+                                grid.append(`
+                                    <div class="detail-image-item" onclick="openLightbox(${idx})">
+                                        <img src="${imgUrl}">
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            $('#detailAttachmentBlock').addClass('d-none');
+                        }
+
+                        // Populate right timeline threads column
+                        let threadContainer = $('#chatThreadContainer');
+                        threadContainer.empty();
+                        
+                        let threadsList = item.threads || [];
+                        threadsList.forEach(t => {
+                            let isPatient = t.senderType === "Patient";
+                            let nameText = isPatient ? item.reviewerName : "Quản trị viên";
+                            let bubbleClass = isPatient ? "chat-bubble-patient" : "chat-bubble-admin";
+                            let metaClass = isPatient ? "chat-meta-patient" : "chat-meta-admin";
+                            
+                            threadContainer.append(`
+                                <div class="chat-bubble-wrapper">
+                                    <div class="chat-bubble ${bubbleClass}">${t.messageContent}</div>
+                                    <div class="chat-meta ${metaClass}">
+                                        <span class="fw-bold">${nameText}</span>
+                                        <span>&bull;</span>
+                                        <span>${t.createdAt}</span>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                        
+                        // Scroll threads container to bottom
+                        setTimeout(() => {
+                            threadContainer.scrollTop(threadContainer[0].scrollHeight);
+                        }, 50);
+
+                        // Set status label badge
+                        let statusLbl = $('#lblDetailStatus');
+                        statusLbl.text(item.status);
+                        if (item.status === "Đã phản hồi") {
+                            statusLbl.removeClass('bg-light text-slate-500').addClass('bg-success text-white border-0');
+                            
+                            // Locked response state - hide suggestions
+                            $('#suggestionWrapper').hide();
+                            $('#txtAdminReply').val(item.replyComment).prop('disabled', true).prop('readonly', true);
+                            $('#btnSubmitAdminResponse')
+                                .text('Chỉnh sửa phản hồi')
+                                .removeClass('btn-teal-action')
+                                .addClass('btn-secondary')
+                                .css('background-color', '#64748b')
+                                .off('click')
+                                .on('click', function () {
+                                    // Unlock editing - show suggestions
+                                    $('#suggestionWrapper').show();
+                                    loadSuggestions(item.overallScore || 0, item.comment || '', item.reviewerName, item.department);
+                                    $('#txtAdminReply').prop('disabled', false).prop('readonly', false).focus();
+                                    $(this)
+                                        .text('Cập nhật phản hồi')
+                                        .removeClass('btn-secondary')
+                                        .addClass('btn-teal-action')
+                                        .css('background-color', 'var(--primary-color)')
+                                        .off('click')
+                                        .on('click', function () {
+                                            submitResponseAction(item.id, true);
+                                        });
+                                });
+                        } else {
+                            statusLbl.removeClass('bg-success text-white border-0').addClass('bg-light text-slate-500');
+                            
+                            // Editable response state - show suggestions
+                            $('#suggestionWrapper').show();
+                            loadSuggestions(item.overallScore || 0, item.comment || '', item.reviewerName, item.department);
+                            $('#txtAdminReply').val('').prop('disabled', false).prop('readonly', false);
+                            $('#btnSubmitAdminResponse')
+                                .text('Gửi phản hồi')
+                                .removeClass('btn-secondary')
+                                .addClass('btn-teal-action')
+                                .css('background-color', 'var(--primary-color)')
+                                .off('click')
+                                .on('click', function () {
+                                    submitResponseAction(item.id, false);
+                                });
+                        }
+
+                        var modal = new bootstrap.Modal(document.getElementById('modalDetail'));
+                        modal.show();
+                    }
+                }
+            });
+        }
+
+        // Submit Admin response via AJAX
+        function submitResponseAction(feedbackId, isUpdate) {
+            let content = $('#txtAdminReply').val();
+            if (!content || !content.trim()) {
+                Toast.fire({ icon: 'warning', title: 'Vui lòng nhập nội dung phản hồi!' });
+                return;
+            }
+
+            let btn = $('#btnSubmitAdminResponse');
+            let originalText = btn.text();
+            btn.prop('disabled', true).text('Đang gửi...');
+
+            $.ajax({
+                url: '/Admin/Rating/SubmitResponse',
+                type: 'POST',
+                data: {
+                    feedbackId: feedbackId,
+                    content: content,
+                    isUpdate: isUpdate
+                },
+                success: function (res) {
+                    btn.prop('disabled', false).text(originalText);
+                    if (res.success) {
+                        var modalEl = document.getElementById('modalDetail');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                        loadStats();
+                        loadFeedbackList(currentPage);
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: isUpdate ? 'Cập nhật phản hồi thành công!' : 'Đã phản hồi thành công!'
+                        });
+                    } else {
+                        Swal.fire('Lỗi', res.message, 'error');
+                    }
+                },
+                error: function (xhr) {
+                    btn.prop('disabled', false).text(originalText);
+                    Swal.fire('Lỗi hệ thống', 'Không thể gửi phản hồi (' + xhr.status + ')', 'error');
+                }
+            });
+        }
+
+        // Delete feedback review
+        function deleteFeedbackReview(id) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: 'Hành động này sẽ xóa vĩnh viễn đánh giá và các phản hồi liên quan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Đồng ý xóa',
+                cancelButtonText: 'Hủy bỏ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Rating/DeleteFeedback',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                loadStats();
+                                loadFeedbackList(1);
+                                Toast.fire({ icon: 'success', title: 'Đã xóa đánh giá thành công!' });
+                            } else {
+                                Swal.fire('Lỗi', res.message, 'error');
+                            }
+                        },
+                        error: function (xhr) {
+                            Swal.fire('Lỗi hệ thống', 'Không thể xóa (' + xhr.status + ')', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Display star rating
+        function setReadonlyStars(containerId, activeCount) {
+            $(`#${containerId}Stars i`).each(function () {
+                let val = parseInt($(this).data('star'));
+                if (val <= activeCount) {
+                    $(this).removeClass('fa-regular').addClass('fa-solid active');
+                } else {
+                    $(this).removeClass('fa-solid active').addClass('fa-regular');
+                }
+            });
+        }
+
+        // Suggestion system for Admin response
+        function loadSuggestions(overallScore, comment, reviewerName, department) {
+            let container = $('#responseSuggestions');
+            container.empty();
+
+            let displayReviewerName = reviewerName;
+            if (displayReviewerName === "Bệnh nhân ẩn danh" || displayReviewerName === "Khách ẩn danh" || displayReviewerName === "Ẩn danh" || !displayReviewerName) {
+                displayReviewerName = "Quý khách";
+            }
+            let displayDepartment = department || "khoa phòng";
+
+            const suggestions = [
+                {
+                    title: "PHẢN HỒI ĐÁNH GIÁ TỐT ⭐⭐⭐⭐⭐",
+                    text: "Chào {reviewerName}, bệnh viện rất vui và tự hào khi nhận được đánh giá 5 sao từ bạn về chất lượng dịch vụ tại khoa {department}. Sự hài lòng của bạn là động lực lớn nhất để chúng tôi tiếp tục nỗ lực phục vụ tốt hơn nữa!",
+                    show: overallScore === 5
+                },
+                {
+                    title: "PHẢN HỒI ĐÁNH GIÁ 4 SAO ⭐⭐⭐⭐",
+                    text: "Chào {reviewerName}, cảm ơn bạn đã đánh giá 4 sao và chia sẻ trải nghiệm tích cực tại khoa {department}. Bệnh viện sẽ tiếp tục cải thiện các dịch vụ để mang lại trải nghiệm hoàn hảo 5 sao cho bạn trong lần thăm khám tới!",
+                    show: overallScore === 4
+                },
+                {
+                    title: "PHẢN HỒI ĐÁNH GIÁ TRUNG BÌNH ⭐⭐⭐",
+                    text: "Chào {reviewerName}, cảm ơn bạn đã đóng ý kiến đánh giá trung bình 3 sao dành cho khoa {department}. Bệnh viện rất tiếc vì dịch vụ chưa đáp ứng hoàn toàn kỳ vọng của bạn và sẽ chủ động rà soát để nâng cao trải nghiệm điều trị.",
+                    show: overallScore === 3
+                },
+                {
+                    title: "PHẢN HỒI ĐÁNH GIÁ KHÔNG HÀI LÒNG",
+                    text: "Chào {reviewerName}, Ban Quản Trị CarePulse vô cùng lấy làm tiếc vì trải nghiệm không tốt của bạn tại khoa {department}. Ý kiến phản ánh của bạn đã được chuyển tới Ban Giám Đốc và lãnh đạo khoa để xác minh, xử lý nghiêm túc và có biện pháp chấn chỉnh kịp thời.",
+                    show: overallScore >= 1 && overallScore <= 2
+                },
+                {
+                    title: "PHẢN HỒI VỀ THỜI GIAN CHỜ",
+                    text: "Chào {reviewerName}, chúng tôi thành thật xin lỗi vì sự bất tiện do thời gian chờ đợi lâu tại khoa {department}. Bệnh viện đang tiến hành cải tổ quy trình tiếp đón và tăng cường nhân sự điều phối để giảm thiểu tối đa thời gian chờ của người bệnh.",
+                    show: comment && (comment.toLowerCase().includes("thời gian chờ") || comment.toLowerCase().includes("chờ lâu") || comment.toLowerCase().includes("chậm"))
+                },
+                {
+                    title: "PHẢN HỒI VỀ THÁI ĐỘ NHÂN VIÊN",
+                    text: "Chào {reviewerName}, Ban quản lý rất tiếc khi nhận được phản ánh về thái độ phục vụ chưa chuẩn mực của nhân viên tại khoa {department}. Chúng tôi sẽ làm việc trực tiếp với cá nhân và tập thể liên quan để kiểm điểm nghiêm túc, đảm bảo tinh thần phục vụ ân cần, chu đáo.",
+                    show: comment && (comment.toLowerCase().includes("thái độ") || comment.toLowerCase().includes("gắt gỏng") || comment.toLowerCase().includes("khó chịu") || comment.toLowerCase().includes("nhân viên"))
+                },
+                {
+                    title: "PHẢN HỒI CHUNG (AN TOÀN)",
+                    text: "Chào {reviewerName}, bệnh viện xin chân thành cảm ơn những ý kiến đóng góp quý báu của bạn về dịch vụ khám chữa bệnh tại khoa {department}. Chúng tôi ghi nhận mọi phản hồi để cải thiện chất lượng phục vụ ngày một tốt hơn.",
+                    show: true
+                }
+            ];
+
+            suggestions.forEach(s => {
+                if (s.show) {
+                    let replacedText = s.text
+                        .replace(/{reviewerName}/g, displayReviewerName)
+                        .replace(/{department}/g, displayDepartment);
+
+                    container.append(`
+                        <button type="button" class="suggestion-btn" onclick="useSuggestion(\`${replacedText.replace(/`/g, '\\`').replace(/"/g, '&quot;')}\`)">
+                            ${s.title}
+                        </button>
+                    `);
+                }
+            });
+        }
+
+        function useSuggestion(text) {
+            if ($('#txtAdminReply').is(':disabled') || $('#txtAdminReply').is('[readonly]')) return;
+            $('#txtAdminReply').val(text);
+        }
+
+        // Open Lightbox for Images
+        function openLightbox(index) {
+            if (activeDetailImages.length === 0) return;
+            currentLightboxIndex = index;
+            
+            $('#lightboxImage').attr('src', activeDetailImages[currentLightboxIndex]);
+            $('#lightboxOverlay').addClass('active');
+
+            if (activeDetailImages.length <= 1) {
+                $('#btnLightboxPrev, #btnLightboxNext').addClass('d-none');
+            } else {
+                $('#btnLightboxPrev, #btnLightboxNext').removeClass('d-none');
+            }
+        }
+
+        // Navigate images lightbox
+        function navigateLightbox(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) {
+                currentLightboxIndex = activeDetailImages.length - 1;
+            } else if (currentLightboxIndex >= activeDetailImages.length) {
+                currentLightboxIndex = 0;
+            }
+            $('#lightboxImage').attr('src', activeDetailImages[currentLightboxIndex]);
+        }
+
+        // Close Lightbox
+        function closeLightbox() {
+            $('#lightboxOverlay').removeClass('active');
+        }
+    </script>
+}
