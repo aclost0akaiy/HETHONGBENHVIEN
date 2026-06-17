@@ -26,6 +26,7 @@ namespace HeThongBenhVien.Data
         public DbSet<LichLamViec> LichLamViecs { get; set; }
 
         // Các bảng mới cho chức năng quản trị
+        public DbSet<DoctorDepartment> DoctorDepartments { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<HospitalFee> HospitalFees { get; set; }
         public DbSet<InsuranceCard> InsuranceCards { get; set; }
@@ -39,6 +40,7 @@ namespace HeThongBenhVien.Data
         public DbSet<ICD10Protocol> ICD10Protocols { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Response> Responses { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

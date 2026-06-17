@@ -42,9 +42,62 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Ngày & Giờ Khám (mong muốn)</label>
-                                <input name="AppointmentTime" type="datetime-local" class="form-control form-control-lg booking-input" required>
+                                <input name="AppointmentTime" id="AppointmentTime" type="datetime-local" class="form-control form-control-lg booking-input" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Chuyên Khoa</label>
+                                <select id="DepartmentId" name="DepartmentId" class="form-select form-control-lg booking-input" required>
+                                    <option value="" disabled selected>-- Chọn khoa --</option>
+                                    @if(ViewBag.Departments != null)
+                                    {
+                                        foreach(var dept in ViewBag.Departments)
+                                        {
+                                            <option value="@dept.Id">@dept.DepartmentName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Bác sĩ khám</label>
+                                <select id="DoctorId" name="DoctorId" class="form-select form-control-lg booking-input" required>
+                                    <option value="" disabled selected>-- Vui lòng chọn ngày và khoa --</option>
+                                </select>
                             </div>
                         </div>
+                        
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const deptSelect = document.getElementById('DepartmentId');
+                                const dateInput = document.getElementById('AppointmentTime');
+                                const doctorSelect = document.getElementById('DoctorId');
+
+                                function loadDoctors() {
+                                    const deptId = deptSelect.value;
+                                    const dateVal = dateInput.value;
+                                    
+                                    if (deptId && dateVal) {
+                                        fetch(`/Patient/GetDoctorsByDepartment?departmentId=${deptId}&appointmentDate=${dateVal}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                doctorSelect.innerHTML = '<option value="" disabled selected>-- Chọn bác sĩ --</option>';
+                                                if (data.length > 0) {
+                                                    data.forEach(d => {
+                                                        doctorSelect.innerHTML += `<option value="${d.id}">${d.fullName}</option>`;
+                                                    });
+                                                } else {
+                                                    doctorSelect.innerHTML = '<option value="" disabled selected>Không có BS trực ca ngày này</option>';
+                                                }
+                                            });
+                                    } else {
+                                        doctorSelect.innerHTML = '<option value="" disabled selected>-- Vui lòng chọn ngày và khoa --</option>';
+                                    }
+                                }
+
+                                deptSelect.addEventListener('change', loadDoctors);
+                                dateInput.addEventListener('change', loadDoctors);
+                            });
+                        </script>
+                        
                         <div class="mt-4 text-center">
                             <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
                                 <i class="fa-solid fa-paper-plane me-2"></i>Gửi yêu cầu đặt lịch

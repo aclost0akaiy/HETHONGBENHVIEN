@@ -210,7 +210,9 @@ GO
 ALTER TABLE [QuanLyBenhVienDb].[dbo].[Users]
 ADD 
     [Email] NVARCHAR(100),
-    [SDT] VARCHAR(20);
+    [SDT] VARCHAR(20),
+    [DepartmentId] INT NULL;
+
 -- Cập nhật thông tin cho Quản trị viên (Id = 1)
 UPDATE [QuanLyBenhVienDb].[dbo].[Users]
 SET 
@@ -218,11 +220,12 @@ SET
     [SDT] = '0901111222'
 WHERE [Id] = 1;
 
--- Cập nhật thông tin cho Bác sĩ Nguyễn Văn A (Id = 2)
+-- Cập nhật thông tin cho Bác sĩ Nguyễn Văn A (Id = 2) - Gán Khoa Nội Tổng Hợp (Id = 1)
 UPDATE [QuanLyBenhVienDb].[dbo].[Users]
 SET 
     [Email] = 'nguyenvana.bs@gmail.com',
-    [SDT] = '0987654321'
+    [SDT] = '0987654321',
+    [DepartmentId] = 1
 WHERE [Id] = 2;
 
 IF OBJECT_ID('WorkSchedules', 'U') IS NOT NULL DROP TABLE WorkSchedules;
@@ -231,14 +234,18 @@ IF OBJECT_ID('WorkSchedules', 'U') IS NOT NULL DROP TABLE WorkSchedules;
 -- =============================================
 
 
+ALTER TABLE [QuanLyBenhVienDb].[dbo].[Appointments]
+ADD [DoctorId] INT NULL;
+GO
+
 -- 1. Thêm 5 nhân sự mẫu vào bảng Users
-INSERT INTO Users (Username, Password, FullName, Role, Email, SDT)
+INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, DepartmentId)
 VALUES 
-('bs_a', '123456', N'BS. Nguyễn Văn A', 'Doctor', 'bs.a@benhvien.com', '0901234567'),
-('bs_b', '123456', N'BS. Trần Thị B', 'Doctor', 'bs.b@benhvien.com', '0902345678'),
-('bs_c', '123456', N'BS. Lê Văn C', 'Doctor', 'bs.c@benhvien.com', '0903456789'),
-('bs_d', '123456', N'BS. Phạm Văn D', 'Doctor', 'bs.d@benhvien.com', '0904567890'),
-('admin_e', '123456', N'Quản trị viên E', 'Admin', 'admin.e@benhvien.com', '0905678901');
+('bs_a', '123456', N'BS. Nguyễn Văn A', 'Doctor', 'bs.a@benhvien.com', '0901234567', 1),
+('bs_b', '123456', N'BS. Trần Thị B', 'Doctor', 'bs.b@benhvien.com', '0902345678', 2),
+('bs_c', '123456', N'BS. Lê Văn C', 'Doctor', 'bs.c@benhvien.com', '0903456789', 3),
+('bs_d', '123456', N'BS. Phạm Văn D', 'Doctor', 'bs.d@benhvien.com', '0904567890', 4),
+('admin_e', '123456', N'Quản trị viên E', 'Admin', 'admin.e@benhvien.com', '0905678901', NULL);
 GO
 
 -- Sau khi chạy xong đoạn này, hãy bôi đen chạy lại đoạn INSERT bảng WorkSchedules của tin nhắn trước!
@@ -5332,4 +5339,92 @@ CREATE TABLE [dbo].[Notifications](
 )
 ) ON [PRIMARY]
 END
+GO
+
+
+
+
+-- Bổ sung cột DepartmentId cho Users để tương thích Entity Framework
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'DepartmentId' AND Object_ID = Object_ID(N'Users'))
+BEGIN
+    ALTER TABLE Users ADD DepartmentId INT NULL;
+    ALTER TABLE Users ADD CONSTRAINT FK_Users_Departments FOREIGN KEY (DepartmentId) REFERENCES Departments(Id) ON DELETE SET NULL;
+END
+GO
+-- =========================================
+-- CREATE TABLE DoctorDepartments
+-- =========================================
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DoctorDepartments]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[DoctorDepartments](
+    [Id] [int] IDENTITY(1,1) NOT NULL,
+    [DoctorId] [int] NOT NULL,
+    [DepartmentId] [int] NOT NULL,
+ CONSTRAINT [PK_DoctorDepartments] PRIMARY KEY CLUSTERED 
+(
+    [Id] ASC
+)
+) ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DoctorDepartments_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[DoctorDepartments]'))
+ALTER TABLE [dbo].[DoctorDepartments]  WITH CHECK ADD  CONSTRAINT [FK_DoctorDepartments_Users] FOREIGN KEY([DoctorId])
+REFERENCES [dbo].[Users] ([Id])
+ON DELETE CASCADE
+GO
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_DoctorDepartments_Departments]') AND parent_object_id = OBJECT_ID(N'[dbo].[DoctorDepartments]'))
+ALTER TABLE [dbo].[DoctorDepartments]  WITH CHECK ADD  CONSTRAINT [FK_DoctorDepartments_Departments] FOREIGN KEY([DepartmentId])
+REFERENCES [dbo].[Departments] ([Id])
+ON DELETE CASCADE
+GO
+
+-- Seed sample data for multiple departments
+IF NOT EXISTS (SELECT * FROM DoctorDepartments)
+BEGIN
+    INSERT INTO DoctorDepartments (DoctorId, DepartmentId)
+    SELECT Id, 1 FROM Users WHERE Role = 'Doctor';
+    
+    -- Thêm thêm khoa phụ cho bác sĩ
+    INSERT INTO DoctorDepartments (DoctorId, DepartmentId)
+    SELECT TOP 1 Id, 2 FROM Users WHERE Role = 'Doctor';
+    INSERT INTO DoctorDepartments (DoctorId, DepartmentId)
+    SELECT TOP 1 Id, 3 FROM Users WHERE Role = 'Doctor';
+END
+GO
+
+-- =========================================
+-- UPDATE TABLE Appointments to add DoctorId
+-- =========================================
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'DoctorId' AND Object_ID = Object_ID(N'Appointments'))
+BEGIN
+    ALTER TABLE Appointments ADD DoctorId INT NULL;
+    ALTER TABLE Appointments ADD CONSTRAINT FK_Appointments_Users_DoctorId FOREIGN KEY (DoctorId) REFERENCES Users(Id) ON DELETE SET NULL;
+END
+GO
+
+-- =========================================
+-- UPDATE DoctorDepartments (Distribute doctors evenly)
+-- =========================================
+DELETE FROM DoctorDepartments;
+GO
+
+WITH CTE AS (
+    SELECT Id, (ROW_NUMBER() OVER(ORDER BY Id) % 5) + 1 AS Dept1, 
+           (ROW_NUMBER() OVER(ORDER BY Id DESC) % 5) + 1 AS Dept2 
+    FROM Users WHERE Role = 'Doctor'
+) 
+INSERT INTO DoctorDepartments (DoctorId, DepartmentId) 
+SELECT Id, Dept1 FROM CTE;
+GO
+
+WITH CTE AS (
+    SELECT Id, (ROW_NUMBER() OVER(ORDER BY Id) % 5) + 1 AS Dept1, 
+           (ROW_NUMBER() OVER(ORDER BY Id DESC) % 5) + 1 AS Dept2 
+    FROM Users WHERE Role = 'Doctor'
+) 
+INSERT INTO DoctorDepartments (DoctorId, DepartmentId) 
+SELECT Id, Dept2 FROM CTE WHERE Dept1 <> Dept2;
+GO
+
+UPDATE Users SET DepartmentId = (SELECT TOP 1 DepartmentId FROM DoctorDepartments WHERE DoctorId = Users.Id) WHERE Role = 'Doctor';
 GO

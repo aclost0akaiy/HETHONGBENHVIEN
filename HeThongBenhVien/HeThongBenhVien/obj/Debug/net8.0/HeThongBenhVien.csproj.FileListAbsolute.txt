@@ -426,3 +426,4 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\publish_output\HeThongBenhVien.deps.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\publish_output\HeThongBenhVien.runtimeconfig.json
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\publish_output\HeThongBenhVien.staticwebassets.endpoints.json
+C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

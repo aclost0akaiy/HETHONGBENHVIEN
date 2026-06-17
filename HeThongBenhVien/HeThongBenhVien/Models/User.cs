@@ -32,5 +32,10 @@ namespace HeThongBenhVien.Models
 
         [StringLength(20)]
         public string? PatientCode { get; set; }
+
+        public int? DepartmentId { get; set; }
+        
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("DepartmentId")]
+        public Department? Department { get; set; }
     }
 }

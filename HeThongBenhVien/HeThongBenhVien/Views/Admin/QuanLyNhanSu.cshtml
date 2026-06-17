@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HeThongBenhVien.Models.User>
+@model IEnumerable<HeThongBenhVien.Models.User>
 @using System.Linq
 
 @{
@@ -6,86 +6,281 @@
     ViewData["Title"] = "Quản Lý Nhân Sự";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+}
+
+<style>
+    /* CSS Tùy chỉnh làm đẹp toàn bộ Table và Glass Card */
+    .glass-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem !important;
+    }
+    
+    /* Tuỳ chỉnh header bảng */
+    #nhanSuTable thead th {
+        background: #f8fafc; /* Nền nhạt, sáng, sạch sẽ */
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.8px;
+        font-weight: 700;
+        padding: 16px 15px;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    #nhanSuTable tbody td {
+        padding: 16px 15px;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+
+    /* Hiệu ứng hover cho dòng */
+    #nhanSuTable tbody tr {
+        transition: all 0.2s ease;
+    }
+    #nhanSuTable tbody tr:hover {
+        background-color: #f8fafc;
+        transform: scale(1.002);
+        box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 10;
+        border-radius: 8px;
+    }
+
+    /* Tuỳ chỉnh DataTables UI: khung tìm kiếm và chọn số dòng */
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        padding: 6px 12px;
+        color: #475569;
+        outline: none;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+    
+    /* Đẩy label xuống cho căn giữa */
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_filter label {
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        margin-left: 10px;
+        background: #f8fafc;
+        width: 250px;
+    }
+
+    /* Phân trang đẹp mắt (Pagination) */
+    .dataTables_wrapper .dataTables_info {
+        padding-top: 1.5em;
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 1.5em;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px !important;
+        border: 1px solid transparent !important;
+        margin: 0 3px;
+        padding: 5px 14px !important;
+        transition: all 0.2s;
+        color: #475569 !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: transparent !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #f1f5f9 !important;
+        color: #6366f1 !important;
+        border-color: #e2e8f0 !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: #6366f1 !important;
+        color: white !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3) !important;
+    }
+    
+    /* Scrollbar tinh tế cho bảng */
+    .dataTables_scrollBody::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    .dataTables_scrollBody::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+    .dataTables_scrollBody::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+        border: 2px solid #f8fafc;
+    }
+    .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Custom Badges (Vai trò) */
+    .role-badge {
+        padding: 6px 14px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    .badge-admin {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .badge-doctor {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    /* Nút Gửi SMS Cao Cấp */
+    .btn-sms {
+        background: white;
+        color: #0ea5e9;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(14, 165, 233, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 0 auto;
+    }
+    .btn-sms:hover {
+        background: #0ea5e9;
+        color: white;
+        border-color: #0ea5e9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+    }
+</style>
+
 <div class="container-fluid p-0">
+    <!-- Header Area -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản Lý Nhân Sự</h2>
-            <p class="text-muted mb-0">Danh sách toàn bộ nhân sự bác sĩ và quản trị viên trên hệ thống</p>
+            <h2 class="h3 mb-2 text-gray-800" style="font-weight: 800; color: #1e293b;">Quản Lý Nhân Sự</h2>
+            <p class="text-muted mb-0" style="font-size: 0.95rem;">Danh sách toàn bộ nhân sự bác sĩ và quản trị viên trên hệ thống</p>
         </div>
         <div>
-            <a asp-action="ThemNhanSu" asp-controller="Admin" class="btn btn-primary shadow-sm">
-                <i class="fas fa-plus fa-sm text-white-50 me-1"></i> Thêm Nhân Sự
+            <a asp-action="ThemNhanSu" asp-controller="Admin" class="btn btn-primary" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
+                <i class="fas fa-plus me-2"></i> Thêm Nhân Sự
             </a>
         </div>
     </div>
 
-    <div class="glass-card p-4">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="text-primary" style="background-color: rgba(0,0,0,0.03);">
-                    <tr>
-                        <th class="font-weight-bold">ID</th>
-                        <th class="font-weight-bold">Tên Đăng Nhập</th>
-                        <th class="font-weight-bold">Mật Khẩu</th>
-                        <th class="font-weight-bold">Họ và Tên</th>
-                        <th class="font-weight-bold text-center">Vai Trò</th>
-                        <th class="font-weight-bold">Email</th>
-                        <th class="font-weight-bold">Số Điện Thoại</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="align-middle">@item.Id</td>
-                                <td class="align-middle fw-bold">@item.Username</td>
-                                <td class="align-middle text-muted">@item.Password</td>
-                                <td class="align-middle">@item.FullName</td>
-                                <td class="align-middle text-center">
-                                    @if (item.Role == "Admin")
-                                    {
-                                        <span class="badge bg-danger text-white px-3 py-2">Quản trị viên</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success text-white px-3 py-2">Bác sĩ</span>
-                                    }
-                                </td>
-                                <td class="align-middle">@item.Email</td>
-                                <td class="align-middle">@item.SDT</td>
-                            </tr>
-                        }
-                    }
-                    else
+    <!-- Main Table Card -->
+    <div class="glass-card">
+        <table id="nhanSuTable" class="table w-100 mb-0 border-0">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 50px;">ID</th>
+                    <th>Tên Đăng Nhập</th>
+                    <th>Họ và Tên</th>
+                    <th class="text-center">Vai Trò</th>
+                    <th>Email</th>
+                    <th>Số Điện Thoại</th>
+                    <th class="text-center">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="fas fa-folder-open fa-3x mb-3"></i>
-                                <p>Chưa có dữ liệu nhân sự nào được tìm thấy.</p>
+                            <td class="text-center text-muted fw-bold">@item.Id</td>
+                            <td class="fw-bold" style="color: #475569;">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.1); color: #6366f1; font-size: 14px;">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    @item.Username
+                                </div>
+                            </td>
+                            <td class="fw-semibold">@item.FullName</td>
+                            <td class="text-center">
+                                @if (item.Role == "Admin")
+                                {
+                                    <span class="role-badge badge-admin"><i class="fa-solid fa-shield-halved me-1"></i> Quản trị viên</span>
+                                }
+                                else
+                                {
+                                    <span class="role-badge badge-doctor"><i class="fa-solid fa-user-doctor me-1"></i> Bác sĩ</span>
+                                }
+                            </td>
+                            <td class="text-muted">@item.Email</td>
+                            <td class="fw-medium text-dark">@item.SDT</td>
+                            <td>
+                                <button class="btn-sms" onclick="sendSMS('@item.SDT', '@Html.Raw(item.FullName?.Replace("'", "\\'"))')">
+                                    <i class="fa-solid fa-comment-sms"></i> Gửi SMS
+                                </button>
                             </td>
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
-<style>
-    .glass-card {
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 15px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-    
-    .table thead th {
-        border-top: none;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-    }
-</style>
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#nhanSuTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json",
+                    "search": "<i class='fa-solid fa-magnifying-glass'></i> Tìm kiếm:"
+                },
+                "scrollY": "450px",
+                "scrollCollapse": true,
+                "paging": true,
+                "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Tất cả"]],
+                "pageLength": 10,
+                // Không sort mặc định theo cột ID do data đang demo rải rác
+                "order": [[ 0, "asc" ]]
+            });
+        });
+        
+        function sendSMS(phone, name) {
+            if (!phone) {
+                alert("Nhân sự " + name + " chưa có số điện thoại để gửi SMS!");
+                return;
+            }
+            alert("Hệ thống đang tiến hành gửi SMS cấu hình tài khoản đến " + name + " (" + phone + ").");
+        }
+    </script>
+}

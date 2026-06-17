@@ -83,12 +83,23 @@ namespace HeThongBenhVien.Controllers
         {
             int pid = await GetCurrentPatientId();
             ViewBag.MyBookings = await GetPatientBookingStatuses(pid);
+            ViewBag.Departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDoctorsByDepartment(int departmentId, DateTime appointmentDate)
+        {
+            var doctors = await _context.Users
+                .Where(u => u.Role == "Doctor" && _context.DoctorDepartments.Any(dd => dd.DoctorId == u.Id && dd.DepartmentId == departmentId))
+                .Select(u => new { id = u.Id, fullName = u.FullName })
+                .ToListAsync();
+            return Json(doctors);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Booking(string FullName, string PhoneNumber, string Reason, DateTime AppointmentTime)
+        public async Task<IActionResult> Booking(string FullName, string PhoneNumber, string Reason, DateTime AppointmentTime, int? DoctorId)
         {
             Patient? patient = null;
 
@@ -129,6 +140,7 @@ namespace HeThongBenhVien.Controllers
                 PatientId = patient.Id,
                 Reason = Reason,
                 AppointmentTime = AppointmentTime,
+                DoctorId = DoctorId, // Lưu bác sĩ đã chọn
                 Status = 0 // Chưa đến
             };
             

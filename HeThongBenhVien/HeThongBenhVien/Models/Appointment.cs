@@ -22,5 +22,10 @@ namespace HeThongBenhVien.Models
 
         // Trạng thái: 0 - Chưa đến, 1 - Đang chờ, 2 - Đang khám, 3 - Có KQ XN, 4 - Đã khám xong, 9 - Đã xác nhận hẹn online
         public int Status { get; set; } 
+
+        public int? DoctorId { get; set; }
+        
+        [ForeignKey("DoctorId")]
+        public User? Doctor { get; set; }
     }
 }
