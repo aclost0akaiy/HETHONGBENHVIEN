@@ -1,0 +1,35 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Lỗi Truy Cập";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0 text-center"><i class="fas fa-exclamation-triangle me-2"></i> Lỗi Truy Cập Cổng Bệnh Nhân</h4>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-user-shield fa-5x text-danger opacity-25"></i>
+                    </div>
+                    <h3 class="text-dark mb-3">@ViewBag.ErrorMessage</h3>
+                    <p class="text-muted mb-4">
+                        Hệ thống không tìm thấy mã bệnh nhân liên kết với tài khoản của bạn. 
+                        Điều này có thể xảy ra nếu tài khoản của bạn mới được tạo nhưng chưa được thiết lập đầy đủ.
+                    </p>
+                    <hr class="my-4">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-home me-2"></i> Về trang chủ
+                        </a>
+                        <a asp-controller="Account" asp-action="Logout" class="btn btn-danger px-4">
+                            <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

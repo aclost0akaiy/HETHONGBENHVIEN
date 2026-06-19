@@ -1,0 +1,57 @@
+@model IEnumerable<HeThongBenhVien.Models.Notification>
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Tin Nhắn Từ Admin";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Tin Nhắn Admin</h2>
+            <p class="text-muted mb-0">Liên lạc nội bộ từ ban quản trị hệ thống.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card overflow-hidden">
+                <div class="list-group list-group-flush">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="list-group-item list-group-item-action p-4 border-0 border-bottom">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="fa-solid fa-user-shield text-info fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-dark">Ban Quản Trị Hệ Thống</h6>
+                                                <small class="text-info fw-bold">Admin Message</small>
+                                            </div>
+                                            <small class="text-muted">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                        <div class="p-3 bg-light rounded-4 text-secondary" style="border: 1px solid #edf2f7;">
+                                            @item.Message
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-5 text-center text-muted">
+                            <i class="fa-regular fa-envelope-open fs-1 mb-3"></i>
+                            <p>Hộp thư trống.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

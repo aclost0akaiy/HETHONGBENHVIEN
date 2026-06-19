@@ -59,7 +59,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Bác sĩ khám</label>
-                                <select id="DoctorId" name="DoctorId" class="form-select form-control-lg booking-input" required>
+                                <select id="DoctorId" name="DoctorId" class="form-select form-control-lg booking-input">
                                     <option value="" disabled selected>-- Vui lòng chọn ngày và khoa --</option>
                                 </select>
                             </div>
@@ -140,18 +140,35 @@
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                                             <h6 class="fw-bold mb-0">@apt.Reason</h6>
-                                            @if (isPending)
-                                            {
-                                                <span class="badge rounded-pill status-badge-pending">
-                                                    <i class="fa-solid fa-spinner fa-spin-pulse me-1"></i>Chờ xác nhận
-                                                </span>
+                                            @{
+                                                var badgeClass = apt.Status switch {
+                                                    0 => "status-badge-pending",
+                                                    9 => "status-badge-confirmed",
+                                                    4 => "bg-success text-white",
+                                                    1 => "bg-primary text-white",
+                                                    2 => "bg-warning text-dark",
+                                                    _ => "bg-secondary text-white"
+                                                };
+                                                var statusLabel = apt.Status switch {
+                                                    0 => "Chờ xác nhận",
+                                                    9 => "Đã xác nhận",
+                                                    1 => "Đang chờ khám",
+                                                    2 => "Đang khám",
+                                                    3 => "Có KQ xét nghiệm",
+                                                    4 => "Đã khám xong",
+                                                    _ => "Khác"
+                                                };
+                                                var iconClass = apt.Status switch {
+                                                    0 => "fa-spinner fa-spin-pulse",
+                                                    9 => "fa-check",
+                                                    4 => "fa-flag-checkered",
+                                                    2 => "fa-stethoscope",
+                                                    _ => "fa-info-circle"
+                                                };
                                             }
-                                            else
-                                            {
-                                                <span class="badge rounded-pill status-badge-confirmed">
-                                                    <i class="fa-solid fa-check me-1"></i>Đã xác nhận
-                                                </span>
-                                            }
+                                            <span class="badge rounded-pill @badgeClass">
+                                                <i class="fa-solid @iconClass me-1"></i>@statusLabel
+                                            </span>
                                         </div>
                                         <p class="mb-1 small text-muted">
                                             <i class="fa-regular fa-calendar me-1"></i>

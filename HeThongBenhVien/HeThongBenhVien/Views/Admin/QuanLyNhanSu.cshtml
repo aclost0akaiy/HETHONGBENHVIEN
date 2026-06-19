@@ -243,9 +243,16 @@
                             <td class="text-muted">@item.Email</td>
                             <td class="fw-medium text-dark">@item.SDT</td>
                             <td>
-                                <button class="btn-sms" onclick="sendSMS('@item.SDT', '@Html.Raw(item.FullName?.Replace("'", "\\'"))')">
-                                    <i class="fa-solid fa-comment-sms"></i> Gửi SMS
-                                </button>
+                                @if (item.Role == "Doctor" && item.Username != ViewBag.CurrentUsername)
+                                {
+                                    <button class="btn-sms" onclick="sendSMS(@item.Id, '@Html.Raw(item.FullName?.Replace("'", "\\'"))')">
+                                        <i class="fa-solid fa-comment-sms"></i> Gửi SMS
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
                             </td>
                         </tr>
                     }
@@ -255,10 +262,42 @@
     </div>
 </div>
 
+<!-- Modal Gửi SMS -->
+<div class="modal fade" id="smsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-light" style="border-radius: 20px 20px 0 0; padding: 20px 30px;">
+                <h5 class="modal-title fw-bold" style="color: #1e293b;">
+                    <i class="fa-solid fa-paper-plane me-2 text-primary"></i> Gửi Tin Nhắn Admin
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">NGƯỜI NHẬN</label>
+                    <div id="smsRecipient" class="fw-bold text-dark fs-5"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="smsMessage" class="form-label text-muted small fw-bold">NỘI DUNG TIN NHẮN</label>
+                    <textarea class="form-control" id="smsMessage" rows="4" style="border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px;" placeholder="Nhập nội dung tin nhắn gửi đến bác sĩ..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px; padding: 20px 30px;">
+                <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary px-4 py-2" id="btnConfirmSend" style="border-radius: 10px; font-weight: 600;">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Gửi Ngay
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script>
+        let currentSmsDoctorId = 0;
+
         $(document).ready(function () {
             $('#nhanSuTable').DataTable({
                 "language": {
@@ -273,14 +312,45 @@
                 // Không sort mặc định theo cột ID do data đang demo rải rác
                 "order": [[ 0, "asc" ]]
             });
+
+            $('#btnConfirmSend').click(function() {
+                const message = $('#smsMessage').val().trim();
+                if (!message) {
+                    alert("Vui lòng nhập nội dung tin nhắn!");
+                    return;
+                }
+
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Admin/SendDoctorSMS',
+                    type: 'POST',
+                    data: {
+                        doctorId: currentSmsDoctorId,
+                        message: message,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(res) {
+                        if (res && res.success) {
+                            alert('✅ ' + res.message);
+                            $('#smsModal').modal('hide');
+                            $('#smsMessage').val('');
+                        } else {
+                            alert('❌ ' + (res ? res.message : 'Gửi tin nhắn thất bại!'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('SMS Error:', xhr.status, xhr.responseText);
+                        alert('❌ Lỗi kết nối! HTTP ' + xhr.status + ': ' + (xhr.responseJSON?.message || error));
+                    }
+                });
+            });
         });
         
-        function sendSMS(phone, name) {
-            if (!phone) {
-                alert("Nhân sự " + name + " chưa có số điện thoại để gửi SMS!");
-                return;
-            }
-            alert("Hệ thống đang tiến hành gửi SMS cấu hình tài khoản đến " + name + " (" + phone + ").");
+        function sendSMS(id, name) {
+            currentSmsDoctorId = id;
+            $('#smsRecipient').text(name);
+            $('#smsModal').modal('show');
         }
     </script>
 }

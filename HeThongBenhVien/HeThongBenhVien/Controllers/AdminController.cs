@@ -119,7 +119,10 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         public async Task<IActionResult> QuanLyNhanSu()
         {
-            var danhSachNhanSu = await _context.Users.ToListAsync();
+            // Lấy toàn bộ nhân sự để hiển thị, nhưng đánh dấu ai là bác sĩ để filter nút gửi SMS
+            var danhSachNhanSu = await _context.Users.Where(u => u.Role == "Doctor" || u.Role == "Admin").ToListAsync();
+            // Truyền username của Admin đang đăng nhập để ẩn nút SMS cho chính mình
+            ViewBag.CurrentUsername = User?.Identity?.Name;
             return View(danhSachNhanSu);
         }
 
@@ -147,6 +150,42 @@ namespace HeThongBenhVien.Controllers
                 return RedirectToAction(nameof(QuanLyNhanSu));
             }
             return View(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendDoctorSMS(int doctorId, string message)
+        {
+            // Không cho phép gửi cho chính mình (Admin)
+            var senderUsername = User?.Identity?.Name;
+            var sender = await _context.Users.FirstOrDefaultAsync(u => u.Username == senderUsername);
+            if (sender != null && sender.Id == doctorId)
+            {
+                return Json(new { success = false, message = "Không thể gửi tin nhắn cho chính mình!" });
+            }
+
+            var doctor = await _context.Users.FindAsync(doctorId);
+            if (doctor == null) return NotFound();
+
+            // Chỉ gửi cho bác sĩ (role Doctor)
+            if (doctor.Role != "Doctor")
+            {
+                return Json(new { success = false, message = "Chỉ có thể gửi tin nhắn cho Bác sĩ!" });
+            }
+
+            var notification = new Notification
+            {
+                DoctorId = doctorId,
+                Message = message,
+                Type = NotificationType.AdminMessage,
+                IsRead = false,
+                IsForPatient = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã gửi tin nhắn đến bác sĩ " + doctor.FullName });
         }
 
         // ==========================================
@@ -181,8 +220,24 @@ namespace HeThongBenhVien.Controllers
                     return View(user);
                 }
 
+                // Tự động tạo PatientCode
+                string patientCode = "BN" + DateTime.Now.ToString("yyMMddHHmmss");
+                user.PatientCode = patientCode;
                 user.Role = "BenhNhan";
+
+                // Tạo bản ghi Patient tương ứng
+                var patient = new Patient
+                {
+                    FullName = user.FullName ?? "Bệnh nhân mới",
+                    PatientCode = patientCode,
+                    CCCD = user.SDT, // Tạm dùng SDT làm CCCD nếu không có
+                    Age = 30, // Giá trị mặc định
+                    Gender = "Khác"
+                };
+
+                _context.Patients.Add(patient);
                 _context.Users.Add(user);
+                
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(QuanLyBenhNhan));
             }
@@ -235,6 +290,23 @@ namespace HeThongBenhVien.Controllers
                 benhNhan.FullName = user.FullName;
                 benhNhan.Email = user.Email;
                 benhNhan.SDT = user.SDT;
+
+                // Nếu chưa có PatientCode, tạo mới và tạo bản ghi Patient
+                if (string.IsNullOrEmpty(benhNhan.PatientCode))
+                {
+                    string patientCode = "BN" + DateTime.Now.ToString("yyMMddHHmmss");
+                    benhNhan.PatientCode = patientCode;
+
+                    var patient = new Patient
+                    {
+                        FullName = benhNhan.FullName ?? "Bệnh nhân cũ",
+                        PatientCode = patientCode,
+                        CCCD = benhNhan.SDT,
+                        Age = 30,
+                        Gender = "Khác"
+                    };
+                    _context.Patients.Add(patient);
+                }
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(QuanLyBenhNhan));

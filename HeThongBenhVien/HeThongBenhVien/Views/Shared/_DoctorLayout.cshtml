@@ -399,13 +399,34 @@
                 <div class="nav-icon" id="theme-toggle" title="Chuyển đổi giao diện">
                     <i class="fa-solid fa-moon"></i>
                 </div>
-                <div class="nav-icon">
+                @using HeThongBenhVien.Data
+                @using HeThongBenhVien.Models
+                @using Microsoft.EntityFrameworkCore
+                @inject ApplicationDbContext _context
+                @{
+                    var username = User.Identity?.Name;
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                    int bellCount = 0;
+                    int mailCount = 0;
+                    if (currentUser != null)
+                    {
+                        bellCount = await _context.Notifications.CountAsync(n => n.DoctorId == currentUser.Id && n.Type == NotificationType.Appointment && !n.IsRead && !n.IsForPatient);
+                        mailCount = await _context.Notifications.CountAsync(n => n.DoctorId == currentUser.Id && n.Type == NotificationType.AdminMessage && !n.IsRead);
+                    }
+                }
+                <div class="nav-icon" onclick="location.href='@Url.Action("ThongBao", "Doctor")'" title="Thông báo đặt lịch">
                     <i class="fa-regular fa-bell"></i>
-                    <span class="badge-count">5</span>
+                    @if (bellCount > 0)
+                    {
+                        <span class="badge-count">@bellCount</span>
+                    }
                 </div>
-                <div class="nav-icon">
+                <div class="nav-icon" onclick="location.href='@Url.Action("TinNhan", "Doctor")'" title="Tin nhắn từ Admin">
                     <i class="fa-regular fa-envelope"></i>
-                    <span class="badge-count">2</span>
+                    @if (mailCount > 0)
+                    {
+                        <span class="badge-count">@mailCount</span>
+                    }
                 </div>
                 <div class="profile-info dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="d-flex align-items-center gap-2" style="cursor: pointer;">

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using HeThongBenhVien.Data;
 using HeThongBenhVien.Models;
@@ -12,8 +13,7 @@ namespace HeThongBenhVien.Controllers
     public class PatientController : Controller
     {
         private readonly ApplicationDbContext _context;
-        // Mock PatientId for demo purposes (giả lập Bệnh nhân ID 1 đang đăng nhập)
-        private readonly int currentPatientId = 1;
+
 
         public PatientController(ApplicationDbContext context)
         {
@@ -32,29 +32,38 @@ namespace HeThongBenhVien.Controllers
                     if (patient != null) return patient.Id;
                 }
             }
-            return currentPatientId;
+            return 0;
         }
 
+        [Authorize]
         public async Task<IActionResult> Portal()
         {
             int pid = await GetCurrentPatientId();
+            if (pid == 0)
+            {
+                // Thay vì redirect gây lặp, hiển thị thông báo lỗi hoặc yêu cầu liên hệ admin
+                ViewBag.ErrorMessage = "Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân. Vui lòng liên hệ quản trị viên.";
+                return View("ErrorAuth"); 
+            }
+
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == pid);
-            ViewBag.PatientName = patient?.FullName ?? "Bệnh nhân Mock";
+            ViewBag.PatientName = patient?.FullName ?? "Bệnh nhân";
             ViewBag.UnreadNotificationCount = await _context.Notifications
-                .CountAsync(n => n.PatientId == pid && !n.IsRead);
+                .CountAsync(n => n.PatientId == pid && !n.IsRead && n.IsForPatient);
             return View();
         }
 
         private async Task<List<PatientBookingStatusItem>> GetPatientBookingStatuses(int patientId)
         {
             var bookings = await _context.Appointments
-                .Where(a => a.PatientId == patientId && (a.Status == 0 || a.Status == 9))
+                .Where(a => a.PatientId == patientId)
                 .OrderByDescending(a => a.AppointmentTime)
+                .Take(10)
                 .ToListAsync();
 
             var notifications = await _context.Notifications
                 .Include(n => n.Doctor)
-                .Where(n => n.PatientId == patientId)
+                .Where(n => n.PatientId == patientId && n.IsForPatient)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
@@ -90,10 +99,21 @@ namespace HeThongBenhVien.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDoctorsByDepartment(int departmentId, DateTime appointmentDate)
         {
+            // Lấy bác sĩ có liên kết với khoa đó
             var doctors = await _context.Users
                 .Where(u => u.Role == "Doctor" && _context.DoctorDepartments.Any(dd => dd.DoctorId == u.Id && dd.DepartmentId == departmentId))
                 .Select(u => new { id = u.Id, fullName = u.FullName })
                 .ToListAsync();
+
+            // Nếu không có bác sĩ liên kết với khoa, trả về tất cả bác sĩ
+            if (!doctors.Any())
+            {
+                doctors = await _context.Users
+                    .Where(u => u.Role == "Doctor")
+                    .Select(u => new { id = u.Id, fullName = u.FullName })
+                    .ToListAsync();
+            }
+
             return Json(doctors);
         }
 
@@ -147,6 +167,23 @@ namespace HeThongBenhVien.Controllers
             _context.Appointments.Add(model);
             await _context.SaveChangesAsync();
 
+            // Create notification for Doctor
+            if (model.DoctorId.HasValue)
+            {
+                var notification = new Notification
+                {
+                    DoctorId = model.DoctorId.Value,
+                    PatientId = patient.Id,
+                    Message = $"Bệnh nhân {patient.FullName} đã đặt lịch khám vào lúc {model.AppointmentTime:dd/MM/yyyy HH:mm}.",
+                    Type = NotificationType.Appointment,
+                    IsRead = false,
+                    CreatedAt = DateTime.Now,
+                    IsForPatient = false
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+
             // Tính E-Ticket (số thứ tự điện tử trong ngày)
             var countToday = await _context.Appointments
                 .Where(a => a.AppointmentTime.Date == model.AppointmentTime.Date)
@@ -156,6 +193,7 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(Booking));
         }
 
+        [Authorize]
         public async Task<IActionResult> EHR()
         {
             int pid = await GetCurrentPatientId();
@@ -179,6 +217,7 @@ namespace HeThongBenhVien.Controllers
             return View(records);
         }
 
+        [Authorize]
         public async Task<IActionResult> Payment()
         {
             int pid = await GetCurrentPatientId();
@@ -194,6 +233,7 @@ namespace HeThongBenhVien.Controllers
         }
         
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PayPrescription(int prescriptionId)
         {
             var p = await _context.Prescriptions.FindAsync(prescriptionId);
@@ -206,12 +246,13 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(Payment));
         }
 
+        [Authorize]
         public async Task<IActionResult> Notifications()
         {
             int pid = await GetCurrentPatientId();
 
             var unreadNotifications = await _context.Notifications
-                .Where(n => n.PatientId == pid && !n.IsRead)
+                .Where(n => n.PatientId == pid && !n.IsRead && n.IsForPatient)
                 .ToListAsync();
             foreach (var note in unreadNotifications)
             {
@@ -238,7 +279,7 @@ namespace HeThongBenhVien.Controllers
 
             var notifications = await _context.Notifications
                 .Include(n => n.Doctor)
-                .Where(n => n.PatientId == pid)
+                .Where(n => n.PatientId == pid && n.IsForPatient)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
@@ -250,12 +291,14 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult Rating()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Rating(QualityReview model)
         {

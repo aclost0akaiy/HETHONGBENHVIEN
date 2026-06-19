@@ -103,14 +103,22 @@ namespace HeThongBenhVien.Controllers
                 }
             }
 
-            // Lấy danh sách cuộc hẹn của RIÊNG bác sĩ đang đăng nhập
-            var myAppointmentsQuery = _context.Appointments.Where(a => a.DoctorId == currentDoctorId);
+            // Lấy danh sách cuộc hẹn
+            // Nếu là Admin thì lấy tất cả, nếu là Doctor thì chỉ lấy của riêng mình
+            IQueryable<Appointment> myAppointmentsQuery;
+            if (User.IsInRole("Admin"))
+            {
+                myAppointmentsQuery = _context.Appointments;
+            }
+            else
+            {
+                myAppointmentsQuery = _context.Appointments.Where(a => a.DoctorId == currentDoctorId);
+            }
 
             var unexaminedCount = await myAppointmentsQuery.CountAsync(a => a.Status != 4 && a.Status != 5 && a.Status != 0);
             var completedCount = await myAppointmentsQuery.CountAsync(a => a.Status == 4 || a.Status == 5);
-            var waitingCount = await myAppointmentsQuery.CountAsync(a => a.Status == 0); // Đổi thành số lịch chưa xác nhận của bác sĩ
+            var waitingCount = await myAppointmentsQuery.CountAsync(a => a.Status == 0); 
             
-            // Xóa box 4 (emergency/ưu tiên) -> theo yêu cầu, gán bằng 0 hoặc bỏ qua
             var emergencyCount = 0; 
 
             var upcomingAppointments = await myAppointmentsQuery
@@ -121,13 +129,13 @@ namespace HeThongBenhVien.Controllers
 
             var pendingOnlineAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status == 0) // Chưa đến (Lịch chưa xác nhận của BS đó)
+                .Where(a => a.Status == 0)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
             var confirmedAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status == 9) // Đã xác nhận hẹn online
+                .Where(a => a.Status == 9)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
@@ -260,7 +268,8 @@ namespace HeThongBenhVien.Controllers
                 DoctorId = currentDoctor?.Id ?? 0,
                 Message = message.Trim(),
                 CreatedAt = DateTime.Now,
-                IsRead = false
+                IsRead = false,
+                IsForPatient = true
             };
 
             _context.Notifications.Add(notification);
@@ -290,9 +299,19 @@ namespace HeThongBenhVien.Controllers
             appointment.Status = 9; // Đã xác nhận hẹn (Online Confirmed)
             await _context.SaveChangesAsync();
 
-            // Gửi thông báo
+            // Đánh dấu các thông báo đặt lịch cũ là đã đọc cho bác sĩ
             var username = User?.Identity?.Name;
             var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (currentDoctor != null)
+            {
+                var unreadBookings = await _context.Notifications
+                    .Where(n => n.DoctorId == currentDoctor.Id && n.PatientId == appointment.PatientId && n.Type == NotificationType.Appointment && !n.IsRead && !n.IsForPatient)
+                    .ToListAsync();
+                foreach (var n in unreadBookings) n.IsRead = true;
+                await _context.SaveChangesAsync();
+            }
+
+            // Gửi thông báo cho bệnh nhân
 
             if (!string.IsNullOrWhiteSpace(message))
             {
@@ -302,7 +321,8 @@ namespace HeThongBenhVien.Controllers
                     DoctorId = currentDoctor?.Id ?? 0,
                     Message = message.Trim(),
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    IsForPatient = true
                 };
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
@@ -496,7 +516,7 @@ namespace HeThongBenhVien.Controllers
 
             var query = _context.Patients.AsQueryable();
 
-            if (currentDoctor != null)
+            if (currentDoctor != null && !User.IsInRole("Admin"))
             {
                 query = query.Where(p => _context.Appointments.Any(a => a.PatientId == p.Id && a.DoctorId == currentDoctor.Id));
             }
@@ -1481,7 +1501,8 @@ namespace HeThongBenhVien.Controllers
                 DoctorId = currentDoctor?.Id ?? 0,
                 Message = message.Trim(),
                 CreatedAt = DateTime.Now,
-                IsRead = false
+                IsRead = false,
+                IsForPatient = true
             };
 
             _context.Notifications.Add(notification);
@@ -1510,7 +1531,6 @@ namespace HeThongBenhVien.Controllers
         }
         
         public IActionResult HoiChanOnline() { return View(); }
-        public IActionResult ThongBao() { return View(); }
         public IActionResult CaiDat() { return View(); }
 
         public async Task<IActionResult> SinhHieu(int? id)
@@ -1608,6 +1628,49 @@ namespace HeThongBenhVien.Controllers
                 .ToListAsync();
 
             return View(admittedPatients);
+        }
+
+        public async Task<IActionResult> ThongBao()
+        {
+            var username = User?.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
+            var notifications = await _context.Notifications
+                .Include(n => n.Patient)
+                .Where(n => n.DoctorId == currentUser.Id && n.Type == NotificationType.Appointment && !n.IsForPatient)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            // Mark all as read when opening the page
+            foreach (var n in notifications.Where(x => !x.IsRead))
+            {
+                n.IsRead = true;
+            }
+            await _context.SaveChangesAsync();
+
+            return View(notifications);
+        }
+
+        public async Task<IActionResult> TinNhan()
+        {
+            var username = User?.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
+            var messages = await _context.Notifications
+                .Where(n => n.DoctorId == currentUser.Id && n.Type == NotificationType.AdminMessage)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            // Mark all as read when opening the page
+            foreach (var n in messages.Where(x => !x.IsRead))
+            {
+                n.IsRead = true;
+            }
+            await _context.SaveChangesAsync();
+
+            return View(messages);
         }
     }
 }
