@@ -5428,3 +5428,8 @@ GO
 
 UPDATE Users SET DepartmentId = (SELECT TOP 1 DepartmentId FROM DoctorDepartments WHERE DoctorId = Users.Id) WHERE Role = 'Doctor';
 GO
+
+-- 11. Cập nhật bảng Notifications thêm cột Type và IsForPatient
+IF COL_LENGTH('Notifications', 'Type') IS NULL ALTER TABLE Notifications ADD Type INT NOT NULL DEFAULT 0;
+IF COL_LENGTH('Notifications', 'IsForPatient') IS NULL ALTER TABLE Notifications ADD IsForPatient BIT NOT NULL DEFAULT 0;
+GO

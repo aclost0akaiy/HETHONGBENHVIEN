@@ -1,0 +1,34 @@
+DỰ ÁN: QUẢN LÝ KHÁM CHỮA BỆNH (Tên mới)
+
+Để giải quyết nhận xét "quá rườm rà, thiếu tính năng wow, thiếu tính chuyên nghiệp nâng cao", đây là kế hoạch nâng cấp phần mềm:
+
+1. TỐI ƯU HÓA & LÀM GỌN GIAO DIỆN (Giải quyết sự rườm rà)
+- Cấu trúc lại Menu: Gom nhóm các chức năng dư thừa thành các Module lớn (Tiếp đón, Khám bệnh, Cận lâm sàng, Nhà thuốc, Viện phí, Báo cáo). Ẩn bớt các tính năng ít dùng vào cài đặt.
+- Tối ưu luồng làm việc (Workflow): Rút ngắn số lần click chuột. Dữ liệu bệnh nhân phải được luân chuyển xuyên suốt từ khâu Tiếp đón -> Khám bệnh -> Thanh toán mà không phải nhập lại.
+- Bảng điều khiển (Dashboard) thông minh: Thay vì vào trang chủ thấy toàn bảng biểu khô khan, sẽ đổi thành các biểu đồ thống kê trực quan (số ca đang đợi, doanh thu trong ngày, v.v.).
+
+2. CÁC TÍNH NĂNG "WOW" (Tạo ấn tượng mạnh, bắt trend công nghệ)
+- Tích hợp Voice-to-Text: Cho phép bác sĩ dùng microphone đọc kết quả chẩn đoán, hệ thống tự động chuyển thành văn bản (rất thực tế ở các bệnh viện).
+- Hệ thống gọi số tự động (Text-to-Speech): Bác sĩ ấn nút "Gọi bệnh nhân", loa của phần mềm tự động đọc "Mời bệnh nhân Nguyễn Văn A vào phòng số 1".
+- Quét mã QR/Mã vạch toàn diện:
+  + Quét QR CCCD gắn chíp / Thẻ BHYT để tự động điền toàn bộ thông tin bệnh nhân trong 1 giây.
+  + Thanh toán bằng mã QR động (Dynamic QR Code) tích hợp số tiền viện phí (như Momo, VNPay).
+- Theme hiện đại: Hỗ trợ chuyển đổi giao diện Sáng/Tối (Light/Dark mode) mượt mà.
+
+3. CÁC TÍNH NĂNG CHUYÊN NGHIỆP, NÂNG CAO (Đạt chuẩn y tế thực tế)
+- Cảnh báo dị ứng & Tương tác thuốc: Khi bác sĩ kê đơn, phần mềm tự động kiểm tra xem bệnh nhân có tiền sử dị ứng với thuốc này không, hoặc 2 loại thuốc trong đơn có phản ứng phụ với nhau không thì bật cảnh báo đỏ.
+- Gợi ý phác đồ điều trị thông minh: Khi chọn mã bệnh (ICD-10), hệ thống tự động đưa ra combo các loại thuốc, xét nghiệm thường dùng cho bệnh đó để bác sĩ chọn nhanh.
+- Khóa hồ sơ & Chữ ký số pháp lý: Hồ sơ bệnh án sau khi bác sĩ "Hoàn tất khám" sẽ yêu cầu nhập mã PIN/chữ ký số và tự động KHÓA CHẶT (Read-only). Không ai (kể cả admin) được quyền sửa để đảm bảo tính minh bạch pháp lý y tế.
+- Xem trực tiếp hình ảnh cận lâm sàng: Tích hợp công cụ xem ảnh X-Quang, siêu âm trực tiếp trên hồ sơ khám bệnh, thay vì chỉ đọc file text kết quả.
+- Quản lý Dược phẩm nâng cao: Tự động cảnh báo các lô thuốc sắp hết hạn sử dụng hoặc thuốc có số lượng dưới mức tồn kho tối thiểu.
+
+4. BÁO CÁO PHÂN TÍCH CHUYÊN SÂU
+- Phân tích hiệu suất phòng khám: Báo cáo tỷ lệ bệnh nhân theo từng loại bệnh, doanh thu theo từng bác sĩ/phòng ban với các biểu đồ trực quan (Biểu đồ tròn, biểu đồ cột).
+- Xuất PDF chuẩn form y tế.
+
+5. CỔNG THÔNG TIN/ỨNG DỤNG DÀNH CHO BỆNH NHÂN (Patient Portal - Tính năng hoàn toàn mới)
+- Đặt lịch khám trực tuyến (Online Booking): Bệnh nhân tự chọn bác sĩ, chuyên khoa và khung giờ khám. Hệ thống tự động cấp số thứ tự điện tử (E-ticket) để không phải xếp hàng chờ đợi.
+- Theo dõi hồ sơ sức khỏe điện tử (EHR): Bệnh nhân có thể tra cứu toàn bộ lịch sử khám bệnh, xem đơn thuốc, và tải về kết quả xét nghiệm/X-Quang trực tiếp trên điện thoại/web.
+- Thanh toán viện phí không tiền mặt: Tích hợp cổng thanh toán trực tuyến, bệnh nhân có thể thanh toán từ xa trước khi đến khám hoặc sau khi nhận đơn thuốc.
+- Nhắc nhở tự động (Smart Notifications): Hệ thống tự động gửi thông báo nhắc lịch tái khám, nhắc nhở uống thuốc đúng giờ, hoặc thông báo ngay khi có kết quả xét nghiệm (qua App/Email/Zalo).
+- Đánh giá chất lượng dịch vụ (Rating): Sau mỗi lượt khám, bệnh nhân có thể đánh giá sao và để lại nhận xét cho bác sĩ, giúp nâng cao chất lượng dịch vụ phòng khám.
