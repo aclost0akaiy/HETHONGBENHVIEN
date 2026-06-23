@@ -143,7 +143,7 @@ namespace HeThongBenhVien.Controllers
             var currentObj = DateTime.Now.Date;
             var sevenDaysAgo = currentObj.AddDays(-6);
 
-            var past7DaysData = await _context.Appointments
+            var past7DaysData = await myAppointmentsQuery
                 .Where(a => a.AppointmentTime >= sevenDaysAgo && a.AppointmentTime < currentObj.AddDays(1))
                 .GroupBy(a => a.AppointmentTime.Date)
                 .Select(g => new { Date = g.Key, Count = g.Count() })
@@ -161,7 +161,7 @@ namespace HeThongBenhVien.Controllers
             ViewBag.ChartData = chartData;
 
             // Dữ liệu biểu đồ động: Tỉ lệ bệnh theo chuyên khoa
-            var deptStats = await _context.Appointments
+            var deptStats = await myAppointmentsQuery
                 .Where(a => a.DoctorId != null)
                 .Join(_context.DoctorDepartments, a => a.DoctorId, dd => dd.DoctorId, (a, dd) => dd.DepartmentId)
                 .Join(_context.Departments, dId => dId, d => d.Id, (dId, d) => d.DepartmentName)
@@ -418,9 +418,8 @@ namespace HeThongBenhVien.Controllers
                     if (storedHash != 0)
                     {
                         int distance = CalculateHammingDistance(targetHash, storedHash);
-                        // Nếu req.ForceSuccess = true, nhận diện bệnh nhân có khuôn mặt giống nhất bất kể ngưỡng
-                        // Nếu không, áp dụng ngưỡng khắt khe (distance <= 12)
-                        if (distance < bestDistance && (req.ForceSuccess || distance <= 12))
+                        // Tăng ngưỡng nhận diện (distance <= 28) để bao dung hơn với các thay đổi về kiểu tóc, góc mặt, hoặc ánh sáng
+                        if (distance < bestDistance && (req.ForceSuccess || distance <= 28))
                         {
                             bestDistance = distance;
                             bestMatch = p;

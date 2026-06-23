@@ -7,17 +7,27 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
 
 namespace HeThongBenhVien.Controllers
 {
+    public class AiSuggestRequest
+    {
+        public string symptoms { get; set; }
+    }
+
     public class PatientController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _config;
 
-
-        public PatientController(ApplicationDbContext context)
+        public PatientController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         private async Task<int> GetCurrentPatientId()
@@ -31,7 +41,18 @@ namespace HeThongBenhVien.Controllers
                     var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == user.PatientCode);
                     if (patient != null) return patient.Id;
                 }
+                
+                // Nếu người dùng ĐÃ ĐĂNG NHẬP, tuyệt đối không dùng Cookie của khách
+                // để tránh tình trạng xem lẫn lịch của tài khoản khác
+                return 0;
             }
+
+            // Hỗ trợ hiển thị lịch khám cho khách (không đăng nhập) bằng Cookie
+            if (Request.Cookies.TryGetValue("GuestPatientId", out string? guestIdStr) && int.TryParse(guestIdStr, out int guestId))
+            {
+                return guestId;
+            }
+
             return 0;
         }
 
@@ -125,9 +146,10 @@ namespace HeThongBenhVien.Controllers
 
             // 1. Ưu tiên: Nếu bệnh nhân đang đăng nhập, lấy đúng Patient record của họ
             var loggedInUsername = User?.Identity?.Name;
+            User? currentUser = null;
             if (!string.IsNullOrEmpty(loggedInUsername))
             {
-                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUsername);
+                currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUsername);
                 if (currentUser != null && !string.IsNullOrEmpty(currentUser.PatientCode))
                 {
                     patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == currentUser.PatientCode);
@@ -188,6 +210,17 @@ namespace HeThongBenhVien.Controllers
             var countToday = await _context.Appointments
                 .Where(a => a.AppointmentTime.Date == model.AppointmentTime.Date)
                 .CountAsync();
+
+            // Liên kết PatientCode cho User nếu họ đang đăng nhập nhưng chưa có mã bệnh nhân
+            if (currentUser != null && string.IsNullOrEmpty(currentUser.PatientCode))
+            {
+                currentUser.PatientCode = patient.PatientCode;
+                _context.Users.Update(currentUser);
+                await _context.SaveChangesAsync();
+            }
+
+            // Lưu Cookie để bệnh nhân (kể cả khách không đăng nhập) xem lại được lịch khám khi quay lại trang
+            Response.Cookies.Append("GuestPatientId", patient.Id.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(30) });
                 
             TempData["PendingMessage"] = $"Yêu cầu đặt lịch đã được gửi! Số thứ tự điện tử (E-ticket): {countToday:D3}. Vui lòng chờ bác sĩ xác nhận.";
             return RedirectToAction(nameof(Booking));
@@ -321,6 +354,108 @@ namespace HeThongBenhVien.Controllers
         public IActionResult HospitalMap()
         {
             return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> SuggestDepartmentAI([FromBody] AiSuggestRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req?.symptoms))
+                return Json(new { success = false, message = "Vui lòng nhập triệu chứng." });
+
+            try
+            {
+                var departments = await _context.Departments.Select(d => new { d.Id, d.DepartmentName }).ToListAsync();
+                string deptsJson = JsonSerializer.Serialize(departments);
+
+                string apiKey = _config["OpenAiApiKey"];
+
+                string prompt = $"Một bệnh nhân có triệu chứng sau: '{req.symptoms}'. " +
+                                $"Bệnh viện có các chuyên khoa sau (định dạng JSON): {deptsJson}. " +
+                                "Dựa vào triệu chứng, hãy chọn 1 chuyên khoa phù hợp nhất để khám. " +
+                                "CHỈ TRẢ VỀ ID (số nguyên) CỦA CHUYÊN KHOA ĐÓ, không thêm bất kỳ văn bản, giải thích hay markdown nào khác.";
+
+                if (!string.IsNullOrEmpty(apiKey))
+                {
+                    try
+                    {
+                        var payload = new
+                        {
+                            model = "gpt-4o-mini",
+                            messages = new[]
+                            {
+                                new { role = "system", content = "Bạn là một bác sĩ hỗ trợ chọn chuyên khoa." },
+                                new { role = "user", content = prompt }
+                            }
+                        };
+                        using var client = new HttpClient();
+                        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync("https://api.openai.com/v1/chat/completions", content);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string responseString = await response.Content.ReadAsStringAsync();
+                            using JsonDocument doc = JsonDocument.Parse(responseString);
+                            string resultText = doc.RootElement
+                                .GetProperty("choices")[0]
+                                .GetProperty("message")
+                                .GetProperty("content").GetString();
+
+                            if (!string.IsNullOrEmpty(resultText))
+                            {
+                                resultText = resultText.Trim();
+                                string onlyDigits = new string(resultText.Where(char.IsDigit).ToArray());
+
+                                if (!string.IsNullOrEmpty(onlyDigits) && int.TryParse(onlyDigits, out int deptId))
+                                {
+                                    return Json(new { success = true, departmentId = deptId, isAi = true, engine = "OpenAI" });
+                                }
+                            }
+                        }
+                        // Nếu API lỗi (hết quota, sai key...) sẽ tự động rơi xuống chế độ dự phòng bên dưới
+                    }
+                    catch
+                    {
+                        // Bỏ qua lỗi, chạy tiếp xuống AI Dự Phòng
+                    }
+                }
+
+                // --- CHẾ ĐỘ DỰ PHÒNG (FALLBACK) ---
+                // Được kích hoạt nếu API Key (cả OpenAI lẫn Gemini) bị lỗi hết tiền, hết quota hoặc cấu hình sai
+                string s = req.symptoms.ToLower();
+                int fallbackDeptId = departments.FirstOrDefault()?.Id ?? 0;
+
+                if (s.Contains("mỏi tay") || s.Contains("đau tay") || s.Contains("mỏi vai") || s.Contains("vai gáy") || s.Contains("đau lưng") || s.Contains("xương") || s.Contains("khớp") || s.Contains("gãy")) {
+                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("xương") || x.DepartmentName.ToLower().Contains("khớp") || x.DepartmentName.ToLower().Contains("ngoại"));
+                    if (d != null) fallbackDeptId = d.Id;
+                }
+                else if (s.Contains("ho") || s.Contains("sổ mũi") || s.Contains("đau họng") || s.Contains("tai ") || s.Contains("mũi ")) {
+                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("tai") || x.DepartmentName.ToLower().Contains("họng") || x.DepartmentName.ToLower().Contains("nội"));
+                    if (d != null) fallbackDeptId = d.Id;
+                }
+                else if (s.Contains("răng") || s.Contains("nướu") || s.Contains("hàm")) {
+                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("răng") || x.DepartmentName.ToLower().Contains("hàm"));
+                    if (d != null) fallbackDeptId = d.Id;
+                }
+                else if (s.Contains("mắt") || s.Contains("mờ") || s.Contains("cận")) {
+                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("mắt"));
+                    if (d != null) fallbackDeptId = d.Id;
+                }
+                else if (s.Contains("đau đầu") || s.Contains("chóng mặt") || s.Contains("đau bụng") || s.Contains("buồn nôn") || s.Contains("sốt") || s.Contains("tim") || s.Contains("huyết áp")) {
+                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("nội") || x.DepartmentName.ToLower().Contains("tổng hợp") || x.DepartmentName.ToLower().Contains("tim"));
+                    if (d != null) fallbackDeptId = d.Id;
+                }
+
+                if (fallbackDeptId > 0)
+                {
+                    return Json(new { success = true, departmentId = fallbackDeptId, isAi = false, message = "Cảnh báo: API Key (OpenAI/Gemini) của bạn đã hết tiền/Quota. Hệ thống tự động kích hoạt AI Dự phòng để không làm gián đoạn." });
+                }
+
+                return Json(new { success = false, message = "Hệ thống AI từ xa hết hạn mức và không thể tự phân tích." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi kết nối AI: " + ex.Message });
+            }
         }
     }
 }

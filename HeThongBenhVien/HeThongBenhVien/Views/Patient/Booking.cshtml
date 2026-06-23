@@ -37,8 +37,13 @@
                                 <input type="tel" class="form-control form-control-lg booking-input" name="PhoneNumber" placeholder="0912345678" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold">Lý do khám (Triệu chứng)</label>
-                                <textarea name="Reason" class="form-control booking-input" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-semibold mb-0">Lý do khám (Triệu chứng)</label>
+                                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill" onclick="suggestDepartmentAI()">
+                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Gợi ý khoa AI
+                                    </button>
+                                </div>
+                                <textarea id="symptomsText" name="Reason" class="form-control booking-input" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Ngày & Giờ Khám (mong muốn)</label>
@@ -96,6 +101,45 @@
                                 deptSelect.addEventListener('change', loadDoctors);
                                 dateInput.addEventListener('change', loadDoctors);
                             });
+
+                            function suggestDepartmentAI() {
+                                const text = document.getElementById('symptomsText').value.trim();
+                                if (!text) {
+                                    alert("Vui lòng nhập triệu chứng trước khi sử dụng AI.");
+                                    return;
+                                }
+                                
+                                const btn = document.querySelector('button[onclick="suggestDepartmentAI()"]');
+                                const originalText = btn.innerHTML;
+                                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang phân tích...';
+                                btn.disabled = true;
+
+                                fetch('/Patient/SuggestDepartmentAI', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ symptoms: text })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    btn.innerHTML = originalText;
+                                    btn.disabled = false;
+                                    
+                                    if (data.success && data.departmentId) {
+                                        const select = document.getElementById('DepartmentId');
+                                        select.value = data.departmentId;
+                                        select.dispatchEvent(new Event('change'));
+                                        
+                                        alert(`AI Suggestion: Đã tự động chọn khoa phù hợp (${select.options[select.selectedIndex].text})!`);
+                                    } else {
+                                        alert(data.message || "Không thể phân tích triệu chứng.");
+                                    }
+                                })
+                                .catch(err => {
+                                    btn.innerHTML = originalText;
+                                    btn.disabled = false;
+                                    alert("Có lỗi xảy ra khi kết nối tới AI.");
+                                });
+                            }
                         </script>
                         
                         <div class="mt-4 text-center">

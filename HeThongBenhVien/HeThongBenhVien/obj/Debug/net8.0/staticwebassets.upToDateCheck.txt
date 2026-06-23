@@ -60,6 +60,8 @@ wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\ai_2686c3a7-b08f-45f1-aadb-3db7afa7897b_gãy tay .jfif
 wwwroot\uploads\ai_26ec293a-96c4-4a70-bf27-5f8600fda1aa_gãy tay .jfif
+wwwroot\uploads\ai_4734e380-c985-40d4-9c35-d6d03f2af19a_gãy tay .jfif
 wwwroot\uploads\ai_74a23d85-6ff5-41bd-90ba-541bfe076335_gãy tay .jfif
+wwwroot\uploads\ai_84e232d1-5dbc-4f7d-b0b4-0f949dcdcea3_gãy tay .jfif
 wwwroot\uploads\ai_90254c27-defd-4b0b-b211-24b70e12d655_gãy tay .jfif
 wwwroot\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif
