@@ -69,6 +69,55 @@ namespace HeThongBenhVien.Controllers
 
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == pid);
             ViewBag.PatientName = patient?.FullName ?? "Bệnh nhân";
+            ViewBag.PatientCode = patient?.PatientCode ?? "";
+            ViewBag.UnreadNotificationCount = await _context.Notifications
+                .CountAsync(n => n.PatientId == pid && !n.IsRead && n.IsForPatient);
+
+            // Đếm số lượng hồ sơ bệnh án thực tế
+            var recordCount = await _context.MedicalRecords
+                .CountAsync(m => m.Appointment != null && m.Appointment.PatientId == pid);
+            ViewBag.RecordCount = recordCount;
+
+            // Tìm lịch hẹn sắp tới (AppointmentTime >= Hiện tại, Trạng thái: Chưa đến (0) hoặc Đã xác nhận hẹn online (9))
+            var upcomingAppointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Department)
+                .Where(a => a.PatientId == pid && a.AppointmentTime >= DateTime.Now && (a.Status == 0 || a.Status == 9))
+                .OrderBy(a => a.AppointmentTime)
+                .FirstOrDefaultAsync();
+
+            ViewBag.UpcomingAppointment = upcomingAppointment;
+            if (upcomingAppointment != null)
+            {
+                ViewBag.AppointmentTimeStr = upcomingAppointment.AppointmentTime.ToString("HH:mm");
+                ViewBag.AppointmentDateStr = upcomingAppointment.AppointmentTime.ToString("dd/MM/yyyy");
+                ViewBag.DoctorName = upcomingAppointment.Doctor?.FullName ?? "Bác sĩ khám";
+                ViewBag.DepartmentName = upcomingAppointment.Doctor?.Department?.Name ?? "Khoa khám bệnh";
+            }
+            else
+            {
+                ViewBag.AppointmentTimeStr = "Không có";
+                ViewBag.AppointmentDateStr = "Không có";
+                ViewBag.DoctorName = null;
+                ViewBag.DepartmentName = null;
+            }
+
+            return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> UserGuide()
+        {
+            int pid = await GetCurrentPatientId();
+            if (pid == 0)
+            {
+                ViewBag.ErrorMessage = "Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân. Vui lòng liên hệ quản trị viên.";
+                return View("ErrorAuth"); 
+            }
+
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == pid);
+            ViewBag.PatientName = patient?.FullName ?? "Bệnh nhân";
+            ViewBag.PatientCode = patient?.PatientCode ?? "";
             ViewBag.UnreadNotificationCount = await _context.Notifications
                 .CountAsync(n => n.PatientId == pid && !n.IsRead && n.IsForPatient);
             return View();

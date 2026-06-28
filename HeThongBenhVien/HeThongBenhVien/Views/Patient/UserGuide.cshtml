@@ -1,0 +1,580 @@
+@{
+    ViewData["Title"] = "Hướng dẫn sử dụng - Cổng Bệnh Nhân";
+    var patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
+}
+
+<div class="container-fluid py-4" style="background-color: var(--body-bg);">
+    <div class="container text-start">
+        
+        <div class="row g-4">
+            <!-- Sidebar Menu (Left Column) -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card portal-sidebar-card p-4 mb-4 text-start" style="background-color: var(--footer-bg);">
+                    <div class="mb-4">
+                        <div class="small fw-bold text-uppercase" style="font-size: 0.7rem; color: #94a3b8 !important; letter-spacing: 0.8px;">Cổng Bệnh Nhân</div>
+                        <div class="fw-bold" style="font-size: 1.25rem; color: #0b57d0 !important; font-weight: 850 !important;">Hướng dẫn</div>
+                    </div>
+                    
+                    <div class="nav flex-column nav-pills gap-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <!-- Redirect back to Portal -->
+                        <a href="@Url.Action("Portal", "Patient")" class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3 text-decoration-none">
+                            <i class="fa-solid fa-table-cells-large fs-5"></i>
+                            <span>Trang chính</span>
+                        </a>
+                        <!-- Tab 1: Đặt lịch khám -->
+                        <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-booking-tab" data-bs-toggle="pill" data-bs-target="#v-pills-booking" type="button" role="tab" aria-controls="v-pills-booking" aria-selected="false">
+                            <i class="fa-regular fa-calendar fs-5"></i>
+                            <span>Đặt Lịch Khám</span>
+                        </button>
+                        <!-- Tab 2: Hồ sơ bệnh án -->
+                        <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-ehr-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ehr" type="button" role="tab" aria-controls="v-pills-ehr" aria-selected="false">
+                            <i class="fa-regular fa-file-lines fs-5"></i>
+                            <span>Hồ Sơ Bệnh Án</span>
+                        </button>
+                        <!-- Tab 3: Thanh toán QR -->
+                        <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-payment-tab" data-bs-toggle="pill" data-bs-target="#v-pills-payment" type="button" role="tab" aria-controls="v-pills-payment" aria-selected="false">
+                            <i class="fa-solid fa-qrcode fs-5"></i>
+                            <span>Thanh Toán QR</span>
+                        </button>
+                        <!-- Tab 5: Đánh giá dịch vụ (Active by default!) -->
+                        <button class="nav-link active text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-rating-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rating" type="button" role="tab" aria-controls="v-pills-rating" aria-selected="true">
+                            <i class="fa-regular fa-star fs-5"></i>
+                            <span>Đánh Giá Dịch Vụ</span>
+                        </button>
+                        <!-- Tab 6: Sơ đồ bệnh viện -->
+                        <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-map-tab" data-bs-toggle="pill" data-bs-target="#v-pills-map" type="button" role="tab" aria-controls="v-pills-map" aria-selected="false">
+                            <i class="fa-solid fa-map-location-dot fs-5"></i>
+                            <span>Sơ Đồ Bệnh Viện</span>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Action button in sidebar -->
+                    <a href="@Url.Action("Booking", "Patient")" class="btn btn-primary-custom w-100 py-2.5 rounded-3 fw-bold text-white mt-4" style="font-size: 13px;">
+                        Đặt lịch khám ngay
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content Column (Right Column) -->
+            <div class="col-md-8 col-lg-9">
+                <div class="ps-md-2">
+                    
+                    <!-- Header title section -->
+                    <div class="mb-4 text-start">
+                        <a href="@Url.Action("Portal", "Patient")" class="btn btn-link text-decoration-none p-0 text-secondary hover-primary mb-3 fw-semibold" style="font-size: 0.9rem;">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại Cổng Bệnh Nhân
+                        </a>
+                        <h2 class="fw-bold text-dark mb-1" style="font-weight: 850 !important; font-size: 1.8rem; letter-spacing: -0.5px;">Hướng dẫn chi tiết</h2>
+                        <p class="text-secondary mb-0" style="font-size: 0.95rem; color: #64748b !important;">Học cách quản lý lịch khám và hồ sơ sức khỏe trực tuyến của bạn một cách nhanh chóng và hiệu quả nhất.</p>
+                    </div>
+
+                    <!-- Tab Contents Panes -->
+                    <div class="tab-content" id="v-pills-tabContent">
+                        
+                        <!-- Pane 1: Đặt Lịch Khám -->
+                        <div class="tab-pane fade" id="v-pills-booking" role="tabpanel" aria-labelledby="v-pills-booking-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(11, 87, 208, 0.04); border: 1.5px solid rgba(11, 87, 208, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(11, 87, 208, 0.1); color: #0b57d0 !important; font-size: 1.25rem;">
+                                                <i class="fa-regular fa-calendar"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #0b57d0 !important;">Chức năng: Đặt Lịch Khám</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Chủ động đặt lịch hẹn khám bệnh trực tuyến nhanh chóng</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Đặt lịch hẹn khám chữa bệnh tại các khoa lâm sàng chỉ với vài bước đơn giản, giúp bệnh nhân chủ động thời gian và giảm thiểu xếp hàng chờ đợi.
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Nhấn chọn Đặt Lịch Khám</h6>
+                                                    <p class="text-secondary small mb-0">Nhấp chọn thẻ **Đặt Lịch Khám** hoặc nút **Đặt lịch khám ngay** ở cột bên trái.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 2: Chọn Chuyên khoa & Giờ khám</h6>
+                                                    <p class="text-secondary small mb-0">Lựa chọn chuyên khoa, chọn bác sĩ khám mong muốn cùng ngày hẹn và khung giờ khám rảnh phù hợp với bạn.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Nhận Số thứ tự (E-ticket)</h6>
+                                                    <p class="text-secondary small mb-0">Xác nhận lịch hẹn. Hệ thống sẽ sinh mã số thứ tự điện tử. Bạn chỉ cần đến phòng khám đúng giờ để khám ngay.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("Booking", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content;">
+                                                Bắt đầu đặt lịch ngay <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 d-flex flex-column gap-4">
+                                    <div class="card portal-sidebar-card overflow-hidden text-start">
+                                        <img src="/uploads/patient_hero.png" alt="Booking illustration" style="height: 150px; object-fit: contain; background-color: #e6f0ff;" />
+                                        <div class="p-3">
+                                            <h6 class="fw-bold text-dark mb-1">Đặt lịch 24/7</h6>
+                                            <p class="text-secondary small mb-0">Tiết kiệm thời gian, không còn phải xếp hàng đăng ký số khám bệnh tại bệnh viện.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 2: Hồ Sơ Bệnh Án -->
+                        <div class="tab-pane fade" id="v-pills-ehr" role="tabpanel" aria-labelledby="v-pills-ehr-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(139, 92, 246, 0.04); border: 1.5px solid rgba(139, 92, 246, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6 !important; font-size: 1.25rem;">
+                                                <i class="fa-regular fa-file-lines"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #8b5cf6 !important;">Chức năng: Hồ Sơ Bệnh Án (EHR)</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Tra cứu lịch sử bệnh án và toa thuốc của bạn trực tuyến</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Theo dõi lịch sử khám bệnh, kết quả chuẩn đoán lâm sàng, hình ảnh xét nghiệm và đơn thuốc điện tử từ bác sĩ mọi lúc mọi nơi.
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #8b5cf6; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Vào Hồ Sơ Sức Khỏe</h6>
+                                                    <p class="text-secondary small mb-0">Tại bảng điều khiển Cổng Bệnh Nhân, nhấp chọn thẻ **Hồ Sơ Sức Khỏe**.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #8b5cf6; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 2: Chọn đợt khám & Xem Toa thuốc</h6>
+                                                    <p class="text-secondary small mb-0">Chọn đợt điều trị cụ thể trong danh sách khám bệnh để xem chi tiết bệnh án, kết quả chẩn đoán và đơn thuốc điện tử do bác sĩ kê.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #8b5cf6; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Tải về tệp kết quả</h6>
+                                                    <p class="text-secondary small mb-0">Nhấp chọn tải về các tệp báo cáo chẩn đoán hình ảnh (X-Quang, siêu âm) hoặc phiếu xét nghiệm máu để lưu trữ ngoại tuyến.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("EHR", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content; background-color: #8b5cf6 !important;">
+                                                Xem bệnh án ngay <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 d-flex flex-column gap-4">
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Bảo mật tuyệt đối</h6>
+                                        <p class="text-secondary small mb-0">Bệnh án điện tử được mã hóa và bảo mật nghiêm ngặt chuẩn HIPAA y tế số.</p>
+                                    </div>
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 3: Thanh Toán QR -->
+                        <div class="tab-pane fade" id="v-pills-payment" role="tabpanel" aria-labelledby="v-pills-payment-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(245, 158, 11, 0.04); border: 1.5px solid rgba(245, 158, 11, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(245, 158, 11, 0.1); color: #f59e0b !important; font-size: 1.25rem;">
+                                                <i class="fa-solid fa-qrcode"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #f59e0b !important;">Chức năng: Thanh Toán QR</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Thanh toán viện phí và dịch vụ không tiền mặt nhanh gọn</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Thanh toán không dùng tiền mặt cực kỳ nhanh chóng và an toàn qua việc quét mã QR tích hợp của các ngân hàng hoặc ví điện tử (Momo, VNPay).
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #f59e0b; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Chọn mục Thanh Toán QR</h6>
+                                                    <p class="text-secondary small mb-0">Khi nhận được thông báo đóng phí, nhấn chọn mục **Thanh Toán QR**.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #f59e0b; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 2: Xác nhận hóa đơn viện phí</h6>
+                                                    <p class="text-secondary small mb-0">Kiểm tra chi tiết bảng kê các khoản dịch vụ lâm sàng, xét nghiệm hoặc kho thuốc cần đóng phí.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #f59e0b; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Quét mã QR thanh toán</h6>
+                                                    <p class="text-secondary small mb-0">Hệ thống hiển thị mã QR động. Sử dụng ứng dụng Mobile Banking ngân hàng quét mã QR để thanh toán viện phí.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("Payment", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content; background-color: #f59e0b !important;">
+                                                Xem viện phí & Thanh toán <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 d-flex flex-column gap-4">
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Thanh toán an toàn</h6>
+                                        <p class="text-secondary small mb-0">Hỗ trợ kết nối VietQR 247 và hầu hết ứng dụng ngân hàng, ví Momo, VNPay.</p>
+                                    </div>
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 4: Nhắc Nhở Tự Động -->
+                        <div class="tab-pane fade" id="v-pills-reminder" role="tabpanel" aria-labelledby="v-pills-reminder-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(6, 182, 212, 0.04); border: 1.5px solid rgba(6, 182, 212, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(6, 182, 212, 0.1); color: #06b6d4 !important; font-size: 1.25rem;">
+                                                <i class="fa-regular fa-bell"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #06b6d4 !important;">Chức năng: Nhắc Nhở Tự Động</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Nhắc uống thuốc và thông báo lịch khám bệnh tự động</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Hệ thống thông báo đẩy tự động nhắc lịch uống thuốc hàng ngày, lịch tái khám định kỳ giúp bệnh nhân tuân thủ phác đồ điều trị.
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #06b6d4; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Nhắc lịch tái khám tự động</h6>
+                                                    <p class="text-secondary small mb-0">Hệ thống tự động phát tin nhắn/thông báo đẩy trên app nhắc nhở lịch hẹn khám bệnh trước 24 giờ cho bệnh nhân.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #06b6d4; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Nhắc uống thuốc theo đơn</h6>
+                                                    <p class="text-secondary small mb-0">Phát thông báo nhắc nhở vào các khung giờ chỉ định uống thuốc (Sáng, Chiều) khớp với đơn thuốc bác sĩ đã kê.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("Notifications", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content; background-color: #06b6d4 !important;">
+                                                Xem nhắc nhở & thông báo <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 d-flex flex-column gap-4">
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Thông báo tự động</h6>
+                                        <p class="text-secondary small mb-0">Lịch uống thuốc và thời gian khám được nhắc nhở chính xác không lo quên thuốc.</p>
+                                    </div>
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 5: Đánh Giá Dịch Vụ (Active by default!) -->
+                        <div class="tab-pane fade show active" id="v-pills-rating" role="tabpanel" aria-labelledby="v-pills-rating-tab">
+                            <div class="row g-4">
+                                <!-- Sub Left Column (Instructions) -->
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <!-- Function Header Card -->
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(99, 102, 241, 0.04); border: 1.5px solid rgba(99, 102, 241, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(99, 102, 241, 0.1); color: #6366f1 !important; font-size: 1.25rem;">
+                                                <i class="fa-regular fa-star"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #6366f1 !important;">Chức năng: Đánh Giá Dịch Vụ</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Giúp chúng tôi cải thiện chất lượng phục vụ mỗi ngày</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Gửi phản hồi và đánh giá mức độ hài lòng về chất lượng phục vụ của bác sĩ, điều dưỡng hoặc phòng khám, giúp bệnh viện không ngừng cải tiến và mang lại trải nghiệm tốt nhất cho bệnh nhân.
+                                        </p>
+
+                                        <!-- Steps Timeline -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <!-- Vertical connecting line -->
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Chọn mục "Đánh Giá"</h6>
+                                                    <p class="text-secondary small mb-0">Tại giao diện Cổng Bệnh Nhân, tìm và nhấn chọn thẻ <strong class="text-primary">Đánh Giá</strong> sau khi bạn đã kết thúc đợt khám bệnh lâm sàng hoặc nhận kết quả điều trị.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-2">Bước 2: Chọn đối tượng & Chấm điểm sao</h6>
+                                                    <p class="text-secondary small mb-2">Lựa chọn bác sĩ trực tiếp khám hoặc khoa/phòng tương ứng. Sau đó, chọn số lượng sao (từ 1 đến 5 sao) phản ánh đúng mức độ hài lòng của bạn.</p>
+                                                    <div class="d-flex text-warning gap-1 fs-5 mb-2" style="color: #f59e0b !important;">
+                                                        <i class="fa-regular fa-star"></i>
+                                                        <i class="fa-regular fa-star"></i>
+                                                        <i class="fa-regular fa-star"></i>
+                                                        <i class="fa-regular fa-star"></i>
+                                                        <i class="fa-regular fa-star"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0b57d0; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Gửi góp ý nhận xét</h6>
+                                                    <p class="text-secondary small mb-0">Nhập nhận xét chi tiết (nếu có) vào ô văn bản. Thông tin của bạn sẽ được bảo mật tuyệt đối. Cuối cùng, nhấn nút <strong class="text-primary">Gửi đánh giá</strong> để hoàn tất.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action button -->
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("Rating", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content;">
+                                                Bắt đầu đánh giá ngay <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sub Right Column (Sidebar cards) -->
+                                <div class="col-lg-4 d-flex flex-column gap-4 text-start">
+                                    <!-- Card 1: Giao diện thân thiện -->
+                                    <div class="card portal-sidebar-card overflow-hidden text-start">
+                                        <div style="height: 150px; background-color: #e0f2fe; overflow: hidden;" class="d-flex align-items-center justify-content-center">
+                                            <img src="/uploads/mobile_rating.png" alt="Friendly UI Mockup" class="w-100 h-100" style="object-fit: cover;" />
+                                        </div>
+                                        <div class="p-3">
+                                            <h6 class="fw-bold text-dark mb-1">Giao diện thân thiện</h6>
+                                            <p class="text-secondary small mb-0">Giao diện đánh giá được thiết kế tối giản, dễ dàng thao tác trên cả máy tính và điện thoại.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card 2: Lưu ý -->
+                                    <div class="card portal-sidebar-card p-3 text-start" style="background-color: rgba(11, 87, 208, 0.02); border: 1.5px solid rgba(11, 87, 208, 0.08) !important;">
+                                        <h6 class="fw-bold text-primary mb-2 d-flex align-items-center gap-1.5" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-circle-info"></i> LƯU Ý
+                                        </h6>
+                                        <p class="text-secondary small mb-3">Mọi đánh giá của bệnh nhân đều được Ban Giám đốc bệnh viện trực tiếp xem xét để cải thiện dịch vụ khám chữa bệnh.</p>
+                                        <img src="/uploads/mobile_rating.png" alt="Mockup Detail" class="img-fluid rounded-3" style="opacity: 0.85;" />
+                                    </div>
+
+                                    <!-- Card 3: CSKH hotline -->
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <p class="text-secondary small mb-3">Nếu gặp khó khăn trong quá trình sử dụng, vui lòng liên hệ bộ phận CSKH.</p>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 6: Sơ Đồ Bệnh Viện -->
+                        <div class="tab-pane fade" id="v-pills-map" role="tabpanel" aria-labelledby="v-pills-map-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(239, 68, 68, 0.04); border: 1.5px solid rgba(239, 68, 68, 0.08);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: rgba(239, 68, 68, 0.1); color: #ef4444 !important; font-size: 1.25rem;">
+                                                <i class="fa-solid fa-map-location-dot"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #ef4444 !important;">Chức năng: Sơ Đồ Bệnh Viện</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Tìm đường đi và khoa phòng trên sơ đồ bệnh viện trực quan</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Tra cứu vị trí phòng khám, các khoa lâm sàng, nhà thuốc hoặc khu vực dịch vụ trong bệnh viện để tìm đường đi nhanh nhất.
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #e2e8f0; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #ef4444; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Mở sơ đồ bản đồ</h6>
+                                                    <p class="text-secondary small mb-0">Tại Cổng Bệnh Nhân, nhấp chọn thẻ **Sơ Đồ** hoặc nút **Mở bản đồ 3D**.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #ef4444; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 2: Tìm kiếm phòng khám cần đến</h6>
+                                                    <p class="text-secondary small mb-0">Chọn tòa nhà, số tầng tương ứng hoặc gõ tìm kiếm trực tiếp tên khoa/phòng cần di chuyển tới.</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #ef4444; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Nhận lộ trình chỉ dẫn di chuyển</h6>
+                                                    <p class="text-secondary small mb-0">Hệ thống sẽ định vị vị trí phòng khám trên sơ đồ 3D và hiển thị gợi ý chỉ đường đi tối ưu nhất cho bạn.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-5">
+                                            <a href="@Url.Action("HospitalMap", "Patient")" class="btn btn-primary-custom px-4 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2 mx-auto" style="width: fit-content; background-color: #ef4444 !important;">
+                                                Mở sơ đồ ngay <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 d-flex flex-column gap-4">
+                                    <div class="card portal-sidebar-card overflow-hidden text-start">
+                                        <img src="/uploads/hospital_map_3d.png" alt="Hospital map layout" style="height: 150px; object-fit: cover;" />
+                                        <div class="p-3">
+                                            <h6 class="fw-bold text-dark mb-1">Sơ đồ 3D trực quan</h6>
+                                            <p class="text-secondary small mb-0">Bản đồ chi tiết định vị phòng khám, quầy phát thuốc và khu vực thanh toán tiện lợi.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card portal-sidebar-card p-3 text-start bg-light border-0">
+                                        <h6 class="fw-bold text-dark mb-2">Cần hỗ trợ?</h6>
+                                        <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
+                                            <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Sidebar Menu styling */
+    #v-pills-tab .nav-link {
+        color: var(--text-color);
+        background-color: var(--footer-bg);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+    
+    #v-pills-tab .nav-link:hover {
+        background-color: rgba(11, 87, 208, 0.04);
+        border-color: rgba(11, 87, 208, 0.2);
+        color: #0b57d0;
+    }
+
+    #v-pills-tab .nav-link.active {
+        background-color: #0b57d0 !important;
+        border-color: #0b57d0 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(11, 87, 208, 0.2) !important;
+    }
+
+    .btn-primary-custom {
+        background-color: #0b57d0 !important;
+        border: none;
+        transition: all 0.2s ease;
+        border-radius: 8px !important;
+    }
+    .btn-primary-custom:hover {
+        background-color: #0045b5 !important;
+        box-shadow: 0 5px 15px rgba(11, 87, 208, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .hover-primary {
+        transition: color 0.2s;
+    }
+    .hover-primary:hover {
+        color: #0b57d0 !important;
+    }
+
+    [data-theme="dark"] .text-dark {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] #v-pills-tab .nav-link {
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #v-pills-tab .nav-link:hover {
+        background-color: rgba(56, 189, 248, 0.08) !important;
+        color: #38bdf8 !important;
+    }
+    [data-theme="dark"] #v-pills-tab .nav-link.active {
+        background-color: #38bdf8 !important;
+        border-color: #38bdf8 !important;
+        color: #0f172a !important;
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2) !important;
+    }
+</style>

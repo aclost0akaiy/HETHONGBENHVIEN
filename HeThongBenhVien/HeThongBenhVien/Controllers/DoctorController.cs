@@ -115,27 +115,34 @@ namespace HeThongBenhVien.Controllers
                 myAppointmentsQuery = _context.Appointments.Where(a => a.DoctorId == currentDoctorId);
             }
 
-            var unexaminedCount = await myAppointmentsQuery.CountAsync(a => a.Status != 4 && a.Status != 5 && a.Status != 0);
-            var completedCount = await myAppointmentsQuery.CountAsync(a => a.Status == 4 || a.Status == 5);
-            var waitingCount = await myAppointmentsQuery.CountAsync(a => a.Status == 0); 
+            var unexaminedCount = await myAppointmentsQuery.CountAsync(a =>
+                a.Status != AppointmentStatus.HoanThanh &&
+                a.Status != AppointmentStatus.HenTaiKham &&
+                a.Status != AppointmentStatus.ChuaDen);
+            var completedCount = await myAppointmentsQuery.CountAsync(a =>
+                a.Status == AppointmentStatus.HoanThanh ||
+                a.Status == AppointmentStatus.HenTaiKham);
+            var waitingCount = await myAppointmentsQuery.CountAsync(a => a.Status == AppointmentStatus.ChuaDen);
             
             var emergencyCount = 0; 
 
             var upcomingAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status != 4 && a.Status != 5 && a.Status != 0) 
+                .Where(a => a.Status != AppointmentStatus.HoanThanh
+                         && a.Status != AppointmentStatus.HenTaiKham
+                         && a.Status != AppointmentStatus.ChuaDen)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
             var pendingOnlineAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status == 0)
+                .Where(a => a.Status == AppointmentStatus.ChuaDen)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
             var confirmedAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status == 9)
+                .Where(a => a.Status == AppointmentStatus.DaXacNhan)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
@@ -221,6 +228,64 @@ namespace HeThongBenhVien.Controllers
                 viewModel.WorkSchedules = new System.Collections.Generic.List<LichLamViec>();
             }
 
+            // === THÊM MỚI: Dữ liệu cảnh báo ưu tiên ===
+            viewModel.WaitingPrescriptionCount = await myAppointmentsQuery
+                .CountAsync(a => a.Status == AppointmentStatus.ChoToaThuoc);
+
+            var thirtyMinAgo = DateTime.Now.AddMinutes(-30);
+            viewModel.OverdueWaitingCount = await myAppointmentsQuery
+                .CountAsync(a => a.Status == AppointmentStatus.ChoKham
+                              && a.AppointmentTime <= thirtyMinAgo);
+
+            // Cảnh báo cận lâm sàng (LabTests) và Sinh hiệu (VitalSigns) từ DB
+            try
+            {
+                var apptIdsForAlerts = await myAppointmentsQuery.Select(a => a.Id).ToListAsync();
+
+                // Lấy các VitalSigns nguy kịch (SpO2 < 85 hoặc Mạch < 40 hoặc Temp >= 39)
+                viewModel.VitalAlerts = await _context.VitalSigns
+                    .Include(v => v.Appointment).ThenInclude(a => a.Patient)
+                    .Where(v => apptIdsForAlerts.Contains(v.AppointmentId))
+                    .OrderByDescending(v => v.RecordedAt)
+                    .ToListAsync();
+
+                // Lấy các LabTests bất thường (chứa chữ "báo động")
+                var mrIds = await _context.MedicalRecords
+                    .Where(m => apptIdsForAlerts.Contains(m.AppointmentId))
+                    .Select(m => m.Id)
+                    .ToListAsync();
+
+                viewModel.LabAlerts = await _context.LabTests
+                    .Include(l => l.MedicalRecord).ThenInclude(m => m.Appointment).ThenInclude(a => a.Patient)
+                    .Where(l => mrIds.Contains(l.MedicalRecordId) && l.Result != null && l.Result.Contains("báo động"))
+                    .OrderByDescending(l => l.CreatedAt)
+                    .ToListAsync();
+            }
+            catch (System.Exception)
+            {
+                viewModel.VitalAlerts = new System.Collections.Generic.List<VitalSign>();
+                viewModel.LabAlerts = new System.Collections.Generic.List<LabTest>();
+            }
+
+            // Lịch mổ hôm nay
+            try
+            {
+                viewModel.TodaySurgeries = await _context.Surgeries
+                    .Include(s => s.Patient)
+                    .Where(s => s.ScheduledDate.Date == DateTime.Today && s.Status != "Hủy")
+                    .OrderBy(s => s.ScheduledDate)
+                    .ToListAsync();
+            }
+            catch { viewModel.TodaySurgeries = new System.Collections.Generic.List<Surgery>(); }
+
+            // BN tái khám hôm nay
+            viewModel.TodayFollowUps = await myAppointmentsQuery
+                .Include(a => a.Patient)
+                .Where(a => a.Status == AppointmentStatus.HenTaiKham
+                         && a.AppointmentTime.Date == DateTime.Today)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
             // Lấy danh sách PatientCode của các tài khoản (Role Patient)
             var patientCodesWithAccounts = await _context.Users
                 .Where(u => u.Role == "Patient" && !string.IsNullOrEmpty(u.PatientCode))
@@ -296,7 +361,7 @@ namespace HeThongBenhVien.Controllers
 
             // Cập nhật lịch khám
             appointment.AppointmentTime = newAppointmentTime;
-            appointment.Status = 9; // Đã xác nhận hẹn (Online Confirmed)
+            appointment.Status = AppointmentStatus.DaXacNhan; // Đã xác nhận hẹn online
             await _context.SaveChangesAsync();
 
             // Đánh dấu các thông báo đặt lịch cũ là đã đọc cho bác sĩ
@@ -337,6 +402,10 @@ namespace HeThongBenhVien.Controllers
         {
             if (model != null && !string.IsNullOrEmpty(model.PatientName))
             {
+                var username = User?.Identity?.Name;
+                var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                int? currentDoctorId = currentUser?.Id;
+
                 Patient? targetPatient = null;
 
                 // 1. Kiểm tra xem bệnh nhân đã tồn tại qua FaceData hoặc CCCD chưa
@@ -372,7 +441,8 @@ namespace HeThongBenhVien.Controllers
                     PatientId = targetPatient.Id,
                     Reason = string.IsNullOrEmpty(model.Reason) ? "Khám bệnh" : model.Reason,
                     AppointmentTime = model.AppointmentTime,
-                    Status = model.Status
+                    Status = model.Status,
+                    DoctorId = currentDoctorId // Gán trực tiếp cho bác sĩ hiện tại
                 };
                 _context.Appointments.Add(newAppointment);
                 await _context.SaveChangesAsync();
@@ -409,6 +479,12 @@ namespace HeThongBenhVien.Controllers
                 return Json(new { success = false, message = "Không thể xử lý hình ảnh" });
             }
 
+            int threshold = isFaceScan ? 18 : 20;
+            if (req.ForceSuccess)
+            {
+                threshold = isFaceScan ? 23 : 25;
+            }
+
             foreach (var p in patients)
             {
                 string storedImage = isFaceScan ? p.FaceData : p.CCCD;
@@ -418,8 +494,8 @@ namespace HeThongBenhVien.Controllers
                     if (storedHash != 0)
                     {
                         int distance = CalculateHammingDistance(targetHash, storedHash);
-                        // Tăng ngưỡng nhận diện (distance <= 28) để bao dung hơn với các thay đổi về kiểu tóc, góc mặt, hoặc ánh sáng
-                        if (distance < bestDistance && (req.ForceSuccess || distance <= 28))
+                        // Only match if the distance is within the strict threshold, preventing false recognition
+                        if (distance < bestDistance && distance <= threshold)
                         {
                             bestDistance = distance;
                             bestMatch = p;
@@ -513,12 +589,13 @@ namespace HeThongBenhVien.Controllers
             var username = User?.Identity?.Name;
             var currentDoctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
-            var query = _context.Patients.AsQueryable();
-
+            var baseQuery = _context.Patients.AsQueryable();
             if (currentDoctor != null && !User.IsInRole("Admin"))
             {
-                query = query.Where(p => _context.Appointments.Any(a => a.PatientId == p.Id && a.DoctorId == currentDoctor.Id));
+                baseQuery = baseQuery.Where(p => _context.Appointments.Any(a => a.PatientId == p.Id && a.DoctorId == currentDoctor.Id));
             }
+
+            var query = baseQuery;
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -538,6 +615,17 @@ namespace HeThongBenhVien.Controllers
                 })
                 .ToDictionaryAsync(x => x.PatientId, x => x.Status);
 
+            // Calculate statistics
+            IQueryable<Appointment> appQuery = _context.Appointments;
+            if (currentDoctor != null && !User.IsInRole("Admin"))
+            {
+                appQuery = appQuery.Where(a => a.DoctorId == currentDoctor.Id);
+            }
+
+            ViewBag.TotalPatientsCount = await baseQuery.CountAsync();
+            ViewBag.WaitingCount = await appQuery.CountAsync(a => a.Status == AppointmentStatus.ChoKham);
+            ViewBag.CompletedCount = await appQuery.CountAsync(a => a.Status == AppointmentStatus.HoanThanh || a.Status == AppointmentStatus.HenTaiKham);
+
             ViewBag.PatientStatuses = latestStatuses;
             ViewData["SearchString"] = searchString;
             return View(patients);
@@ -545,8 +633,13 @@ namespace HeThongBenhVien.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddPatient(Patient model)
+        public async Task<IActionResult> AddPatient(Patient model, string? returnUrl)
         {
+            if (string.IsNullOrEmpty(model.PatientCode))
+            {
+                model.PatientCode = "BN" + DateTime.Now.ToString("yyMMddHHmmss");
+            }
+
             if (ModelState.IsValid)
             {
                 // Check if PatientCode already exists
@@ -554,13 +647,44 @@ namespace HeThongBenhVien.Controllers
                 {
                     ModelState.AddModelError("PatientCode", "Mã bệnh nhân này đã tồn tại.");
                     // In a real app we'd probably re-render the modal or return a view with error
-                    return RedirectToAction(nameof(DanhSach)); 
+                    return RedirectToAction(string.IsNullOrEmpty(returnUrl) ? nameof(DanhSach) : returnUrl); 
                 }
 
                 _context.Patients.Add(model);
                 await _context.SaveChangesAsync();
+
+                // If returnUrl is HoSoBenhAn, also create a default Appointment and MedicalRecord
+                if (returnUrl == "HoSoBenhAn")
+                {
+                    var username = User?.Identity?.Name;
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                    int? currentDoctorId = currentUser?.Id;
+
+                    var appointment = new Appointment
+                    {
+                        PatientId = model.Id,
+                        Reason = "Khám lâm sàng ngoại trú",
+                        AppointmentTime = DateTime.Now,
+                        Status = AppointmentStatus.DangKham, // 2 - DangKham
+                        DoctorId = currentDoctorId
+                    };
+                    _context.Appointments.Add(appointment);
+                    await _context.SaveChangesAsync();
+
+                    var medicalRecord = new MedicalRecord
+                    {
+                        AppointmentId = appointment.Id,
+                        Symptoms = "Chưa ghi nhận triệu chứng",
+                        Diagnosis = "Chưa có chẩn đoán cụ thể",
+                        TreatmentPlan = "Theo dõi lâm sàng",
+                        CreatedAt = DateTime.Now,
+                        IsLocked = false
+                    };
+                    _context.MedicalRecords.Add(medicalRecord);
+                    await _context.SaveChangesAsync();
+                }
             }
-            return RedirectToAction(nameof(DanhSach));
+            return RedirectToAction(string.IsNullOrEmpty(returnUrl) ? nameof(DanhSach) : returnUrl);
         }
 
         [HttpGet]
@@ -631,7 +755,7 @@ namespace HeThongBenhVien.Controllers
                 PatientId = patient.Id,
                 Reason = "Khám bệnh (Chỉ định trực tiếp)",
                 AppointmentTime = DateTime.Now,
-                Status = 1 // Chờ khám
+                Status = AppointmentStatus.ChoKham // Chờ khám
             };
             
             _context.Appointments.Add(newAppointment);
@@ -738,9 +862,10 @@ namespace HeThongBenhVien.Controllers
                 var appointment = await _context.Appointments.FindAsync(model.AppointmentId);
                 if (appointment != null)
                 {
-                    // Nếu có chỉ định XN -> Trạng thái Chờ xét nghiệm (có thể dùng trạng thái 3 hoặc 7 tùy quy trình)
-                    // Nếu không có, chuyển sang trạng thái 7 (Chờ xác nhận hoàn thành)
-                    appointment.Status = hasLabTests ? 3 : 7; 
+                    // Nếu có chỉ định XN -> Chờ xét nghiệm (3), nếu không -> Chờ toa thuốc (5)
+                    appointment.Status = hasLabTests
+                        ? AppointmentStatus.ChoXetNghiem
+                        : AppointmentStatus.ChoToaThuoc;
                     _context.Appointments.Update(appointment);
                 }
 
@@ -816,6 +941,20 @@ namespace HeThongBenhVien.Controllers
                 .ThenInclude(a => a.Patient)
                 .AsQueryable();
 
+            // Calculate overall database stats (unfiltered by search)
+            ViewBag.TotalRecordsCount = await _context.MedicalRecords.CountAsync();
+            var today = DateTime.Today;
+            ViewBag.TodayRecordsCount = await _context.MedicalRecords.CountAsync(m => m.CreatedAt.Date == today);
+            
+            // "Đang điều trị": count patients currently in active treatment phases (status 2 to 5 or 11)
+            ViewBag.ActiveTreatmentCount = await _context.MedicalRecords.CountAsync(m => 
+                m.Appointment != null && (
+                m.Appointment.Status == AppointmentStatus.DangKham || 
+                m.Appointment.Status == AppointmentStatus.ChoXetNghiem || 
+                m.Appointment.Status == AppointmentStatus.ChoKetQua || 
+                m.Appointment.Status == AppointmentStatus.ChoToaThuoc || 
+                m.Appointment.Status == AppointmentStatus.NhapVien));
+
             if (!string.IsNullOrEmpty(searchString))
             {
                 query = query.Where(m => m.Appointment.Patient.FullName.Contains(searchString) 
@@ -839,7 +978,7 @@ namespace HeThongBenhVien.Controllers
 
             if (record != null && record.Appointment != null)
             {
-                record.Appointment.Status = 5; // 5 = Hoàn thành điều trị
+                record.Appointment.Status = AppointmentStatus.HoanThanh;
                 _context.Appointments.Update(record.Appointment);
                 await _context.SaveChangesAsync();
             }
@@ -862,7 +1001,7 @@ namespace HeThongBenhVien.Controllers
                     await PerformDischargeLogic(record);
                 }
 
-                record.Appointment.Status = 5; // Hoàn thành điều trị
+                record.Appointment.Status = AppointmentStatus.HoanThanh;
                 
                 // Khóa hồ sơ & Ký số
                 record.IsLocked = true;
@@ -871,7 +1010,25 @@ namespace HeThongBenhVien.Controllers
 
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(HoSoBenhAn));
+            return RedirectToAction(nameof(ChiTietBenhAn), new { id = id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MoKhoa(int id)
+        {
+            var record = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (record != null)
+            {
+                record.IsLocked = false;
+                record.DigitalSignature = null;
+                if (record.Appointment != null)
+                    record.Appointment.Status = AppointmentStatus.DangKham;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(ChiTietBenhAn), new { id = id });
         }
 
         private async Task PerformDischargeLogic(MedicalRecord record)
@@ -892,7 +1049,7 @@ namespace HeThongBenhVien.Controllers
 
                 if (record.Appointment != null)
                 {
-                    record.Appointment.Status = 5; // Hoàn thành điều trị
+                    record.Appointment.Status = AppointmentStatus.HoanThanh;
                 }
 
                 // Cập nhật số giường của khoa
@@ -917,7 +1074,7 @@ namespace HeThongBenhVien.Controllers
             var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
             if (record != null && record.Appointment != null)
             {
-                record.Appointment.Status = 8; // Tái khám
+                record.Appointment.Status = AppointmentStatus.HenTaiKham;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(ChiTietBenhAn), new { id = id });
@@ -950,9 +1107,75 @@ namespace HeThongBenhVien.Controllers
             return View(prescriptions);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage, decimal price)
+        public async Task<IActionResult> InToaThuoc(int id)
         {
+            var prescription = await _context.Prescriptions
+                .Include(p => p.MedicalRecord)
+                .ThenInclude(m => m.Appointment)
+                .ThenInclude(a => a!.Patient)
+                .Include(p => p.PrescriptionDetails)
+                .FirstOrDefaultAsync(p => p.Id == id);
+                
+            if (prescription == null)
+            {
+                return NotFound();
+            }
+            
+            if (prescription.MedicalRecord?.Appointment != null)
+            {
+                var doctorId = prescription.MedicalRecord.Appointment.DoctorId;
+                if (doctorId.HasValue)
+                {
+                    ViewBag.Doctor = await _context.Users.FindAsync(doctorId.Value);
+                }
+            }
+            
+            return View(prescription);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, int quantity, string unit, string dosage, decimal price, int? prescriptionDetailId)
+        {
+            if (string.IsNullOrEmpty(medicineName))
+            {
+                TempData["KeDonError"] = "Tên thuốc không được để trống.";
+                var pres = await _context.Prescriptions.FindAsync(prescriptionId);
+                return RedirectToAction(nameof(KeDonThuoc), new { id = pres?.MedicalRecordId });
+            }
+
+            if (prescriptionDetailId.HasValue && prescriptionDetailId.Value > 0)
+            {
+                var existingDetail = await _context.PrescriptionDetails.FindAsync(prescriptionDetailId.Value);
+                if (existingDetail != null)
+                {
+                    // Hoàn lại tồn kho cũ
+                    var oldMedicine = await _context.Medicines.FirstOrDefaultAsync(m => m.IsActive && m.Name == existingDetail.MedicineName);
+                    if (oldMedicine != null)
+                    {
+                        oldMedicine.StockQuantity += existingDetail.Quantity;
+                    }
+
+                    // Cập nhật thông tin mới
+                    existingDetail.MedicineName = medicineName;
+                    existingDetail.Quantity = quantity;
+                    existingDetail.Unit = unit;
+                    existingDetail.DosageInstruction = dosage;
+                    existingDetail.Price = price;
+
+                    // Trừ tồn kho mới
+                    var newMedicine = await _context.Medicines.FirstOrDefaultAsync(m => m.IsActive && m.Name == medicineName);
+                    if (newMedicine != null && newMedicine.StockQuantity >= quantity)
+                    {
+                        newMedicine.StockQuantity -= quantity;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    TempData["KeDonSuccess"] = $"Đã cập nhật thông tin thuốc {medicineName}.";
+                    var pres = await _context.Prescriptions.FindAsync(prescriptionId);
+                    return RedirectToAction(nameof(KeDonThuoc), new { id = pres?.MedicalRecordId });
+                }
+            }
+
             var detail = new PrescriptionDetail
             {
                 PrescriptionId = prescriptionId,
@@ -963,9 +1186,204 @@ namespace HeThongBenhVien.Controllers
                 Price = price
             };
             _context.PrescriptionDetails.Add(detail);
+
+            // Trừ tồn kho khi kê đơn
+            var medicine = await _context.Medicines
+                .FirstOrDefaultAsync(m => m.IsActive && m.Name == medicineName);
+            if (medicine != null && medicine.StockQuantity >= quantity)
+            {
+                medicine.StockQuantity -= quantity;
+            }
+
             await _context.SaveChangesAsync();
+            TempData["KeDonSuccess"] = $"Đã thêm {medicineName} vào toa thuốc.";
             var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
             return RedirectToAction(nameof(KeDonThuoc), new { id = prescription?.MedicalRecordId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> XoaToaThuocChiTiet(int detailId)
+        {
+            var detail = await _context.PrescriptionDetails
+                .Include(d => d.Prescription)
+                .FirstOrDefaultAsync(d => d.Id == detailId);
+            if (detail != null)
+            {
+                // Hoàn lại tồn kho khi xóa thuốc khỏi toa
+                var medicine = await _context.Medicines
+                    .FirstOrDefaultAsync(m => m.IsActive && m.Name == detail.MedicineName);
+                if (medicine != null)
+                {
+                    medicine.StockQuantity += detail.Quantity;
+                }
+
+                _context.PrescriptionDetails.Remove(detail);
+                await _context.SaveChangesAsync();
+                TempData["KeDonSuccess"] = "Đã xóa thuốc khỏi toa.";
+            }
+            return RedirectToAction(nameof(KeDonThuoc), new { id = detail?.Prescription?.MedicalRecordId });
+        }
+
+        // ====== API TÌM KIẾM THUỐC (Autocomplete) ======
+        [HttpGet]
+        public async Task<IActionResult> SearchMedicine(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
+                return Json(new List<object>());
+
+            var medicines = await _context.Medicines
+                .Where(m => m.Name.Contains(keyword))
+                .Select(m => new {
+                    id       = m.Id,
+                    name     = m.Name,
+                    unit     = m.Unit,
+                    price    = m.Price,
+                    stock    = m.StockQuantity,
+                    isActive = m.IsActive,
+                    category = m.Category
+                })
+                .Take(10)
+                .ToListAsync();
+
+            return Json(medicines);
+        }
+
+        // ====== API KIỂM TRA TRẠNG THÁI THUỐC ======
+        [HttpGet]
+        public async Task<IActionResult> CheckMedicine(int id)
+        {
+            var med = await _context.Medicines.FindAsync(id);
+            if (med == null)
+                return Json(new { found = false });
+
+            return Json(new {
+                found    = true,
+                name     = med.Name,
+                isActive = med.IsActive,
+                stock    = med.StockQuantity,
+                minStock = med.MinStock,
+                price    = med.Price,
+                unit     = med.Unit
+            });
+        }
+
+        // ====== HOÀN TẤT KÊ ĐƠN -> CHUYỂN STATUS = 6 ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HoanTatKeDon(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt == null) return NotFound();
+
+            if (appt.Status == AppointmentStatus.ChoToaThuoc)
+            {
+                appt.Status = AppointmentStatus.ChoThanhToan;
+                await _context.SaveChangesAsync();
+                TempData["DoctorNotificationSuccess"] = "Hoàn tất kê đơn. Bệnh nhân đã chuyển sang Chờ thanh toán.";
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // ====== TRANG TIMELINE LỊCH SỬ ĐIỀU TRỊ ======
+        public async Task<IActionResult> LichSuDieuTri(int patientId)
+        {
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null) return NotFound();
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.AppointmentTime)
+                .ToListAsync();
+
+            var appointmentIds = appointments.Select(a => a.Id).ToList();
+
+            var medicalRecords = await _context.MedicalRecords
+                .Where(mr => appointmentIds.Contains(mr.AppointmentId))
+                .ToListAsync();
+
+            var medicalRecordIds = medicalRecords.Select(mr => mr.Id).ToList();
+
+            var vitalSigns = await _context.VitalSigns
+                .Where(v => appointmentIds.Contains(v.AppointmentId))
+                .ToListAsync();
+
+            var labTests = await _context.LabTests
+                .Where(lt => medicalRecordIds.Contains(lt.MedicalRecordId))
+                .ToListAsync();
+
+            var prescriptions = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .Where(p => medicalRecordIds.Contains(p.MedicalRecordId))
+                .ToListAsync();
+
+            ViewBag.Patient        = patient;
+            ViewBag.MedicalRecords = medicalRecords;
+            ViewBag.VitalSigns     = vitalSigns;
+            ViewBag.LabTests       = labTests;
+            ViewBag.Prescriptions  = prescriptions;
+
+            return View(appointments);
+        }
+
+        // ====== XÁC NHẬN BN ĐẾN TÁI KHÁM ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmFollowUp(int id)
+        {
+            var appt = await _context.Appointments.FindAsync(id);
+            if (appt != null && appt.Status == AppointmentStatus.HenTaiKham)
+            {
+                appt.Status = AppointmentStatus.ChoKham;
+                await _context.SaveChangesAsync();
+                TempData["DoctorNotificationSuccess"] = "Đã xác nhận bệnh nhân tái khám vào hàng chờ khám.";
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // ====== TẠO LỊCH TÁI KHÁM ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TaoTaiKham(int appointmentId, DateTime ngayTaiKham, string lyDoTaiKham)
+        {
+            var currentAppt = await _context.Appointments
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (currentAppt == null) return NotFound();
+
+            // Tạo Appointment mới cho lần tái khám
+            var newAppt = new Appointment
+            {
+                PatientId       = currentAppt.PatientId,
+                DoctorId        = currentAppt.DoctorId,
+                Reason          = $"[Tái khám - từ lần khám {currentAppt.AppointmentTime:dd/MM/yyyy}] {lyDoTaiKham}",
+                AppointmentTime = ngayTaiKham,
+                Status          = AppointmentStatus.HenTaiKham
+            };
+            _context.Appointments.Add(newAppt);
+
+            // Cập nhật trạng thái lịch hẹn cũ
+            currentAppt.Status = AppointmentStatus.HenTaiKham;
+
+            await _context.SaveChangesAsync();
+            TempData["DoctorNotificationSuccess"] = $"Đã tạo lịch tái khám vào ngày {ngayTaiKham:dd/MM/yyyy HH:mm}.";
+            return RedirectToAction(nameof(ChiTietByAppointment), new { id = appointmentId });
+        }
+
+        // ====== CHỈ ĐỊNH NHẬP VIỆN ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChiDinhNhapVien(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt == null) return NotFound();
+
+            appt.Status = AppointmentStatus.NhapVien;
+            await _context.SaveChangesAsync();
+
+            TempData["DoctorNotificationSuccess"] = "Đã chỉ định nhập viện. Vui lòng xếp giường cho bệnh nhân.";
+            return RedirectToAction(nameof(QuanLyGiuong));
         }
 
         [HttpGet]
@@ -1210,22 +1628,39 @@ namespace HeThongBenhVien.Controllers
             return View(tests);
         }
 
-        public async Task<IActionResult> LichMo(int? id)
+        public async Task<IActionResult> LichMo(int? id, string? searchName, int? statusFilter, int? surgeonIdFilter)
         {
             if (id.HasValue)
             {
                 var record = await _context.MedicalRecords.FindAsync(id.Value);
-                if (record != null && !record.Notes.Contains("[PHAUTHUAT]"))
+                if (record != null && !(record.Notes ?? "").Contains("[PHAUTHUAT]"))
                 {
-                    record.Notes += "\n[PHAUTHUAT]";
+                    record.Notes = (record.Notes ?? "") + "\n[PHAUTHUAT]";
                     await _context.SaveChangesAsync();
                 }
             }
-            var records = await _context.MedicalRecords
+            
+            var query = _context.MedicalRecords
                 .Include(m => m.Appointment)
                 .ThenInclude(a => a!.Patient)
-                .Where(m => m.Notes.Contains("[PHAUTHUAT]"))
-                .ToListAsync();
+                .Where(m => m.Notes != null && m.Notes.Contains("[PHAUTHUAT]"));
+
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                query = query.Where(m => m.Appointment != null && m.Appointment.Patient != null && m.Appointment.Patient.FullName.Contains(searchName));
+            }
+
+            if (statusFilter.HasValue)
+            {
+                query = query.Where(m => m.Appointment != null && m.Appointment.Status == statusFilter.Value);
+            }
+
+            if (surgeonIdFilter.HasValue)
+            {
+                query = query.Where(m => m.SurgeonId == surgeonIdFilter.Value);
+            }
+
+            var records = await query.ToListAsync();
 
             var recordIdsWithVitals = await _context.VitalSigns
                 .Select(v => v.AppointmentId)
@@ -1236,6 +1671,15 @@ namespace HeThongBenhVien.Controllers
             ViewBag.Surgeons = await _context.Users.Where(u => u.Role == "PhauThuat").ToListAsync();
             ViewBag.SurgeryTypes = await _context.HospitalFees.Where(f => f.Category == "Phẫu thuật").ToListAsync();
             
+            ViewBag.AvailableRecords = await _context.MedicalRecords
+                .Include(m => m.Appointment).ThenInclude(a => a!.Patient)
+                .Where(m => m.Notes == null || !m.Notes.Contains("[PHAUTHUAT]"))
+                .ToListAsync();
+
+            ViewBag.SearchName = searchName;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.SurgeonIdFilter = surgeonIdFilter;
+
             return View(records);
         }
 
@@ -1353,73 +1797,6 @@ namespace HeThongBenhVien.Controllers
         }
 
         public IActionResult LichSuKham() { return View(); }
-        public async Task<IActionResult> ThongKe(int? month)
-        {
-            var selectedMonth = month.HasValue && month.Value >= 1 && month.Value <= 12 ? month.Value : DateTime.Now.Month;
-            var selectedYear = DateTime.Now.Year;
-
-            var completedRecords = await _context.MedicalRecords
-                .Include(m => m.Appointment)
-                .ThenInclude(a => a.Patient)
-                .Where(m => m.Appointment != null
-                            && (m.Appointment.Status == 4 || m.Appointment.Status == 5)
-                            && m.Appointment.AppointmentTime.Month == selectedMonth
-                            && m.Appointment.AppointmentTime.Year == selectedYear)
-                .ToListAsync();
-
-            var totalPatientsExamined = completedRecords
-                .Where(m => m.Appointment != null)
-                .Select(m => m.Appointment!.PatientId)
-                .Distinct()
-                .Count();
-
-            var totalVisits = completedRecords.Count;
-            var totalDiagnosisCount = totalVisits;
-
-            var diseaseGroups = completedRecords
-                .Where(m => m.Appointment != null)
-                .GroupBy(m => string.IsNullOrWhiteSpace(m.Diagnosis) ? "Chưa xác định" : m.Diagnosis.Trim())
-                .Select(g => new MonthDiseaseStat
-                {
-                    Diagnosis = g.Key,
-                    Count = g.Count()
-                })
-                .OrderByDescending(g => g.Count)
-                .ToList();
-
-            var duplicateDiagnosisCount = diseaseGroups.Where(g => g.Count > 1).Sum(g => g.Count);
-            var duplicateDiagnosisRate = totalDiagnosisCount == 0
-                ? 0m
-                : Math.Round(100m * duplicateDiagnosisCount / totalDiagnosisCount, 1);
-
-            var totalRevenue = await _context.PrescriptionDetails
-                .Where(pd => pd.Prescription != null
-                             && pd.Prescription.MedicalRecord != null
-                             && pd.Prescription.MedicalRecord.Appointment != null
-                             && (pd.Prescription.MedicalRecord.Appointment.Status == 4 || pd.Prescription.MedicalRecord.Appointment.Status == 5)
-                             && pd.Prescription.MedicalRecord.Appointment.AppointmentTime.Month == selectedMonth
-                             && pd.Prescription.MedicalRecord.Appointment.AppointmentTime.Year == selectedYear)
-                .SumAsync(pd => pd.Price * pd.Quantity);
-
-            var viewModel = new DoctorStatisticsViewModel
-            {
-                SelectedMonth = selectedMonth,
-                SelectedYear = selectedYear,
-                TotalPatientsExamined = totalPatientsExamined,
-                TotalVisits = totalVisits,
-                TotalRevenue = totalRevenue,
-                DuplicateDiagnosisCount = duplicateDiagnosisCount,
-                DuplicateDiagnosisRate = duplicateDiagnosisRate,
-                DiseaseStats = diseaseGroups.Select(g => new MonthDiseaseStat
-                {
-                    Diagnosis = g.Diagnosis,
-                    Count = g.Count,
-                    Percent = totalDiagnosisCount == 0 ? 0 : Math.Round(100m * g.Count / totalDiagnosisCount, 1)
-                }).ToList()
-            };
-
-            return View(viewModel);
-        }
         public async Task<IActionResult> CanhBaoTinhTrang() 
         { 
             var recentVitals = await _context.VitalSigns
@@ -1469,7 +1846,11 @@ namespace HeThongBenhVien.Controllers
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
             
-            ViewBag.NotifiedPatientIds = await _context.Notifications.Select(n => n.PatientId).Distinct().ToListAsync();
+            ViewBag.NotifiedPatientIds = await _context.Notifications
+                .Where(n => n.PatientId != null)
+                .Select(n => n.PatientId.Value)
+                .Distinct()
+                .ToListAsync();
             
             return View(appointments); 
         }
@@ -1527,6 +1908,11 @@ namespace HeThongBenhVien.Controllers
                 TempData["DoctorNotificationError"] = "Không tìm thấy lịch hẹn.";
             }
             return RedirectToAction(nameof(HenTaiKham));
+        }
+        
+        public IActionResult LichHen()
+        {
+            return View();
         }
         
         public IActionResult HoiChanOnline() { return View(); }
@@ -1612,21 +1998,6 @@ namespace HeThongBenhVien.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(LichMo));
-        }
-
-        // ==========================================
-        // TRUNG TÂM ĐIỀU HÀNH (COMMAND CENTER)
-        // ==========================================
-        public async Task<IActionResult> CommandCenter()
-        {
-            var admittedPatients = await _context.MedicalRecords
-                .Include(m => m.Appointment)
-                .ThenInclude(a => a.Patient)
-                .Include(m => m.Department)
-                .Where(m => m.AdmissionDate != null && m.DischargeDate == null)
-                .ToListAsync();
-
-            return View(admittedPatients);
         }
 
         public async Task<IActionResult> ThongBao()

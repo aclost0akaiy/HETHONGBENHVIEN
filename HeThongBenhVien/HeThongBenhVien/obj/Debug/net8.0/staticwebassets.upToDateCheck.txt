@@ -65,3 +65,8 @@ wwwroot\uploads\ai_74a23d85-6ff5-41bd-90ba-541bfe076335_gãy tay .jfif
 wwwroot\uploads\ai_84e232d1-5dbc-4f7d-b0b4-0f949dcdcea3_gãy tay .jfif
 wwwroot\uploads\ai_90254c27-defd-4b0b-b211-24b70e12d655_gãy tay .jfif
 wwwroot\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif
+wwwroot\uploads\doctor_mai.png
+wwwroot\uploads\hospital_map_3d.png
+wwwroot\uploads\mobile_rating.png
+wwwroot\uploads\patient_avatar.png
+wwwroot\uploads\patient_hero.png

@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\controllers\\patientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\controllers\\patientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\controllers\\doctorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\controllers\\doctorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\controllers\\patientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\controllers\\patientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -33,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\hethongbenhvien.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\views\\doctor\\commandcenter.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|solutionrelative:hethongbenhvien\\views\\doctor\\commandcenter.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7D9DB876-845B-4085-AA26-742A5F00B3D6}|HeThongBenhVien\\HeThongBenhVien.csproj|c:\\users\\pc\\downloads\\hethongbenhvien\\hethongbenhvien\\hethongbenhvien\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -70,20 +66,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "PatientController.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Controllers\\PatientController.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Controllers\\PatientController.cs",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Controllers\\PatientController.cs",
               "RelativeToolTip": "HeThongBenhVien\\Controllers\\PatientController.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAswA8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAswB4AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-16T02:06:25.909Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-16T02:06:25.909Z"
             },
             {
               "$type": "Document",
@@ -99,15 +94,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "DoctorController.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Controllers\\DoctorController.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Controllers\\DoctorController.cs",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Controllers\\DoctorController.cs",
               "RelativeToolTip": "HeThongBenhVien\\Controllers\\DoctorController.cs",
-              "ViewState": "AgIAAMwAAAAAAAAAAAAcwNAAAAAVAAAAAAAAAA==",
+              "ViewState": "AgIAAFoGAAAAAAAAAAAcwFwGAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T07:07:09.64Z"
+              "WhenOpened": "2026-05-28T07:07:09.64Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -148,18 +144,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "CommandCenter.cshtml",
-              "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Doctor\\CommandCenter.cshtml",
-              "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Doctor\\CommandCenter.cshtml",
-              "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Doctor\\CommandCenter.cshtml",
-              "RelativeToolTip": "HeThongBenhVien\\Views\\Doctor\\CommandCenter.cshtml",
-              "ViewState": "AgIAAK0AAAAAAAAAAAAEwK0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-28T01:40:07.701Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
               "Title": "_AdminLayout.cshtml",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Shared\\_AdminLayout.cshtml",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Shared\\_AdminLayout.cshtml",
@@ -171,7 +155,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 9,
               "Title": "DanhSach.cshtml",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Doctor\\DanhSach.cshtml",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Doctor\\DanhSach.cshtml",
@@ -183,7 +167,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 10,
               "Title": "Dashboard.cshtml",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Doctor\\Dashboard.cshtml",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Doctor\\Dashboard.cshtml",
@@ -195,7 +179,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 11,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Home\\Index.cshtml",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Home\\Index.cshtml",
@@ -207,7 +191,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 12,
               "Title": "ChiTietBenhAn.cshtml",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Views\\Doctor\\ChiTietBenhAn.cshtml",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Views\\Doctor\\ChiTietBenhAn.cshtml",
@@ -219,19 +203,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Program.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Program.cs",
               "ToolTip": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Program.cs",
               "RelativeToolTip": "HeThongBenhVien\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAANABAAAAAAAAAAAawNsBAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-10T13:55:01.266Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 13,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "HeThongBenhVien\\Data\\ApplicationDbContext.cs",
@@ -243,7 +227,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\appsettings.json",
               "RelativeDocumentMoniker": "HeThongBenhVien\\appsettings.json",

@@ -6,96 +6,110 @@
 }
 
 <div class="container-fluid p-0">
-    <!-- Header Section -->
+    
+    <!-- Stats Summary Cards -->
+    <div class="row mb-4 g-3">
+        <!-- Card 1: Tổng hồ sơ -->
+        <div class="col-md-4">
+            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px; background: white; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Tổng hồ sơ</span>
+                        <h2 class="h2 mb-0 mt-1 fw-bold text-dark" style="font-weight: 800;">@(ViewBag.TotalRecordsCount?.ToString("N0") ?? "0")</h2>
+                    </div>
+                    <div class="rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background-color: #eff6ff; color: #2563eb;">
+                        <i class="fa-regular fa-folder" style="font-size: 18px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Hồ sơ hôm nay -->
+        <div class="col-md-4">
+            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px; background: white; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Hồ sơ hôm nay</span>
+                        <h2 class="h2 mb-0 mt-1 fw-bold text-dark" style="font-weight: 800;">@(ViewBag.TodayRecordsCount?.ToString("N0") ?? "0")</h2>
+                    </div>
+                    <div class="rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background-color: #eff6ff; color: #2563eb;">
+                        <i class="fa-regular fa-calendar-check" style="font-size: 18px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Đang điều trị -->
+        <div class="col-md-4">
+            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px; background: white; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Đang điều trị</span>
+                        <h2 class="h2 mb-0 mt-1 fw-bold text-dark" style="font-weight: 800;">@(ViewBag.ActiveTreatmentCount?.ToString("N0") ?? "0")</h2>
+                    </div>
+                    <div class="rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background-color: #eff6ff; color: #2563eb;">
+                        <i class="fa-solid fa-bed" style="font-size: 18px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Title & Buttons -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">
-                <i class="fa-solid fa-file-medical text-primary me-2"></i>Hồ Sơ Bệnh Án Điện Tử
-            </h2>
-            <p class="text-muted mb-0">Quản lý và tra cứu hồ sơ bệnh án của tất cả bệnh nhân.</p>
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-user-group text-primary" style="font-size: 1.1rem; color: #2563eb !important;"></i>
+            <h4 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">Danh sách bệnh nhân mới nhất</h4>
         </div>
-        <div>
-            <form action="@Url.Action("HoSoBenhAn", "Doctor")" method="get" class="d-flex">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" name="searchString" class="form-control search-input" placeholder="Tên BN, Mã BN, Chẩn đoán..." value="@ViewData["SearchString"]">
-                    <button type="submit" class="btn btn-primary search-btn">Tìm kiếm</button>
-                </div>
-            </form>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold" style="border-radius: 8px; border-color: #cbd5e1; font-size: 14px; background-color: white; color: #475569;" type="button" onclick="$('#filterSection').slideToggle(200);">
+                <i class="fa-solid fa-sliders"></i> Bộ lọc
+            </button>
+            <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 fw-semibold" style="border-radius: 8px; background-color: #0b57d0; border: none; font-size: 14px;" data-bs-toggle="modal" data-bs-target="#addRecordModal">
+                <i class="fa-solid fa-plus"></i> Hồ sơ mới
+            </button>
         </div>
     </div>
 
-    <!-- Stats Summary -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="glass-card stat-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-primary" style="font-size: 0.8rem;">Tổng Hồ Sơ</p>
-                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count()</h3>
-                    </div>
-                    <div class="icon-circle bg-primary-light text-primary">
-                        <i class="fa-solid fa-folder-open"></i>
-                    </div>
-                </div>
+    <!-- Filter/Search Section -->
+    <div id="filterSection" class="mb-4" style="display: @(string.IsNullOrEmpty(ViewData["SearchString"]?.ToString()) ? "none" : "block");">
+        <form method="get" action="@Url.Action("HoSoBenhAn", "Doctor")" class="d-flex gap-2 align-items-center" style="max-width: 500px;">
+            <div class="position-relative flex-grow-1">
+                <i class="fa-solid fa-magnifying-glass text-muted position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none;"></i>
+                <input type="text" name="searchString" value="@ViewData["SearchString"]" class="form-control shadow-sm" placeholder="Tìm kiếm theo tên, mã bệnh nhân, chẩn đoán..." style="border-color: #cbd5e1; border-radius: 10px; font-size: 14px; height: 42px; padding-left: 40px; padding-right: 15px;" />
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="glass-card stat-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-success" style="font-size: 0.8rem;">Hồ Sơ Hôm Nay</p>
-                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count(m => m.CreatedAt.Date == DateTime.Today)</h3>
-                    </div>
-                    <div class="icon-circle bg-success-light text-success">
-                        <i class="fa-solid fa-calendar-day"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="glass-card stat-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs font-weight-bold text-uppercase mb-1 text-warning" style="font-size: 0.8rem;">Đang Điều Trị</p>
-                        <h3 class="mb-0 font-weight-bold" style="color: #0f172a;">@Model.Count(m => m.Appointment?.Status == 4)</h3>
-                    </div>
-                    <div class="icon-circle bg-warning-light text-warning">
-                        <i class="fa-solid fa-bed-pulse"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary px-4 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px; background-color: #0b57d0; border: none; font-size: 14px; height: 42px; white-space: nowrap; flex-shrink: 0;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 12px;"></i> Tìm kiếm
+            </button>
+            @if (!string.IsNullOrEmpty(ViewData["SearchString"]?.ToString()))
+            {
+                <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" style="border-radius: 10px; border-color: #cbd5e1; font-size: 14px; height: 42px; width: 42px; padding: 0; flex-shrink: 0; color: #64748b; background-color: white;">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            }
+        </form>
     </div>
 
-    <!-- EMR List -->
+    <!-- EMR Cards Grid -->
     @if (!Model.Any())
     {
-        <div class="glass-card text-center p-5 empty-state">
+        <div class="card border-0 text-center p-5 mt-4" style="border-radius: 16px; border: 1px solid #e2e8f0 !important; background: white;">
             <div class="empty-icon mx-auto mb-4">
-                <i class="fa-solid fa-folder-open text-muted"></i>
+                <i class="fa-solid fa-folder-open text-muted fa-3x"></i>
             </div>
             <h4 class="text-gray-800 fw-bold mb-2">Không tìm thấy hồ sơ</h4>
             <p class="text-muted mb-4">Hiện tại không có hồ sơ bệnh án nào phù hợp với tìm kiếm của bạn.</p>
             @if (!string.IsNullOrEmpty(ViewData["SearchString"]?.ToString()))
             {
-                <div class="d-flex justify-content-center gap-3 mt-4">
-                    <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2 rounded-pill">
-                        <i class="fa-solid fa-rotate-left me-2"></i>Xem tất cả hồ sơ
-                    </a>
-                    <form action="@Url.Action("TaoHoSoKhamBenhNhanh", "Doctor")" method="post" class="d-inline">
-                        <input type="hidden" name="patientCode" value="@ViewData["SearchString"]" />
-                        <button type="submit" class="btn btn-success px-4 py-2 rounded-pill shadow-sm fw-bold">
-                            <i class="fa-solid fa-file-circle-plus me-2"></i>Tạo hồ sơ khám mới
-                        </button>
-                    </form>
-                </div>
+                <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2" style="border-radius: 8px;">
+                    <i class="fa-solid fa-rotate-left me-2"></i>Xem tất cả hồ sơ
+                </a>
             }
         </div>
     }
     else
     {
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
             @foreach (var item in Model)
             {
                 string initials = "BN";
@@ -109,58 +123,100 @@
                     }
                 }
 
-                <div class="col-xl-4 col-md-6 mb-4">
-                    <div class="emr-card glass-card h-100">
-                        <div class="emr-header p-3 border-bottom d-flex align-items-center justify-content-between">
+                // Dynamic color matching
+                char firstLetter = !string.IsNullOrEmpty(item.Appointment?.Patient?.FullName) ? item.Appointment.Patient.FullName.Trim()[0] : 'B';
+                string circleBg = "#eff6ff"; // default blue
+                string circleFg = "#2563eb";
+                int charCode = (int)char.ToUpper(firstLetter);
+                if (charCode % 5 == 0) {
+                    circleBg = "#ecfdf5"; // green
+                    circleFg = "#059669";
+                } else if (charCode % 5 == 1) {
+                    circleBg = "#fef2f2"; // red
+                    circleFg = "#dc2626";
+                } else if (charCode % 5 == 2) {
+                    circleBg = "#fef3c7"; // amber
+                    circleFg = "#d97706";
+                } else if (charCode % 5 == 3) {
+                    circleBg = "#faf5ff"; // purple
+                    circleFg = "#7c3aed";
+                } else if (charCode % 5 == 4) {
+                    circleBg = "#f5f3ff"; // indigo
+                    circleFg = "#4f46e5";
+                }
+
+                <div class="col">
+                    <div class="card border-0 h-100 shadow-sm" style="border-radius: 16px; border: 1px solid #e2e8f0 !important; background: white; overflow: hidden;">
+                        
+                        <!-- Card Header -->
+                        <div class="card-header border-0 bg-transparent p-3 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid #f1f5f9 !important;">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="patient-avatar">
+                                <div class="rounded d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 40px; height: 40px; background-color: @circleBg; color: @circleFg; font-size: 13px; border-radius: 10px;">
                                     @initials
                                 </div>
                                 <div>
                                     <h6 class="mb-0 fw-bold text-dark">@item.Appointment?.Patient?.FullName</h6>
-                                    <span class="text-muted small">@item.Appointment?.Patient?.PatientCode • @item.Appointment?.Patient?.Gender • @item.Appointment?.Patient?.Age Tuổi</span>
+                                    <span class="text-muted small" style="font-size: 11px;">@item.Appointment?.Patient?.PatientCode • @item.Appointment?.Patient?.Gender • @item.Appointment?.Patient?.Age Tuổi</span>
                                 </div>
                             </div>
                             <div class="record-date text-end">
-                                <div class="date-badge">
-                                    <span class="d-block fw-bold">@item.CreatedAt.ToString("dd")</span>
-                                    <span class="small">Th @item.CreatedAt.ToString("MM")</span>
+                                <div class="border px-2.5 py-1.5 text-center" style="border-radius: 10px; background: #f8fafc; min-width: 50px;">
+                                    <span class="d-block small text-muted" style="font-size: 9px; line-height: 1;">Th @item.CreatedAt.ToString("MM")</span>
+                                    <span class="d-block fw-bold text-dark" style="font-size: 16px; line-height: 1.1; margin-top: 2px;">@item.CreatedAt.ToString("dd")</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="emr-body p-4">
+
+                        <!-- Card Body -->
+                        <div class="card-body p-4">
+                            <!-- Status Badge -->
                             <div class="mb-3">
-                                <span class="badge bg-primary bg-opacity-10 text-primary mb-2 rounded-pill px-3 py-2">
-                                    <i class="fa-solid fa-stethoscope me-1"></i> Chẩn đoán
-                                </span>
-                                <p class="text-dark fw-medium mb-0 ms-1 line-clamp-2">@item.Diagnosis</p>
+                                @if (item.Appointment?.Status == 5)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1.5 fw-bold border border-success border-opacity-25" style="border-radius: 50px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-circle-check"></i> Xác nhận thành công
+                                    </span>
+                                }
+                                else if (item.Appointment?.Status == 11)
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1.5 fw-bold border border-danger border-opacity-25" style="border-radius: 50px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-bed"></i> @(item.Department?.DepartmentName ?? "Nhập viện") - Giường @(item.BedNumber ?? 0)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1.5 fw-bold border border-warning border-opacity-25" style="border-radius: 50px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-hourglass-half"></i> Đang chờ xác nhận
+                                    </span>
+                                }
                             </div>
-                            <div class="mb-3">
-                                <span class="text-muted small d-block mb-1"><i class="fa-solid fa-clipboard-list me-1"></i>Triệu chứng:</span>
-                                <p class="text-secondary small mb-0 ms-1 line-clamp-2">@item.Symptoms</p>
+
+                            <!-- Diagnosis -->
+                            <div class="mb-3 d-flex align-items-start gap-2">
+                                <div class="mt-0.5"><i class="fa-solid fa-stethoscope" style="font-size: 14px; color: #2563eb;"></i></div>
+                                <div>
+                                    <span class="text-uppercase text-secondary fw-bold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Chẩn đoán</span>
+                                    <span class="fw-semibold text-dark line-clamp-2" style="font-size: 0.9rem;">@item.Diagnosis</span>
+                                </div>
+                            </div>
+
+                            <!-- Symptoms -->
+                            <div class="mb-0 d-flex align-items-start gap-2">
+                                <div class="mt-0.5"><i class="fa-solid fa-bars" style="font-size: 14px; color: #64748b;"></i></div>
+                                <div>
+                                    <span class="text-uppercase text-secondary fw-bold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Triệu chứng</span>
+                                    <span class="text-secondary line-clamp-2" style="font-size: 0.85rem;">@item.Symptoms</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="emr-footer p-3 border-top bg-light bg-opacity-50 d-flex justify-content-between align-items-center rounded-bottom">
-                            @if (item.Appointment?.Status == 5)
-                            {
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border border-success border-opacity-25 fw-bold">
-                                    <i class="fa-solid fa-check-double me-1"></i> Xác nhận thành công
-                                </span>
-                            }
-                            else if (item.Appointment?.Status == 11)
-                            {
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 border border-danger border-opacity-25 fw-bold">
-                                    <i class="fa-solid fa-bed me-1"></i> @(item.Department?.DepartmentName ?? "Nhập viện") - Giường @(item.BedNumber ?? 0)
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2 border border-warning border-opacity-25 fw-bold">
-                                    <i class="fa-solid fa-hourglass-half me-1"></i> Đang chờ xác nhận
-                                </span>
-                            }
-                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-4 action-btn shadow-sm">
-                                Xem Chi Tiết <i class="fa-solid fa-arrow-right ms-1"></i>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer border-0 bg-transparent p-3 d-flex justify-content-between align-items-center" style="border-top: 1px solid #f1f5f9 !important;">
+                            <a href="@Url.Action("LichSuDieuTri", "Doctor", new { patientId = item.Appointment?.PatientId })" class="text-muted text-decoration-none d-inline-flex align-items-center gap-1.5 hover-text-dark" style="font-size: 13px; font-weight: 500;">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử
+                            </a>
+                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.Id })" class="btn btn-sm fw-semibold d-inline-flex align-items-center gap-1.5 px-3 py-2 border-0" style="border-radius: 8px; background-color: #eff6ff; color: #2563eb; font-size: 13px;">
+                                Chi tiết <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
                             </a>
                         </div>
                     </div>
@@ -168,131 +224,59 @@
             }
         </div>
     }
+
+    <!-- Modal Thêm Hồ Sơ Mới -->
+    <div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header border-0 bg-primary bg-opacity-10" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title fw-bold text-primary" id="addRecordModalLabel"><i class="fa-solid fa-file-circle-plus me-2"></i>Tạo Hồ Sơ Khám Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="@Url.Action("AddPatient", "Doctor")" method="post">
+                    @Html.AntiForgeryToken()
+                    <!-- Custom return url so it redirects back to HoSoBenhAn -->
+                    <input type="hidden" name="returnUrl" value="HoSoBenhAn" />
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-secondary">Mã Bệnh Nhân (Tự động phát sinh)</label>
+                                <input type="text" class="form-control bg-light fw-bold text-primary" name="PatientCode" value="BN@(DateTime.Now.ToString("yyMMddHHmmss"))" readonly style="border-radius: 8px; border-color: #cbd5e1; height: 40px;">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-secondary">Họ và Tên</label>
+                                <input type="text" class="form-control" name="FullName" placeholder="Nhập họ và tên" required style="border-radius: 8px; border-color: #cbd5e1; height: 40px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Giới tính</label>
+                                <select class="form-select" name="Gender" required style="border-radius: 8px; border-color: #cbd5e1; height: 40px;">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Tuổi</label>
+                                <input type="number" class="form-control" name="Age" placeholder="Tuổi" required min="1" max="150" style="border-radius: 8px; border-color: #cbd5e1; height: 40px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 8px; height: 38px;">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary px-4" style="border-radius: 8px; background-color: #0b57d0; border: none; height: 38px;">Tạo hồ sơ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Styles {
     <style>
-        .search-box {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #fff;
-            border-radius: 30px;
-            padding: 5px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            width: 400px;
-            transition: all 0.3s ease;
+        .hover-text-dark:hover {
+            color: #0f172a !important;
         }
-
-        .search-box:focus-within {
-            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            color: #94a3b8;
-        }
-
-        .search-input {
-            border: none;
-            padding-left: 45px;
-            border-radius: 30px;
-            box-shadow: none;
-            font-size: 14px;
-        }
-
-        .search-input:focus {
-            box-shadow: none;
-            border-color: transparent;
-        }
-
-        .search-btn {
-            border-radius: 30px;
-            padding: 8px 20px;
-            font-weight: 500;
-        }
-
-        .bg-primary-light { background: rgba(14, 165, 233, 0.1); }
-        .bg-success-light { background: rgba(16, 185, 129, 0.1); }
-        .bg-warning-light { background: rgba(245, 158, 11, 0.1); }
-
-        .stat-card {
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card:nth-child(1) { border-left-color: #0ea5e9; }
-        .stat-card:nth-child(2) { border-left-color: #10b981; }
-        .stat-card:nth-child(3) { border-left-color: #f59e0b; }
-
-        .icon-circle {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .emr-card {
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .emr-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: #bae6fd;
-        }
-
-        .emr-card:hover .action-btn {
-            background-color: #0284c7;
-            transform: translateX(5px);
-        }
-
-        .action-btn {
-            transition: all 0.3s ease;
-        }
-
-        .patient-avatar {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            color: #0369a1;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .date-badge {
-            background: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            color: #475569;
-            text-align: center;
-            line-height: 1.2;
-        }
-        
-        .date-badge span:first-child {
-            font-size: 16px;
-            color: #0f172a;
-        }
-
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -300,55 +284,5 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .empty-state {
-            border: 2px dashed #cbd5e1;
-            border-radius: 20px;
-            background: rgba(248, 250, 252, 0.5);
-        }
-
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            background: #f1f5f9;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-        }
-
-        /* Glassmorphism utility */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
     </style>
-}
-
-@section Scripts {
-    <script>
-        // Add subtle animations on load
-        $(document).ready(function() {
-            $('.emr-card').each(function(i) {
-                $(this).css({
-                    'opacity': '0',
-                    'transform': 'translateY(20px)'
-                });
-                
-                setTimeout(() => {
-                    $(this).css({
-                        'transition': 'all 0.5s ease',
-                        'opacity': '1',
-                        'transform': 'translateY(0)'
-                    });
-                }, 100 * i);
-            });
-            
-            // Remove transition inline style after animation to not conflict with hover
-            setTimeout(() => {
-                $('.emr-card').css('transition', '');
-            }, 100 * $('.emr-card').length + 500);
-        });
-    </script>
 }

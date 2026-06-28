@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using HeThongBenhVien.Data;
 using HeThongBenhVien.Models;
-using HeThongBenhVien.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +14,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                var redirectUri = context.RedirectUri;
+                if (context.Request.Path.Value != null && context.Request.Path.Value.StartsWith("/Patient", StringComparison.OrdinalIgnoreCase))
+                {
+                    var patientRedirectUri = redirectUri.Replace("/Account/Login", "/Account/PatientLogin");
+                    context.Response.Redirect(patientRedirectUri);
+                }
+                else
+                {
+                    context.Response.Redirect(redirectUri);
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -475,6 +491,5 @@ app.UseAuthorization();
 app.MapControllerRoute( 
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapHub<MedicalCommandHub>("/commandHub");
 
-app.Run();
+app.Run();     

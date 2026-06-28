@@ -1,0 +1,292 @@
+@model IEnumerable<HeThongBenhVien.Models.Appointment>
+@using HeThongBenhVien.Models
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quầy Thu Ngân - Thanh Toán Viện Phí";
+    var medicalRecords = ViewBag.MedicalRecords as List<MedicalRecord> ?? new List<MedicalRecord>();
+    var prescriptions = ViewBag.Prescriptions as List<Prescription> ?? new List<Prescription>();
+    var labTests = ViewBag.LabTests as List<LabTest> ?? new List<LabTest>();
+}
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="h2 fw-bold text-gradient mb-1" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i>Quầy Thu Ngân & Thanh Toán
+            </h1>
+            <p class="text-muted mb-0">Xử lý thanh toán viện phí, dịch vụ xét nghiệm, và cấp đơn thuốc cho bệnh nhân.</p>
+        </div>
+        <div>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success px-4 py-2 rounded-pill fs-6">
+                <i class="fa-solid fa-people-arrows me-1"></i> Bệnh nhân chờ thanh toán: @Model.Count()
+            </span>
+        </div>
+    </div>
+
+    @if (TempData["PaySuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-start border-4 border-success shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-circle-check text-success me-2"></i>@TempData["PaySuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["PayError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>@TempData["PayError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-white">
+            <div class="py-5">
+                <i class="fa-solid fa-wallet text-muted mb-3 d-block" style="font-size: 4rem; opacity: 0.3;"></i>
+                <h4 class="text-muted fw-semibold">Không có bệnh nhân chờ thanh toán.</h4>
+                <p class="text-secondary">Tất cả hóa đơn đã được quyết toán.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Left Column: Patient List -->
+            <div class="col-xl-5 col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                        <h5 class="fw-bold text-dark mb-0">Danh Sách Hóa Đơn Chờ</h5>
+                    </div>
+                    <div class="card-body px-3 py-2" style="max-height: 70vh; overflow-y: auto;">
+                        <div class="list-group list-group-flush">
+                            @foreach (var appt in Model)
+                            {
+                                var record = medicalRecords.FirstOrDefault(r => r.AppointmentId == appt.Id);
+                                var rx = record != null ? prescriptions.FirstOrDefault(p => p.MedicalRecordId == record.Id) : null;
+                                var tests = record != null ? labTests.Where(t => t.MedicalRecordId == record.Id).ToList() : new List<LabTest>();
+                                
+                                // Tạm tính tổng tiền
+                                decimal examFee = 150000;
+                                decimal rxFee = rx?.PrescriptionDetails?.Sum(d => d.Price * d.Quantity) ?? 0;
+                                decimal testFee = 0;
+                                foreach (var test in tests)
+                                {
+                                    if (test.TestName == "CBC") testFee += 100000;
+                                    else if (test.TestName == "SinhHoa") testFee += 200000;
+                                    else if (test.TestName == "SieuAm") testFee += 150000;
+                                    else if (test.TestName == "XQuang") testFee += 120000;
+                                    else if (test.TestName == "NuocTieu") testFee += 50000;
+                                }
+                                decimal totalAmount = examFee + rxFee + testFee;
+
+                                <div class="list-group-item list-group-item-action border-0 rounded-3 mb-2 p-3 bg-light hover-shadow transition" style="cursor: pointer;" onclick="showInvoiceDetail(@appt.Id)">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">@appt.Patient?.FullName</h6>
+                                            <small class="text-muted">@appt.Patient?.PatientCode | Bác sĩ: @(appt.Doctor?.FullName ?? "Chưa rõ")</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="fw-bold text-success" style="font-size: 1.1rem;">@string.Format("{0:N0} đ", totalAmount)</span>
+                                            <small class="text-muted d-block" style="font-size: 11px;"><i class="fa-regular fa-clock me-1"></i>@appt.AppointmentTime.ToString("HH:mm")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Bill Details -->
+            <div class="col-xl-7 col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 bg-white h-100" id="invoiceDetailPanel">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center text-center p-5 h-100">
+                        <i class="fa-solid fa-receipt text-success mb-3 d-block" style="font-size: 5rem; opacity: 0.2;"></i>
+                        <h5 class="text-muted fw-semibold">Chọn một bệnh nhân để xem chi tiết hóa đơn</h5>
+                        <p class="text-secondary max-width-350">Xem chi tiết các hạng mục khám, xét nghiệm, thuốc và in biên lai thanh toán.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        background-color: #f0fdf4 !important;
+    }
+    .transition {
+        transition: all 0.25s ease-in-out;
+    }
+</style>
+
+<script>
+    function showInvoiceDetail(apptId) {
+        var invoicesData = {
+            @foreach (var appt in Model)
+            {
+                var record = medicalRecords.FirstOrDefault(r => r.AppointmentId == appt.Id);
+                var rx = record != null ? prescriptions.FirstOrDefault(p => p.MedicalRecordId == record.Id) : null;
+                var tests = record != null ? labTests.Where(t => t.MedicalRecordId == record.Id).ToList() : new List<LabTest>();
+                
+                decimal examFee = 150000;
+                decimal rxFee = rx?.PrescriptionDetails?.Sum(d => d.Price * d.Quantity) ?? 0;
+                decimal testFee = 0;
+                foreach (var test in tests)
+                {
+                    if (test.TestName == "CBC") testFee += 100000;
+                    else if (test.TestName == "SinhHoa") testFee += 200000;
+                    else if (test.TestName == "SieuAm") testFee += 150000;
+                    else if (test.TestName == "XQuang") testFee += 120000;
+                    else if (test.TestName == "NuocTieu") testFee += 50000;
+                }
+                decimal totalAmount = examFee + rxFee + testFee;
+
+                <text>
+                "@appt.Id": {
+                    id: @appt.Id,
+                    patientName: "@appt.Patient?.FullName",
+                    patientCode: "@appt.Patient?.PatientCode",
+                    gender: "@appt.Patient?.Gender",
+                    age: @appt.Patient?.Age,
+                    doctorName: "@(appt.Doctor?.FullName ?? "Chưa rõ")",
+                    diagnosis: "@Html.Raw(record?.Diagnosis?.Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "") ?? "")",
+                    examFee: @examFee,
+                    rxFee: @rxFee,
+                    testFee: @testFee,
+                    totalAmount: @totalAmount,
+                    medicines: [
+                        @if (rx != null && rx.PrescriptionDetails != null)
+                        {
+                            foreach (var d in rx.PrescriptionDetails)
+                            {
+                                <text>
+                                {
+                                    name: "@d.MedicineName",
+                                    qty: @d.Quantity,
+                                    unit: "@d.Unit",
+                                    price: @d.Price,
+                                    total: @(d.Price * d.Quantity)
+                                },
+                                </text>
+                            }
+                        }
+                    ],
+                    tests: [
+                        @foreach (var test in tests)
+                        {
+                            decimal price = 0;
+                            var testName = test.TestName;
+                            if (test.TestName == "CBC") { price = 100000; testName = "Công thức máu toàn bộ (CBC)"; }
+                            else if (test.TestName == "SinhHoa") { price = 200000; testName = "Sinh hóa máu"; }
+                            else if (test.TestName == "SieuAm") { price = 150000; testName = "Siêu âm"; }
+                            else if (test.TestName == "XQuang") { price = 120000; testName = "Chụp X-Quang phổi"; }
+                            else if (test.TestName == "NuocTieu") { price = 50000; testName = "Xét nghiệm nước tiểu"; }
+
+                            <text>
+                            {
+                                name: "@testName",
+                                price: @price
+                            },
+                            </text>
+                        }
+                    ]
+                },
+                </text>
+            }
+        };
+
+        var data = invoicesData[apptId];
+        if (!data) return;
+
+        var currencyFormat = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+
+        var html = `
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">Chi Tiết Biên Lai</h4>
+                        <small class="text-muted">Bệnh nhân: ${data.patientName} (${data.patientCode})</small>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> In biên lai</button>
+                </div>
+            </div>
+            <div class="card-body px-4" style="overflow-y: auto;">
+                <div class="p-3 bg-light rounded-3 mb-4">
+                    <div class="row text-secondary small">
+                        <div class="col-md-6 mb-2"><strong>Bác sĩ chỉ định:</strong> ${data.doctorName}</div>
+                        <div class="col-md-6 mb-2"><strong>Chẩn đoán:</strong> <span class="text-danger fw-semibold">${data.diagnosis}</span></div>
+                    </div>
+                </div>
+
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Hạng mục dịch vụ</th>
+                            <th class="text-end">Chi phí</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fa-solid fa-stethoscope text-primary me-2"></i>Phí khám lâm sàng</td>
+                            <td class="text-end fw-semibold">${currencyFormat.format(data.examFee)}</td>
+                        </tr>
+        `;
+
+        if (data.tests.length > 0) {
+            html += `
+                <tr class="table-info bg-opacity-10"><td colspan="2" class="fw-bold text-info"><i class="fa-solid fa-flask-vial me-2"></i>Dịch vụ xét nghiệm / Cận lâm sàng</td></tr>
+            `;
+            data.tests.forEach(function(test) {
+                html += `
+                    <tr>
+                        <td class="ps-4">${test.name}</td>
+                        <td class="text-end text-muted">${currencyFormat.format(test.price)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        if (data.medicines.length > 0) {
+            html += `
+                <tr class="table-warning bg-opacity-10"><td colspan="2" class="fw-bold text-warning"><i class="fa-solid fa-pills me-2"></i>Đơn thuốc chỉ định</td></tr>
+            `;
+            data.medicines.forEach(function(med) {
+                html += `
+                    <tr>
+                        <td class="ps-4">${med.name} (x${med.qty} ${med.unit})</td>
+                        <td class="text-end text-muted">${currencyFormat.format(test.total || med.total)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        html += `
+                        <tr class="table-dark">
+                            <td class="fw-bold">TỔNG CỘNG THANH TOÁN:</td>
+                            <td class="text-end fw-bold text-warning fs-5">${currencyFormat.format(data.totalAmount)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-4 pt-4 border-top text-center">
+                    <form action="/Payment/XacNhanThanhToan" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="appointmentId" value="${data.id}" />
+                        <button type="submit" class="btn btn-success btn-lg px-5 w-100" style="border-radius: 12px; font-weight: 700;">
+                            <i class="fa-solid fa-circle-check me-2"></i>Xác Nhận Đã Nhận Tiền
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+        $('#invoiceDetailPanel').html(html);
+    }
+</script>

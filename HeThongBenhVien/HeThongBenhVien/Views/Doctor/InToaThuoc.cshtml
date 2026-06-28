@@ -1,0 +1,467 @@
+@model HeThongBenhVien.Models.Prescription
+@{
+    Layout = null; // Do not use layout to ensure a clean print page
+    var doctor = ViewBag.Doctor as HeThongBenhVien.Models.User;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>In Toa Thuốc - MediCare Pro</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+
+    <style>
+        @@page {
+            margin: 0; /* Hides default browser header and footer */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .btn-back {
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            background: none;
+        }
+
+        .btn-back:hover {
+            color: #1a202c;
+        }
+
+        .btn-print {
+            background-color: #0b4c95;
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-print:hover {
+            background-color: #083b75;
+            color: #ffffff;
+        }
+
+        .btn-pdf {
+            background-color: #ffffff;
+            color: #4a5568;
+            border: 1px solid #cbd5e0;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pdf:hover {
+            background-color: #f7fafc;
+            border-color: #a0aec0;
+        }
+
+        /* Paper Layout */
+        .paper-container {
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .a4-page {
+            background-color: #ffffff;
+            width: 800px;
+            min-height: 1050px;
+            padding: 50px 60px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 4px;
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hospital Header */
+        .hospital-header {
+            margin-bottom: 30px;
+        }
+
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            background-color: #0ea5e9;
+            color: #ffffff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-line {
+            height: 2px;
+            background-color: #0056b3;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Title */
+        .doc-title {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .doc-title h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .doc-title p {
+            font-size: 12px;
+            color: #64748b;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Info Block */
+        .info-row {
+            margin-bottom: 12px;
+            font-size: 14.5px;
+            line-height: 1.6;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+        }
+
+        .info-value-dotted {
+            border-bottom: 1px dotted #94a3b8;
+            padding-left: 5px;
+            flex-grow: 1;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        /* Prescription Table */
+        .pres-table {
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+
+        .pres-table th {
+            text-transform: uppercase;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #475569;
+            background-color: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 14px;
+        }
+
+        .pres-table td {
+            padding: 14px;
+            vertical-align: top;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .med-name {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .med-instruction {
+            font-size: 12.5px;
+            color: #475569;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .empty-row td {
+            color: #cbd5e1;
+            font-weight: 300;
+            padding: 16px 14px;
+        }
+
+        /* Footer sections */
+        .bottom-sections {
+            margin-top: auto;
+            padding-top: 30px;
+        }
+
+        .advice-box {
+            background-color: #f8fafc;
+            border-radius: 6px;
+            padding: 18px 20px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .advice-box h6 {
+            font-size: 11px;
+            font-weight: 800;
+            color: #0b4c95;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .advice-list {
+            padding-left: 16px;
+            margin: 0;
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .doctor-signature-section {
+            text-align: center;
+            font-size: 13.5px;
+        }
+
+        .doctor-title-block {
+            margin-top: 40px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doctor-name-bottom {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0b4c95;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+        }
+
+        .page-footer-copyright {
+            margin-top: 40px;
+            border-top: 1px solid #edf2f7;
+            padding-top: 10px;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #a0aec0;
+            letter-spacing: 0.8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Print Media Styles */
+        @@media print {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+                margin: 0;
+                padding: 0;
+            }
+
+            .top-navbar {
+                display: none !important;
+            }
+
+            .paper-container {
+                padding: 0;
+                margin: 0;
+            }
+
+            .a4-page {
+                box-shadow: none;
+                padding: 20mm 20mm !important; /* Standard margins */
+                width: 100%;
+                min-height: auto;
+                box-sizing: border-box;
+            }
+
+            .page-footer-copyright {
+                position: fixed;
+                bottom: 20mm;
+                left: 20mm;
+                right: 20mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Action Navbar -->
+    <div class="top-navbar d-flex justify-content-between align-items-center">
+        <button onclick="window.history.back();" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại trang trước
+        </button>
+        <div class="d-flex gap-2">
+            <button onclick="window.print();" class="btn-print">
+                <i class="fa-solid fa-print"></i> IN TOA THUỐC
+            </button>
+            <button onclick="window.print();" class="btn-pdf">
+                <i class="fa-solid fa-file-pdf"></i> XUẤT PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Paper Container -->
+    <div class="paper-container">
+        <div class="a4-page">
+            <!-- Hospital Header -->
+            <div class="hospital-header d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="logo-box">
+                        <i class="fa-solid fa-briefcase-medical" style="font-size: 20px;"></i>
+                    </div>
+                    <div>
+                        <h4 class="m-0" style="font-size: 17px; font-weight: 800; color: #0b4c95;">MediCare Pro</h4>
+                        <p class="m-0 text-muted" style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px;">DOCTOR PORTAL | HỆ THỐNG PHÒNG KHÁM</p>
+                    </div>
+                </div>
+                <!-- Clinic contact info removed as requested -->
+            </div>
+            
+            <div class="header-line"></div>
+
+            <!-- Title Section -->
+            <div class="doc-title">
+                <h1>TOA THUỐC</h1>
+                <p>Mã số: PR-@(Model.MedicalRecord?.Appointment?.AppointmentTime.ToString("yyyyMMdd"))-@(Model.Id.ToString("D3"))</p>
+            </div>
+
+            <!-- Patient Info Section -->
+            <div class="container-fluid p-0 mb-4">
+                <div class="d-flex align-items-center info-row">
+                    <span class="info-label">HỌ TÊN:</span>
+                    <span class="info-value-dotted fw-bold" style="text-transform: uppercase;">@(Model.MedicalRecord?.Appointment?.Patient?.FullName)</span>
+                    <span class="info-label ms-3">TUỔI:</span>
+                    <span class="info-value-dotted text-center" style="max-width: 80px;">@(Model.MedicalRecord?.Appointment?.Patient?.Age)</span>
+                    <span class="info-label ms-3">GIỚI TÍNH:</span>
+                    <span class="info-value-dotted text-center" style="max-width: 100px;">@(Model.MedicalRecord?.Appointment?.Patient?.Gender)</span>
+                </div>
+                <div class="d-flex align-items-center info-row">
+                    <span class="info-label">ĐỊA CHỈ:</span>
+                    <span class="info-value-dotted">@(Model.MedicalRecord?.Appointment?.Patient != null ? "456/12 Khu Dân Cư Bình Minh, Phường Hiệp Bình Chánh, Thủ Đức" : "....................................................................................................................................")</span>
+                </div>
+                <div class="d-flex align-items-center info-row">
+                    <span class="info-label">CHẨN ĐOÁN:</span>
+                    <span class="info-value-dotted fw-bold" style="color: #0b4c95;">@(Model.MedicalRecord?.Diagnosis ?? "Chưa ghi nhận chẩn đoán chi tiết")</span>
+                </div>
+            </div>
+
+            <!-- Prescription Details Table -->
+            <table class="pres-table">
+                <thead>
+                    <tr>
+                        <th style="width: 8%; text-align: center;">STT</th>
+                        <th style="width: 60%;">Tên thuốc / Hàm lượng</th>
+                        <th style="width: 16%; text-align: center;">Số lượng</th>
+                        <th style="width: 16%; text-align: center;">Đơn vị</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ 
+                        int count = 1; 
+                        var detailsList = Model.PrescriptionDetails.ToList();
+                    }
+                    @foreach (var detail in detailsList)
+                    {
+                        <tr>
+                            <td style="text-align: center; font-weight: 700; color: #475569;">@count.ToString("D2")</td>
+                            <td>
+                                <div class="med-name">@detail.MedicineName</div>
+                                <div class="med-instruction">
+                                    <i class="fa-regular fa-clock"></i> @detail.DosageInstruction
+                                </div>
+                            </td>
+                            <td style="text-align: center; font-weight: 700; color: #0f172a;">@detail.Quantity</td>
+                            <td style="text-align: center; color: #475569;">@detail.Unit</td>
+                        </tr>
+                        count++;
+                    }
+
+                </tbody>
+            </table>
+
+            <!-- Bottom Sections -->
+            <div class="bottom-sections container-fluid p-0">
+                <div class="row align-items-end">
+                    <!-- Left Column: Advice -->
+                    <div class="col-7">
+                        <div class="advice-box">
+                            <h6>Lời dặn bác sĩ</h6>
+                            <ul class="advice-list">
+                                <li>Nghỉ ngơi tại chỗ, uống nhiều nước ấm.</li>
+                                <li>Tránh tiếp xúc lạnh và khói bụi.</li>
+                                <li>Nếu sốt cao trên 38.5°C không hạ, vui lòng tái khám ngay.</li>
+                                <li>Tái khám sau 05 ngày hoặc khi hết thuốc.</li>
+                            </ul>
+                        </div>
+                        <div class="mt-3 text-muted small d-flex align-items-center gap-1.5" style="font-weight: 600; font-size: 12.5px; color: #475569;">
+                            <i class="fa-regular fa-calendar-check text-primary"></i>
+                            <span>Hẹn tái khám: @DateTime.Now.AddDays(5).ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+                    <!-- Right Column: Signature -->
+                    <div class="col-5">
+                        <div class="doctor-signature-section">
+                            <div class="text-muted italic" style="font-size: 13px; font-style: italic;">
+                                Ngày @DateTime.Now.Day tháng @DateTime.Now.Month năm @DateTime.Now.Year
+                            </div>
+                            <div class="doctor-title-block">
+                                <strong class="text-uppercase text-dark" style="font-size: 12px; letter-spacing: 0.5px;">Bác sĩ khám bệnh</strong>
+                                <span class="text-muted small" style="font-size: 11px; font-style: italic;">(Ký, ghi rõ họ tên)</span>
+                            </div>
+                            <!-- Blank signature area for printing -->
+                            <div style="height: 100px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page copyright footer -->
+            <div class="page-footer-copyright">
+                <span>TRANG 01 / 01</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

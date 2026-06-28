@@ -1,4 +1,4 @@
-@model IEnumerable<HeThongBenhVien.Models.Prescription>
+﻿@model IEnumerable<HeThongBenhVien.Models.Prescription>
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Kê Đơn Thuốc";
@@ -36,10 +36,10 @@
                                         <small class="text-muted">Mã BN: @item.MedicalRecord?.Appointment?.Patient?.PatientCode</small>
                                     </td>
                                     <td>@item.MedicalRecord?.Diagnosis</td>
-                                    <td>
+                                    <td style="white-space: nowrap;">
                                         <form method="post" action="@Url.Action("KetQuaCanLamSang", "Doctor")" class="d-flex gap-2 m-0">
-                                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem Hồ sơ</a>
-                                            <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-success rounded-pill px-3">Sửa Toa Thuốc</a>
+                                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-soft-primary rounded-pill px-3 fw-semibold">Xem Hồ sơ</a>
+                                            <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = item.MedicalRecordId })" class="btn btn-sm btn-soft-success rounded-pill px-3 fw-semibold">Sửa Toa Thuốc</a>
                                         </form>
                                     </td>
                                 </tr>

@@ -21,13 +21,20 @@ IF OBJECT_ID('Patients', 'U') IS NOT NULL DROP TABLE Patients;
 IF OBJECT_ID('Users', 'U') IS NOT NULL DROP TABLE Users;
 GO
 
+-- Xóa Sequence nếu đã tồn tại để tránh lỗi khi chạy lại script
+IF OBJECT_ID('PatientCodeSeq', 'SO') IS NOT NULL DROP SEQUENCE PatientCodeSeq;
+GO
+
+CREATE SEQUENCE PatientCodeSeq START WITH 1300 INCREMENT BY 1;
+GO
+
 -- 1. Tạo bảng Bệnh Nhân
 CREATE TABLE Patients (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     FullName NVARCHAR(100) NOT NULL,
     Gender NVARCHAR(50) NOT NULL DEFAULT N'Nam',
     Age INT NOT NULL,
-    PatientCode NVARCHAR(20) NOT NULL,
+    PatientCode NVARCHAR(20) NOT NULL DEFAULT ('BN' + CAST(NEXT VALUE FOR PatientCodeSeq AS NVARCHAR(20))),
     Allergies NVARCHAR(MAX) NULL,
     CCCD NVARCHAR(20) NULL,
     FaceData NVARCHAR(MAX) NULL
@@ -5433,3 +5440,854 @@ GO
 IF COL_LENGTH('Notifications', 'Type') IS NULL ALTER TABLE Notifications ADD Type INT NOT NULL DEFAULT 0;
 IF COL_LENGTH('Notifications', 'IsForPatient') IS NULL ALTER TABLE Notifications ADD IsForPatient BIT NOT NULL DEFAULT 0;
 GO
+
+-- ==========================================================================
+
+-- ==========================================================================
+
+-- ==========================================================================
+
+-- ==========================================================================
+
+-- ==========================================================================
+-- NAP DU LIEU CHAY THU CHUAN CHO DOCTOR (90 CHO KHAM, 3 DA KHAM, 1 CHUA DEN, 6 KHOI TAO)
+-- ==========================================================================
+BEGIN TRANSACTION;
+BEGIN TRY
+    -- Don dep cac ban ghi seed cu va chuyen cac ca goc cua doctor sang bac si khac de dam bao con so chinh xac 100%
+    DELETE FROM PrescriptionDetails WHERE PrescriptionId IN (SELECT Id FROM Prescriptions WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%'))));
+    DELETE FROM Prescriptions WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%')));
+    DELETE FROM LabTests WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%')));
+    DELETE FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%'));
+    DELETE FROM VitalSigns WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%'));
+    DELETE FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%');
+    DELETE FROM Users WHERE PatientCode LIKE 'BN_SEED_%';
+    DELETE FROM Patients WHERE PatientCode LIKE 'BN_SEED_%';
+    UPDATE Appointments SET DoctorId = 2 WHERE DoctorId = 6;
+    DECLARE @CurrentDocId INT = 6;
+
+    -- Patient 1: Dang Tuyet Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Tuyet Dung', N'Nu', 41, 'BN_SEED_001', '', '004769034227');
+    DECLARE @PId_1 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user001', '123', 'BenhNhan', N'Dang Tuyet Dung', 'patient001@gmail.com', '0352982460', 'BN_SEED_001');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_1, N'Met moi suy nhuoc', DATEADD(minute, 205, GETDATE()), 3, @CurrentDocId);
+    DECLARE @AId_1 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_1, '79', '36.6', '110/85', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 205, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_1, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Suy nhuoc co the nhe / Theo doi huyet ap', N'Cho ket qua can lam sang', DATEADD(minute, 205, GETDATE()), 0, N'');
+    DECLARE @MRId_1 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_1, N'Chá»¥p X-Quang ngá»±c', N'Chá» KQ', N'', DATEADD(minute, 205, GETDATE()));
+
+    -- Patient 2: Ly Minh Thang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Minh Thang', N'Nam', 53, 'BN_SEED_002', '', '070710612673');
+    DECLARE @PId_2 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user002', '123', 'BenhNhan', N'Ly Minh Thang', 'patient002@gmail.com', '0910576172', 'BN_SEED_002');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_2, N'Kham tai mui hong', DATEADD(minute, 147, GETDATE()), 3, @CurrentDocId);
+    DECLARE @AId_2 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_2, '82', '36.7', '110/80', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 147, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_2, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Cho ket qua can lam sang', DATEADD(minute, 147, GETDATE()), 0, N'');
+    DECLARE @MRId_2 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_2, N'SiÃªu Ã¢m á»• bá»¥ng', N'Chá» KQ', N'', DATEADD(minute, 147, GETDATE()));
+
+    -- Patient 3: Tran Van Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Van Long', N'Nam', 48, 'BN_SEED_003', '', '013189522634');
+    DECLARE @PId_3 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user003', '123', 'BenhNhan', N'Tran Van Long', 'patient003@gmail.com', '0779750152', 'BN_SEED_003');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_3, N'Kiem tra huyet ap', DATEADD(minute, 44, GETDATE()), 3, @CurrentDocId);
+    DECLARE @AId_3 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_3, '87', '36.4', '130/85', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 44, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_3, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Cho ket qua can lam sang', DATEADD(minute, 44, GETDATE()), 0, N'');
+    DECLARE @MRId_3 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_3, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, 44, GETDATE()));
+
+    -- Patient 4: Hoang Thanh Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Thanh Son', N'Nam', 49, 'BN_SEED_004', '', '025905327587');
+    DECLARE @PId_4 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user004', '123', 'BenhNhan', N'Hoang Thanh Son', 'patient004@outlook.com', '0898569327', 'BN_SEED_004');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_4, N'Dau bung am i', DATEADD(minute, 141, GETDATE()), 4, @CurrentDocId);
+    DECLARE @AId_4 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_4, '89', '36.5', '120/80', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 141, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_4, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Suy nhuoc co the nhe / Theo doi huyet ap', N'Cho ket qua can lam sang', DATEADD(minute, 141, GETDATE()), 0, N'');
+    DECLARE @MRId_4 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_4, N'SiÃªu Ã¢m á»• bá»¥ng', N'Chá» KQ', N'', DATEADD(minute, 141, GETDATE()));
+
+    -- Patient 5: Ly Phuong Lan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Phuong Lan', N'Nu', 40, 'BN_SEED_005', '', '086306244104');
+    DECLARE @PId_5 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user005', '123', 'BenhNhan', N'Ly Phuong Lan', 'patient005@outlook.com', '0798508091', 'BN_SEED_005');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_5, N'Kham suc khoe dinh ky', DATEADD(minute, 77, GETDATE()), 4, @CurrentDocId);
+    DECLARE @AId_5 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_5, '68', '36.6', '120/85', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 77, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_5, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Cho ket qua can lam sang', DATEADD(minute, 77, GETDATE()), 0, N'');
+    DECLARE @MRId_5 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_5, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, 77, GETDATE()));
+
+    -- Patient 6: Tran Xuan Quang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Xuan Quang', N'Nam', 47, 'BN_SEED_006', '', '027607189187');
+    DECLARE @PId_6 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user006', '123', 'BenhNhan', N'Tran Xuan Quang', 'patient006@outlook.com', '0976626638', 'BN_SEED_006');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_6, N'Dau hong kho nuot', DATEADD(minute, 52, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_6 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_6, '80', '37.3', '120/85', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 52, GETDATE())));
+
+    -- Patient 7: Vu Cong Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Cong Huy', N'Nam', 59, 'BN_SEED_007', '', '020832380172');
+    DECLARE @PId_7 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user007', '123', 'BenhNhan', N'Vu Cong Huy', 'patient007@gmail.com', '0772431749', 'BN_SEED_007');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_7, N'Kiem tra huyet ap', DATEADD(minute, 232, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_7 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_7, '67', '36.4', '130/80', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 232, GETDATE())));
+
+    -- Patient 8: Le Nhu Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Nhu Van', N'Nu', 60, 'BN_SEED_008', '', '054165342856');
+    DECLARE @PId_8 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user008', '123', 'BenhNhan', N'Le Nhu Van', 'patient008@yahoo.com', '0790935012', 'BN_SEED_008');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_8, N'Kiem tra huyet ap', DATEADD(minute, 202, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_8 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_8, '87', '36.3', '110/80', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 202, GETDATE())));
+
+    -- Patient 9: Vu Minh Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Minh Huy', N'Nam', 32, 'BN_SEED_009', '', '048595123266');
+    DECLARE @PId_9 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user009', '123', 'BenhNhan', N'Vu Minh Huy', 'patient009@gmail.com', '0854296570', 'BN_SEED_009');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_9, N'Kiem tra tim mach', DATEADD(minute, 235, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_9 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_9, '95', '36.6', '130/70', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 235, GETDATE())));
+
+    -- Patient 10: Vu Ngoc Linh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Ngoc Linh', N'Nu', 42, 'BN_SEED_010', '', '060921743568');
+    DECLARE @PId_10 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user010', '123', 'BenhNhan', N'Vu Ngoc Linh', 'patient010@outlook.com', '0356813198', 'BN_SEED_010');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_10, N'Kiem tra tim mach', DATEADD(minute, 43, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_10 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_10, '93', '36.8', '130/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 43, GETDATE())));
+
+    -- Patient 11: Ngo Thi Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Thi Trinh', N'Nu', 34, 'BN_SEED_011', '', '043901635167');
+    DECLARE @PId_11 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user011', '123', 'BenhNhan', N'Ngo Thi Trinh', 'patient011@gmail.com', '0900531946', 'BN_SEED_011');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_11, N'Kiem tra tim mach', DATEADD(minute, 231, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_11 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_11, '75', '37.1', '120/70', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 231, GETDATE())));
+
+    -- Patient 12: Dang Bich Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Bich Nga', N'Nu', 32, 'BN_SEED_012', '', '075894852911');
+    DECLARE @PId_12 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user012', '123', 'BenhNhan', N'Dang Bich Nga', 'patient012@gmail.com', '0900689364', 'BN_SEED_012');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_12, N'Kiem tra huyet ap', DATEADD(minute, 67, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_12 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_12, '68', '37.1', '130/85', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 67, GETDATE())));
+
+    -- Patient 13: Pham Thanh Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Thanh Quan', N'Nam', 53, 'BN_SEED_013', '', '081457936343');
+    DECLARE @PId_13 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user013', '123', 'BenhNhan', N'Pham Thanh Quan', 'patient013@outlook.com', '0790567230', 'BN_SEED_013');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_13, N'Dau hong kho nuot', DATEADD(minute, 202, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_13 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_13, '89', '37.3', '130/70', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 202, GETDATE())));
+
+    -- Patient 14: Vo Hoang Tuan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Hoang Tuan', N'Nam', 45, 'BN_SEED_014', '', '015061005157');
+    DECLARE @PId_14 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user014', '123', 'BenhNhan', N'Vo Hoang Tuan', 'patient014@gmail.com', '0907796297', 'BN_SEED_014');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_14, N'Kiem tra tim mach', DATEADD(minute, 64, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_14 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_14, '92', '36.5', '120/80', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 64, GETDATE())));
+
+    -- Patient 15: Le Thu Trang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Thu Trang', N'Nu', 63, 'BN_SEED_015', '', '085272709779');
+    DECLARE @PId_15 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user015', '123', 'BenhNhan', N'Le Thu Trang', 'patient015@outlook.com', '0987156624', 'BN_SEED_015');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_15, N'Dau dau keo dai', DATEADD(minute, 90, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_15 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_15, '88', '37.2', '120/70', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 90, GETDATE())));
+
+    -- Patient 16: Ho Van Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Van Huy', N'Nam', 39, 'BN_SEED_016', '', '000665485224');
+    DECLARE @PId_16 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user016', '123', 'BenhNhan', N'Ho Van Huy', 'patient016@yahoo.com', '0899289495', 'BN_SEED_016');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_16, N'Kham tai mui hong', DATEADD(minute, 151, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_16 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_16, '93', '37.4', '110/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 151, GETDATE())));
+
+    -- Patient 17: Do Van Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Van Quan', N'Nam', 49, 'BN_SEED_017', '', '021202081055');
+    DECLARE @PId_17 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user017', '123', 'BenhNhan', N'Do Van Quan', 'patient017@gmail.com', '0973881720', 'BN_SEED_017');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_17, N'Kham tai mui hong', DATEADD(minute, 148, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_17 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_17, '74', '36.2', '110/80', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 148, GETDATE())));
+
+    -- Patient 18: Duong Thu An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Thu An', N'Nu', 48, 'BN_SEED_018', '', '035469005552');
+    DECLARE @PId_18 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user018', '123', 'BenhNhan', N'Duong Thu An', 'patient018@gmail.com', '0382007142', 'BN_SEED_018');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_18, N'Kiem tra tim mach', DATEADD(minute, 59, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_18 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_18, '86', '36.2', '130/80', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 59, GETDATE())));
+
+    -- Patient 19: Ngo Tuyet Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Tuyet Tu', N'Nu', 23, 'BN_SEED_019', '', '035083348564');
+    DECLARE @PId_19 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user019', '123', 'BenhNhan', N'Ngo Tuyet Tu', 'patient019@gmail.com', '0896770330', 'BN_SEED_019');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_19, N'Kiem tra huyet ap', DATEADD(minute, 44, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_19 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_19, '76', '36.9', '110/70', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 44, GETDATE())));
+
+    -- Patient 20: Tran Anh Hung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Anh Hung', N'Nam', 74, 'BN_SEED_020', '', '046662411062');
+    DECLARE @PId_20 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user020', '123', 'BenhNhan', N'Tran Anh Hung', 'patient020@yahoo.com', '0969427518', 'BN_SEED_020');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_20, N'Dau hong kho nuot', DATEADD(minute, 181, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_20 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_20, '89', '36.5', '110/85', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 181, GETDATE())));
+
+    -- Patient 21: Vo Duc Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Duc Dung', N'Nam', 32, 'BN_SEED_021', '', '020469889454');
+    DECLARE @PId_21 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user021', '123', 'BenhNhan', N'Vo Duc Dung', 'patient021@outlook.com', '0989395712', 'BN_SEED_021');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_21, N'Dau dau keo dai', DATEADD(minute, 214, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_21 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_21, '85', '36.4', '110/70', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 214, GETDATE())));
+
+    -- Patient 22: Ly Truc Nhung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Truc Nhung', N'Nu', 62, 'BN_SEED_022', '', '074736390149');
+    DECLARE @PId_22 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user022', '123', 'BenhNhan', N'Ly Truc Nhung', 'patient022@yahoo.com', '0779481480', 'BN_SEED_022');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_22, N'Kham tai mui hong', DATEADD(minute, 180, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_22 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_22, '74', '36.5', '110/85', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 180, GETDATE())));
+
+    -- Patient 23: Pham Thu Anh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Thu Anh', N'Nu', 21, 'BN_SEED_023', '', '014498570685');
+    DECLARE @PId_23 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user023', '123', 'BenhNhan', N'Pham Thu Anh', 'patient023@gmail.com', '0901831215', 'BN_SEED_023');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_23, N'Met moi suy nhuoc', DATEADD(minute, 194, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_23 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_23, '95', '37.0', '110/80', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 194, GETDATE())));
+
+    -- Patient 24: Bui My Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui My Chi', N'Nu', 63, 'BN_SEED_024', '', '016383327673');
+    DECLARE @PId_24 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user024', '123', 'BenhNhan', N'Bui My Chi', 'patient024@yahoo.com', '0975106917', 'BN_SEED_024');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_24, N'Kiem tra tim mach', DATEADD(minute, 91, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_24 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_24, '73', '36.4', '110/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 91, GETDATE())));
+
+    -- Patient 25: Vo My Vy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo My Vy', N'Nu', 24, 'BN_SEED_025', '', '024167829048');
+    DECLARE @PId_25 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user025', '123', 'BenhNhan', N'Vo My Vy', 'patient025@gmail.com', '0975069983', 'BN_SEED_025');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_25, N'Ho sot nhe', DATEADD(minute, 164, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_25 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_25, '94', '36.5', '130/85', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 164, GETDATE())));
+
+    -- Patient 26: Vo Khanh Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Khanh Chi', N'Nu', 58, 'BN_SEED_026', '', '047815323010');
+    DECLARE @PId_26 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user026', '123', 'BenhNhan', N'Vo Khanh Chi', 'patient026@yahoo.com', '0380821685', 'BN_SEED_026');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_26, N'Kham tai mui hong', DATEADD(minute, 239, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_26 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_26, '84', '36.9', '130/85', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 239, GETDATE())));
+
+    -- Patient 27: Pham Cam Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Cam Yen', N'Nu', 54, 'BN_SEED_027', '', '059901352013');
+    DECLARE @PId_27 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user027', '123', 'BenhNhan', N'Pham Cam Yen', 'patient027@gmail.com', '0972847970', 'BN_SEED_027');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_27, N'Ho sot nhe', DATEADD(minute, 143, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_27 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_27, '82', '36.7', '110/80', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 143, GETDATE())));
+
+    -- Patient 28: Nguyen Kieu Vy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Kieu Vy', N'Nu', 40, 'BN_SEED_028', '', '062065524141');
+    DECLARE @PId_28 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user028', '123', 'BenhNhan', N'Nguyen Kieu Vy', 'patient028@gmail.com', '0902149223', 'BN_SEED_028');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_28, N'Dau dau keo dai', DATEADD(minute, 166, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_28 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_28, '86', '37.0', '120/70', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 166, GETDATE())));
+
+    -- Patient 29: Dang My Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang My Van', N'Nu', 21, 'BN_SEED_029', '', '026347792226');
+    DECLARE @PId_29 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user029', '123', 'BenhNhan', N'Dang My Van', 'patient029@gmail.com', '0891147081', 'BN_SEED_029');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_29, N'Dau nhuc khop goi', DATEADD(minute, 232, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_29 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_29, '76', '36.9', '120/70', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 232, GETDATE())));
+
+    -- Patient 30: Pham Minh Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Minh Viet', N'Nam', 69, 'BN_SEED_030', '', '028931641183');
+    DECLARE @PId_30 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user030', '123', 'BenhNhan', N'Pham Minh Viet', 'patient030@yahoo.com', '0775419432', 'BN_SEED_030');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_30, N'Met moi suy nhuoc', DATEADD(minute, 123, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_30 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_30, '65', '37.1', '120/85', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 123, GETDATE())));
+
+    -- Patient 31: Pham Van Tung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Van Tung', N'Nam', 61, 'BN_SEED_031', '', '082131333963');
+    DECLARE @PId_31 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user031', '123', 'BenhNhan', N'Pham Van Tung', 'patient031@yahoo.com', '0910250282', 'BN_SEED_031');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_31, N'Kham tai mui hong', DATEADD(minute, 167, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_31 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_31, '69', '36.8', '130/80', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 167, GETDATE())));
+
+    -- Patient 32: Dang Thi Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Thi Yen', N'Nu', 55, 'BN_SEED_032', '', '068283463965');
+    DECLARE @PId_32 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user032', '123', 'BenhNhan', N'Dang Thi Yen', 'patient032@yahoo.com', '0770526065', 'BN_SEED_032');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_32, N'Kham tai mui hong', DATEADD(minute, 200, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_32 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_32, '79', '37.3', '130/85', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 200, GETDATE())));
+
+    -- Patient 33: Pham Hong Huong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Hong Huong', N'Nu', 43, 'BN_SEED_033', '', '021896313308');
+    DECLARE @PId_33 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user033', '123', 'BenhNhan', N'Pham Hong Huong', 'patient033@gmail.com', '0894370367', 'BN_SEED_033');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_33, N'Dau dau keo dai', DATEADD(minute, 136, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_33 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_33, '92', '36.9', '120/80', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 136, GETDATE())));
+
+    -- Patient 34: Phan Minh Thao
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Minh Thao', N'Nu', 39, 'BN_SEED_034', '', '095660053871');
+    DECLARE @PId_34 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user034', '123', 'BenhNhan', N'Phan Minh Thao', 'patient034@outlook.com', '0383935839', 'BN_SEED_034');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_34, N'Kham tai mui hong', DATEADD(minute, 48, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_34 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_34, '79', '36.9', '130/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 48, GETDATE())));
+
+    -- Patient 35: Pham Nhu Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Nhu Trinh', N'Nu', 36, 'BN_SEED_035', '', '041929641165');
+    DECLARE @PId_35 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user035', '123', 'BenhNhan', N'Pham Nhu Trinh', 'patient035@gmail.com', '0890920725', 'BN_SEED_035');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_35, N'Dau bung am i', DATEADD(minute, 49, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_35 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_35, '77', '37.3', '120/80', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 49, GETDATE())));
+
+    -- Patient 36: Duong Hai Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Hai Viet', N'Nam', 37, 'BN_SEED_036', '', '083943840485');
+    DECLARE @PId_36 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user036', '123', 'BenhNhan', N'Duong Hai Viet', 'patient036@outlook.com', '0960061709', 'BN_SEED_036');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_36, N'Kiem tra huyet ap', DATEADD(minute, 236, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_36 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_36, '89', '37.0', '110/85', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 236, GETDATE())));
+
+    -- Patient 37: Duong Trong Phuc
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Trong Phuc', N'Nam', 26, 'BN_SEED_037', '', '044844079310');
+    DECLARE @PId_37 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user037', '123', 'BenhNhan', N'Duong Trong Phuc', 'patient037@gmail.com', '0974545085', 'BN_SEED_037');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_37, N'Ho sot nhe', DATEADD(minute, 133, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_37 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_37, '78', '36.6', '120/80', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 133, GETDATE())));
+
+    -- Patient 38: Nguyen Thanh Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Thanh Dat', N'Nam', 48, 'BN_SEED_038', '', '089591587357');
+    DECLARE @PId_38 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user038', '123', 'BenhNhan', N'Nguyen Thanh Dat', 'patient038@yahoo.com', '0980395886', 'BN_SEED_038');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_38, N'Ho sot nhe', DATEADD(minute, 221, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_38 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_38, '88', '36.3', '110/70', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 221, GETDATE())));
+
+    -- Patient 39: Ngo Thanh Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Thanh Quan', N'Nam', 28, 'BN_SEED_039', '', '045583204535');
+    DECLARE @PId_39 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user039', '123', 'BenhNhan', N'Ngo Thanh Quan', 'patient039@gmail.com', '0892930732', 'BN_SEED_039');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_39, N'Dau dau keo dai', DATEADD(minute, 48, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_39 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_39, '74', '36.5', '110/85', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 48, GETDATE())));
+
+    -- Patient 40: Tran Truc Trang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Truc Trang', N'Nu', 65, 'BN_SEED_040', '', '038321889304');
+    DECLARE @PId_40 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user040', '123', 'BenhNhan', N'Tran Truc Trang', 'patient040@gmail.com', '0792393383', 'BN_SEED_040');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_40, N'Ho sot nhe', DATEADD(minute, 226, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_40 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_40, '89', '37.3', '130/70', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 226, GETDATE())));
+
+    -- Patient 41: Le Tuyet Quynh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Tuyet Quynh', N'Nu', 46, 'BN_SEED_041', '', '078290185970');
+    DECLARE @PId_41 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user041', '123', 'BenhNhan', N'Le Tuyet Quynh', 'patient041@outlook.com', '0855964107', 'BN_SEED_041');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_41, N'Kham tai mui hong', DATEADD(minute, 166, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_41 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_41, '91', '36.7', '120/70', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 166, GETDATE())));
+
+    -- Patient 42: Ly Ngoc Oanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Ngoc Oanh', N'Nu', 35, 'BN_SEED_042', '', '015049694744');
+    DECLARE @PId_42 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user042', '123', 'BenhNhan', N'Ly Ngoc Oanh', 'patient042@outlook.com', '0973293884', 'BN_SEED_042');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_42, N'Kham suc khoe dinh ky', DATEADD(minute, 22, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_42 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_42, '70', '37.1', '120/70', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 22, GETDATE())));
+
+    -- Patient 43: Pham Bich Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Bich Van', N'Nu', 55, 'BN_SEED_043', '', '006189563575');
+    DECLARE @PId_43 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user043', '123', 'BenhNhan', N'Pham Bich Van', 'patient043@outlook.com', '0916856681', 'BN_SEED_043');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_43, N'Dau dau keo dai', DATEADD(minute, 173, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_43 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_43, '74', '36.4', '120/80', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 173, GETDATE())));
+
+    -- Patient 44: Vo Nhu Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Nhu Van', N'Nu', 35, 'BN_SEED_044', '', '010309566444');
+    DECLARE @PId_44 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user044', '123', 'BenhNhan', N'Vo Nhu Van', 'patient044@gmail.com', '0778919186', 'BN_SEED_044');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_44, N'Dau dau keo dai', DATEADD(minute, 150, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_44 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_44, '78', '36.7', '120/70', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 150, GETDATE())));
+
+    -- Patient 45: Le My Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le My Yen', N'Nu', 44, 'BN_SEED_045', '', '000690584959');
+    DECLARE @PId_45 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user045', '123', 'BenhNhan', N'Le My Yen', 'patient045@yahoo.com', '0352762566', 'BN_SEED_045');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_45, N'Kiem tra huyet ap', DATEADD(minute, 51, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_45 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_45, '67', '36.6', '120/80', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 51, GETDATE())));
+
+    -- Patient 46: Phan Truc Phuong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Truc Phuong', N'Nu', 50, 'BN_SEED_046', '', '060574543036');
+    DECLARE @PId_46 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user046', '123', 'BenhNhan', N'Phan Truc Phuong', 'patient046@yahoo.com', '0774299298', 'BN_SEED_046');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_46, N'Ho sot nhe', DATEADD(minute, 222, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_46 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_46, '75', '36.4', '120/70', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 222, GETDATE())));
+
+    -- Patient 47: Phan Hai Hai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hai Hai', N'Nam', 37, 'BN_SEED_047', '', '068155094529');
+    DECLARE @PId_47 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user047', '123', 'BenhNhan', N'Phan Hai Hai', 'patient047@gmail.com', '0963155920', 'BN_SEED_047');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_47, N'Kiem tra tim mach', DATEADD(minute, 67, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_47 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_47, '89', '36.3', '110/80', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 67, GETDATE())));
+
+    -- Patient 48: Tran Hong Mai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Hong Mai', N'Nu', 57, 'BN_SEED_048', '', '057126708121');
+    DECLARE @PId_48 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user048', '123', 'BenhNhan', N'Tran Hong Mai', 'patient048@yahoo.com', '0770128543', 'BN_SEED_048');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_48, N'Dau hong kho nuot', DATEADD(minute, 62, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_48 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_48, '68', '36.9', '110/80', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 62, GETDATE())));
+
+    -- Patient 49: Ngo Hoang Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Hoang Son', N'Nam', 26, 'BN_SEED_049', '', '004568487608');
+    DECLARE @PId_49 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user049', '123', 'BenhNhan', N'Ngo Hoang Son', 'patient049@outlook.com', '0919971675', 'BN_SEED_049');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_49, N'Met moi suy nhuoc', DATEADD(minute, 162, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_49 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_49, '77', '37.4', '120/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 162, GETDATE())));
+
+    -- Patient 50: Vo Cam Ha
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Cam Ha', N'Nu', 52, 'BN_SEED_050', '', '017859290217');
+    DECLARE @PId_50 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user050', '123', 'BenhNhan', N'Vo Cam Ha', 'patient050@yahoo.com', '0355811053', 'BN_SEED_050');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_50, N'Kiem tra huyet ap', DATEADD(minute, 20, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_50 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_50, '78', '36.8', '130/70', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 20, GETDATE())));
+
+    -- Patient 51: Pham Minh Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Minh Trinh', N'Nu', 73, 'BN_SEED_051', '', '075953604503');
+    DECLARE @PId_51 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user051', '123', 'BenhNhan', N'Pham Minh Trinh', 'patient051@yahoo.com', '0913806503', 'BN_SEED_051');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_51, N'Dau nhuc khop goi', DATEADD(minute, 46, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_51 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_51, '79', '36.3', '110/70', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 46, GETDATE())));
+
+    -- Patient 52: Hoang Nhu Huong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Nhu Huong', N'Nu', 24, 'BN_SEED_052', '', '026459549741');
+    DECLARE @PId_52 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user052', '123', 'BenhNhan', N'Hoang Nhu Huong', 'patient052@gmail.com', '0988800667', 'BN_SEED_052');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_52, N'Dau hong kho nuot', DATEADD(minute, 182, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_52 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_52, '94', '37.3', '130/85', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 182, GETDATE())));
+
+    -- Patient 53: Ly Xuan Tuan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Xuan Tuan', N'Nam', 63, 'BN_SEED_053', '', '023595355158');
+    DECLARE @PId_53 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user053', '123', 'BenhNhan', N'Ly Xuan Tuan', 'patient053@yahoo.com', '0961813547', 'BN_SEED_053');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_53, N'Dau dau keo dai', DATEADD(minute, 106, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_53 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_53, '80', '37.3', '130/70', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 106, GETDATE())));
+
+    -- Patient 54: Ho Thu Ha
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Thu Ha', N'Nu', 51, 'BN_SEED_054', '', '034449230983');
+    DECLARE @PId_54 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user054', '123', 'BenhNhan', N'Ho Thu Ha', 'patient054@outlook.com', '0894468496', 'BN_SEED_054');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_54, N'Kham tai mui hong', DATEADD(minute, 119, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_54 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_54, '65', '37.0', '130/70', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 119, GETDATE())));
+
+    -- Patient 55: Dang My An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang My An', N'Nu', 70, 'BN_SEED_055', '', '017904000019');
+    DECLARE @PId_55 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user055', '123', 'BenhNhan', N'Dang My An', 'patient055@gmail.com', '0916808319', 'BN_SEED_055');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_55, N'Met moi suy nhuoc', DATEADD(minute, 238, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_55 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_55, '78', '36.7', '130/85', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 238, GETDATE())));
+
+    -- Patient 56: Hoang Tuan Thang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Tuan Thang', N'Nam', 52, 'BN_SEED_056', '', '067706510134');
+    DECLARE @PId_56 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user056', '123', 'BenhNhan', N'Hoang Tuan Thang', 'patient056@yahoo.com', '0917649152', 'BN_SEED_056');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_56, N'Kham suc khoe dinh ky', DATEADD(minute, 166, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_56 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_56, '69', '36.4', '120/80', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 166, GETDATE())));
+
+    -- Patient 57: Le Ngoc Quang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Ngoc Quang', N'Nam', 39, 'BN_SEED_057', '', '069273124369');
+    DECLARE @PId_57 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user057', '123', 'BenhNhan', N'Le Ngoc Quang', 'patient057@gmail.com', '0382246003', 'BN_SEED_057');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_57, N'Ho sot nhe', DATEADD(minute, 92, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_57 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_57, '79', '37.0', '120/85', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 92, GETDATE())));
+
+    -- Patient 58: Vu Hoang Thinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Hoang Thinh', N'Nam', 68, 'BN_SEED_058', '', '023784028245');
+    DECLARE @PId_58 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user058', '123', 'BenhNhan', N'Vu Hoang Thinh', 'patient058@outlook.com', '0900295424', 'BN_SEED_058');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_58, N'Dau nhuc khop goi', DATEADD(minute, 160, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_58 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_58, '73', '37.2', '120/70', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 160, GETDATE())));
+
+    -- Patient 59: Vo Quoc Nam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Quoc Nam', N'Nam', 74, 'BN_SEED_059', '', '091977993169');
+    DECLARE @PId_59 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user059', '123', 'BenhNhan', N'Vo Quoc Nam', 'patient059@yahoo.com', '0893105716', 'BN_SEED_059');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_59, N'Kham suc khoe dinh ky', DATEADD(minute, 45, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_59 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_59, '77', '37.1', '120/80', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 45, GETDATE())));
+
+    -- Patient 60: Vu Hai Hai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Hai Hai', N'Nam', 38, 'BN_SEED_060', '', '016521807188');
+    DECLARE @PId_60 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user060', '123', 'BenhNhan', N'Vu Hai Hai', 'patient060@yahoo.com', '0354718674', 'BN_SEED_060');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_60, N'Ho sot nhe', DATEADD(minute, 94, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_60 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_60, '91', '37.3', '120/80', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 94, GETDATE())));
+
+    -- Patient 61: Duong My Nhung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong My Nhung', N'Nu', 65, 'BN_SEED_061', '', '058584254065');
+    DECLARE @PId_61 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user061', '123', 'BenhNhan', N'Duong My Nhung', 'patient061@outlook.com', '0972412291', 'BN_SEED_061');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_61, N'Dau hong kho nuot', DATEADD(minute, 231, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_61 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_61, '69', '36.9', '130/85', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 231, GETDATE())));
+
+    -- Patient 62: Tran Quoc Hai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Quoc Hai', N'Nam', 73, 'BN_SEED_062', '', '018530846632');
+    DECLARE @PId_62 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user062', '123', 'BenhNhan', N'Tran Quoc Hai', 'patient062@gmail.com', '0967556869', 'BN_SEED_062');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_62, N'Dau nhuc khop goi', DATEADD(minute, 40, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_62 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_62, '77', '36.3', '130/80', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 40, GETDATE())));
+
+    -- Patient 63: Dang Minh Phuong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Minh Phuong', N'Nu', 20, 'BN_SEED_063', '', '095152898997');
+    DECLARE @PId_63 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user063', '123', 'BenhNhan', N'Dang Minh Phuong', 'patient063@yahoo.com', '0790409489', 'BN_SEED_063');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_63, N'Dau dau keo dai', DATEADD(minute, 132, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_63 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_63, '73', '36.6', '120/85', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 132, GETDATE())));
+
+    -- Patient 64: Vo Trong Lam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Trong Lam', N'Nam', 58, 'BN_SEED_064', '', '006525555246');
+    DECLARE @PId_64 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user064', '123', 'BenhNhan', N'Vo Trong Lam', 'patient064@gmail.com', '0892895784', 'BN_SEED_064');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_64, N'Kiem tra huyet ap', DATEADD(minute, 63, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_64 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_64, '72', '37.2', '110/80', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 63, GETDATE())));
+
+    -- Patient 65: Hoang Tuyet Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Tuyet Nga', N'Nu', 70, 'BN_SEED_065', '', '061871817830');
+    DECLARE @PId_65 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user065', '123', 'BenhNhan', N'Hoang Tuyet Nga', 'patient065@outlook.com', '0383508318', 'BN_SEED_065');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_65, N'Dau nhuc khop goi', DATEADD(minute, 136, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_65 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_65, '87', '36.2', '110/85', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 136, GETDATE())));
+
+    -- Patient 66: Ly Hai Lam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Hai Lam', N'Nam', 35, 'BN_SEED_066', '', '088130060369');
+    DECLARE @PId_66 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user066', '123', 'BenhNhan', N'Ly Hai Lam', 'patient066@yahoo.com', '0969294315', 'BN_SEED_066');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_66, N'Kham suc khoe dinh ky', DATEADD(minute, 65, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_66 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_66, '65', '37.0', '120/70', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 65, GETDATE())));
+
+    -- Patient 67: Tran Dinh Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Dinh Long', N'Nam', 65, 'BN_SEED_067', '', '037756973433');
+    DECLARE @PId_67 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user067', '123', 'BenhNhan', N'Tran Dinh Long', 'patient067@yahoo.com', '0916987309', 'BN_SEED_067');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_67, N'Kiem tra tim mach', DATEADD(minute, 137, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_67 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_67, '70', '37.4', '120/80', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 137, GETDATE())));
+
+    -- Patient 68: Duong Hai Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Hai Huy', N'Nam', 35, 'BN_SEED_068', '', '036430912917');
+    DECLARE @PId_68 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user068', '123', 'BenhNhan', N'Duong Hai Huy', 'patient068@outlook.com', '0859372628', 'BN_SEED_068');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_68, N'Dau nhuc khop goi', DATEADD(minute, 142, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_68 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_68, '82', '36.8', '130/70', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 142, GETDATE())));
+
+    -- Patient 69: Tran Anh Anh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Anh Anh', N'Nam', 18, 'BN_SEED_069', '', '095866542087');
+    DECLARE @PId_69 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user069', '123', 'BenhNhan', N'Tran Anh Anh', 'patient069@yahoo.com', '0797945270', 'BN_SEED_069');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_69, N'Kham tai mui hong', DATEADD(minute, 65, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_69 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_69, '72', '36.7', '130/85', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 65, GETDATE())));
+
+    -- Patient 70: Tran Hong Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Hong Dung', N'Nu', 57, 'BN_SEED_070', '', '025968268772');
+    DECLARE @PId_70 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user070', '123', 'BenhNhan', N'Tran Hong Dung', 'patient070@yahoo.com', '0792117499', 'BN_SEED_070');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_70, N'Kham suc khoe dinh ky', DATEADD(minute, 156, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_70 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_70, '82', '36.9', '120/85', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 156, GETDATE())));
+
+    -- Patient 71: Ho Ngoc Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Ngoc Long', N'Nam', 74, 'BN_SEED_071', '', '006627952353');
+    DECLARE @PId_71 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user071', '123', 'BenhNhan', N'Ho Ngoc Long', 'patient071@outlook.com', '0988330238', 'BN_SEED_071');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_71, N'Kiem tra huyet ap', DATEADD(minute, 111, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_71 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_71, '69', '37.0', '120/80', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 111, GETDATE())));
+
+    -- Patient 72: Vu Anh Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Anh Dat', N'Nam', 45, 'BN_SEED_072', '', '089992760912');
+    DECLARE @PId_72 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user072', '123', 'BenhNhan', N'Vu Anh Dat', 'patient072@yahoo.com', '0895335759', 'BN_SEED_072');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_72, N'Ho sot nhe', DATEADD(minute, 66, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_72 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_72, '89', '37.1', '120/85', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 66, GETDATE())));
+
+    -- Patient 73: Le Trong Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Trong Huy', N'Nam', 31, 'BN_SEED_073', '', '006417384773');
+    DECLARE @PId_73 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user073', '123', 'BenhNhan', N'Le Trong Huy', 'patient073@outlook.com', '0388329888', 'BN_SEED_073');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_73, N'Dau bung am i', DATEADD(minute, 87, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_73 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_73, '86', '37.2', '130/85', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 87, GETDATE())));
+
+    -- Patient 74: Phan Khanh Linh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Khanh Linh', N'Nu', 33, 'BN_SEED_074', '', '062635845684');
+    DECLARE @PId_74 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user074', '123', 'BenhNhan', N'Phan Khanh Linh', 'patient074@outlook.com', '0896938023', 'BN_SEED_074');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_74, N'Kiem tra tim mach', DATEADD(minute, 169, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_74 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_74, '73', '36.3', '120/80', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 169, GETDATE())));
+
+    -- Patient 75: Vu Hai Thang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Hai Thang', N'Nam', 32, 'BN_SEED_075', '', '085004183774');
+    DECLARE @PId_75 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user075', '123', 'BenhNhan', N'Vu Hai Thang', 'patient075@gmail.com', '0977681870', 'BN_SEED_075');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_75, N'Kham suc khoe dinh ky', DATEADD(minute, 207, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_75 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_75, '73', '36.6', '130/85', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 207, GETDATE())));
+
+    -- Patient 76: Ngo Kieu Oanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Kieu Oanh', N'Nu', 32, 'BN_SEED_076', '', '010010144677');
+    DECLARE @PId_76 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user076', '123', 'BenhNhan', N'Ngo Kieu Oanh', 'patient076@outlook.com', '0981076597', 'BN_SEED_076');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_76, N'Met moi suy nhuoc', DATEADD(minute, 21, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_76 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_76, '80', '36.8', '110/85', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 21, GETDATE())));
+
+    -- Patient 77: Ly Van Nam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Van Nam', N'Nam', 44, 'BN_SEED_077', '', '058711859341');
+    DECLARE @PId_77 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user077', '123', 'BenhNhan', N'Ly Van Nam', 'patient077@yahoo.com', '0962976115', 'BN_SEED_077');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_77, N'Dau bung am i', DATEADD(minute, 13, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_77 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_77, '69', '37.0', '120/80', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 13, GETDATE())));
+
+    -- Patient 78: Ho Hong Anh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Hong Anh', N'Nu', 69, 'BN_SEED_078', '', '071173118664');
+    DECLARE @PId_78 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user078', '123', 'BenhNhan', N'Ho Hong Anh', 'patient078@outlook.com', '0386847066', 'BN_SEED_078');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_78, N'Kiem tra tim mach', DATEADD(minute, 94, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_78 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_78, '76', '36.3', '110/70', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 94, GETDATE())));
+
+    -- Patient 79: Tran Tuan Tuan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Tuan Tuan', N'Nam', 62, 'BN_SEED_079', '', '084899235371');
+    DECLARE @PId_79 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user079', '123', 'BenhNhan', N'Tran Tuan Tuan', 'patient079@outlook.com', '0356174644', 'BN_SEED_079');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_79, N'Dau dau keo dai', DATEADD(minute, 191, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_79 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_79, '71', '36.5', '130/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 191, GETDATE())));
+
+    -- Patient 80: Bui Khanh Mai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Khanh Mai', N'Nu', 52, 'BN_SEED_080', '', '040851399862');
+    DECLARE @PId_80 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user080', '123', 'BenhNhan', N'Bui Khanh Mai', 'patient080@yahoo.com', '0908591200', 'BN_SEED_080');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_80, N'Kham tai mui hong', DATEADD(minute, 132, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_80 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_80, '86', '36.7', '130/85', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 132, GETDATE())));
+
+    -- Patient 81: Pham Duc Khanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Duc Khanh', N'Nam', 40, 'BN_SEED_081', '', '077737696839');
+    DECLARE @PId_81 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user081', '123', 'BenhNhan', N'Pham Duc Khanh', 'patient081@yahoo.com', '0358375151', 'BN_SEED_081');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_81, N'Dau hong kho nuot', DATEADD(minute, 159, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_81 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_81, '80', '36.4', '110/70', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 159, GETDATE())));
+
+    -- Patient 82: Vu Duc Khanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Duc Khanh', N'Nam', 31, 'BN_SEED_082', '', '041890132378');
+    DECLARE @PId_82 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user082', '123', 'BenhNhan', N'Vu Duc Khanh', 'patient082@gmail.com', '0906451246', 'BN_SEED_082');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_82, N'Kiem tra huyet ap', DATEADD(minute, 165, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_82 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_82, '91', '36.7', '110/85', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 165, GETDATE())));
+
+    -- Patient 83: Tran Thanh Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Thanh Quan', N'Nam', 37, 'BN_SEED_083', '', '063571098766');
+    DECLARE @PId_83 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user083', '123', 'BenhNhan', N'Tran Thanh Quan', 'patient083@outlook.com', '0977951714', 'BN_SEED_083');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_83, N'Met moi suy nhuoc', DATEADD(minute, 146, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_83 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_83, '76', '37.2', '110/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 146, GETDATE())));
+
+    -- Patient 84: Le Thu Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Thu Van', N'Nu', 57, 'BN_SEED_084', '', '077336066184');
+    DECLARE @PId_84 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user084', '123', 'BenhNhan', N'Le Thu Van', 'patient084@gmail.com', '0907337107', 'BN_SEED_084');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_84, N'Dau dau keo dai', DATEADD(minute, 76, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_84 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_84, '87', '36.6', '110/80', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 76, GETDATE())));
+
+    -- Patient 85: Nguyen My Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen My Nga', N'Nu', 67, 'BN_SEED_085', '', '058804328033');
+    DECLARE @PId_85 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user085', '123', 'BenhNhan', N'Nguyen My Nga', 'patient085@outlook.com', '0961354946', 'BN_SEED_085');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_85, N'Kham suc khoe dinh ky', DATEADD(minute, 38, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_85 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_85, '89', '36.2', '110/70', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 38, GETDATE())));
+
+    -- Patient 86: Phan Hai Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hai Huy', N'Nam', 31, 'BN_SEED_086', '', '005483716426');
+    DECLARE @PId_86 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user086', '123', 'BenhNhan', N'Phan Hai Huy', 'patient086@yahoo.com', '0382931680', 'BN_SEED_086');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_86, N'Dau dau keo dai', DATEADD(minute, 168, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_86 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_86, '73', '36.6', '110/80', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 168, GETDATE())));
+
+    -- Patient 87: Duong Hong Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Hong Chi', N'Nu', 21, 'BN_SEED_087', '', '080531641620');
+    DECLARE @PId_87 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user087', '123', 'BenhNhan', N'Duong Hong Chi', 'patient087@yahoo.com', '0779025964', 'BN_SEED_087');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_87, N'Kiem tra tim mach', DATEADD(minute, 62, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_87 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_87, '91', '37.4', '120/70', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 62, GETDATE())));
+
+    -- Patient 88: Ngo Kieu Mai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Kieu Mai', N'Nu', 26, 'BN_SEED_088', '', '072679189456');
+    DECLARE @PId_88 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user088', '123', 'BenhNhan', N'Ngo Kieu Mai', 'patient088@gmail.com', '0986703930', 'BN_SEED_088');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_88, N'Kham suc khoe dinh ky', DATEADD(minute, 169, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_88 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_88, '78', '36.3', '110/80', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 169, GETDATE())));
+
+    -- Patient 89: Hoang Thi Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Thi Tu', N'Nu', 44, 'BN_SEED_089', '', '002912687463');
+    DECLARE @PId_89 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user089', '123', 'BenhNhan', N'Hoang Thi Tu', 'patient089@gmail.com', '0909961227', 'BN_SEED_089');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_89, N'Dau bung am i', DATEADD(minute, 71, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_89 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_89, '81', '36.5', '130/85', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 71, GETDATE())));
+
+    -- Patient 90: Ho Anh Khoa
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Anh Khoa', N'Nam', 58, 'BN_SEED_090', '', '030448896686');
+    DECLARE @PId_90 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user090', '123', 'BenhNhan', N'Ho Anh Khoa', 'patient090@outlook.com', '0389282324', 'BN_SEED_090');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_90, N'Ho sot nhe', DATEADD(minute, 231, GETDATE()), 1, @CurrentDocId);
+    DECLARE @AId_90 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_90, '88', '36.6', '130/85', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 231, GETDATE())));
+
+    -- Patient 91: Ngo Duc Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Duc Dat', N'Nam', 64, 'BN_SEED_091', '', '008207817939');
+    DECLARE @PId_91 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user091', '123', 'BenhNhan', N'Ngo Duc Dat', 'patient091@outlook.com', '0966769230', 'BN_SEED_091');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_91, N'Dau nhuc khop goi', DATEADD(minute, -642, GETDATE()), 10, @CurrentDocId);
+    DECLARE @AId_91 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_91, '83', '36.4', '130/70', '96', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -642, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_91, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Thoai hoa cot song that lung', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(minute, -642, GETDATE()), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_91 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_91, DATEADD(minute, -642, GETDATE()), N'Da ke don');
+    DECLARE @PrId_91 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_91, N'Omeprazole 20mg', 10, N'Vien', N'Uong 1 vien truoc an sang 30 phut', 3500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_91, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(minute, -642, GETDATE()), DATEADD(minute, -642, GETDATE()));
+
+    -- Patient 92: Vo Huu Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Huu Huy', N'Nam', 53, 'BN_SEED_092', '', '091078529190');
+    DECLARE @PId_92 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user092', '123', 'BenhNhan', N'Vo Huu Huy', 'patient092@outlook.com', '0776273153', 'BN_SEED_092');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_92, N'Dau hong kho nuot', DATEADD(minute, -1224, GETDATE()), 10, @CurrentDocId);
+    DECLARE @AId_92 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_92, '93', '36.4', '110/80', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, -1224, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_92, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(minute, -1224, GETDATE()), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_92 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_92, DATEADD(minute, -1224, GETDATE()), N'Da ke don');
+    DECLARE @PrId_92 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_92, N'Omeprazole 20mg', 10, N'Vien', N'Uong 1 vien truoc an sang 30 phut', 3500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_92, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(minute, -1224, GETDATE()), DATEADD(minute, -1224, GETDATE()));
+
+    -- Patient 93: Bui Thanh Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Thanh Quan', N'Nam', 23, 'BN_SEED_093', '', '080576505187');
+    DECLARE @PId_93 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user093', '123', 'BenhNhan', N'Bui Thanh Quan', 'patient093@outlook.com', '0904551100', 'BN_SEED_093');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_93, N'Kiem tra huyet ap', DATEADD(minute, -1360, GETDATE()), 10, @CurrentDocId);
+    DECLARE @AId_93 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_93, '90', '36.4', '110/70', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -1360, GETDATE())));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_93, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(minute, -1360, GETDATE()), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_93 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_93, DATEADD(minute, -1360, GETDATE()), N'Da ke don');
+    DECLARE @PrId_93 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_93, N'Omeprazole 20mg', 10, N'Vien', N'Uong 1 vien truoc an sang 30 phut', 3500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_93, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(minute, -1360, GETDATE()), DATEADD(minute, -1360, GETDATE()));
+
+    -- Patient 94: Duong Phuong An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Phuong An', N'Nu', 42, 'BN_SEED_094', '', '037907864316');
+    DECLARE @PId_94 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user094', '123', 'BenhNhan', N'Duong Phuong An', 'patient094@gmail.com', '0797115285', 'BN_SEED_094');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_94, N'Dau nhuc khop goi', DATEADD(hour, 5, GETDATE()), 0, @CurrentDocId);
+    DECLARE @AId_94 INT = SCOPE_IDENTITY();
+
+    -- Patient 95: Nguyen Truc Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Truc Huyen', N'Nu', 28, 'BN_SEED_095', '', '099335347011');
+    DECLARE @PId_95 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user095', '123', 'BenhNhan', N'Nguyen Truc Huyen', 'patient095@gmail.com', '0383364590', 'BN_SEED_095');
+
+    -- Patient 96: Hoang Thi Vy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Thi Vy', N'Nu', 19, 'BN_SEED_096', '', '012190447764');
+    DECLARE @PId_96 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user096', '123', 'BenhNhan', N'Hoang Thi Vy', 'patient096@outlook.com', '0895663027', 'BN_SEED_096');
+
+    -- Patient 97: Le Minh Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Minh Dung', N'Nam', 34, 'BN_SEED_097', '', '095934591631');
+    DECLARE @PId_97 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user097', '123', 'BenhNhan', N'Le Minh Dung', 'patient097@yahoo.com', '0978870334', 'BN_SEED_097');
+
+    -- Patient 98: Nguyen Dinh Tuan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Dinh Tuan', N'Nam', 44, 'BN_SEED_098', '', '020239188509');
+    DECLARE @PId_98 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user098', '123', 'BenhNhan', N'Nguyen Dinh Tuan', 'patient098@yahoo.com', '0966599745', 'BN_SEED_098');
+
+    -- Patient 99: Pham Ngoc Phuong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Ngoc Phuong', N'Nu', 57, 'BN_SEED_099', '', '026775075725');
+    DECLARE @PId_99 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user099', '123', 'BenhNhan', N'Pham Ngoc Phuong', 'patient099@outlook.com', '0918076221', 'BN_SEED_099');
+
+    -- Patient 100: Bui Duc Khoa
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Duc Khoa', N'Nam', 26, 'BN_SEED_100', '', '007948679274');
+    DECLARE @PId_100 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user100', '123', 'BenhNhan', N'Bui Duc Khoa', 'patient100@yahoo.com', '0989619150', 'BN_SEED_100');
+
+    COMMIT TRANSACTION;
+    PRINT 'Seed data inserted successfully!';
+END TRY
+BEGIN CATCH
+    ROLLBACK TRANSACTION;
+    DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+    PRINT 'Error occurred: ' + @ErrMsg;
+END CATCH;
+GO
+
+

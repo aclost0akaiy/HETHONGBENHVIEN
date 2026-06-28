@@ -4,182 +4,316 @@
     var patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
 }
 
-<div class="portal-hero text-center mb-5">
-    <div class="portal-hero-icon mb-3">
-        <i class="fa-solid fa-user-injured"></i>
-    </div>
-    <h1 class="display-5 fw-bold mb-2">Cổng Thông Tin Bệnh Nhân</h1>
-    <p class="lead mb-1" style="color: var(--link-color);">Xin chào, <strong class="text-primary">@patientName</strong>!</p>
-    <p class="mb-0" style="color: var(--link-color);">Trải nghiệm dịch vụ y tế thông minh, nhanh chóng và tiện lợi.</p>
-</div>
-
-<div class="container pb-5">
-    <div class="row g-4">
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card" onclick="location.href='@Url.Action("Booking", "Patient")'">
-                <div class="portal-card-icon bg-primary-soft">
-                    <i class="fa-regular fa-calendar-check text-primary"></i>
+<div class="container-fluid py-4" style="background-color: var(--body-bg);">
+    <div class="container">
+        <!-- Hero Header Card -->
+        <div class="card border-0 rounded-4 mb-5 shadow-sm text-white overflow-hidden animate-fade-in" style="background: linear-gradient(135deg, #0b57d0 0%, #1a73e8 100%);">
+            <div class="row align-items-center g-0">
+                <!-- Text block -->
+                <div class="col-md-7 p-4 p-md-5 text-start">
+                    <span class="badge px-3 py-2 rounded-pill mb-3 text-white fw-semibold" style="background-color: rgba(255, 255, 255, 0.15); font-size: 0.75rem;">
+                        <i class="fa-regular fa-clock me-1"></i> HỆ THỐNG THÔNG MINH
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3" style="font-weight: 850 !important; letter-spacing: -0.5px;">Chào, @patientName!</h1>
+                    <p class="mb-4 text-white-50" style="font-size: 1.05rem; line-height: 1.7; max-width: 90%; color: rgba(255, 255, 255, 0.85) !important;">
+                        Chào mừng bạn quay trở lại. Theo dõi hồ sơ sức khỏe và đặt lịch khám với các chuyên gia hàng đầu chỉ trong vài cú chạm.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="@Url.Action("Booking", "Patient")" class="btn btn-light px-4 py-2.5 rounded-3 fw-bold text-primary shadow-sm btn-action-main" style="color: #0b57d0 !important; border-radius: 8px;">Đặt lịch ngay</a>
+                        <a href="@Url.Action("UserGuide", "Patient")" class="btn btn-outline-light px-4 py-2.5 rounded-3 fw-semibold text-white border-2 btn-action-sub" style="border-radius: 8px;">Hướng dẫn sử dụng</a>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Đặt Lịch Khám</h5>
-                <p>Đặt lịch hẹn trực tuyến và nhận số thứ tự điện tử (E-ticket) ngay lập tức.</p>
-                <span class="portal-card-link">Đặt ngay <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                <!-- Image block -->
+                <div class="col-md-5 d-none d-md-block text-center pe-5">
+                    <img src="/uploads/patient_hero.png" alt="Dashboard Illustration" class="img-fluid my-4 rounded-4" style="max-height: 230px; object-fit: contain;" />
+                </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card" onclick="location.href='@Url.Action("EHR", "Patient")'">
-                <div class="portal-card-icon bg-success-soft">
-                    <i class="fa-solid fa-file-medical text-success"></i>
+        <!-- Columns Layout Grid -->
+        <div class="row g-4 text-start">
+            <!-- Left Column (Dịch vụ chính) -->
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold text-dark mb-0" style="font-size: 1.45rem; font-weight: 850 !important;">Dịch vụ chính</h3>
+                    <a href="#" class="text-decoration-none fw-semibold small hover-primary" style="color: #0b57d0; font-size: 0.9rem;">
+                        Xem tất cả <i class="fa-solid fa-arrow-up-right-from-square ms-1" style="font-size: 0.75rem;"></i>
+                    </a>
                 </div>
-                <h5 class="fw-bold">Hồ Sơ Sức Khỏe (EHR)</h5>
-                <p>Xem lịch sử khám bệnh, đơn thuốc và tải kết quả xét nghiệm mọi lúc mọi nơi.</p>
-                <span class="portal-card-link">Xem hồ sơ <i class="fa-solid fa-arrow-right ms-1"></i></span>
-            </div>
-        </div>
+                
+                <div class="row g-4">
+                    <!-- Card 1: Đặt Lịch Khám -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("Booking", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(11, 87, 208, 0.08); color: #0b57d0; font-size: 1.3rem;">
+                                <i class="fa-regular fa-calendar"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Đặt Lịch Khám</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Chọn bác sĩ và thời gian khám phù hợp nhất với bạn.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #0b57d0; font-size: 0.9rem;">Đặt ngay <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2: Hồ Sơ Sức Khỏe -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("EHR", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(139, 92, 246, 0.08); color: #8b5cf6; font-size: 1.3rem;">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Hồ Sơ Sức Khỏe</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Lưu trữ và tra cứu lịch sử khám bệnh, đơn thuốc điện tử.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #8b5cf6; font-size: 0.9rem;">Xem hồ sơ <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card" onclick="location.href='@Url.Action("Payment", "Patient")'">
-                <div class="portal-card-icon bg-warning-soft">
-                    <i class="fa-solid fa-qrcode text-warning"></i>
-                </div>
-                <h5 class="fw-bold">Thanh Toán QR Viện Phí</h5>
-                <p>Thanh toán không tiền mặt qua mã QR (Momo, VNPay) an toàn và nhanh chóng.</p>
-                <span class="portal-card-link">Thanh toán <i class="fa-solid fa-arrow-right ms-1"></i></span>
-            </div>
-        </div>
+                    <!-- Card 3: Thanh Toán QR -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("Payment", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(245, 158, 11, 0.08); color: #f59e0b; font-size: 1.3rem;">
+                                <i class="fa-solid fa-qrcode"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Thanh Toán QR</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Thanh toán viện phí nhanh chóng, an toàn qua mã QR.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #f59e0b; font-size: 0.9rem;">Thanh toán <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card portal-card-notify" onclick="location.href='@Url.Action("Notifications", "Patient")'">
-                <div class="portal-card-icon bg-info-soft position-relative">
-                    <i class="fa-solid fa-bell text-info"></i>
-                    @if (unreadCount > 0)
-                    {
-                        <span class="notify-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
-                    }
-                </div>
-                <h5 class="fw-bold">Nhắc Nhở Tự Động</h5>
-                <p>Thông báo nhắc lịch tái khám, uống thuốc và tin nhắn từ bác sĩ qua App.</p>
-                <span class="portal-card-link">
-                    @if (unreadCount > 0)
-                    {
-                        <span class="text-danger fw-semibold">@unreadCount thông báo mới</span>
-                    }
-                    else
-                    {
-                        <span>Xem nhắc nhở</span>
-                    }
-                    <i class="fa-solid fa-arrow-right ms-1"></i>
-                </span>
-            </div>
-        </div>
+                    <!-- Card 4: Nhắc Nhở -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("Notifications", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4 position-relative" style="width: 50px; height: 50px; background-color: rgba(6, 182, 212, 0.08); color: #06b6d4; font-size: 1.3rem;">
+                                <i class="fa-regular fa-bell"></i>
+                                @if (unreadCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 3px 6px;">@unreadCount</span>
+                                }
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Nhắc Nhở</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Thông báo lịch uống thuốc và tái khám tự động mỗi ngày.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #06b6d4; font-size: 0.9rem;">Xem nhắc nhở <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card" onclick="location.href='@Url.Action("Rating", "Patient")'">
-                <div class="portal-card-icon bg-danger-soft">
-                    <i class="fa-solid fa-star text-danger"></i>
-                </div>
-                <h5 class="fw-bold">Đánh Giá Dịch Vụ</h5>
-                <p>Chấm điểm bác sĩ, phòng khám để giúp chúng tôi nâng cao chất lượng.</p>
-                <span class="portal-card-link">Đánh giá <i class="fa-solid fa-arrow-right ms-1"></i></span>
-            </div>
-        </div>
+                    <!-- Card 5: Đánh Giá -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("Rating", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(99, 102, 241, 0.08); color: #6366f1; font-size: 1.3rem;">
+                                <i class="fa-regular fa-star"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Đánh Giá</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Góp ý về chất lượng dịch vụ để chúng tôi phục vụ tốt hơn.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #6366f1; font-size: 0.9rem;">Đánh giá <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="portal-card" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
-                <div class="portal-card-icon bg-secondary-soft">
-                    <i class="fa-solid fa-map-location-dot text-secondary"></i>
+                    <!-- Card 6: Sơ Đồ -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(239, 68, 68, 0.08); color: #ef4444; font-size: 1.3rem;">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Sơ Đồ</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Chỉ đường chi tiết tới các khoa và phòng khám trong bệnh viện.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #ef4444; font-size: 0.9rem;">Xem sơ đồ <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Sơ Đồ Bệnh Viện</h5>
-                <p>Xem sơ đồ các khoa phòng, tìm đường đi trong khuôn viên bệnh viện dễ dàng.</p>
-                <span class="portal-card-link">Xem sơ đồ <i class="fa-solid fa-arrow-right ms-1"></i></span>
+            </div>
+
+            <!-- Right Column (Thông tin của bạn & Lịch hẹn) -->
+            <div class="col-lg-4">
+                <h3 class="fw-bold text-dark mb-4" style="font-size: 1.45rem; font-weight: 850 !important;">Thông tin của bạn</h3>
+                
+                <!-- Side-by-side stats counters -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="card portal-sidebar-card p-3 text-center h-100">
+                            <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Số hồ sơ</div>
+                            @if (ViewBag.RecordCount > 0)
+                            {
+                                <div class="display-6 fw-bold text-primary my-1" style="color: #0b57d0 !important; font-weight: 850 !important; font-size: 2rem;">@ViewBag.RecordCount.ToString("D2")</div>
+                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">ĐÃ LƯU TRỮ</div>
+                            }
+                            else
+                            {
+                                <div class="display-6 fw-bold text-muted my-1" style="font-weight: 850 !important; font-size: 1.5rem; margin-top: 10px !important; margin-bottom: 10px !important;">Không có</div>
+                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">CHƯA CÓ HỒ SƠ</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card portal-sidebar-card p-3 text-center h-100">
+                            <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Giờ hẹn</div>
+                            @if (ViewBag.UpcomingAppointment != null)
+                            {
+                                <div class="display-6 fw-bold text-primary my-1" style="color: #0b57d0 !important; font-weight: 850 !important; font-size: 2rem;">@ViewBag.AppointmentTimeStr</div>
+                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">HẸN TÁI KHÁM</div>
+                            }
+                            else
+                            {
+                                <div class="display-6 fw-bold text-muted my-1" style="font-weight: 850 !important; font-size: 1.5rem; margin-top: 10px !important; margin-bottom: 10px !important;">Không có</div>
+                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">KHÔNG CÓ HẸN</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Appointment Card -->
+                @if (ViewBag.UpcomingAppointment != null)
+                {
+                    <div class="card portal-sidebar-card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge px-3 py-2 rounded-pill text-white fw-bold d-flex align-items-center gap-1.5" style="background-color: #0b57d0; font-size: 0.65rem; letter-spacing: 0.3px;">
+                                <i class="fa-solid fa-clipboard-check"></i> LỊCH HẸN SẮP TỚI
+                            </span>
+                            <a href="#" class="text-secondary hover-primary" style="font-size: 1.1rem;" title="Mở rộng"><i class="fa-regular fa-folder-open"></i></a>
+                        </div>
+                        
+                        <h4 class="fw-bold text-dark text-start mb-3" style="font-size: 1.2rem; font-weight: 850 !important; color: #0b57d0 !important;">@ViewBag.DepartmentName</h4>
+                        
+                        <!-- Date/Time details row -->
+                        <div class="rounded-3 p-3 mb-4 d-flex justify-content-between text-start" style="background-color: rgba(11, 87, 208, 0.03); border: 1px solid rgba(11, 87, 208, 0.08);">
+                            <div class="w-50">
+                                <div class="text-secondary small fw-bold mb-1" style="font-size: 9px; color: #94a3b8 !important;">NGÀY KHÁM</div>
+                                <div class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 12px;">
+                                    <i class="fa-regular fa-calendar-days text-primary"></i> @ViewBag.AppointmentDateStr
+                                </div>
+                            </div>
+                            <div class="w-50 border-start ps-3" style="border-color: rgba(11, 87, 208, 0.15) !important;">
+                                <div class="text-secondary small fw-bold mb-1" style="font-size: 9px; color: #94a3b8 !important;">THỜI GIAN</div>
+                                <div class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 12px;">
+                                    <i class="fa-regular fa-clock text-primary"></i> @ViewBag.AppointmentTimeStr
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Doctor block -->
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(0,0,0,0.02);">
+                            <img src="/uploads/doctor_mai.png" alt="BS. Lê Thị Mai" class="rounded-circle" style="width: 44px; height: 44px; object-fit: cover;" />
+                            <div class="text-start">
+                                <div class="fw-bold text-dark" style="font-size: 13.5px; line-height: 1.2;">@ViewBag.DoctorName</div>
+                                <div class="text-secondary small" style="font-size: 10.5px;">Bác sĩ chuyên khoa</div>
+                            </div>
+                        </div>
+
+                        <a href="@Url.Action("EHR", "Patient")" class="btn btn-primary-custom w-100 py-2.5 rounded-3 fw-bold text-white d-flex align-items-center justify-content-center gap-2" style="font-size: 13.5px;">
+                            Xem chi tiết hồ sơ
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="card portal-sidebar-card p-4 mb-4 text-center">
+                        <div class="text-secondary mb-3"><i class="fa-regular fa-calendar-minus fs-1" style="color: #cbd5e1;"></i></div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.05rem; font-weight: 800 !important;">Không có lịch hẹn sắp tới</h5>
+                        <p class="text-secondary small mb-3" style="font-size: 11px;">Bạn hiện không có lịch tái khám nào được lên lịch.</p>
+                        <a href="@Url.Action("Booking", "Patient")" class="btn btn-outline-primary btn-sm py-2 rounded-3 fw-semibold w-100" style="font-size: 12px; border-color: #0b57d0; color: #0b57d0;">Đặt lịch khám ngay</a>
+                    </div>
+                }
+
+                <!-- Hospital map card -->
+                <div class="card portal-sidebar-card overflow-hidden">
+                    <div class="p-4 pb-2 text-start">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold text-dark mb-1" style="font-size: 1.05rem; font-weight: 800 !important;">Vị trí phòng khám</h5>
+                            <i class="fa-solid fa-location-dot text-primary fs-5" style="color: #0b57d0 !important;"></i>
+                        </div>
+                        <p class="text-secondary small mb-0" style="font-size: 11px;">Lầu 3, BV Hoàn Mỹ</p>
+                    </div>
+                    
+                    <!-- Map visualization image with button -->
+                    <div class="position-relative" style="height: 170px;">
+                        <img src="/uploads/hospital_map_3d.png" alt="Hospital Map Layout" class="w-100 h-100" style="object-fit: cover;" />
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-light px-3 py-2 shadow-sm fw-bold d-flex align-items-center gap-2" style="border-radius: 50px; font-size: 12px; color: #0b57d0; border: none;" onclick="location.href='@Url.Action("HospitalMap", "Patient")'">
+                                <i class="fa-solid fa-map-location-dot"></i> Mở bản đồ 3D
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .portal-hero {
-        padding: 3rem 1rem 1rem;
-        background: linear-gradient(180deg, rgba(14,165,233,0.06) 0%, transparent 100%);
-        border-radius: 0 0 40px 40px;
-    }
-    .portal-hero-icon {
-        width: 80px; height: 80px;
-        margin: 0 auto;
-        background: linear-gradient(135deg, #0ea5e9, #0284c7);
-        border-radius: 24px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 2.2rem; color: white;
-        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
-    }
-    .portal-card {
-        background: var(--footer-bg);
-        border-radius: 20px;
-        padding: 1.75rem;
-        height: 100%;
+    .service-card,
+    .portal-sidebar-card {
+        background-color: var(--footer-bg);
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
         cursor: pointer;
-        border: 1px solid rgba(0,0,0,0.04);
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
     }
-    .portal-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 32px rgba(14, 165, 233, 0.15);
-        border-color: rgba(14, 165, 233, 0.2);
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(11, 87, 208, 0.08) !important;
+        border-color: rgba(11, 87, 208, 0.15) !important;
     }
-    .portal-card h5 { color: var(--text-color); margin-bottom: 0.75rem; }
-    .portal-card p {
-        color: var(--link-color);
-        font-size: 0.9rem;
-        flex-grow: 1;
-        margin-bottom: 1rem;
-        line-height: 1.6;
+    .service-card:hover .icon-box {
+        transform: scale(1.08);
     }
-    .portal-card-icon {
-        width: 64px; height: 64px;
-        border-radius: 18px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.75rem;
-        margin-bottom: 1.25rem;
+    .icon-box {
+        transition: transform 0.3s ease;
     }
-    .bg-primary-soft { background: rgba(14, 165, 233, 0.1); }
-    .bg-success-soft { background: rgba(16, 185, 129, 0.1); }
-    .bg-warning-soft { background: rgba(245, 158, 11, 0.1); }
-    .bg-info-soft { background: rgba(6, 182, 212, 0.1); }
-    .bg-danger-soft { background: rgba(239, 68, 68, 0.1); }
-    .bg-secondary-soft { background: rgba(100, 116, 139, 0.1); }
-    .portal-card-link {
-        color: #0ea5e9;
-        font-weight: 600;
-        font-size: 0.875rem;
+    
+    .btn-primary-custom {
+        background-color: #0b57d0 !important;
+        border: none;
+        transition: all 0.2s ease;
+        border-radius: 8px !important;
     }
-    .notify-badge {
-        position: absolute;
-        top: -6px;
-        right: -6px;
-        min-width: 22px;
-        height: 22px;
-        padding: 0 6px;
-        background: #ef4444;
-        color: white;
-        font-size: 0.7rem;
-        font-weight: 700;
-        border-radius: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid var(--footer-bg);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-        animation: badge-pulse 2s infinite;
+    .btn-primary-custom:hover {
+        background-color: #0045b5 !important;
+        box-shadow: 0 5px 15px rgba(11, 87, 208, 0.25);
+        transform: translateY(-1px);
     }
-    @@keyframes badge-pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
+
+    .btn-action-main {
+        transition: all 0.25s ease;
     }
-    .portal-card-notify:hover .notify-badge {
-        animation: none;
-        transform: scale(1.05);
+    .btn-action-main:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,255,255,0.2) !important;
+    }
+
+    .btn-action-sub {
+        transition: all 0.25s ease;
+    }
+    .btn-action-sub:hover {
+        background-color: rgba(255,255,255,0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    .hover-primary {
+        transition: color 0.2s;
+    }
+    .hover-primary:hover {
+        color: #0045b5 !important;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    [data-theme="dark"] .text-dark {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .service-card {
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] .service-card:hover {
+        border-color: rgba(56, 189, 248, 0.3) !important;
+        box-shadow: 0 15px 30px rgba(56, 189, 248, 0.08) !important;
+    }
+    [data-theme="dark"] .text-secondary {
+        color: #94a3b8 !important;
     }
 </style>

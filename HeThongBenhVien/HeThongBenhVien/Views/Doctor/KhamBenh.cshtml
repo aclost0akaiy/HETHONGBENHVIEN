@@ -433,10 +433,7 @@
                 setTimeout(autoSuggestICD10, 200);
             });
         });
-
         let currentProtocol = null;
-        
-        const patientAllergies = "@Html.Raw(Model.Appointment?.Patient?.Allergies ?? "")".toLowerCase();
 
         // Thư viện quy tắc Tương tác thuốc (Mockup)
         const drugInteractions = {
@@ -449,21 +446,6 @@
 
         function validateMedicalProtocol(medicines) {
             let warnings = [];
-            
-            // 1. Kiểm tra dị ứng
-            if (patientAllergies && patientAllergies.trim() !== '') {
-                let allergies = patientAllergies.split(',').map(a => a.trim());
-                medicines.forEach(m => {
-                    let medName = m.name.toLowerCase();
-                    allergies.forEach(a => {
-                        if (medName.includes(a)) {
-                            warnings.push(`Bệnh nhân có tiền sử DỊ ỨNG với '${a.toUpperCase()}'. Tuyệt đối cẩn trọng khi kê '${m.name}'.`);
-                        }
-                    });
-                });
-            }
-
-            // 2. Kiểm tra tương tác thuốc
             for (let i = 0; i < medicines.length; i++) {
                 let m1 = medicines[i].name.toLowerCase();
                 for (let key in drugInteractions) {

@@ -26,6 +26,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Account/PatientLogin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxQYXRpZW50TG9naW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Account/RegisterPatient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3RlclBhdGllbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Admin/BaoCaoHoatDong.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQmFvQ2FvSG9hdERvbmcuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -150,10 +158,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENoaVRpZXRCZW5oQW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/CommandCenter.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXENvbW1hbmRDZW50ZXIuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/DanhSach.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXERhbmhTYWNoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -176,6 +180,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/HoSoBenhAn.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEhvU29CZW5oQW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/InToaThuoc.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXEluVG9hVGh1b2MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/KeDonThuoc.cshtml]
@@ -206,6 +214,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hNby5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichSuDieuTri.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hTdURpZXVUcmkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/LichSuKham.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXExpY2hTdUtoYW0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -226,10 +238,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nQmFvLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/ThongKe.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRob25nS2UuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Doctor/TinNhan.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdG9yXFRpbk5oYW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -240,6 +248,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Lab/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGFiXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Patient/Booking.cshtml]
@@ -272,6 +284,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Patient/Rating.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF0aWVudFxSYXRpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Patient/UserGuide.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF0aWVudFxVc2VyR3VpZGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Payment/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5bWVudFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Pharmacy/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hY3lcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/PC/Downloads/HETHONGBENHVIEN/HeThongBenhVien/HeThongBenhVien/Views/Shared/Error.cshtml]

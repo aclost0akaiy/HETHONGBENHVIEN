@@ -1,0 +1,284 @@
+@model HeThongBenhVien.Models.RegisterPatientViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký tài khoản Bệnh nhân - QL Khám Chữa Bệnh</title>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        }
+
+        /* Animated Background Shapes */
+        .shape {
+            position: absolute;
+            filter: blur(60px);
+            z-index: 0;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .shape-1 {
+            width: 400px; height: 400px;
+            background: rgba(14, 165, 233, 0.3);
+            top: -10%; left: -10%;
+        }
+        .shape-2 {
+            width: 300px; height: 300px;
+            background: rgba(56, 189, 248, 0.3);
+            bottom: -5%; right: -5%;
+            animation-delay: -5s;
+        }
+
+        @@keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 30px) scale(1.1); }
+        }
+
+        .register-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            padding: 40px 15px;
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 520px;
+            padding: 40px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-icon {
+            font-size: 3rem;
+            color: #0ea5e9;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .register-header h2 {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+
+        .register-header p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group-custom i {
+            position: absolute;
+            left: 18px;
+            top: 15px;
+            color: #94a3b8;
+            transition: color 0.3s;
+            font-size: 1.1rem;
+            z-index: 10;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 12px 15px 12px 50px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            color: #334155;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-custom:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .form-control-custom:focus + i,
+        .input-group-custom:focus-within i {
+            color: #0ea5e9;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            border: none;
+            color: white;
+            padding: 13px;
+            font-weight: 600;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+            color: white;
+        }
+
+        .text-danger {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+            color: #ef4444 !important;
+        }
+        
+        .alert-danger {
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+        }
+
+        .custom-select-wrapper select {
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="register-wrapper">
+        <div class="register-card">
+            <div class="register-header">
+                <i class="fa-solid fa-user-plus register-icon"></i>
+                <h2>Đăng Ký Tài Khoản</h2>
+                <p>Tạo tài khoản bệnh nhân mới</p>
+            </div>
+
+            <form id="registerForm" method="post" action="/Account/RegisterPatient">
+                @Html.AntiForgeryToken()
+                
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger p-3 mb-4">
+                        @Html.ValidationSummary(false, "", new { @class = "mb-0 list-unstyled" })
+                    </div>
+                }
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <input type="text" id="Username" name="Username" value="@Model?.Username" class="form-control-custom" placeholder="Tên đăng nhập" required />
+                            <i class="fa-solid fa-user"></i>
+                            @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <input type="password" id="Password" name="Password" class="form-control-custom" placeholder="Mật khẩu" required />
+                            <i class="fa-solid fa-lock"></i>
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group-custom">
+                    <input type="text" id="FullName" name="FullName" value="@Model?.FullName" class="form-control-custom" placeholder="Họ và tên bệnh nhân" required />
+                    <i class="fa-solid fa-signature"></i>
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group-custom custom-select-wrapper">
+                            <select id="Gender" name="Gender" class="form-control-custom" required>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                            <i class="fa-solid fa-venus-mars"></i>
+                            @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <input type="number" id="Age" name="Age" value="@(Model != null ? Model.Age : "")" class="form-control-custom" placeholder="Tuổi" required />
+                            <i class="fa-solid fa-calendar-day"></i>
+                            @Html.ValidationMessageFor(m => m.Age, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <input type="text" id="SDT" name="SDT" value="@Model?.SDT" class="form-control-custom" placeholder="Số điện thoại" required />
+                            <i class="fa-solid fa-phone"></i>
+                            @Html.ValidationMessageFor(m => m.SDT, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group-custom">
+                            <input type="email" id="Email" name="Email" value="@Model?.Email" class="form-control-custom" placeholder="Địa chỉ Email" />
+                            <i class="fa-solid fa-envelope"></i>
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-register mb-3 mt-2">
+                    Đăng Ký Ngay <i class="fa-solid fa-user-check ml-2" style="font-size: 0.95rem;"></i>
+                </button>
+
+                <div class="text-center mt-3" style="font-size: 0.95rem; color: #64748b;">
+                    Đã có tài khoản? 
+                    <a href="/Account/PatientLogin" class="font-weight-bold" style="color: #0ea5e9; text-decoration: none;">Đăng nhập</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,110 +4,351 @@
     ViewData["Title"] = "Kê Đơn Thuốc";
 }
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .prescription-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+    }
+
+    /* Card styling matching mockup */
+    .mock-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px;
+    }
+
+    .mock-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #edf2f7;
+        background-color: #ffffff;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .mock-card-body {
+        padding: 24px 20px;
+    }
+
+    /* Label Styling */
+    .mock-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #718096;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    /* Inputs */
+    .mock-input {
+        height: 40px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #2d3748;
+        padding: 8px 12px;
+        width: 100%;
+        background-color: #ffffff;
+    }
+
+    .mock-input:focus {
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        outline: none;
+    }
+
+    .mock-textarea {
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #2d3748;
+        padding: 10px 12px;
+        width: 100%;
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .mock-textarea:focus {
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn-mock-primary {
+        background-color: #0b4c95;
+        color: #ffffff;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        padding: 10px 16px;
+        font-size: 14px;
+        transition: background-color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-mock-primary:hover {
+        background-color: #083b75;
+        color: #ffffff;
+    }
+
+    .btn-mock-secondary {
+        background-color: #ffffff;
+        color: #4a5568;
+        border: 1px solid #cbd5e0;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-mock-secondary:hover {
+        background-color: #f7fafc;
+        color: #2d3748;
+        border-color: #a0aec0;
+    }
+
+    /* Table styling */
+    .mock-table th {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #4a5568;
+        background-color: #f7fafc;
+        border-bottom: 2px solid #edf2f7;
+        padding: 12px 16px;
+    }
+
+    .mock-table td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #edf2f7;
+        font-size: 14px;
+    }
+
+    .instruction-cell {
+        font-style: italic;
+        color: #4a5568;
+        font-size: 13.5px;
+    }
+
+    /* Autocomplete list style */
+    .medicine-dropdown {
+        position: absolute;
+        z-index: 1050;
+        max-height: 250px;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+    }
+
+    .medicine-dropdown .list-group-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 13.5px;
+    }
+
+    .medicine-dropdown .list-group-item:hover {
+        background-color: #f7fafc;
+    }
+</style>
+
+<div class="container-fluid p-0 prescription-container">
+    <!-- Top Header Layout -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Kê Đơn Thuốc</h2>
-            <p class="text-muted mb-0">Hệ thống cấp phát và quản lý toa thuốc điện tử.</p>
+            <p class="text-muted mb-0">Hệ thống cấp phát toa thuốc điện tử chuyên dụng.</p>
+        </div>
+        <div>
+            <div class="d-flex align-items-center gap-2 px-3 py-2" style="background-color: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; border-radius: 6px; font-weight: 600; font-size: 13.5px;">
+                <i class="fa-solid fa-user"></i> 
+                <span>Bệnh nhân: @(Model.MedicalRecord?.Appointment?.Patient?.FullName) (Mã: @(Model.MedicalRecord?.Appointment?.Patient?.PatientCode))</span>
+            </div>
         </div>
     </div>
 
+    <!-- Main Grid -->
     <div class="row">
+        <!-- Left Column: Add Medicine Form -->
         <div class="col-lg-4 mb-4">
-            <div class="glass-card p-4 h-100">
-                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-pills me-2"></i>Thêm Thuốc Vào Đơn</h5>
-                <form asp-action="LuuToaThuoc" asp-controller="Doctor" method="post">
-                    <input type="hidden" name="prescriptionId" value="@Model.Id" />
-                    <div class="mb-3">
-                        <label class="form-label text-secondary fw-semibold">Tên Thuốc</label>
-                        <input type="text" name="medicineName" class="form-control" placeholder="Nhập tên thuốc hoặc mã thuốc" required>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-4">
-                            <label class="form-label text-secondary fw-semibold">Số lượng</label>
-                            <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+            <div class="mock-card h-100">
+                <div class="mock-card-header">
+                    <h5 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2" style="font-size: 15px; color: #0b4c95 !important;">
+                        <i class="fa-solid fa-pills"></i> Thêm Thuốc
+                    </h5>
+                </div>
+                <div class="mock-card-body">
+                    <form asp-action="LuuToaThuoc" asp-controller="Doctor" method="post">
+                        <input type="hidden" name="prescriptionId" value="@Model.Id" />
+                        <input type="hidden" name="prescriptionDetailId" id="prescriptionDetailId" value="" />
+                        
+                        <div class="mb-3 position-relative">
+                            <label class="mock-label">Tên Thuốc</label>
+                            <input type="text" id="medicineSearch" class="mock-input"
+                                   placeholder="Tên hoặc mã thuốc..." autocomplete="off" required>
+                            <!-- Hidden field chứa tên thực sự submit -->
+                            <input type="hidden" name="medicineName" id="medicineNameHidden">
+
+                            <!-- Dropdown gợi ý -->
+                            <ul id="medicineDropdown"
+                                class="list-group medicine-dropdown d-none"
+                                style="top:100%; left:0; right:0;">
+                            </ul>
+
+                            <!-- Cảnh báo trạng thái thuốc -->
+                            <div id="medicineAlert" class="mt-2"></div>
                         </div>
-                        <div class="col-4">
-                            <label class="form-label text-secondary fw-semibold">Đơn vị</label>
-                            <select name="unit" id="unitSelect" class="form-select">
-                                <option value="Viên">Viên</option>
-                                <option value="Vỉ">Vỉ</option>
-                                <option value="Lọ">Lọ</option>
-                                <option value="Hộp">Hộp</option>
-                                <option value="Ống">Ống</option>
-                                <option value="Cái">Cái</option>
-                                <option value="Tuýp">Tuýp</option>
-                                <option value="Gói">Gói</option>
-                                <option value="Chai">Chai</option>
-                            </select>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="mock-label">Số lượng</label>
+                                <input type="number" name="quantity" class="mock-input" value="1" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="mock-label">Đơn vị</label>
+                                <select name="unit" id="unitSelect" class="form-select mock-input" style="height: 40px; padding: 6px 12px;">
+                                    <option value="Viên">Viên</option>
+                                    <option value="Vỉ">Vỉ</option>
+                                    <option value="Lọ">Lọ</option>
+                                    <option value="Hộp">Hộp</option>
+                                    <option value="Ống">Ống</option>
+                                    <option value="Cái">Cái</option>
+                                    <option value="Tuýp">Tuýp</option>
+                                    <option value="Gói">Gói</option>
+                                    <option value="Chai">Chai</option>
+                                </select>
+                            </div>
+                            <input type="hidden" id="priceInput" name="price" value="0" />
                         </div>
-                        <div class="col-4">
-                            <label class="form-label text-secondary fw-semibold">Đơn giá (VNĐ)</label>
-                            <input type="number" id="priceInput" name="price" class="form-control" value="5000" min="0" required>
+
+                        <div class="mb-4">
+                            <label class="mock-label">Liều dùng & Cách dùng</label>
+                            <textarea name="dosage" class="mock-textarea" placeholder="Ví dụ: Ngày 2 lần, sáng 1 viên, tối 1 viên sau ăn..." required></textarea>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary fw-semibold">Liều dùng</label>
-                        <input type="text" name="dosage" class="form-control" placeholder="VD: Sáng 1 viên, tối 1 viên sau ăn" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-plus me-2"></i>Thêm vào toa</button>
-                </form>
+
+                        <div class="d-flex flex-column gap-2">
+                            <button type="submit" id="btnSubmitForm" class="btn-mock-primary w-100" style="height: 42px;">
+                                <i class="fa-solid fa-plus"></i> Thêm vào đơn
+                            </button>
+                            <button type="button" id="btnCancelEdit" class="btn btn-outline-secondary w-100 d-none" style="height: 42px; font-weight: 600; font-size: 14px;">
+                                Hủy chỉnh sửa
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+
+        <!-- Right Column: Current Prescription Details -->
         <div class="col-lg-8 mb-4">
-            <div class="glass-card p-4 h-100">
-                <div class="d-flex justify-content-between mb-3">
-                    <h5 class="fw-bold text-dark">Toa Thuốc Hiện Tại</h5>
-                    <div>
-                        <span class="badge bg-primary rounded-pill px-3 py-2">Bệnh nhân: @Model.MedicalRecord?.Appointment?.Patient?.FullName</span>
-                        @if(!string.IsNullOrEmpty(Model.MedicalRecord?.Appointment?.Patient?.Allergies))
-                        {
-                            <span class="badge bg-danger rounded-pill px-3 py-2 ms-2 blink" title="Cảnh báo dị ứng"><i class="fa-solid fa-triangle-exclamation"></i> Dị ứng: @Model.MedicalRecord?.Appointment?.Patient?.Allergies</span>
-                        }
+            <div class="mock-card d-flex flex-column h-100">
+                <div class="mock-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size: 15px;">
+                        <i class="fa-regular fa-file-lines text-secondary"></i> Toa Thuốc Hiện Tại
+                    </h5>
+                    <a href="@Url.Action("LichSuDieuTri", "Doctor", new { patientId = Model.MedicalRecord?.Appointment?.PatientId ?? 0 })" class="text-decoration-none text-muted small d-flex align-items-center gap-1.5" style="font-size: 12px; font-weight: 500;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử kê đơn
+                    </a>
+                </div>
+                <div class="mock-card-body p-0 flex-grow-1">
+                    <div class="table-responsive">
+                        <table class="table mock-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%;">Tên Thuốc</th>
+                                    <th style="width: 10%;">SL</th>
+                                    <th style="width: 15%;">Đơn vị</th>
+                                    <th style="width: 35%;">Hướng dẫn dùng</th>
+                                    <th style="width: 10%; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.PrescriptionDetails)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-dark">@detail.MedicineName</td>
+                                        <td>@detail.Quantity</td>
+                                        <td>@detail.Unit</td>
+                                        <td class="instruction-cell">@detail.DosageInstruction</td>
+                                        <td class="text-center" style="white-space: nowrap;">
+                                            <button type="button" class="btn btn-sm btn-link text-primary p-0 me-2 btn-edit-detail" 
+                                                    data-id="@detail.Id" 
+                                                    data-name="@detail.MedicineName" 
+                                                    data-qty="@detail.Quantity" 
+                                                    data-unit="@detail.Unit" 
+                                                    data-dosage="@detail.DosageInstruction" 
+                                                    title="Chỉnh sửa">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <form asp-action="XoaToaThuocChiTiet" asp-controller="Doctor" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thuốc này khỏi toa?')">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="detailId" value="@detail.Id" />
+                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Xóa">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.PrescriptionDetails.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">Chưa có thuốc nào trong toa.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tên Thuốc</th>
-                                <th>SL</th>
-                                <th>Đơn vị</th>
-                                <th>Liều dùng & Cách dùng</th>
-                                <th>Đơn giá</th>
-                                <th>Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var detail in Model.PrescriptionDetails)
-                            {
-                                <tr>
-                                    <td class="fw-bold">@detail.MedicineName</td>
-                                    <td>@detail.Quantity</td>
-                                    <td>@detail.Unit</td>
-                                    <td>@detail.DosageInstruction</td>
-                                    <td>@string.Format("{0:N0} đ", detail.Price)</td>
-                                    <td><strong class="text-danger">@string.Format("{0:N0} đ", detail.Price * detail.Quantity)</strong></td>
-                                </tr>
-                            }
-                            @if (!Model.PrescriptionDetails.Any())
-                            {
-                                <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Chưa có thuốc nào trong toa.</td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr class="bg-light">
-                                    <td colspan="5" class="text-end fw-bold">TỔNG CỘNG:</td>
-                                    <td class="fw-bold text-danger fs-5">@string.Format("{0:N0} đ", Model.PrescriptionDetails.Sum(d => d.Price * d.Quantity))</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-end mt-4">
-                    <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = Model.MedicalRecordId })" class="btn btn-primary px-4 ms-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Toa</a>
+                <!-- Bottom Actions inside card footer -->
+                <div class="p-3 bg-light border-top border-light d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3" style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <!-- Left actions -->
+                    <div class="d-flex gap-3">
+                        <a href="@Url.Action("InToaThuoc", "Doctor", new { id = Model.Id })" target="_blank" class="text-decoration-none text-muted small d-flex align-items-center gap-1.5" style="font-weight: 500;">
+                            <i class="fa-solid fa-print"></i> Xem trước (PDF)
+                        </a>
+                        <a href="@Url.Action("InToaThuoc", "Doctor", new { id = Model.Id })" target="_blank" class="text-decoration-none text-muted small d-flex align-items-center gap-1.5" style="font-weight: 500;">
+                            <i class="fa-solid fa-print"></i> In toa thuốc
+                        </a>
+                    </div>
+                    <!-- Right actions -->
+                    <div class="d-flex align-items-center gap-2 justify-content-end">
+                        <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = Model.MedicalRecordId })" class="btn-mock-secondary px-4 py-2 d-inline-flex align-items-center justify-content-center" style="height: 38px;">
+                            Lưu nháp
+                        </a>
+                        @{
+                            var apptForKeDon = Model.MedicalRecord?.Appointment;
+                        }
+                        @if (apptForKeDon != null && apptForKeDon.Status == HeThongBenhVien.Models.AppointmentStatus.ChoToaThuoc)
+                        {
+                            <form asp-action="HoanTatKeDon" asp-controller="Doctor" method="post" class="d-inline m-0">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="appointmentId" value="@apptForKeDon.Id" />
+                                <button type="submit" class="btn-mock-primary px-4 py-2" style="height: 38px; background-color: #0b4c95;"
+                                        onclick="return confirm('Xác nhận hoàn tất kê đơn và chuyển bệnh nhân sang Chờ thanh toán?')">
+                                    <i class="fa-solid fa-circle-check"></i> Hoàn tất toa thuốc
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <!-- Fallback button so the action footer always looks exactly like the mockup -->
+                            <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = Model.MedicalRecordId })" class="btn-mock-primary px-4 py-2" style="height: 38px; background-color: #0b4c95;">
+                                <i class="fa-solid fa-circle-check"></i> Hoàn tất toa thuốc
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,59 +358,109 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            const priceMap = {
-                "Viên": 5000,
-                "Vỉ": 8000,
-                "Lọ": 20000,
-                "Hộp": 60000,
-                "Ống": 10000,
-                "Cái": 20000,
-                "Tuýp": 15000,
-                "Gói": 25000,
-                "Chai": 15000
-            };
+            // Autocomplete search medicine
+            $('#medicineSearch').on('input', function() {
+                var query = $(this).val();
+                $('#medicineNameHidden').val(query); // Sync typed name to hidden field
+                if (query.length < 2) {
+                    $('#medicineDropdown').addClass('d-none');
+                    return;
+                }
 
-            $('#unitSelect').change(function () {
-                const selectedUnit = $(this).val();
-                if (priceMap[selectedUnit] !== undefined) {
-                    $('#priceInput').val(priceMap[selectedUnit]);
+                $.get('/Doctor/SearchMedicine', { keyword: query }, function(data) {
+                    var dropdown = $('#medicineDropdown');
+                    dropdown.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(function(item) {
+                            dropdown.append(`<li class="list-group-item" data-id="${item.id}" data-name="${item.name}">${item.name} (${item.category ?? 'Thuốc'}) <span class="badge bg-secondary float-end">Còn ${item.stock}</span></li>`);
+                        });
+                        dropdown.removeClass('d-none');
+                    } else {
+                        dropdown.addClass('d-none');
+                    }
+                });
+            });
+
+            // Click item from autocomplete
+            $(document).on('click', '#medicineDropdown .list-group-item', function() {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                
+                $('#medicineSearch').val(name);
+                $('#medicineNameHidden').val(name);
+                $('#medicineDropdown').addClass('d-none');
+
+                // Check stock of selected medicine
+                $.get('/Doctor/CheckMedicine', { id: id }, function(res) {
+                    if (res && res.found) {
+                        var alertDiv = $('#medicineAlert');
+                        alertDiv.empty();
+                        
+                        if (!res.isActive) {
+                            alertDiv.html('<div class="alert alert-danger py-2 px-3 small mb-0"><i class="fa-solid fa-ban me-1"></i>Thuốc đã bị ngừng hoạt động!</div>');
+                        } else if (res.stock <= 0) {
+                            alertDiv.html('<div class="alert alert-danger py-2 px-3 small mb-0"><i class="fa-solid fa-circle-xmark me-1"></i>Đã HẾT HÀNG trong kho!</div>');
+                        } else if (res.stock <= res.minStock) {
+                            alertDiv.html(`<div class="alert alert-warning py-2 px-3 small mb-0"><i class="fa-solid fa-circle-exclamation me-1"></i>Cảnh báo: Sắp hết hàng (Chỉ còn ${res.stock} ${res.unit})</div>`);
+                        } else {
+                            alertDiv.html(`<div class="alert alert-success py-2 px-3 small mb-0"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng (Còn ${res.stock} ${res.unit})</div>`);
+                        }
+
+                        // Auto fill unit
+                        if (res.unit) {
+                            $('#unitSelect').val(res.unit).trigger('change');
+                        }
+                    }
+                });
+            });
+
+            // Close dropdown if click outside
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#medicineSearch, #medicineDropdown').length) {
+                    $('#medicineDropdown').addClass('d-none');
                 }
             });
 
-            // Set initial value on page load
-            $('#unitSelect').trigger('change');
-            
-            setInterval(function() {
-                $('.blink').fadeTo(500, 0.5).fadeTo(500, 1);
-            }, 1000);
+            // Click Edit button
+            $('.btn-edit-detail').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var qty = $(this).data('qty');
+                var unit = $(this).data('unit');
+                var dosage = $(this).data('dosage');
 
-            // Cảnh báo dị ứng và tương tác thuốc
-            $('form').submit(function (e) {
-                const medicine = $('input[name="medicineName"]').val().toLowerCase();
-                const allergies = "@(Model.MedicalRecord?.Appointment?.Patient?.Allergies?.ToLower() ?? "")";
-                
-                // 1. Cảnh báo dị ứng
-                if (allergies && medicine && (allergies.includes(medicine) || medicine.includes(allergies))) {
-                    e.preventDefault();
-                    alert("⚠️ CẢNH BÁO ĐỎ: Bệnh nhân có tiền sử dị ứng với thuốc/thành phần này (" + medicine + ")!\nVui lòng kê thuốc khác.");
-                    return false;
-                }
-                
-                // 2. Cảnh báo tương tác thuốc (Giả lập)
-                const currentPrescription = [];
-                @foreach(var d in Model.PrescriptionDetails) {
-                    <text>currentPrescription.push("@d.MedicineName.ToLower()");</text>
-                }
-                
-                if ((medicine.includes("aspirin") && currentPrescription.some(m => m.includes("ibuprofen"))) ||
-                    (medicine.includes("ibuprofen") && currentPrescription.some(m => m.includes("aspirin")))) {
-                    if(!confirm("⚠️ CẢNH BÁO TƯƠNG TÁC THUỐC:\nDùng chung Aspirin và Ibuprofen làm tăng nguy cơ xuất huyết tiêu hóa.\nBạn có chắc chắn muốn kê toa này không?")) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-                
-                return true;
+                // Populate form fields
+                $('#prescriptionDetailId').val(id);
+                $('#medicineSearch').val(name);
+                $('#medicineNameHidden').val(name);
+                $('input[name="quantity"]').val(qty);
+                $('#unitSelect').val(unit);
+                $('textarea[name="dosage"]').val(dosage);
+
+                // Update form visual state
+                $('#btnSubmitForm').html('<i class="fa-solid fa-check"></i> Cập nhật thuốc').css('background-color', '#e28743');
+                $('#btnCancelEdit').removeClass('d-none');
+
+                // Clear alerts
+                $('#medicineAlert').empty();
+            });
+
+            // Click Cancel Edit button
+            $('#btnCancelEdit').click(function () {
+                // Reset form fields
+                $('#prescriptionDetailId').val('');
+                $('#medicineSearch').val('');
+                $('#medicineNameHidden').val('');
+                $('input[name="quantity"]').val('1');
+                $('#unitSelect').val('Viên');
+                $('textarea[name="dosage"]').val('');
+
+                // Reset form visual state
+                $('#btnSubmitForm').html('<i class="fa-solid fa-plus"></i> Thêm vào đơn').css('background-color', '#0b4c95');
+                $(this).addClass('d-none');
+
+                // Clear alerts
+                $('#medicineAlert').empty();
             });
         });
     </script>

@@ -40,25 +40,41 @@
         }
         .navbar-brand {
             font-weight: 700;
-            color: #0ea5e9 !important;
+            color: #0b57d0 !important;
             font-size: 1.5rem;
         }
         .nav-link {
             font-weight: 500;
             color: var(--link-color) !important;
             transition: color 0.3s ease;
+            position: relative;
         }
         .nav-link:hover {
-            color: #0ea5e9 !important;
+            color: #0b57d0 !important;
         }
-        .btn-outline-primary {
-            border-color: #0ea5e9;
-            color: #0ea5e9 !important;
-            border-radius: 8px;
+        .nav-link.active-link {
+            color: #0b57d0 !important;
             font-weight: 600;
         }
+        .nav-link.active-link::after {
+            content: '';
+            position: absolute;
+            bottom: -23px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0b57d0;
+            border-radius: 2px;
+        }
+        .btn-outline-primary {
+            border-color: #0b57d0;
+            color: #0b57d0 !important;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
         .btn-outline-primary:hover {
-            background-color: #0ea5e9;
+            background-color: #0b57d0;
             color: white !important;
         }
         .footer {
@@ -84,11 +100,28 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <script>
+            (function () {
+                var isNewLogin = '@(TempData["NewLogin"]?.ToString() == "true" ? "true" : "false")' === 'true';
+                if (isNewLogin) {
+                    sessionStorage.setItem('isLoggedInTab', 'true');
+                } else if (!sessionStorage.getItem('isLoggedInTab')) {
+                    window.location.href = '/Account/Logout';
+                }
+            })();
+        </script>
+    }
+    @{
+        var isHomePage = ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && 
+                         ViewContext.RouteData.Values["Action"]?.ToString() == "Index";
+    }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-4 py-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0 py-3">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-hospital-user text-primary fs-3"></i> 
+                    <i class="fa-solid fa-square-h text-primary fs-3"></i> 
                     QL KCB
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -96,15 +129,24 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 ms-4">
+                    <ul class="navbar-nav flex-grow-1 ms-4 align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link @(isHomePage ? "active-link" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-success" asp-area="" asp-controller="Patient" asp-action="Portal">
-                                <i class="fa-solid fa-user-injured"></i> Cổng Bệnh Nhân
-                            </a>
-                        </li>
+                        @if (User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("BenhNhan") || User.IsInRole("Patient")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "UserGuide" ? "active-link" : "")" asp-controller="Patient" asp-action="UserGuide">Hướng dẫn</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Patient" ? "active-link" : "")" asp-controller="Patient" asp-action="Portal" style="color: var(--link-color) !important;">
+                                    <i class="fa-regular fa-circle-user fs-5"></i> Cổng Bệnh Nhân
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav align-items-center">
                         <li class="nav-item me-3">
@@ -114,28 +156,54 @@
                         </li>
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item d-flex align-items-center">
-                                <span class="navbar-text me-3" style="color: var(--text-color)">
-                                    Xin chào, @User.FindFirst("FullName")?.Value (@(User.IsInRole("Admin") ? "Admin" : (User.IsInRole("Doctor") ? "Bác sĩ" : "Bệnh nhân")))
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <a class="nav-link text-primary" asp-controller="Admin" asp-action="Dashboard">Trang Quản Trị</a>
-                                }
-                                else if (User.IsInRole("Doctor"))
-                                {
-                                    <a class="nav-link text-primary" asp-controller="Doctor" asp-action="Dashboard">Trang Bác Sĩ</a>
-                                }
-                                else if (User.IsInRole("BenhNhan") || User.IsInRole("Patient"))
-                                {
-                                    <a class="nav-link text-primary" asp-controller="Patient" asp-action="Portal">Trang Bệnh Nhân</a>
-                                }
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Đăng Xuất</a>
-                            </li>
+                            if (User.IsInRole("BenhNhan") || User.IsInRole("Patient"))
+                            {
+                                <li class="nav-item me-3 position-relative d-flex align-items-center">
+                                    <a class="text-secondary" asp-controller="Patient" asp-action="Notifications" style="font-size: 1.25rem; transition: color 0.2s;" title="Thông báo">
+                                        <i class="fa-regular fa-bell"></i>
+                                        @if (ViewBag.UnreadNotificationCount as int? > 0)
+                                        {
+                                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 8px; height: 8px;"></span>
+                                        }
+                                    </a>
+                                </li>
+                                <li class="nav-item me-3 d-flex align-items-center">
+                                    <a class="text-secondary" href="#" style="font-size: 1.25rem; transition: color 0.2s;" title="Cài đặt"><i class="fa-solid fa-gear"></i></a>
+                                </li>
+                                <li class="nav-item">
+                                    <div class="d-flex align-items-center gap-3 ps-3 border-start" style="border-color: #cbd5e1 !important;">
+                                        <div class="text-end d-none d-sm-block">
+                                            <div class="fw-bold mb-0" style="font-size: 14px; color: var(--text-color); line-height: 1.2;">@User.FindFirst("FullName")?.Value</div>
+                                            <div class="text-secondary small fw-medium" style="font-size: 11px;">ID: @(ViewBag.PatientCode as string ?? "Bệnh nhân")</div>
+                                        </div>
+                                        <a asp-controller="Patient" asp-action="Portal">
+                                            <img src="/uploads/patient_avatar.png" alt="Avatar" class="rounded-circle border border-2 border-white shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" />
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-danger ms-2 py-1 px-2 fw-semibold" asp-controller="Account" asp-action="Logout" style="font-size: 11px; border-radius: 6px;">Đăng Xuất</a>
+                                    </div>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item d-flex align-items-center">
+                                    <span class="navbar-text me-3" style="color: var(--text-color)">
+                                        Xin chào, @User.FindFirst("FullName")?.Value (@(User.IsInRole("Admin") ? "Admin" : "Bác sĩ"))
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a class="nav-link text-primary" asp-controller="Admin" asp-action="Dashboard">Trang Quản Trị</a>
+                                    }
+                                    else if (User.IsInRole("Doctor"))
+                                    {
+                                        <a class="nav-link text-primary" asp-controller="Doctor" asp-action="Dashboard">Trang Bác Sĩ</a>
+                                    }
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Đăng Xuất</a>
+                                </li>
+                            }
                         }
                         else
                         {
@@ -148,22 +216,34 @@
             </div>
         </nav>
     </header>
-    <div class="container pb-5">
-        <main role="main" class="pb-3">
+    @if (isHomePage)
+    {
+        <main role="main">
             @RenderBody()
         </main>
-    </div>
+    }
+    else
+    {
+        <div class="container pb-5">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
 
-    <footer class="footer text-center">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <span>&copy; 2026 - Phần mềm Quản Lý Khám Chữa Bệnh</span>
-                <div>
-                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none me-3" style="color: var(--link-color)">Chính sách bảo mật</a>
+    @if (!isHomePage)
+    {
+        <footer class="footer text-center">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <span>&copy; 2026 - Phần mềm Quản Lý Khám Chữa Bệnh</span>
+                    <div>
+                        <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none me-3" style="color: var(--link-color)">Chính sách bảo mật</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

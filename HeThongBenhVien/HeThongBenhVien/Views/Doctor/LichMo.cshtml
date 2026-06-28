@@ -3,124 +3,557 @@
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Lịch Mổ";
     var recordIdsWithVitals = ViewBag.RecordIdsWithVitals as List<int> ?? new List<int>();
+    var surgeons = ViewBag.Surgeons as IEnumerable<HeThongBenhVien.Models.User> ?? new List<HeThongBenhVien.Models.User>();
+    var surgeryTypes = ViewBag.SurgeryTypes as IEnumerable<HeThongBenhVien.Models.HospitalFee> ?? new List<HeThongBenhVien.Models.HospitalFee>();
+    var availableRecords = ViewBag.AvailableRecords as IEnumerable<HeThongBenhVien.Models.MedicalRecord> ?? new List<HeThongBenhVien.Models.MedicalRecord>();
+
+    // Calculate card metrics dynamically
+    int totalCount = Model.Count();
+    int inProgressCount = Model.Count(m => m.Appointment?.Status == 9);
+    int completedCount = Model.Count(m => m.Appointment?.Status == 10);
+    int emergencyCount = Model.Count(m => (m.Appointment?.Reason ?? "").ToLower().Contains("cấp cứu") || (m.Diagnosis ?? "").ToLower().Contains("cấp cứu"));
+    
+    // Get the first waiting patient code for the warning box
+    var firstWaitingCode = Model.FirstOrDefault(m => m.Appointment?.Status != 9 && m.Appointment?.Status != 10)?.Appointment?.Patient?.PatientCode ?? "BN062026_1";
 }
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    body {
+        background-color: #f8fafc;
+        color: #1e293b;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .page-title {
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+    }
+
+    .metric-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+    }
+
+    .metric-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .glass-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    }
+
+    .table th {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        background-color: #f8fafc !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 16px 20px !important;
+        white-space: nowrap;
+    }
+
+    .table td {
+        padding: 18px 20px !important;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .patient-badge {
+        background-color: #eff6ff;
+        color: #1e40af;
+        font-weight: 600;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #dbeafe;
+    }
+
+    .status-badge {
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .status-cho-mo {
+        background-color: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #ffedd5;
+    }
+
+    .status-dang-mo {
+        background-color: #eff6ff;
+        color: #3b82f6;
+        border: 1px solid #dbeafe;
+    }
+
+    .status-hoan-thanh {
+        background-color: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #dcfce7;
+    }
+
+    .dot-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .custom-select {
+        border-color: #cbd5e1;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: #334155;
+        padding: 8px 36px 8px 12px !important;
+        transition: all 0.2s;
+    }
+
+    .custom-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .btn-action {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 10px 20px;
+        font-size: 13.5px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-action-start {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+    }
+
+    .btn-action-start:hover {
+        background-color: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-action-end {
+        background-color: #16a34a;
+        border-color: #16a34a;
+        color: #ffffff;
+    }
+
+    .btn-action-end:hover {
+        background-color: #15803d;
+        border-color: #15803d;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+    }
+
+    .btn-filter {
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-filter:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+    }
+
+    .btn-add-new {
+        background-color: #2563eb;
+        color: #ffffff;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-add-new:hover {
+        background-color: #1d4ed8;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .note-box {
+        border-radius: 16px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);
+    }
+
+    .note-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    .note-item:not(:last-child) {
+        border-bottom: 1px solid #f1f5f9;
+    }
+</style>
+
+<div class="container-fluid py-4 px-4">
+    <!-- Header Block -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Danh Sách Lịch Mổ / Phẫu Thuật</h2>
+            <h1 class="h3 mb-1 page-title">Danh Sách Lịch Mổ / Phẫu Thuật</h1>
             <p class="text-muted mb-0">Quản lý các ca phẫu thuật, thủ thuật trong ngày.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-filter d-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                <i class="fa-solid fa-sliders"></i> Bộ lọc
+            </button>
+            <button class="btn btn-add-new d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addSurgeryModal">
+                <i class="fa-solid fa-plus"></i> Thêm lịch mới
+            </button>
         </div>
     </div>
 
-    <div class="glass-card p-0 overflow-hidden">
+    <!-- Sliding Filter Panel -->
+    <div class="collapse @(ViewBag.SearchName != null || ViewBag.StatusFilter != null || ViewBag.SurgeonIdFilter != null ? "show" : "")" id="filterPanel">
+        <form method="get" action="/Doctor/LichMo" class="p-4 mb-4 bg-white border" style="border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01);">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-secondary">Tên bệnh nhân</label>
+                    <input type="text" name="searchName" class="form-control" placeholder="Tìm tên bệnh nhân..." value="@ViewBag.SearchName" style="border-radius: 8px; font-size: 13.5px;" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-secondary">Trạng thái</label>
+                    <select name="statusFilter" class="form-select custom-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="0" selected="@(ViewBag.StatusFilter == 0)">Chờ mổ</option>
+                        <option value="9" selected="@(ViewBag.StatusFilter == 9)">Đang mổ</option>
+                        <option value="10" selected="@(ViewBag.StatusFilter == 10)">Đã hoàn thành</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-secondary">Phẫu thuật viên</label>
+                    <select name="surgeonIdFilter" class="form-select custom-select">
+                        <option value="">Tất cả bác sĩ</option>
+                        @if (surgeons != null)
+                        {
+                            foreach (var surgeon in surgeons)
+                            {
+                                <option value="@surgeon.Id" selected="@(ViewBag.SurgeonIdFilter == surgeon.Id)">@surgeon.FullName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold" style="height: 38px; border-radius: 8px; font-size: 13.5px;"><i class="fa-solid fa-magnifying-glass"></i> Lọc</button>
+                    <a href="/Doctor/LichMo" class="btn btn-light border" style="height: 38px; width: 48px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Tổng lịch mổ -->
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center">
+                <div class="metric-icon-box me-3" style="background-color: #eff6ff; color: #2563eb;">
+                    <i class="fa-solid fa-calendar-check fa-lg"></i>
+                </div>
+                <div>
+                    <span class="text-muted d-block" style="font-size: 12.5px; font-weight: 500;">Tổng lịch mổ</span>
+                    <span class="fs-4 fw-bold" style="color: #0f172a;">@totalCount.ToString("D2")</span>
+                </div>
+            </div>
+        </div>
+        <!-- Card 2: Đang thực hiện -->
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center">
+                <div class="metric-icon-box me-3" style="background-color: #ecfeff; color: #0891b2;">
+                    <i class="fa-solid fa-clock-rotate-left fa-lg"></i>
+                </div>
+                <div>
+                    <span class="text-muted d-block" style="font-size: 12.5px; font-weight: 500;">Đang thực hiện</span>
+                    <span class="fs-4 fw-bold" style="color: #0f172a;">@inProgressCount.ToString("D2")</span>
+                </div>
+            </div>
+        </div>
+        <!-- Card 3: Hoàn thành -->
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center">
+                <div class="metric-icon-box me-3" style="background-color: #f0fdf4; color: #16a34a;">
+                    <i class="fa-solid fa-circle-check fa-lg"></i>
+                </div>
+                <div>
+                    <span class="text-muted d-block" style="font-size: 12.5px; font-weight: 500;">Hoàn thành</span>
+                    <span class="fs-4 fw-bold" style="color: #0f172a;">@completedCount.ToString("D2")</span>
+                </div>
+            </div>
+        </div>
+        <!-- Card 4: Cấp cứu -->
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center">
+                <div class="metric-icon-box me-3" style="background-color: #fff7ed; color: #ea580c;">
+                    <i class="fa-solid fa-truck-medical fa-lg"></i>
+                </div>
+                <div>
+                    <span class="text-muted d-block" style="font-size: 12.5px; font-weight: 500;">Cấp cứu</span>
+                    <span class="fs-4 fw-bold" style="color: #0f172a;">@emergencyCount.ToString("D2")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main List Card -->
+    <div class="glass-panel overflow-hidden mb-4">
+        <!-- Card Header -->
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-white">
+            <h5 class="fw-bold mb-0" style="color: #0f172a; font-size: 16px;">Chi tiết danh sách</h5>
+            <div class="d-flex align-items-center gap-2 text-muted small">
+                <span>Cập nhật lúc: @DateTime.Now.ToString("HH:mm") Today</span>
+                <button onclick="location.reload();" class="btn btn-link p-0 text-muted" style="text-decoration: none;">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Responsive -->
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-dark text-white">
+                <thead>
                     <tr>
-                        <th class="ps-4 py-3 border-0">STT</th>
-                        <th class="py-3 border-0">Bệnh Nhân</th>
-                        <th class="py-3 border-0">Phẫu Thuật Viên</th>
-                        <th class="py-3 border-0">Chẩn Đoán / Tên Phẫu Thuật</th>
-                        <th class="py-3 border-0">Trạng Thái</th>
-                        <th class="pe-4 py-3 border-0 text-end">Hành động</th>
+                        <th style="width: 60px;">STT</th>
+                        <th>Bệnh nhân</th>
+                        <th>Phẫu thuật viên</th>
+                        <th>Chẩn đoán / Tên phẫu thuật</th>
+                        <th>Trạng thái</th>
+                        <th>Loại mổ</th>
+                        <th class="text-end" style="width: 150px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @{ int i = 1; }
+                    @{ int idx = 1; }
                     @foreach (var item in Model)
                     {
-                        var hasVitals = recordIdsWithVitals.Contains(item.Appointment?.Id ?? 0);
-                        var statusClass = item.Appointment?.Status switch
-                        {
-                            9 => "bg-primary",
-                            10 => "bg-success",
-                            _ => "bg-warning text-dark"
-                        };
-                        var statusText = item.Appointment?.Status switch
-                        {
-                            9 => "Đang mổ",
-                            10 => "Kết thúc",
-                            _ => "Chờ mổ"
-                        };
+                        var isDone = item.Appointment?.Status == 10;
+                        var isOp = item.Appointment?.Status == 9;
 
                         <tr>
-                            <td class="ps-4">@i</td>
+                            <td class="text-muted fw-bold">@idx</td>
                             <td>
-                                <div class="fw-bold">@item.Appointment?.Patient?.FullName</div>
-                                <small class="text-muted">Mã BN: @item.Appointment?.Patient?.PatientCode</small>
+                                <div class="fw-bold text-dark text-nowrap" style="font-size: 14.5px;">@item.Appointment?.Patient?.FullName</div>
+                                <div class="mt-1">
+                                    <span class="patient-badge">Mã BN: @item.Appointment?.Patient?.PatientCode</span>
+                                </div>
                             </td>
-                            @{
-                                var isCompleted = item.Appointment?.Status == 10 || item.Appointment?.Status == 5;
-                            }
                             <td>
-                                <select name="surgeonId" class="form-select form-select-sm" form="form-@item.Appointment?.Id" @(isCompleted ? "disabled" : "")>
-                                    <option value="">-- Chọn Bác Sĩ --</option>
-                                    @if (ViewBag.Surgeons != null)
+                                @if (isDone || isOp)
+                                {
+                                    var doctor = surgeons.FirstOrDefault(u => u.Id == item.SurgeonId);
+                                    if (doctor != null)
                                     {
-                                        foreach (var surgeon in ViewBag.Surgeons)
-                                        {
-                                            <option value="@surgeon.Id">@surgeon.FullName</option>
-                                        }
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #3b82f6; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid #e2e8f0;">
+                                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=@doctor.Username" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            </div>
+                                            <span class="small fw-semibold text-dark">@doctor.FullName</span>
+                                        </div>
                                     }
-                                </select>
-                            </td>
-                            <td>@item.Diagnosis</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2 mb-1">
-                                    <span class="badge @statusClass rounded-pill px-3">@statusText</span>
-                                    <select name="surgeryType" class="form-select form-select-sm w-auto" form="form-@item.Appointment?.Id" @(isCompleted ? "disabled" : "")>
-                                        <option value="">-- Loại mổ --</option>
-                                        @if (ViewBag.SurgeryTypes != null)
+                                    else
+                                    {
+                                        <span class="text-muted small italic">Chưa gán</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <select name="surgeonId" class="form-select form-select-sm custom-select" form="form-@item.Appointment?.Id" style="max-width: 160px;">
+                                        <option value="">- Chọn -</option>
+                                        @foreach (var s in surgeons)
                                         {
-                                            foreach (var type in ViewBag.SurgeryTypes)
-                                            {
-                                                <option value="@type.Id">@type.FeeName (@type.Price.ToString("N0") VNĐ)</option>
-                                            }
+                                            <option value="@s.Id" selected="@(item.SurgeonId == s.Id)">@s.FullName</option>
                                         }
                                     </select>
-                                    <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Appointment?.Id })" class="ms-1 @(hasVitals ? "text-success" : "text-danger")" title="Theo dõi sinh hiệu">
-                                        <i class="fa-solid fa-heart-pulse"></i>
-                                    </a>
-                                </div>
-                                @if (!hasVitals)
-                                {
-                                    <small class="text-danger" style="font-size: 10px;">Chưa nhập sinh hiệu</small>
                                 }
                             </td>
-                            <td class="pe-4 text-end">
-                                @if (item.Appointment?.Status != 10 && item.Appointment?.Status != 5)
+                            <td>
+                                <span class="fw-semibold text-secondary" style="font-size: 14px;">@item.Diagnosis</span>
+                            </td>
+                            <td>
+                                @if (isDone)
                                 {
-                                    <form asp-action="CapNhatTrangThaiMo" method="post" class="d-inline" id="form-@item.Appointment?.Id">
+                                    <span class="status-badge status-hoan-thanh">
+                                        <span class="dot-indicator" style="background-color: #16a34a;"></span> Đã hoàn thành
+                                    </span>
+                                }
+                                else if (isOp)
+                                {
+                                    <span class="status-badge status-dang-mo">
+                                        <span class="dot-indicator" style="background-color: #3b82f6;"></span> Đang mổ
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-cho-mo">
+                                        <span class="dot-indicator" style="background-color: #ea580c;"></span> Chờ mổ
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (isDone || isOp)
+                                {
+                                    var type = surgeryTypes.FirstOrDefault(t => t.Id == item.SurgeryFeeId);
+                                    if (type != null)
+                                    {
+                                        <span class="small fw-semibold text-secondary">@type.FeeName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small italic">- Loại mổ -</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <select name="surgeryType" class="form-select form-select-sm custom-select" form="form-@item.Appointment?.Id" style="max-width: 160px;">
+                                        <option value="">- Loại mổ -</option>
+                                        @foreach (var t in surgeryTypes)
+                                        {
+                                            <option value="@t.Id" selected="@(item.SurgeryFeeId == t.Id)">@t.FeeName</option>
+                                        }
+                                    </select>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (!isDone)
+                                {
+                                    <form asp-action="CapNhatTrangThaiMo" method="post" id="form-@item.Appointment?.Id">
                                         <input type="hidden" name="id" value="@item.Appointment?.Id" />
-                                        @if (item.Appointment?.Status != 9)
+                                        @if (!isOp)
                                         {
                                             <input type="hidden" name="status" value="9" />
-                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3" @(hasVitals ? "" : "disabled") title="@(hasVitals ? "" : "Vui lòng nhập sinh hiệu trước khi mổ")">Bắt đầu mổ</button>
+                                            <button type="submit" class="btn btn-action btn-action-start w-100">Bắt đầu mổ</button>
                                         }
                                         else
                                         {
                                             <input type="hidden" name="status" value="10" />
-                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Kết thúc</button>
+                                            <button type="submit" class="btn btn-action btn-action-end w-100">Kết thúc</button>
                                         }
                                     </form>
                                 }
                                 else
                                 {
-                                    <span class="text-muted small italic">Hoàn tất</span>
+                                    <a href="/Doctor/SinhHieu/@item.AppointmentId" class="btn btn-light border btn-sm p-2 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="fa-solid fa-eye text-secondary"></i>
+                                    </a>
                                 }
                             </td>
                         </tr>
-                        i++;
+                        idx++;
                     }
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">Không có bệnh nhân nào đang chờ phẫu thuật.</td>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-folder-open fa-2x mb-3 d-block text-secondary opacity-50"></i>
+                                Không có ca phẫu thuật nào trong danh sách.
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
+        </div>
+
+        <!-- Table Footer / Pagination -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center px-4 py-3 bg-light border-top gap-3">
+            <span class="small text-muted">Hiển thị 1-@totalCount của @totalCount bản ghi</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#"><i class="fa-solid fa-chevron-left"></i></a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#"><i class="fa-solid fa-chevron-right"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Notes Card -->
+    <div class="note-box">
+        <h6 class="fw-bold mb-3 text-dark" style="font-size: 15px;"><i class="fa-solid fa-note-sticky text-warning me-2"></i>Lưu ý phòng mổ hôm nay</h6>
+        
+        <div class="note-item">
+            <i class="fa-solid fa-triangle-exclamation text-warning mt-0.5" style="font-size: 15px;"></i>
+            <div>
+                <span class="small text-dark fw-medium">Phòng mổ số 3 đang bảo trì hệ thống chiếu sáng đến 10:00 AM.</span>
+            </div>
+        </div>
+        
+        <div class="note-item">
+            <i class="fa-solid fa-circle-info text-primary mt-0.5" style="font-size: 15px;"></i>
+            <div>
+                <span class="small text-dark fw-medium">Kiểm tra lại lượng máu dự trữ cho ca mổ <strong>@firstWaitingCode</strong>.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Thêm lịch mổ mới -->
+<div class="modal fade" id="addSurgeryModal" tabindex="-1" aria-labelledby="addSurgeryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div class="modal-header border-0 bg-light" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold text-dark" id="addSurgeryModalLabel"><i class="fa-solid fa-plus-circle text-primary me-2"></i>Thêm ca phẫu thuật mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="get" action="/Doctor/LichMo">
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Vui lòng chọn Hồ sơ bệnh án đang có để đặt lịch phẫu thuật/thủ thuật.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary" style="font-size: 13px;">Hồ sơ Bệnh nhân & Chẩn đoán</label>
+                        <select name="id" class="form-select custom-select" required>
+                            <option value="">-- Chọn bệnh nhân / bệnh án --</option>
+                            @foreach (var rec in availableRecords)
+                            {
+                                <option value="@rec.Id">@rec.Appointment?.Patient?.FullName - @rec.Diagnosis (Mã BN: @rec.Appointment?.Patient?.PatientCode)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal" style="border-radius: 10px;">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary px-4" style="border-radius: 10px; font-weight: 600;">Xác nhận thêm</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -1,0 +1,284 @@
+﻿@model IEnumerable<HeThongBenhVien.Models.Appointment>
+@using HeThongBenhVien.Models
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Lịch Sử Điều Trị";
+
+    var patient       = ViewBag.Patient as Patient;
+    var records       = ViewBag.MedicalRecords as List<MedicalRecord> ?? new List<MedicalRecord>();
+    var vitalSigns    = ViewBag.VitalSigns as List<VitalSign> ?? new List<VitalSign>();
+    var labTests      = ViewBag.LabTests as List<LabTest> ?? new List<LabTest>();
+    var prescriptions = ViewBag.Prescriptions as List<Prescription> ?? new List<Prescription>();
+}
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1" style="font-weight:700; color:#1e293b;">
+                <i class="fa-solid fa-timeline text-primary me-2"></i>Lịch Sử Điều Trị
+            </h2>
+            <p class="text-muted mb-0">
+                Bệnh nhân: <strong>@patient?.FullName</strong>
+                | Mã: <strong class="text-primary">@patient?.PatientCode</strong>
+                | Tổng lần khám: <span class="badge bg-primary rounded-pill">@Model.Count()</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("LichSuDieuTri", "Doctor", new { patientId = patient?.Id })"
+               class="btn btn-outline-secondary px-3" style="border-radius:10px;">
+                <i class="fa-solid fa-rotate-right me-1"></i>Làm mới
+            </a>
+            <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4" style="border-radius:10px;">
+                <i class="fa-solid fa-arrow-left me-2"></i>Trở về
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="glass-card text-center p-5">
+            <i class="fa-solid fa-folder-open fs-1 text-muted mb-3 d-block"></i>
+            <h5 class="text-muted">Chưa có lịch sử khám bệnh nào.</h5>
+        </div>
+    }
+    else
+    {
+        <!-- Summary Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="glass-card p-3 text-center border-top border-4 border-secondary shadow-sm">
+                    <div class="fs-2 fw-bold text-dark">@Model.Count()</div>
+                    <small class="text-muted">Tổng lần khám</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="glass-card p-3 text-center border-top border-4 border-secondary shadow-sm">
+                    <div class="fs-2 fw-bold text-dark">@records.Count</div>
+                    <small class="text-muted">Hồ sơ bệnh án</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="glass-card p-3 text-center border-top border-4 border-secondary shadow-sm">
+                    <div class="fs-2 fw-bold text-dark">@labTests.Count</div>
+                    <small class="text-muted">Xét nghiệm</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="glass-card p-3 text-center border-top border-4 border-secondary shadow-sm">
+                    <div class="fs-2 fw-bold text-dark">@prescriptions.Count</div>
+                    <small class="text-muted">Đơn thuốc</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div style="position:relative; padding-left:50px;">
+            <!-- Đường dọc trục thời gian -->
+            <div style="position:absolute; left:22px; top:0; bottom:0; width:4px;
+                        background:#cbd5e1; border-radius:2px;"></div>
+
+            @foreach (var appt in Model)
+            {
+                var record = records.FirstOrDefault(r => r.AppointmentId == appt.Id);
+                var vital  = vitalSigns.FirstOrDefault(v => v.AppointmentId == appt.Id);
+                var labs   = record != null ? labTests.Where(lt => lt.MedicalRecordId == record.Id).ToList() : new List<LabTest>();
+                var rx     = record != null ? prescriptions.FirstOrDefault(p => p.MedicalRecordId == record.Id) : null;
+                bool isAdmitted = record?.AdmissionDate.HasValue == true;
+                bool isToday    = appt.AppointmentTime.Date == DateTime.Today;
+
+                <div class="mb-4" style="position:relative;">
+                    <!-- Chấm trên trục -->
+                    <div style="position:absolute; left:-35px; top:16px; width:22px; height:22px;
+                                border-radius:50%; background:#94a3b8;
+                                border:3px solid white;
+                                box-shadow:0 0 0 3px #cbd5e1;
+                                z-index:1;"></div>
+
+                    <div class="glass-card p-4 border-start border-4 border-secondary"
+                         style="transition: all 0.3s; border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8 !important;">
+                        <!-- Tiêu đề lần khám -->
+                        <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">
+                                    <i class="fa-solid fa-calendar-day text-secondary me-2"></i>
+                                    @appt.AppointmentTime.ToString("dd/MM/yyyy - HH:mm")
+                                    @if (isToday) { <span class="badge bg-danger ms-2">Hôm nay</span> }
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="fa-solid fa-user-doctor me-1"></i>
+                                    Bác sĩ: @(appt.Doctor?.FullName ?? "Chưa phân công")
+                                </small>
+                            </div>
+                            <span class="badge @AppointmentStatus.GetBadgeClass(appt.Status) rounded-pill px-3 py-2">
+                                <i class="fa-solid @AppointmentStatus.GetIcon(appt.Status) me-1"></i>
+                                @AppointmentStatus.GetLabel(appt.Status)
+                            </span>
+                        </div>
+
+                        @if (record == null)
+                        {
+                            <p class="text-muted fst-italic mb-0">
+                                <i class="fa-solid fa-circle-info me-1"></i>
+                                Chưa có hồ sơ bệnh án cho lần khám này.
+                            </p>
+                        }
+                        else
+                        {
+                            <div class="row g-3">
+                                <!-- Chẩn đoán lâm sàng -->
+                                <div class="col-12">
+                                    <div class="p-3 rounded-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                                        <div class="fw-semibold text-dark mb-2">
+                                            <i class="fa-solid fa-stethoscope me-1"></i>Kết quả khám lâm sàng
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <small class="text-muted d-block">Triệu chứng:</small>
+                                                <span class="fw-medium">@record.Symptoms</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="text-muted d-block">Chẩn đoán:</small>
+                                                <span class="fw-bold text-danger">@record.Diagnosis</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="text-muted d-block">Hướng điều trị:</small>
+                                                <span class="fw-medium">@record.TreatmentPlan</span>
+                                            </div>
+                                        </div>
+                                        @if (isAdmitted)
+                                        {
+                                            <div class="mt-2 pt-2 border-top">
+                                                <span class="badge bg-dark">
+                                                    <i class="fa-solid fa-bed me-1"></i>
+                                                    Nhập viện: @record.AdmissionDate?.ToString("dd/MM/yyyy")
+                                                    @if (record.DischargeDate.HasValue)
+                                                    { <text> → Xuất viện: @record.DischargeDate?.ToString("dd/MM/yyyy")</text> }
+                                                    else
+                                                    { <text> (Còn điều trị)</text> }
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Sinh hiệu -->
+                                @if (vital != null)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 h-100" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                                            <div class="fw-semibold text-dark mb-2">
+                                                <i class="fa-solid fa-heart-pulse me-1"></i>Sinh hiệu
+                                                <small class="text-muted fw-normal">(@vital.RecordedAt.ToString("HH:mm"))</small>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @if (!string.IsNullOrEmpty(vital.Pulse))
+                                                {
+                                                    <span class="badge bg-light text-secondary border">
+                                                        <i class="fa-solid fa-heart me-1"></i>Mạch: @vital.Pulse bpm
+                                                    </span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(vital.Temperature))
+                                                {
+                                                    <span class="badge bg-light text-secondary border">
+                                                        <i class="fa-solid fa-thermometer me-1"></i>Nhiệt: @vital.Temperature°C
+                                                    </span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(vital.BloodPressure))
+                                                {
+                                                    <span class="badge bg-light text-secondary border">
+                                                        <i class="fa-solid fa-gauge me-1"></i>HA: @vital.BloodPressure mmHg
+                                                    </span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(vital.SpO2))
+                                                {
+                                                    <span class="badge bg-light text-secondary border">
+                                                        <i class="fa-solid fa-lungs me-1"></i>SpO2: @vital.SpO2%
+                                                    </span>
+                                                }
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(vital.NurseName))
+                                            {
+                                                <small class="text-muted d-block mt-2">
+                                                    <i class="fa-solid fa-user-nurse me-1"></i>@vital.NurseName
+                                                </small>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Kết quả xét nghiệm -->
+                                @if (labs.Any())
+                                {
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 h-100" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                                            <div class="fw-semibold text-dark mb-2">
+                                                <i class="fa-solid fa-flask me-1"></i>Xét nghiệm
+                                            </div>
+                                            @foreach (var lab in labs)
+                                            {
+                                                <div class="d-flex justify-content-between small border-bottom py-1">
+                                                    <span class="fw-medium">@lab.TestName</span>
+                                                    <span class="@(lab.Status == "Hoàn thành" ? "text-success" : "text-muted")">@(lab.Result ?? "Chờ KQ")</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Đơn thuốc -->
+                                @if (rx != null && rx.PrescriptionDetails.Any())
+                                {
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-3 h-100" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                                            <div class="fw-semibold text-dark mb-2">
+                                                <i class="fa-solid fa-pills me-1"></i>Đơn thuốc
+                                                <small class="text-muted fw-normal">(Kê: @rx.CreatedAt.ToString("dd/MM"))</small>
+                                            </div>
+                                            @foreach (var detail in rx.PrescriptionDetails)
+                                            {
+                                                <div class="small border-bottom py-1">
+                                                    <strong>@detail.MedicineName</strong>
+                                                    <span class="text-muted ms-1">@detail.Quantity @detail.Unit</span>
+                                                    <div class="text-muted" style="font-size:11px;">@detail.DosageInstruction</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Footer lần khám -->
+                        <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fa-solid fa-calendar me-1"></i>
+                                Lý do: @appt.Reason
+                            </small>
+                            @if (record != null)
+                            {
+                                <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = record.Id })"
+                                   class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fa-solid fa-eye me-1"></i>Xem chi tiết
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .timeline-dot-today {
+            animation: pulseDot 1.5s infinite;
+        }
+        @@keyframes pulseDot {
+            0%   { box-shadow: 0 0 0 3px rgba(239,68,68,0.3); }
+            50%  { box-shadow: 0 0 0 8px rgba(239,68,68,0.1); }
+            100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.3); }
+        }
+    </style>
+}

@@ -1,54 +1,1211 @@
-DANH SÁCH 5 CHỨC NĂNG CHUYÊN NGHIỆP, NÂNG CAO (ĐẢM BẢO KHÔNG TRÙNG LẶP VỚI CÁC TÍNH NĂNG ĐANG CÓ):
+================================================================
+   CODE MẪU ĐẦY ĐỦ - HỆ THỐNG QUẢN LÝ BỆNH VIỆN
+   ASP.NET Core MVC - Razor View (.cshtml)
+   Phân tích dựa trên code thực tế của dự án
+================================================================
 
-1. AI NHẬN DIỆN VÀ PHÂN TÍCH HÌNH ẢNH Y KHOA (AI DIAGNOSTIC IMAGING)
-- Hiện tại dự án đã có module Chẩn Đoán Hình Ảnh, nhưng ta sẽ nâng cấp "Pro" hơn: Tích hợp AI Vision (nhận diện hình ảnh).
-- Mô tả: Khi kỹ thuật viên tải ảnh X-Quang hoặc CT lên, hệ thống gọi API AI chuyên y tế để tự động quét, khoanh vùng đỏ các vị trí nghi ngờ có khối u, tổn thương hoặc gãy xương. Chức năng này sẽ gây ấn tượng cực mạnh về mặt công nghệ (AI/Machine Learning).
+================================================================
+CHỨC NĂNG 1: CHUẨN HÓA 11 TRẠNG THÁI BỆNH ÁN
+================================================================
 
-2. BỆNH ÁN ĐIỆN TỬ CHỐNG LÀM GIẢ BẰNG BLOCKCHAIN VÀ KÝ SỐ (BLOCKCHAIN EHR & DIGITAL SIGNATURE)
-- Mô tả: Bệnh án sau khi bác sĩ chốt và ký số sẽ được mã hóa (Hash) và đẩy một bản ghi mã hóa lên mạng lưới Blockchain (có thể dùng testnet hoặc giả lập chuỗi khối). Việc này đảm bảo tính "bất biến" của hồ sơ y tế, không ai kể cả DBA (Quản trị viên Database) có thể sửa lén dữ liệu bệnh án cũ mà không để lại dấu vết. 
+─────────────────────────────────────────────────────────────────
+FILE: Models/AppointmentStatus.cs  [TẠO MỚI]
+─────────────────────────────────────────────────────────────────
+namespace HeThongBenhVien.Models
+{
+    /// <summary>
+    /// Định nghĩa tập trung tất cả trạng thái của Appointment.
+    /// Dùng static class thay vì enum để tương thích với int trong DB.
+    /// </summary>
+    public static class AppointmentStatus
+    {
+        public const int ChuaDen        = 0;   // Hẹn online, chưa check-in
+        public const int ChoKham        = 1;   // Đã đến, xếp hàng chờ bác sĩ
+        public const int DangKham       = 2;   // Bác sĩ đang khám lâm sàng
+        public const int ChoXetNghiem  = 3;   // Bác sĩ đã chỉ định XN/siêu âm
+        public const int ChoKetQua     = 4;   // Phòng XN đã tiếp nhận, chờ trả kết quả
+        public const int ChoToaThuoc   = 5;   // Có KQ XN, BN chờ bác sĩ kê đơn
+        public const int ChoThanhToan  = 6;   // Bác sĩ đã kê đơn, BN ra thu ngân
+        public const int ChoLayThuoc   = 7;   // Đã đóng tiền, chờ nhà thuốc phát thuốc
+        public const int HenTaiKham    = 8;   // Hoàn thành, có lịch tái khám
+        public const int DaXacNhan     = 9;   // Hẹn online đã được bác sĩ xác nhận
+        public const int HoanThanh     = 10;  // Xong hoàn toàn, ra về không tái khám
+        public const int NhapVien      = 11;  // Bác sĩ chỉ định điều trị nội trú
 
-3. HỆ THỐNG GỌI SỐ TỰ ĐỘNG BẰNG GIỌNG NÓI TIẾNG VIỆT (TEXT-TO-SPEECH QUEUEING)
-- Mô tả: Ở các bệnh viện lớn luôn có loa gọi số. Ta sẽ tích hợp API Text-To-Speech (như Google TTS hoặc Zalo AI) vào màn hình Tiếp đón và màn hình Bác sĩ. Khi bác sĩ bấm nút "Gọi bệnh nhân tiếp theo", hệ thống không chỉ đổi số trên màn hình (bằng SignalR) mà còn phát ra giọng nói đọc tên: "Mời bệnh nhân Nguyễn Văn A vào phòng khám số 3". Rất trực quan và thực tế.
+        /// <summary>Trả về tên hiển thị tiếng Việt cho từng trạng thái</summary>
+        public static string GetLabel(int status) => status switch
+        {
+            ChuaDen       => "Chưa đến",
+            ChoKham       => "Chờ khám",
+            DangKham      => "Đang khám",
+            ChoXetNghiem  => "Chờ xét nghiệm",
+            ChoKetQua     => "Chờ kết quả",
+            ChoToaThuoc   => "Chờ toa thuốc",
+            ChoThanhToan  => "Chờ thanh toán",
+            ChoLayThuoc   => "Chờ lấy thuốc",
+            HenTaiKham    => "Hẹn tái khám",
+            DaXacNhan     => "Đã xác nhận",
+            HoanThanh     => "Hoàn thành",
+            NhapVien      => "Nhập viện",
+            _             => "Không xác định"
+        };
 
-4. TELEMEDICINE: KHÁM BỆNH TỪ XA QUA VIDEO CALL TRỰC TIẾP
-- Mô tả: Bệnh nhân không cần đến bệnh viện. Tích hợp công nghệ WebRTC (ZegoCloud hoặc Jitsi) thẳng vào web. Đến giờ hẹn, bác sĩ và bệnh nhân bấm nút tham gia phòng khám ảo, gọi Video Call trực tiếp ngay trên trình duyệt mà không cần cài thêm Zoom/Google Meet.
+        /// <summary>Trả về CSS class Bootstrap badge cho từng trạng thái</summary>
+        public static string GetBadgeClass(int status) => status switch
+        {
+            ChuaDen       => "bg-secondary",
+            ChoKham       => "bg-warning text-dark",
+            DangKham      => "bg-primary",
+            ChoXetNghiem  => "bg-info text-dark",
+            ChoKetQua     => "bg-purple text-white",   // thêm .bg-purple vào CSS
+            ChoToaThuoc   => "bg-orange text-white",   // thêm .bg-orange vào CSS
+            ChoThanhToan  => "bg-danger",
+            ChoLayThuoc   => "bg-teal text-white",     // thêm .bg-teal vào CSS
+            HenTaiKham    => "bg-info",
+            DaXacNhan     => "bg-success",
+            HoanThanh     => "bg-success",
+            NhapVien      => "bg-dark",
+            _             => "bg-secondary"
+        };
+    }
+}
 
-5. CHATBOT Y TẾ TỰ ĐỘNG KHAI THÁC TRIỆU CHỨNG (MEDICAL NLP CHATBOT)
-- Mô tả: Một con Bot (như bong bóng chat góc phải) dùng AI (Natural Language Processing) tích hợp vào cổng Bệnh nhân. Khi bệnh nhân nhắn: "Tôi bị đau quặn bụng dưới bên phải kèm buồn nôn", Chatbot tự động chẩn đoán sơ bộ là nghi ngờ "Viêm ruột thừa" và gợi ý bệnh nhân đăng ký khám gấp ở "Khoa Cấp Cứu" hoặc "Khoa Ngoại". Giảm tải cực lớn cho nhân viên điều phối.
+─────────────────────────────────────────────────────────────────
+THÊM VÀO wwwroot/css/site.css  (Các màu badge tuỳ chỉnh)
+─────────────────────────────────────────────────────────────────
+/* Badge màu tùy chỉnh cho trạng thái bệnh án */
+.bg-purple { background-color: #7c3aed !important; }
+.bg-orange  { background-color: #ea580c !important; }
+.bg-teal    { background-color: #0d9488 !important; }
 
--------------------
-Đánh giá: 5 tính năng này hoàn toàn khác biệt với các module Quản lý/Thống kê/Viện phí thông thường. Bạn hãy gửi file này cho cô giáo xem thử nhé. Mức độ "Pro" là khỏi bàn!
-AI Diagnostic Imaging Integration
-Tích hợp tính năng AI Vision để nhận diện hình ảnh y khoa (X-Quang, CT), tự động quét và khoanh vùng các vị trí bất thường khi kỹ thuật viên tải ảnh lên, nhằm tăng tính chuyên nghiệp và hiện đại cho hệ thống.
+─────────────────────────────────────────────────────────────────
+SỬA: Models/Appointment.cs  (Cập nhật comment cho rõ ràng)
+─────────────────────────────────────────────────────────────────
+// Tìm dòng:
+//   public int Status { get; set; }
+// Thay bằng:
 
-User Review Required
-Tính năng này sẽ mô phỏng một AI thật bằng cách xử lý ảnh ở Backend (vẽ khung đỏ báo hiệu bất thường lên ảnh) kết hợp với hiệu ứng quét (scanning animation) cực kỳ chuyên nghiệp ở Frontend. Bạn có đồng ý với hướng đi mô phỏng (mock AI) này để phục vụ mục đích Demo tạo ấn tượng mạnh không?
+        /// <summary>
+        /// Trạng thái lịch hẹn. Xem AppointmentStatus để biết giá trị cụ thể.
+        /// 0=Chưa đến | 1=Chờ khám | 2=Đang khám | 3=Chờ XN | 4=Chờ KQ
+        /// 5=Chờ toa | 6=Chờ TT | 7=Chờ thuốc | 8=Hẹn TK | 9=Đã XN | 10=Xong | 11=Nhập viện
+        /// </summary>
+        public int Status { get; set; } = AppointmentStatus.ChuaDen;
 
-Proposed Changes
-Dependencies
-Cài đặt thêm thư viện SixLabors.ImageSharp.Drawing (phiên bản tương thích với SixLabors.ImageSharp hiện tại) để hỗ trợ vẽ khung chữ nhật đỏ và text lên ảnh chẩn đoán.
-Backend
-[MODIFY] 
-DoctorController.cs
-Cập nhật class UpdateLabTestItem: thêm thuộc tính public string? AiImageUrl { get; set; } để lưu URL ảnh đã được AI xử lý.
-Thêm API AnalyzeImageAi(IFormFile imageFile):
-Nhận file ảnh tải lên.
-Sử dụng ImageSharp để vẽ một khung đỏ (bounding box) mô phỏng AI phát hiện tổn thương/khối u và gán nhãn text (VD: "Bất thường phát hiện - Độ tin cậy: 98.5%").
-Lưu ảnh đã xử lý vào thư mục wwwroot/uploads với tiền tố ai_....
-Trả về JSON: { success = true, imageUrl = "...", resultText = "..." }.
-Cập nhật hàm CapNhatKetQuaXetNghiemNhom: ưu tiên lưu item.AiImageUrl vào Database (vào trường ImageUrl của LabTest) nếu kỹ thuật viên đã sử dụng tính năng quét AI, thay vì lưu file gốc.
-Frontend
-[MODIFY] 
-KetQuaCanLamSang.cshtml
-Thêm nút "Quét AI Vision" (màu đỏ/tím nổi bật) kế bên ô input tải ảnh.
-Thêm CSS Animations để tạo hiệu ứng "AI Scanning" (tia laser chạy qua lại trên ảnh preview) nhằm tạo ấn tượng mạnh (Wow factor).
-Tích hợp AJAX (fetch):
-Khi nhấn nút Quét, gửi file ảnh lên API AnalyzeImageAi.
-Nhận kết quả về: tự động điền kết quả vào ô input (VD: "Phát hiện khối u mờ ở phổi"), hiện ảnh đã khoanh vùng, và cập nhật hidden field AiImageUrl để sẵn sàng submit form.
-Verification Plan
-Manual Verification
-Truy cập vào trang "Kết Quả Cận Lâm Sàng".
-Chọn một bệnh nhân đang "Chờ xét nghiệm".
-Chọn một file ảnh (X-Quang/CT) và nhấn "Quét AI Vision".
-Kiểm tra xem hiệu ứng quét có chạy không, và sau đó ảnh có hiện ra cùng khung màu đỏ và thông báo kết quả được tự động điền hay không.
-Bấm "Cập nhật tất cả", chuyển sang xem "Hồ sơ bệnh án" để chắc chắn ảnh có lưu đúng ảnh có khung đỏ của AI.
+─────────────────────────────────────────────────────────────────
+ĐỒNG BỘ switch-case trong Views (dùng @using HeThongBenhVien.Models)
+─────────────────────────────────────────────────────────────────
+Trong tất cả View (DanhSach, Dashboard, ChiTietBenhAn), thay toàn bộ 
+switch-case cứng (case 0, case 1...) bằng:
+
+@{
+    // Ví dụ lấy label và badge cho 1 appointment
+    var statusLabel = AppointmentStatus.GetLabel(item.Status);
+    var statusBadge = AppointmentStatus.GetBadgeClass(item.Status);
+}
+<span class="badge @statusBadge rounded-pill">@statusLabel</span>
+
+Thêm dòng này vào đầu mỗi View cần dùng:
+@using HeThongBenhVien.Models
+
+
+================================================================
+CHỨC NĂNG 2: TỐI ƯU DASHBOARD BÁC SĨ - CẢNH BÁO ƯU TIÊN
+================================================================
+
+─────────────────────────────────────────────────────────────────
+SỬA: Models/DoctorDashboardViewModel.cs
+─────────────────────────────────────────────────────────────────
+namespace HeThongBenhVien.Models
+{
+    public class DoctorDashboardViewModel
+    {
+        // --- Giữ nguyên các field cũ ---
+        public int TodayPatientsCount { get; set; }
+        public int CompletedPatientsCount { get; set; }
+        public int WaitingResultsCount { get; set; }
+        public int EmergencyCount { get; set; }
+        public List<Appointment> UpcomingAppointments { get; set; } = new();
+        public List<Appointment> PendingOnlineAppointments { get; set; } = new();
+        public List<Appointment> ConfirmedAppointments { get; set; } = new();
+        public List<LichLamViec> WorkSchedules { get; set; } = new();
+        public int? CurrentUserId { get; set; }
+        public int CurrentMonth { get; set; }
+        public int CurrentYear { get; set; }
+        public string SearchString { get; set; } = string.Empty;
+        public List<Patient> Patients { get; set; } = new();
+
+        // --- THÊM MỚI cho cảnh báo ưu tiên ---
+        /// <summary>BN đang ở trạng thái "Chờ toa thuốc" (Status=5) - cần bác sĩ kê đơn ngay</summary>
+        public int WaitingPrescriptionCount { get; set; }
+
+        /// <summary>BN chờ khám > 30 phút</summary>
+        public int OverdueWaitingCount { get; set; }
+
+        /// <summary>Danh sách lịch mổ hôm nay</summary>
+        public List<Surgery> TodaySurgeries { get; set; } = new();
+
+        /// <summary>Danh sách BN hẹn tái khám hôm nay (Status=8, AppointmentTime.Date == Today)</summary>
+        public List<Appointment> TodayFollowUps { get; set; } = new();
+    }
+}
+
+─────────────────────────────────────────────────────────────────
+SỬA: Controllers/DoctorController.cs  – Action Dashboard
+─────────────────────────────────────────────────────────────────
+// Thêm vào sau phần khởi tạo viewModel (sau dòng SearchString = searchString ?? ...), 
+// TRƯỚC câu lệnh return View(viewModel):
+
+            // === THÊM MỚI: Tính số BN chờ toa thuốc ===
+            viewModel.WaitingPrescriptionCount = await myAppointmentsQuery
+                .CountAsync(a => a.Status == AppointmentStatus.ChoToaThuoc);
+
+            // === THÊM MỚI: Tính số BN chờ khám quá 30 phút ===
+            var thirtyMinAgo = DateTime.Now.AddMinutes(-30);
+            viewModel.OverdueWaitingCount = await myAppointmentsQuery
+                .CountAsync(a => a.Status == AppointmentStatus.ChoKham 
+                              && a.AppointmentTime <= thirtyMinAgo);
+
+            // === THÊM MỚI: Lịch mổ hôm nay ===
+            viewModel.TodaySurgeries = await _context.Surgeries
+                .Include(s => s.Patient)
+                .Where(s => s.ScheduledDate.Date == DateTime.Today
+                         && s.Status != "Hủy")
+                .OrderBy(s => s.ScheduledDate)
+                .ToListAsync();
+
+            // === THÊM MỚI: BN tái khám hôm nay ===
+            viewModel.TodayFollowUps = await myAppointmentsQuery
+                .Include(a => a.Patient)
+                .Where(a => a.Status == AppointmentStatus.HenTaiKham
+                         && a.AppointmentTime.Date == DateTime.Today)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+─────────────────────────────────────────────────────────────────
+SỬA: Views/Doctor/Dashboard.cshtml – Thêm Banner cảnh báo ưu tiên
+─────────────────────────────────────────────────────────────────
+Chèn đoạn code này NGAY SAU thẻ <div class="container-fluid p-0">
+và TRƯỚC phần <!-- Header Section -->:
+
+@using HeThongBenhVien.Models
+
+@* === BANNER CẢNH BÁO ƯU TIÊN - THÊM MỚI === *@
+@if (Model.OverdueWaitingCount > 0)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-3 mb-3 shadow-sm" 
+         role="alert" style="border-radius:12px; border-left: 5px solid #dc2626;">
+        <div style="font-size:2rem;">🔴</div>
+        <div>
+            <strong>Cảnh báo khẩn!</strong> 
+            Có <strong>@Model.OverdueWaitingCount bệnh nhân</strong> đã chờ khám 
+            <span class="text-danger fw-bold">quá 30 phút</span>. 
+            Vui lòng ưu tiên khám ngay!
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.WaitingPrescriptionCount > 0)
+{
+    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center gap-3 mb-3 shadow-sm" 
+         role="alert" style="border-radius:12px; border-left: 5px solid #f59e0b;">
+        <div style="font-size:2rem;">⚠️</div>
+        <div>
+            <strong>Chú ý!</strong> 
+            Có <strong>@Model.WaitingPrescriptionCount bệnh nhân</strong> đang ở trạng thái 
+            <span class="badge bg-orange text-white">Chờ toa thuốc</span> 
+            — cần bác sĩ kê đơn sớm.
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+─────────────────────────────────────────────────────────────────
+SỬA: Views/Doctor/Dashboard.cshtml – Thêm cột "Thời gian chờ"
+─────────────────────────────────────────────────────────────────
+// Trong bảng danh sách chờ khám (tab appointment-pane),
+// tìm dòng <th class="border-0">Trạng thái</th>
+// THÊM TRƯỚC dòng đó:
+<th class="border-0">Chờ</th>
+
+// Trong vòng lặp @foreach (var item in Model.UpcomingAppointments),
+// THÊM ô td "Thời gian chờ" trước ô Status:
+@{
+    var waitMinutes = (int)(DateTime.Now - item.AppointmentTime).TotalMinutes;
+    string waitColor = waitMinutes > 30 ? "text-danger fw-bold" 
+                     : waitMinutes > 15 ? "text-warning fw-bold" 
+                     : "text-muted";
+    string waitDisplay = waitMinutes < 0 ? "-"
+                       : waitMinutes < 60 ? $"{waitMinutes} phút"
+                       : $"{waitMinutes/60}h{waitMinutes%60}m";
+}
+<td class="@waitColor" style="white-space:nowrap;">
+    <i class="fa-regular fa-clock me-1"></i>@waitDisplay
+</td>
+
+─────────────────────────────────────────────────────────────────
+THÊM VÀO: Views/Doctor/Dashboard.cshtml – 2 Widget mới (cuối trang)
+─────────────────────────────────────────────────────────────────
+Thêm đoạn này vào cuối phần main content (sau row Charts hoặc sau row Main Content):
+
+<div class="row mt-4">
+    <!-- Widget: Lịch mổ & họp hôm nay -->
+    <div class="col-xl-6 mb-4">
+        <div class="glass-card h-100 p-4 border-top border-4 border-danger">
+            <h6 class="font-weight-bold text-danger mb-3">
+                <i class="fa-solid fa-scalpel me-2"></i>Lịch Mổ Hôm Nay
+                <span class="badge bg-danger ms-2">@Model.TodaySurgeries.Count</span>
+            </h6>
+            @if (!Model.TodaySurgeries.Any())
+            {
+                <p class="text-muted fst-italic">Không có lịch mổ nào hôm nay.</p>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var s in Model.TodaySurgeries)
+                    {
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold text-dark">@s.SurgeryName</div>
+                                    <small class="text-muted">
+                                        BN: @s.Patient?.FullName | Phòng: @s.OperatingRoom | BS: @s.Surgeon
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-danger">@s.ScheduledDate.ToString("HH:mm")</div>
+                                    <small class="badge @(s.Status == "Lên lịch" ? "bg-warning text-dark" : s.Status == "Đang mổ" ? "bg-danger" : "bg-success")">
+                                        @s.Status
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Widget: Bệnh nhân tái khám hôm nay -->
+    <div class="col-xl-6 mb-4">
+        <div class="glass-card h-100 p-4 border-top border-4 border-info">
+            <h6 class="font-weight-bold text-info mb-3">
+                <i class="fa-solid fa-rotate-right me-2"></i>Tái Khám Hôm Nay
+                <span class="badge bg-info ms-2">@Model.TodayFollowUps.Count</span>
+            </h6>
+            @if (!Model.TodayFollowUps.Any())
+            {
+                <p class="text-muted fst-italic">Không có bệnh nhân tái khám hôm nay.</p>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var f in Model.TodayFollowUps)
+                    {
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark">@f.Patient?.FullName</div>
+                                    <small class="text-muted">@f.Reason | @f.AppointmentTime.ToString("HH:mm")</small>
+                                </div>
+                                <a href="@Url.Action("ConfirmFollowUp", "Doctor", new { id = f.Id })"
+                                   class="btn btn-sm btn-outline-info rounded-pill px-3"
+                                   title="Xác nhận bệnh nhân đã đến tái khám">
+                                    Xác nhận đến
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+================================================================
+CHỨC NĂNG 3: TRANG TIMELINE LỊCH SỬ ĐIỀU TRỊ
+================================================================
+
+─────────────────────────────────────────────────────────────────
+THÊM VÀO: Controllers/DoctorController.cs – Action LichSuDieuTri
+─────────────────────────────────────────────────────────────────
+
+        public async Task<IActionResult> LichSuDieuTri(int patientId)
+        {
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null) return NotFound();
+
+            // Lấy tất cả lịch hẹn của bệnh nhân có bệnh án
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.AppointmentTime)   // Mới nhất lên đầu
+                .ToListAsync();
+
+            var appointmentIds = appointments.Select(a => a.Id).ToList();
+
+            // Lấy hết Medical Records liên quan
+            var medicalRecords = await _context.MedicalRecords
+                .Where(mr => appointmentIds.Contains(mr.AppointmentId))
+                .ToListAsync();
+
+            var medicalRecordIds = medicalRecords.Select(mr => mr.Id).ToList();
+
+            // Lấy Vital Signs theo từng Appointment
+            var vitalSigns = await _context.VitalSigns
+                .Where(v => appointmentIds.Contains(v.AppointmentId))
+                .ToListAsync();
+
+            // Lấy Lab Tests theo từng Medical Record
+            var labTests = await _context.LabTests
+                .Where(lt => medicalRecordIds.Contains(lt.MedicalRecordId))
+                .ToListAsync();
+
+            // Lấy Prescriptions + Details
+            var prescriptions = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .Where(p => medicalRecordIds.Contains(p.MedicalRecordId))
+                .ToListAsync();
+
+            // Truyền dữ liệu sang View qua ViewBag
+            ViewBag.Patient        = patient;
+            ViewBag.MedicalRecords = medicalRecords;
+            ViewBag.VitalSigns     = vitalSigns;
+            ViewBag.LabTests       = labTests;
+            ViewBag.Prescriptions  = prescriptions;
+
+            return View(appointments);   // Model = List<Appointment>
+        }
+
+        // Action xác nhận bệnh nhân đến tái khám
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmFollowUp(int id)
+        {
+            var appt = await _context.Appointments.FindAsync(id);
+            if (appt != null && appt.Status == AppointmentStatus.HenTaiKham)
+            {
+                appt.Status = AppointmentStatus.ChoKham;
+                await _context.SaveChangesAsync();
+                TempData["DoctorNotificationSuccess"] = "Đã xác nhận bệnh nhân tái khám vào hàng chờ.";
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+─────────────────────────────────────────────────────────────────
+TẠO MỚI: Views/Doctor/LichSuDieuTri.cshtml
+─────────────────────────────────────────────────────────────────
+
+@model IEnumerable<HeThongBenhVien.Models.Appointment>
+@using HeThongBenhVien.Models
+@{
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewData["Title"] = "Lịch Sử Điều Trị";
+
+    var patient       = ViewBag.Patient as Patient;
+    var records       = ViewBag.MedicalRecords as List<MedicalRecord> ?? new();
+    var vitalSigns    = ViewBag.VitalSigns as List<VitalSign> ?? new();
+    var labTests      = ViewBag.LabTests as List<LabTest> ?? new();
+    var prescriptions = ViewBag.Prescriptions as List<Prescription> ?? new();
+}
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1" style="font-weight:700; color:#1e293b;">
+                <i class="fa-solid fa-timeline text-primary me-2"></i>Lịch Sử Điều Trị
+            </h2>
+            <p class="text-muted mb-0">
+                Bệnh nhân: <strong>@patient?.FullName</strong> 
+                | Mã: <strong>@patient?.PatientCode</strong>
+                | Tổng số lần khám: <strong>@Model.Count()</strong>
+            </p>
+        </div>
+        <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-secondary px-4" style="border-radius:10px;">
+            <i class="fa-solid fa-arrow-left me-2"></i>Trở về
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="glass-card text-center p-5">
+            <i class="fa-solid fa-folder-open fs-1 text-muted mb-3"></i>
+            <h5 class="text-muted">Chưa có lịch sử khám bệnh nào.</h5>
+        </div>
+    }
+
+    <!-- TIMELINE -->
+    <div class="timeline-container" style="position:relative; padding-left: 40px;">
+        <!-- Đường dọc trục thời gian -->
+        <div style="position:absolute; left:20px; top:0; bottom:0; width:3px; background:linear-gradient(to bottom, #0ea5e9, #e2e8f0);"></div>
+
+        @foreach (var appt in Model)
+        {
+            // Lấy dữ liệu liên quan của lần khám này
+            var record = records.FirstOrDefault(r => r.AppointmentId == appt.Id);
+            var vital  = vitalSigns.FirstOrDefault(v => v.AppointmentId == appt.Id);
+            var labs   = record != null ? labTests.Where(lt => lt.MedicalRecordId == record.Id).ToList() : new();
+            var rx     = record != null ? prescriptions.FirstOrDefault(p => p.MedicalRecordId == record.Id) : null;
+            bool isAdmitted = record?.AdmissionDate.HasValue == true;
+
+            <div class="timeline-item mb-4" style="position:relative;">
+                <!-- Chấm trên trục -->
+                <div style="position:absolute; left:-28px; top:16px; width:18px; height:18px; 
+                            border-radius:50%; background:#0ea5e9; border:3px solid white; 
+                            box-shadow:0 0 0 3px #0ea5e9;"></div>
+
+                <div class="glass-card p-4 border-start border-4 @(isAdmitted ? "border-dark" : "border-primary")">
+                    <!-- Tiêu đề lần khám -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="fa-solid fa-calendar-day text-primary me-2"></i>
+                                @appt.AppointmentTime.ToString("dd/MM/yyyy HH:mm")
+                            </h6>
+                            <small class="text-muted">Bác sĩ: @(appt.Doctor?.FullName ?? "N/A")</small>
+                        </div>
+                        <span class="badge @AppointmentStatus.GetBadgeClass(appt.Status) rounded-pill">
+                            @AppointmentStatus.GetLabel(appt.Status)
+                        </span>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Chẩn đoán lâm sàng -->
+                        @if (record != null)
+                        {
+                            <div class="col-md-12">
+                                <div class="p-3 rounded" style="background:#f8fafc;">
+                                    <div class="fw-semibold text-primary mb-2">
+                                        <i class="fa-solid fa-stethoscope me-1"></i>Kết quả khám lâm sàng
+                                    </div>
+                                    <div><small class="text-muted">Triệu chứng:</small> @record.Symptoms</div>
+                                    <div><small class="text-muted">Chẩn đoán:</small> <strong>@record.Diagnosis</strong></div>
+                                    <div><small class="text-muted">Hướng điều trị:</small> @record.TreatmentPlan</div>
+                                    @if (isAdmitted)
+                                    {
+                                        <div class="mt-2">
+                                            <span class="badge bg-dark">
+                                                <i class="fa-solid fa-bed me-1"></i>Nhập viện: @record.AdmissionDate?.ToString("dd/MM/yyyy")
+                                                @if (record.DischargeDate.HasValue)
+                                                { <text> → Xuất: @record.DischargeDate?.ToString("dd/MM/yyyy")</text> }
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Sinh hiệu -->
+                        @if (vital != null)
+                        {
+                            <div class="col-md-4">
+                                <div class="p-3 rounded" style="background:#fefce8;">
+                                    <div class="fw-semibold text-warning mb-2">
+                                        <i class="fa-solid fa-heart-pulse me-1"></i>Sinh hiệu
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @if (!string.IsNullOrEmpty(vital.Pulse))
+                                        { <span class="badge bg-warning text-dark"><i class="fa-solid fa-heart me-1"></i>Mạch: @vital.Pulse l/p</span> }
+                                        @if (!string.IsNullOrEmpty(vital.Temperature))
+                                        { <span class="badge bg-orange text-white"><i class="fa-solid fa-thermometer me-1"></i>Nhiệt: @vital.Temperature °C</span> }
+                                        @if (!string.IsNullOrEmpty(vital.BloodPressure))
+                                        { <span class="badge bg-danger"><i class="fa-solid fa-gauge me-1"></i>HA: @vital.BloodPressure mmHg</span> }
+                                        @if (!string.IsNullOrEmpty(vital.SpO2))
+                                        { <span class="badge bg-info text-dark"><i class="fa-solid fa-lungs me-1"></i>SpO2: @vital.SpO2%</span> }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Kết quả xét nghiệm -->
+                        @if (labs.Any())
+                        {
+                            <div class="col-md-4">
+                                <div class="p-3 rounded" style="background:#f0fdf4;">
+                                    <div class="fw-semibold text-success mb-2">
+                                        <i class="fa-solid fa-flask me-1"></i>Xét nghiệm
+                                    </div>
+                                    @foreach (var lab in labs)
+                                    {
+                                        <div class="d-flex justify-content-between small border-bottom py-1">
+                                            <span>@lab.TestName</span>
+                                            <span class="text-muted">@(lab.Result ?? "Chờ KQ")</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Đơn thuốc -->
+                        @if (rx != null && rx.PrescriptionDetails.Any())
+                        {
+                            <div class="col-md-4">
+                                <div class="p-3 rounded" style="background:#eff6ff;">
+                                    <div class="fw-semibold text-primary mb-2">
+                                        <i class="fa-solid fa-pills me-1"></i>Đơn thuốc
+                                        <small class="text-muted">(Kê: @rx.CreatedAt.ToString("dd/MM"))</small>
+                                    </div>
+                                    @foreach (var detail in rx.PrescriptionDetails)
+                                    {
+                                        <div class="small border-bottom py-1">
+                                            <strong>@detail.MedicineName</strong>
+                                            <span class="text-muted ms-1">@detail.Quantity @detail.Unit</span>
+                                            <div class="text-muted" style="font-size:11px;">@detail.DosageInstruction</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+─────────────────────────────────────────────────────────────────
+SỬA: Views/Doctor/HoSoBenhAn.cshtml – Thêm nút "Lịch sử điều trị"
+─────────────────────────────────────────────────────────────────
+// Tìm vòng lặp foreach hiển thị danh sách hồ sơ, thêm nút này vào phần hành động:
+// (Nằm cạnh nút "Chi tiết" hiện có)
+
+<a href="@Url.Action("LichSuDieuTri", "Doctor", new { patientId = item.Appointment?.PatientId })"
+   class="btn btn-sm btn-outline-purple rounded-pill px-3 me-1" 
+   style="border-color:#7c3aed; color:#7c3aed;"
+   title="Xem toàn bộ lịch sử điều trị">
+    <i class="fa-solid fa-timeline me-1"></i>Lịch sử
+</a>
+
+
+================================================================
+CHỨC NĂNG 4: NÂNG CẤP KÊ ĐƠN THUỐC - AUTOCOMPLETE + KIỂM TRA TỒN KHO
+================================================================
+
+─────────────────────────────────────────────────────────────────
+THÊM VÀO: Controllers/DoctorController.cs – API tìm kiếm thuốc
+─────────────────────────────────────────────────────────────────
+
+        // API trả về JSON danh sách thuốc khớp từ khóa (cho autocomplete)
+        [HttpGet]
+        public async Task<IActionResult> SearchMedicine(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return Json(new List<object>());
+
+            var medicines = await _context.Medicines
+                .Where(m => m.IsActive && m.Name.Contains(keyword))
+                .Select(m => new {
+                    id         = m.Id,
+                    name       = m.Name,
+                    unit       = m.Unit,
+                    price      = m.Price,
+                    stock      = m.StockQuantity,
+                    isActive   = m.IsActive,
+                    category   = m.Category
+                })
+                .Take(10)
+                .ToListAsync();
+
+            return Json(medicines);
+        }
+
+        // API kiểm tra trạng thái 1 thuốc cụ thể (gọi khi bác sĩ chọn thuốc)
+        [HttpGet]
+        public async Task<IActionResult> CheckMedicine(int id)
+        {
+            var med = await _context.Medicines.FindAsync(id);
+            if (med == null)
+                return Json(new { found = false });
+
+            return Json(new {
+                found    = true,
+                name     = med.Name,
+                isActive = med.IsActive,
+                stock    = med.StockQuantity,
+                minStock = med.MinStock,
+                price    = med.Price,
+                unit     = med.Unit
+            });
+        }
+
+        // Action gọi khi lưu đơn thuốc - tự động chuyển Status = 6
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LuuToaThuoc(int prescriptionId, string medicineName, 
+                                                       int quantity, string unit, 
+                                                       decimal price, string dosage)
+        {
+            var prescription = await _context.Prescriptions
+                .Include(p => p.MedicalRecord)
+                .FirstOrDefaultAsync(p => p.Id == prescriptionId);
+
+            if (prescription == null) return NotFound();
+
+            // Thêm chi tiết đơn thuốc
+            var detail = new PrescriptionDetail
+            {
+                PrescriptionId    = prescriptionId,
+                MedicineName      = medicineName,
+                Quantity          = quantity,
+                Unit              = unit,
+                Price             = price,
+                DosageInstruction = dosage
+            };
+            _context.PrescriptionDetails.Add(detail);
+
+            // Kiểm tra và trừ tồn kho
+            var medicine = await _context.Medicines
+                .FirstOrDefaultAsync(m => m.Name == medicineName && m.IsActive);
+            if (medicine != null && medicine.StockQuantity >= quantity)
+            {
+                medicine.StockQuantity -= quantity;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Tự động chuyển Appointment.Status = 6 (Chờ thanh toán)
+            // khi bác sĩ bấm "Hoàn tất kê đơn" (xem nút riêng HoanTatKeDon)
+            TempData["KeDonSuccess"] = $"Đã thêm {medicineName} vào toa thuốc.";
+
+            return RedirectToAction(nameof(KeDonThuocForm), 
+                                    new { id = prescription.MedicalRecordId });
+        }
+
+        // Action hoàn tất kê đơn -> chuyển status = 6
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HoanTatKeDon(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt == null) return NotFound();
+
+            if (appt.Status == AppointmentStatus.ChoToaThuoc)
+            {
+                appt.Status = AppointmentStatus.ChoThanhToan;
+                await _context.SaveChangesAsync();
+                TempData["DoctorNotificationSuccess"] = "Hoàn tất kê đơn. Bệnh nhân đã chuyển sang Chờ thanh toán.";
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+─────────────────────────────────────────────────────────────────
+SỬA: Views/Doctor/KeDonThuocForm.cshtml – Autocomplete + Cảnh báo
+─────────────────────────────────────────────────────────────────
+@* THAY PHẦN nhập "Tên Thuốc" thủ công bằng đoạn sau: *@
+
+<div class="mb-3 position-relative">
+    <label class="form-label text-secondary fw-semibold">Tên Thuốc</label>
+    <input type="text" id="medicineSearch" class="form-control" 
+           placeholder="Gõ tên thuốc để tìm kiếm..." autocomplete="off" required>
+    <input type="hidden" id="medicineId" name="medicineId">
+    <input type="hidden" name="medicineName" id="medicineNameHidden">
+
+    <!-- Dropdown gợi ý -->
+    <ul id="medicineDropdown" class="list-group position-absolute w-100 shadow-sm z-3 d-none"
+        style="max-height:220px; overflow-y:auto; top:100%; z-index:9999;">
+    </ul>
+
+    <!-- Cảnh báo trạng thái thuốc -->
+    <div id="medicineAlert" class="mt-2"></div>
+</div>
+
+@* Thêm nút "Hoàn tất kê đơn" bên dưới danh sách thuốc trong đơn *@
+<form asp-action="HoanTatKeDon" asp-controller="Doctor" method="post" class="mt-3">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="appointmentId" value="@ViewBag.AppointmentId" />
+    <button type="submit" class="btn btn-success w-100 py-2"
+            @(ViewBag.CanFinish == true ? "" : "disabled")>
+        <i class="fa-solid fa-check-circle me-2"></i>Hoàn tất kê đơn → Chuyển Chờ Thanh Toán
+    </button>
+</form>
+
+@section Scripts {
+<script>
+let debounceTimer;
+const searchInput   = document.getElementById('medicineSearch');
+const dropdown      = document.getElementById('medicineDropdown');
+const medicineAlert = document.getElementById('medicineAlert');
+const medicineNameH = document.getElementById('medicineNameHidden');
+const priceInput    = document.getElementById('priceInput');
+const unitSelect    = document.getElementById('unitSelect');
+
+searchInput.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    const q = this.value.trim();
+    if (q.length < 2) { dropdown.classList.add('d-none'); return; }
+
+    debounceTimer = setTimeout(async () => {
+        const res  = await fetch(`/Doctor/SearchMedicine?keyword=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        dropdown.innerHTML = '';
+        if (!data.length) {
+            dropdown.classList.add('d-none');
+            return;
+        }
+        data.forEach(med => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action py-2 px-3';
+            li.style.cursor = 'pointer';
+            li.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <span><strong>${med.name}</strong> <small class="text-muted">(${med.category})</small></span>
+                    <span class="text-muted small">${med.stock} ${med.unit} | ${med.price.toLocaleString()}đ</span>
+                </div>`;
+            li.addEventListener('click', () => selectMedicine(med));
+            dropdown.appendChild(li);
+        });
+        dropdown.classList.remove('d-none');
+    }, 300);
+});
+
+async function selectMedicine(med) {
+    searchInput.value   = med.name;
+    medicineNameH.value = med.name;
+    dropdown.classList.add('d-none');
+
+    // Điền đơn giá và đơn vị tự động
+    if (priceInput) priceInput.value = med.price;
+    if (unitSelect) {
+        // Chọn đúng option theo đơn vị từ DB
+        for (let opt of unitSelect.options) {
+            if (opt.value === med.unit) { opt.selected = true; break; }
+        }
+    }
+
+    // Kiểm tra tồn kho và trạng thái
+    const res  = await fetch(`/Doctor/CheckMedicine?id=${med.id}`);
+    const info = await res.json();
+    medicineAlert.innerHTML = '';
+
+    if (!info.isActive) {
+        medicineAlert.innerHTML = `
+            <div class="alert alert-danger py-2 mb-0">
+                <i class="fa-solid fa-ban me-1"></i>
+                <strong>Thuốc ngừng cung cấp</strong> — Không thể kê đơn thuốc này.
+            </div>`;
+    } else if (info.stock === 0) {
+        medicineAlert.innerHTML = `
+            <div class="alert alert-warning py-2 mb-0">
+                <i class="fa-solid fa-exclamation-triangle me-1"></i>
+                <strong>Thuốc đã hết hàng tại nhà thuốc</strong> — Tồn kho: 0.
+            </div>`;
+    } else if (info.stock <= info.minStock) {
+        medicineAlert.innerHTML = `
+            <div class="alert alert-warning py-2 mb-0">
+                <i class="fa-solid fa-warehouse me-1"></i>
+                Tồn kho thấp: <strong>${info.stock} ${info.unit}</strong> (tối thiểu: ${info.minStock}).
+            </div>`;
+    } else {
+        medicineAlert.innerHTML = `
+            <div class="alert alert-success py-2 mb-0">
+                <i class="fa-solid fa-check-circle me-1"></i>
+                Tồn kho: <strong>${info.stock} ${info.unit}</strong>. Sẵn sàng kê đơn.
+            </div>`;
+    }
+}
+
+// Ẩn dropdown khi click ra ngoài
+document.addEventListener('click', e => {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target))
+        dropdown.classList.add('d-none');
+});
+</script>
+}
+
+
+================================================================
+CHỨC NĂNG 5: QUY TRÌNH TÁI KHÁM & NHẬP VIỆN
+================================================================
+
+─────────────────────────────────────────────────────────────────
+THÊM VÀO: Controllers/DoctorController.cs
+─────────────────────────────────────────────────────────────────
+
+        // Bác sĩ tạo lịch tái khám từ ChiTietBenhAn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TaoTaiKham(int appointmentId, 
+                                                     DateTime ngayTaiKham, 
+                                                     string lyDoTaiKham)
+        {
+            var currentAppt = await _context.Appointments
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (currentAppt == null) return NotFound();
+
+            // Cập nhật trạng thái lịch hẹn cũ
+            currentAppt.Status = AppointmentStatus.HenTaiKham;
+
+            // Tạo Appointment mới cho lần tái khám
+            var newAppt = new Appointment
+            {
+                PatientId       = currentAppt.PatientId,
+                DoctorId        = currentAppt.DoctorId,
+                Reason          = $"[Tái khám - từ lần khám {currentAppt.AppointmentTime:dd/MM/yyyy}] {lyDoTaiKham}",
+                AppointmentTime = ngayTaiKham,
+                Status          = AppointmentStatus.HenTaiKham
+            };
+            _context.Appointments.Add(newAppt);
+            await _context.SaveChangesAsync();
+
+            TempData["DoctorNotificationSuccess"] = 
+                $"Đã tạo lịch tái khám vào ngày {ngayTaiKham:dd/MM/yyyy}.";
+            return RedirectToAction(nameof(ChiTietByAppointment), new { id = appointmentId });
+        }
+
+        // Bác sĩ chỉ định nhập viện
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChiDinhNhapVien(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt == null) return NotFound();
+
+            appt.Status = AppointmentStatus.NhapVien;
+            await _context.SaveChangesAsync();
+
+            TempData["DoctorNotificationSuccess"] = 
+                "Đã chỉ định nhập viện. Vui lòng xếp giường cho bệnh nhân.";
+
+            // Chuyển hướng đến trang quản lý giường để xếp giường
+            return RedirectToAction("QuanLyGiuong", new { 
+                highlightPatient = appt.PatientId 
+            });
+        }
+
+─────────────────────────────────────────────────────────────────
+THÊM VÀO: Views/Doctor/ChiTietBenhAn.cshtml – Nút Tái khám & Nhập viện
+─────────────────────────────────────────────────────────────────
+@* Thêm vào phần nút hành động (thường ở cuối trang, gần nút "Hoàn tất") *@
+
+<!-- Nút Hẹn Tái Khám -->
+<button class="btn btn-info px-4" data-bs-toggle="modal" data-bs-target="#modalTaiKham">
+    <i class="fa-solid fa-rotate-right me-2"></i>Hẹn Tái Khám
+</button>
+
+<!-- Nút Nhập Viện -->
+<form asp-action="ChiDinhNhapVien" asp-controller="Doctor" method="post" class="d-inline"
+      onsubmit="return confirm('Xác nhận chỉ định nhập viện cho bệnh nhân này?')">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="appointmentId" value="@Model.AppointmentId" />
+    <button type="submit" class="btn btn-dark px-4">
+        <i class="fa-solid fa-bed me-2"></i>Chỉ Định Nhập Viện
+    </button>
+</form>
+
+<!-- Modal Tái Khám -->
+<div class="modal fade" id="modalTaiKham" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 bg-info bg-opacity-10">
+                <h5 class="modal-title fw-bold text-info">
+                    <i class="fa-solid fa-rotate-right me-2"></i>Đặt Lịch Tái Khám
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="TaoTaiKham" asp-controller="Doctor" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="appointmentId" value="@Model.AppointmentId" />
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ngày Tái Khám</label>
+                        <input type="datetime-local" name="ngayTaiKham" class="form-control"
+                               min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:mm")" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Lý do tái khám</label>
+                        <textarea name="lyDoTaiKham" class="form-control" rows="3"
+                                  placeholder="VD: Theo dõi huyết áp sau điều trị..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-info px-4 text-white">
+                        <i class="fa-solid fa-save me-1"></i>Xác nhận Tái Khám
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+================================================================
+CHỨC NĂNG 6: PHÂN RÕ VAI TRÒ - 3 CONTROLLER MỚI
+================================================================
+
+─────────────────────────────────────────────────────────────────
+TẠO MỚI: Controllers/LabController.cs  (Phòng xét nghiệm)
+─────────────────────────────────────────────────────────────────
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HeThongBenhVien.Data;
+using HeThongBenhVien.Models;
+
+namespace HeThongBenhVien.Controllers
+{
+    [Authorize(Roles = "Lab,Admin")]  // Chỉ Phòng XN + Admin
+    public class LabController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        public LabController(ApplicationDbContext context) => _context = context;
+
+        // Danh sách BN cần làm xét nghiệm (Status = 3)
+        public async Task<IActionResult> Index()
+        {
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == AppointmentStatus.ChoXetNghiem)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            // Lấy LabTests cho từng appointment (qua MedicalRecord)
+            var medRecords = await _context.MedicalRecords
+                .Where(mr => appointments.Select(a => a.Id).Contains(mr.AppointmentId))
+                .Include(mr => mr.Appointment)
+                .ToListAsync();
+
+            ViewBag.MedicalRecords = medRecords;
+
+            var labTests = await _context.LabTests
+                .Where(lt => medRecords.Select(mr => mr.Id).Contains(lt.MedicalRecordId)
+                          && lt.Status == "Chờ xét nghiệm")
+                .ToListAsync();
+
+            ViewBag.LabTests = labTests;
+
+            return View(appointments);
+        }
+
+        // Cập nhật kết quả xét nghiệm + chuyển Status = 4 (Chờ KQ)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BatDauXetNghiem(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt != null && appt.Status == AppointmentStatus.ChoXetNghiem)
+            {
+                appt.Status = AppointmentStatus.ChoKetQua;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Nhập kết quả và chuyển Status = 5 (Chờ toa thuốc)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NhapKetQua(int labTestId, string ketQua, 
+                                                     IFormFile? imageFile, int appointmentId)
+        {
+            var labTest = await _context.LabTests.FindAsync(labTestId);
+            if (labTest != null)
+            {
+                labTest.Result      = ketQua;
+                labTest.Status      = "Hoàn thành";
+                labTest.CompletedAt = DateTime.Now;
+
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName  = $"lab_{labTestId}_{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    Directory.CreateDirectory(uploadDir);
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await imageFile.CopyToAsync(stream);
+                    labTest.ImageUrl = "/uploads/" + fileName;
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            // Kiểm tra xem TẤT CẢ lab tests của appointment đã có KQ chưa
+            var medRecord = await _context.MedicalRecords
+                .FirstOrDefaultAsync(mr => mr.AppointmentId == appointmentId);
+            if (medRecord != null)
+            {
+                var allDone = await _context.LabTests
+                    .Where(lt => lt.MedicalRecordId == medRecord.Id)
+                    .AllAsync(lt => lt.Status == "Hoàn thành");
+
+                if (allDone)
+                {
+                    // Toàn bộ XN xong → chuyển sang "Chờ toa thuốc" (Status = 5)
+                    var appt = await _context.Appointments.FindAsync(appointmentId);
+                    if (appt != null && 
+                        (appt.Status == AppointmentStatus.ChoKetQua || 
+                         appt.Status == AppointmentStatus.ChoXetNghiem))
+                    {
+                        appt.Status = AppointmentStatus.ChoToaThuoc;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            TempData["LabSuccess"] = "Đã cập nhật kết quả xét nghiệm.";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
+
+─────────────────────────────────────────────────────────────────
+TẠO MỚI: Controllers/PaymentController.cs  (Bộ phận thanh toán)
+─────────────────────────────────────────────────────────────────
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HeThongBenhVien.Data;
+using HeThongBenhVien.Models;
+
+namespace HeThongBenhVien.Controllers
+{
+    [Authorize(Roles = "Payment,Admin")]  // Chỉ Bộ phận thanh toán + Admin
+    public class PaymentController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        public PaymentController(ApplicationDbContext context) => _context = context;
+
+        // Danh sách BN chờ thanh toán (Status = 6)
+        public async Task<IActionResult> Index()
+        {
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == AppointmentStatus.ChoThanhToan)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // Thu ngân xác nhận đã thu tiền -> Status = 7 (Chờ lấy thuốc)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XacNhanThanhToan(int appointmentId)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt != null && appt.Status == AppointmentStatus.ChoThanhToan)
+            {
+                appt.Status = AppointmentStatus.ChoLayThuoc;
+                await _context.SaveChangesAsync();
+                TempData["PaySuccess"] = "Xác nhận thanh toán thành công.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
+
+─────────────────────────────────────────────────────────────────
+TẠO MỚI: Controllers/PharmacyController.cs  (Nhà thuốc)
+─────────────────────────────────────────────────────────────────
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HeThongBenhVien.Data;
+using HeThongBenhVien.Models;
+
+namespace HeThongBenhVien.Controllers
+{
+    [Authorize(Roles = "Pharmacy,Admin")]  // Chỉ Nhà thuốc + Admin
+    public class PharmacyController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        public PharmacyController(ApplicationDbContext context) => _context = context;
+
+        // Danh sách BN chờ lấy thuốc (Status = 7)
+        public async Task<IActionResult> Index()
+        {
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.Status == AppointmentStatus.ChoLayThuoc)
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            // Load thêm đơn thuốc để nhà thuốc biết phát thuốc gì
+            var apptIds = appointments.Select(a => a.Id).ToList();
+            var medRecordIds = await _context.MedicalRecords
+                .Where(mr => apptIds.Contains(mr.AppointmentId))
+                .Select(mr => new { mr.Id, mr.AppointmentId })
+                .ToListAsync();
+
+            var prescriptions = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .Where(p => medRecordIds.Select(m => m.Id).Contains(p.MedicalRecordId))
+                .ToListAsync();
+
+            ViewBag.MedRecordMap  = medRecordIds.ToDictionary(m => m.AppointmentId, m => m.Id);
+            ViewBag.Prescriptions = prescriptions;
+
+            return View(appointments);
+        }
+
+        // Nhà thuốc xác nhận đã phát thuốc
+        // hasFollowUp = true nếu BN có hẹn tái khám -> Status = 8
+        // hasFollowUp = false                       -> Status = 10 (Hoàn thành)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XacNhanPhatThuoc(int appointmentId, bool hasFollowUp)
+        {
+            var appt = await _context.Appointments.FindAsync(appointmentId);
+            if (appt != null && appt.Status == AppointmentStatus.ChoLayThuoc)
+            {
+                appt.Status = hasFollowUp 
+                    ? AppointmentStatus.HenTaiKham 
+                    : AppointmentStatus.HoanThanh;
+                await _context.SaveChangesAsync();
+                TempData["PharmacySuccess"] = hasFollowUp
+                    ? "Đã phát thuốc. Bệnh nhân có lịch tái khám."
+                    : "Đã phát thuốc. Bệnh nhân hoàn thành điều trị.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
+
+─────────────────────────────────────────────────────────────────
+CẬP NHẬT: Program.cs – Đăng ký các Role mới
+─────────────────────────────────────────────────────────────────
+// Tìm phần cấu hình Authorization, thêm các roles mới:
+// Đảm bảo User.cs / seed data có các Role: "Lab", "Payment", "Pharmacy"
+// Trong bảng Users của DB, tạo tài khoản với Role tương ứng.
+
+// Ví dụ trong DoctorController, ẩn menu thanh toán/nhà thuốc:
+// Trong _DoctorLayout.cshtml, bao các menu link bằng:
+@if (User.IsInRole("Doctor") || User.IsInRole("Admin"))
+{
+    <li class="nav-item"><a href="/Doctor/Dashboard">Dashboard</a></li>
+    <li class="nav-item"><a href="/Doctor/HoSoBenhAn">Hồ sơ bệnh án</a></li>
+    // ... các menu dành riêng cho bác sĩ
+}
+// Menu Thanh toán và Nhà thuốc KHÔNG xuất hiện trong layout của Bác sĩ.
+
+
+================================================================
+TỔNG KẾT: CÁC FILE CẦN TẠO MỚI VÀ SỬA ĐỔI
+================================================================
+
+[TẠO MỚI]
+  ├── Models/AppointmentStatus.cs          ← Static class 11 trạng thái
+  ├── Controllers/LabController.cs         ← Phòng xét nghiệm
+  ├── Controllers/PaymentController.cs     ← Bộ phận thanh toán  
+  ├── Controllers/PharmacyController.cs    ← Nhà thuốc
+  └── Views/Doctor/LichSuDieuTri.cshtml   ← Timeline lịch sử điều trị
+
+[SỬA ĐỔI]
+  ├── Models/Appointment.cs               ← Cập nhật comment Status
+  ├── Models/DoctorDashboardViewModel.cs  ← Thêm 4 property mới
+  ├── Controllers/DoctorController.cs     ← Thêm Actions mới, cập nhật Dashboard
+  ├── Views/Doctor/Dashboard.cshtml       ← Banner cảnh báo, cột chờ, 2 widget
+  ├── Views/Doctor/DanhSach.cshtml        ← Đồng bộ AppointmentStatus.GetLabel()
+  ├── Views/Doctor/ChiTietBenhAn.cshtml   ← Nút Tái khám + Nhập viện
+  ├── Views/Doctor/KeDonThuocForm.cshtml  ← Autocomplete + Kiểm tra tồn kho
+  ├── Views/Doctor/HoSoBenhAn.cshtml      ← Nút "Lịch sử điều trị"
+  └── wwwroot/css/site.css                ← Thêm .bg-purple, .bg-orange, .bg-teal
+
+================================================================
