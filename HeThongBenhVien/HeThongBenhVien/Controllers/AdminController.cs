@@ -175,7 +175,7 @@ namespace HeThongBenhVien.Controllers
             var notification = new Notification
             {
                 DoctorId = doctorId,
-                Message = message,
+                Message = message + $" (Gửi lúc: {DateTime.Now:dd/MM/yyyy HH:mm})",
                 Type = NotificationType.AdminMessage,
                 IsRead = false,
                 IsForPatient = false,

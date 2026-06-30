@@ -82,7 +82,7 @@ namespace HeThongBenhVien.Controllers
             var upcomingAppointment = await _context.Appointments
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.Department)
-                .Where(a => a.PatientId == pid && a.AppointmentTime >= DateTime.Now && (a.Status == 0 || a.Status == 9))
+                .Where(a => a.PatientId == pid && a.AppointmentTime >= DateTime.Now && (a.Status == 0 || a.Status == 9 || a.Status == 8))
                 .OrderBy(a => a.AppointmentTime)
                 .FirstOrDefaultAsync();
 
@@ -245,7 +245,7 @@ namespace HeThongBenhVien.Controllers
                 {
                     DoctorId = model.DoctorId.Value,
                     PatientId = patient.Id,
-                    Message = $"Bệnh nhân {patient.FullName} đã đặt lịch khám vào lúc {model.AppointmentTime:dd/MM/yyyy HH:mm}.",
+                    Message = $"Bệnh nhân {patient.FullName} đã đặt lịch khám vào lúc {model.AppointmentTime:dd/MM/yyyy HH:mm} (Gửi lúc: {DateTime.Now:dd/MM/yyyy HH:mm}).",
                     Type = NotificationType.Appointment,
                     IsRead = false,
                     CreatedAt = DateTime.Now,

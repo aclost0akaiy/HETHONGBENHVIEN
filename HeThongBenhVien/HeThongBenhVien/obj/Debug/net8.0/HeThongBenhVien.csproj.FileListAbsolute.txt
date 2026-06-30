@@ -296,4 +296,3 @@ C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\bin\Debug\net8.0\HeThongBenhVien.pdb
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\HeThongBenhVien.genruntimeconfig.cache
 C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\ref\HeThongBenhVien.dll
-C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

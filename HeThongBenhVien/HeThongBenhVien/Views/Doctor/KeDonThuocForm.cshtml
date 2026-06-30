@@ -330,7 +330,7 @@
                         @{
                             var apptForKeDon = Model.MedicalRecord?.Appointment;
                         }
-                        @if (apptForKeDon != null && apptForKeDon.Status == HeThongBenhVien.Models.AppointmentStatus.ChoToaThuoc)
+                        @if (apptForKeDon != null && apptForKeDon.Status != HeThongBenhVien.Models.AppointmentStatus.HoanThanh && apptForKeDon.Status != HeThongBenhVien.Models.AppointmentStatus.HenTaiKham && apptForKeDon.Status != HeThongBenhVien.Models.AppointmentStatus.ChoLayThuoc)
                         {
                             <form asp-action="HoanTatKeDon" asp-controller="Doctor" method="post" class="d-inline m-0">
                                 @Html.AntiForgeryToken()

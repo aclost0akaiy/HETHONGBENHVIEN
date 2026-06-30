@@ -317,33 +317,36 @@
         </div>
 
         <ul class="sidebar-menu pb-4" style="margin-top: 15px;">
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
-                <a href="@Url.Action("Dashboard", "Doctor")">
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" || (User.Identity?.Name == "bs_kedon" && ViewContext.RouteData.Values["Action"]?.ToString() == "KeDonDashboard") ? "active" : "")">
+                <a href="@(User.Identity?.Name == "bs_kedon" ? Url.Action("KeDonDashboard", "Doctor") : Url.Action("Dashboard", "Doctor"))">
                     <i class="fa-solid fa-table-columns"></i> Bảng điều khiển
                 </a>
             </li>
 
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhSach" || ViewContext.RouteData.Values["Action"]?.ToString() == "KhamBenh" ? "active" : "")">
-                <a href="@Url.Action("DanhSach", "Doctor")"><i class="fa-solid fa-stethoscope"></i> Khám Bệnh</a>
-            </li>
+            @if (User.Identity?.Name != "bs_kedon")
+            {
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "DanhSach" || ViewContext.RouteData.Values["Action"]?.ToString() == "KhamBenh" ? "active" : "")">
+                    <a href="@Url.Action("DanhSach", "Doctor")"><i class="fa-solid fa-stethoscope"></i> Khám Bệnh</a>
+                </li>
 
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "KetQuaCanLamSang" || ViewContext.RouteData.Values["Action"]?.ToString() == "ChiDinhXetNghiem" ? "active" : "")">
-                <a href="@Url.Action("KetQuaCanLamSang", "Doctor")"><i class="fa-solid fa-microscope"></i> Xét Nghiệm Đã Lưu</a>
-            </li>
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "KetQuaCanLamSang" || ViewContext.RouteData.Values["Action"]?.ToString() == "ChiDinhXetNghiem" ? "active" : "")">
+                    <a href="@Url.Action("KetQuaCanLamSang", "Doctor")"><i class="fa-solid fa-microscope"></i> Xét Nghiệm Đã Lưu</a>
+                </li>
 
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HoSoBenhAn" ? "active" : "")">
-                <a href="@Url.Action("HoSoBenhAn", "Doctor")"><i class="fa-regular fa-id-card"></i> Hồ Sơ Bệnh Án</a>
-            </li>
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HoSoBenhAn" ? "active" : "")">
+                    <a href="@Url.Action("HoSoBenhAn", "Doctor")"><i class="fa-regular fa-id-card"></i> Hồ Sơ Bệnh Án</a>
+                </li>
 
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyGiuong" ? "active" : "")">
-                <a href="@Url.Action("QuanLyGiuong", "Doctor")"><i class="fa-solid fa-bed"></i> Quản lý giường nội trú</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HenTaiKham" ? "active" : "")">
-                <a href="@Url.Action("HenTaiKham", "Doctor")"><i class="fa-solid fa-clock-rotate-left"></i> Hẹn tái khám</a>
-            </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CaiDat" ? "active" : "")">
-                <a href="@Url.Action("CaiDat", "Doctor")"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
-            </li>
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyGiuong" ? "active" : "")">
+                    <a href="@Url.Action("QuanLyGiuong", "Doctor")"><i class="fa-solid fa-bed"></i> Quản lý giường nội trú</a>
+                </li>
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "HenTaiKham" ? "active" : "")">
+                    <a href="@Url.Action("HenTaiKham", "Doctor")"><i class="fa-solid fa-clock-rotate-left"></i> Hẹn tái khám</a>
+                </li>
+                <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CaiDat" ? "active" : "")">
+                    <a href="@Url.Action("CaiDat", "Doctor")"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+                </li>
+            }
         </ul>
     </nav>
 

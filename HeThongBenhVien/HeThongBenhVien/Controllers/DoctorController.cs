@@ -128,9 +128,6 @@ namespace HeThongBenhVien.Controllers
 
             var upcomingAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .Where(a => a.Status != AppointmentStatus.HoanThanh
-                         && a.Status != AppointmentStatus.HenTaiKham
-                         && a.Status != AppointmentStatus.ChuaDen)
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
@@ -151,7 +148,8 @@ namespace HeThongBenhVien.Controllers
             var sevenDaysAgo = currentObj.AddDays(-6);
 
             var past7DaysData = await myAppointmentsQuery
-                .Where(a => a.AppointmentTime >= sevenDaysAgo && a.AppointmentTime < currentObj.AddDays(1))
+                .Where(a => a.AppointmentTime >= sevenDaysAgo && a.AppointmentTime < currentObj.AddDays(1) &&
+                           (a.Status == AppointmentStatus.HoanThanh || a.Status == AppointmentStatus.HenTaiKham))
                 .GroupBy(a => a.AppointmentTime.Date)
                 .Select(g => new { Date = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(k => k.Date, v => v.Count);
@@ -164,6 +162,15 @@ namespace HeThongBenhVien.Controllers
                 chartLabels.Add("T" + (d.DayOfWeek == DayOfWeek.Sunday ? "CN" : ((int)d.DayOfWeek + 1).ToString()));
                 chartData.Add(past7DaysData.ContainsKey(d) ? past7DaysData[d] : default(int));
             }
+            int weeklyVisitsCount = past7DaysData.Values.Sum();
+            var todayObj = DateTime.Today;
+            int todayVisitsCount = await myAppointmentsQuery.CountAsync(a => 
+                a.AppointmentTime.Date == todayObj && 
+                a.Status != AppointmentStatus.HoanThanh && 
+                a.Status != AppointmentStatus.HenTaiKham);
+            ViewBag.WeeklyVisitsCount = weeklyVisitsCount;
+            ViewBag.TodayVisitsCount = todayVisitsCount;
+
             ViewBag.ChartLabels = chartLabels;
             ViewBag.ChartData = chartData;
 
@@ -232,9 +239,11 @@ namespace HeThongBenhVien.Controllers
             viewModel.WaitingPrescriptionCount = await myAppointmentsQuery
                 .CountAsync(a => a.Status == AppointmentStatus.ChoToaThuoc);
 
+            var today = DateTime.Today;
             var thirtyMinAgo = DateTime.Now.AddMinutes(-30);
             viewModel.OverdueWaitingCount = await myAppointmentsQuery
                 .CountAsync(a => a.Status == AppointmentStatus.ChoKham
+                              && a.AppointmentTime.Date == today
                               && a.AppointmentTime <= thirtyMinAgo);
 
             // Cảnh báo cận lâm sàng (LabTests) và Sinh hiệu (VitalSigns) từ DB
@@ -331,7 +340,7 @@ namespace HeThongBenhVien.Controllers
             {
                 PatientId = patientId,
                 DoctorId = currentDoctor?.Id ?? 0,
-                Message = message.Trim(),
+                Message = message.Trim() + $" (Gửi lúc: {DateTime.Now:dd/MM/yyyy HH:mm})",
                 CreatedAt = DateTime.Now,
                 IsRead = false,
                 IsForPatient = true
@@ -384,7 +393,7 @@ namespace HeThongBenhVien.Controllers
                 {
                     PatientId = appointment.PatientId,
                     DoctorId = currentDoctor?.Id ?? 0,
-                    Message = message.Trim(),
+                    Message = message.Trim() + $" (Gửi lúc: {DateTime.Now:dd/MM/yyyy HH:mm})",
                     CreatedAt = DateTime.Now,
                     IsRead = false,
                     IsForPatient = true
@@ -448,6 +457,11 @@ namespace HeThongBenhVien.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            var referer = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(referer))
+            {
+                return Redirect(referer);
+            }
             return RedirectToAction(nameof(Dashboard));
         }
 
@@ -603,7 +617,7 @@ namespace HeThongBenhVien.Controllers
                                       || p.PatientCode.Contains(searchString));
             }
 
-            var patients = await query.OrderByDescending(p => p.Id).ToListAsync();
+            var patients = await query.OrderBy(p => p.Id).ToListAsync();
             
             var patientIds = patients.Select(p => p.Id).ToList();
             var latestStatuses = await _context.Appointments
@@ -614,6 +628,15 @@ namespace HeThongBenhVien.Controllers
                     Status = g.OrderByDescending(a => a.AppointmentTime).FirstOrDefault().Status 
                 })
                 .ToDictionaryAsync(x => x.PatientId, x => x.Status);
+
+            var latestApptIds = await _context.Appointments
+                .Where(a => patientIds.Contains(a.PatientId))
+                .GroupBy(a => a.PatientId)
+                .Select(g => new { 
+                    PatientId = g.Key, 
+                    AppointmentId = g.OrderByDescending(a => a.AppointmentTime).FirstOrDefault().Id 
+                })
+                .ToDictionaryAsync(x => x.PatientId, x => x.AppointmentId);
 
             // Calculate statistics
             IQueryable<Appointment> appQuery = _context.Appointments;
@@ -627,6 +650,7 @@ namespace HeThongBenhVien.Controllers
             ViewBag.CompletedCount = await appQuery.CountAsync(a => a.Status == AppointmentStatus.HoanThanh || a.Status == AppointmentStatus.HenTaiKham);
 
             ViewBag.PatientStatuses = latestStatuses;
+            ViewBag.PatientAppointmentIds = latestApptIds;
             ViewData["SearchString"] = searchString;
             return View(patients);
         }
@@ -856,16 +880,24 @@ namespace HeThongBenhVien.Controllers
                     var prescription = new Prescription { MedicalRecordId = model.Id, Status = "Đã kê đơn" };
                     _context.Prescriptions.Add(prescription);
                     model.Notes += "\n[KEDONTHUOC]";
+                    hasPrescription = true;
                 }
 
                 // Cập nhật trạng thái lịch khám
                 var appointment = await _context.Appointments.FindAsync(model.AppointmentId);
                 if (appointment != null)
                 {
-                    // Nếu có chỉ định XN -> Chờ xét nghiệm (3), nếu không -> Chờ toa thuốc (5)
-                    appointment.Status = hasLabTests
-                        ? AppointmentStatus.ChoXetNghiem
-                        : AppointmentStatus.ChoToaThuoc;
+                    // Nếu có chỉ định XN -> Chờ xét nghiệm (3), nếu không -> Chờ thanh toán (6) nếu đã có đơn hoặc Chờ toa thuốc (5) nếu chưa có
+                    if (hasLabTests)
+                    {
+                        appointment.Status = AppointmentStatus.ChoXetNghiem;
+                    }
+                    else
+                    {
+                        appointment.Status = hasPrescription
+                            ? AppointmentStatus.ChoThanhToan
+                            : AppointmentStatus.ChoToaThuoc;
+                    }
                     _context.Appointments.Update(appointment);
                 }
 
@@ -1107,6 +1139,85 @@ namespace HeThongBenhVien.Controllers
             return View(prescriptions);
         }
 
+        public async Task<IActionResult> KeDonDashboard()
+        {
+            var username = User.Identity?.Name;
+            if (username != "bs_kedon" && !User.IsInRole("Admin"))
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            var allMedicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
+            ViewBag.AllMedicines = allMedicines;
+            ViewBag.TotalMedicines = allMedicines.Count;
+
+            var lowStockMedicines = allMedicines.Where(m => m.StockQuantity <= m.MinStock && m.IsActive).ToList();
+            var expiringMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            ViewBag.LowStockMedicines = lowStockMedicines;
+            ViewBag.ExpiringMedicines = expiringMedicines;
+
+            var waitingRecords = await _context.MedicalRecords
+                .Include(m => m.Appointment)
+                    .ThenInclude(a => a!.Patient)
+                .Where(m => m.Appointment!.Status == AppointmentStatus.ChoToaThuoc)
+                .OrderBy(m => m.Appointment!.AppointmentTime)
+                .ToListAsync();
+
+            var prescriptions = await _context.Prescriptions
+                .Include(p => p.MedicalRecord)
+                    .ThenInclude(m => m.Appointment)
+                        .ThenInclude(a => a!.Patient)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
+            ViewBag.WaitingRecords = waitingRecords;
+            ViewBag.Prescriptions = prescriptions;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KeDonThemThuoc(Medicine medicine)
+        {
+            if (ModelState.IsValid && !string.IsNullOrEmpty(medicine.Name))
+            {
+                var existingMedicine = await _context.Medicines
+                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicine.Name.ToLower());
+
+                if (existingMedicine != null)
+                {
+                    existingMedicine.StockQuantity += medicine.StockQuantity;
+                    existingMedicine.Price = medicine.Price;
+                    existingMedicine.MinStock = medicine.MinStock;
+                    existingMedicine.ExpiryDate = medicine.ExpiryDate;
+                    existingMedicine.Manufacturer = medicine.Manufacturer;
+                    existingMedicine.IsActive = true;
+                    _context.Medicines.Update(existingMedicine);
+                }
+                else
+                {
+                    medicine.IsActive = true;
+                    _context.Medicines.Add(medicine);
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(KeDonDashboard));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KeDonXoaThuoc(int id)
+        {
+            var item = await _context.Medicines.FindAsync(id);
+            if (item != null)
+            {
+                _context.Medicines.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(KeDonDashboard));
+        }
+
         public async Task<IActionResult> InToaThuoc(int id)
         {
             var prescription = await _context.Prescriptions
@@ -1275,7 +1386,9 @@ namespace HeThongBenhVien.Controllers
             var appt = await _context.Appointments.FindAsync(appointmentId);
             if (appt == null) return NotFound();
 
-            if (appt.Status == AppointmentStatus.ChoToaThuoc)
+            if (appt.Status != AppointmentStatus.HoanThanh && 
+                appt.Status != AppointmentStatus.HenTaiKham && 
+                appt.Status != AppointmentStatus.ChoLayThuoc)
             {
                 appt.Status = AppointmentStatus.ChoThanhToan;
                 await _context.SaveChangesAsync();
@@ -1400,15 +1513,19 @@ namespace HeThongBenhVien.Controllers
         [HttpPost]
         public async Task<IActionResult> LuuChiDinhXetNghiem(int id, string[] loaiXetNghiem)
         {
-            var record = await _context.MedicalRecords.FindAsync(id);
+            var record = await _context.MedicalRecords.Include(m => m.Appointment).FirstOrDefaultAsync(m => m.Id == id);
             if (record != null)
             {
-                if(loaiXetNghiem != null)
+                if(loaiXetNghiem != null && loaiXetNghiem.Length > 0)
                 {
                     foreach(var test in loaiXetNghiem)
                     {
                         var labTest = new LabTest { MedicalRecordId = id, TestName = test, Status = "Chờ xét nghiệm" };
                         _context.LabTests.Add(labTest);
+                    }
+                    if (record.Appointment != null)
+                    {
+                        record.Appointment.Status = AppointmentStatus.ChoXetNghiem;
                     }
                 }
                 record.Notes += "\n[XETNGHIEM_PENDING]";
@@ -1420,7 +1537,10 @@ namespace HeThongBenhVien.Controllers
         [HttpPost]
         public async Task<IActionResult> CapNhatKetQuaXetNghiem(int id, string ketQua, string? imageUrl)
         {
-            var test = await _context.LabTests.Include(t => t.MedicalRecord).FirstOrDefaultAsync(t => t.Id == id);
+            var test = await _context.LabTests
+                .Include(t => t.MedicalRecord)
+                .ThenInclude(m => m.Appointment)
+                .FirstOrDefaultAsync(t => t.Id == id);
             if (test != null)
             {
                 test.Result = ketQua;
@@ -1431,6 +1551,12 @@ namespace HeThongBenhVien.Controllers
                 // Cập nhật Notes của MedicalRecord để hiển thị ở ChiTietBenhAn
                 if (test.MedicalRecord != null) {
                     test.MedicalRecord.Notes = test.MedicalRecord.Notes?.Replace("[XETNGHIEM_PENDING]", "[XETNGHIEM_DONE]");
+                    
+                    var hasPending = await _context.LabTests.AnyAsync(lt => lt.MedicalRecordId == test.MedicalRecordId && lt.Status != "Đã có kết quả" && lt.Status != "Hoàn thành" && lt.Id != id);
+                    if (!hasPending && test.MedicalRecord.Appointment != null)
+                    {
+                        test.MedicalRecord.Appointment.Status = AppointmentStatus.ChoToaThuoc;
+                    }
                 }
                 await _context.SaveChangesAsync();
             }
@@ -1476,10 +1602,19 @@ namespace HeThongBenhVien.Controllers
 
             if (record != null)
             {
-                var remainingTests = await _context.LabTests.CountAsync(t => t.MedicalRecordId == model.MedicalRecordId && t.Status != "Đã có kết quả");
-                if (remainingTests == 0 && record.Notes != null)
+                var remainingTests = await _context.LabTests.CountAsync(t => t.MedicalRecordId == model.MedicalRecordId && t.Status != "Đã có kết quả" && t.Status != "Hoàn thành");
+                if (remainingTests == 0)
                 {
-                    record.Notes = record.Notes.Replace("[XETNGHIEM_PENDING]", "[XETNGHIEM_DONE]");
+                    if (record.Notes != null)
+                    {
+                        record.Notes = record.Notes.Replace("[XETNGHIEM_PENDING]", "[XETNGHIEM_DONE]");
+                    }
+                    
+                    var appt = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == record.AppointmentId);
+                    if (appt != null)
+                    {
+                        appt.Status = AppointmentStatus.ChoToaThuoc;
+                    }
                 }
             }
             await _context.SaveChangesAsync();
@@ -1879,7 +2014,7 @@ namespace HeThongBenhVien.Controllers
             {
                 PatientId = patientId,
                 DoctorId = currentDoctor?.Id ?? 0,
-                Message = message.Trim(),
+                Message = message.Trim() + $" (Gửi lúc: {DateTime.Now:dd/MM/yyyy HH:mm})",
                 CreatedAt = DateTime.Now,
                 IsRead = false,
                 IsForPatient = true

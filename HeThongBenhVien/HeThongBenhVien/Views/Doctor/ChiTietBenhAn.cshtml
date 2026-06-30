@@ -4,7 +4,7 @@
     ViewData["Title"] = "Chi tiết Bệnh án";
 
     // Trạng thái hồ sơ
-    bool isCompleted = Model.Appointment?.Status == 5;
+    bool isCompleted = Model.Appointment?.Status == 6 || Model.Appointment?.Status == 7 || Model.Appointment?.Status == 8 || Model.Appointment?.Status == 9 || Model.Appointment?.Status == 10;
     // Bệnh nhân đang ở trong bệnh viện (đã nhập viện và chưa xuất viện)
     bool isAdmitted = Model.AdmissionDate.HasValue && !Model.DischargeDate.HasValue;
 
@@ -174,17 +174,33 @@
             @if (Model.IsLocked)
             {
                 <div class="mt-2">
-                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i> Hồ sơ đã được khóa lưu trữ</span>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i> Hồ sơ khám đã hoàn thành (Đã khóa lưu trữ)</span>
                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill ms-2" title="Chữ ký số có giá trị pháp lý"><i class="fa-solid fa-file-signature me-1"></i> Đã ký số bởi: @Model.DigitalSignature</span>
                 </div>
             }
-            else if (isCompleted)
+            else if (Model.Appointment?.Status == 3 || Model.Appointment?.Status == 4)
             {
-                <p class="text-success fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-check-double me-1"></i> Xác nhận thành công</p>
+                <p class="text-info fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-flask me-1"></i> Chờ KQ xét nghiệm</p>
+            }
+            else if (Model.Appointment?.Status == 5)
+            {
+                <p class="text-primary fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-file-medical me-1"></i> Đã có KQ xét nghiệm chờ lập đơn thuốc</p>
+            }
+            else if (Model.Appointment?.Status == 6)
+            {
+                <p class="text-warning fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-clock me-1"></i> Chờ đơn thuốc</p>
+            }
+            else if (Model.Appointment?.Status == 7)
+            {
+                <p class="text-primary fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-prescription me-1"></i> Đã có đơn thuốc</p>
+            }
+            else if (Model.Appointment?.Status == 8 || Model.Appointment?.Status == 9 || Model.Appointment?.Status == 10)
+            {
+                <p class="text-success fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-check-double me-1"></i> Hoàn thành khám</p>
             }
             else
             {
-                <p class="text-warning fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-hourglass-half me-1"></i> Đang chờ xác nhận</p>
+                <p class="text-warning fw-bold mb-0" style="font-size: 1.1rem;"><i class="fa-solid fa-stethoscope me-1"></i> Đang khám</p>
             }
         </div>
         <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="btn btn-outline-primary px-4 py-2 fw-bold" style="border-radius: 10px; transition: all 0.3s ease;">
@@ -519,11 +535,7 @@
                                 </a>
                                 <a href="@Url.Action("KeDonThuoc", "Doctor", new { id = Model.Id })" class="btn text-white fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px; font-size: 13px; padding: 8px 15px; background-color: #856404;">
                                     <i class="fa-solid fa-prescription-bottle-medical"></i> Kê thuốc
-                                </a>
-                                <a href="@Url.Action("LichMo", "Doctor", new { id = Model.Id })" class="btn text-white fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px; font-size: 13px; padding: 8px 15px; background-color: #bd2130;">
-                                    <i class="fa-solid fa-scalpel"></i> Phẫu thuật
-                                </a>
-                                @if (isAdmitted)
+                                </a>                                @if (isAdmitted)
                                 {
                                     <button type="button" class="btn text-white fw-bold d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#admissionModel" style="border-radius: 8px; font-size: 13px; padding: 8px 15px; background-color: #2585da; border-color: #2585da;">
                                         <i class="fa-solid fa-bed-pulse"></i> Đổi giường
@@ -548,14 +560,21 @@
                             }
                             else
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2.5 rounded-3" style="font-size: 12.5px;"><i class="fa-solid fa-check-double me-1"></i> Hồ sơ khám đã hoàn thành</span>
-                                <form action="@Url.Action("ChuyenTaiKham", "Doctor")" method="post" class="m-0 ms-auto d-inline-block">
-                                    <input type="hidden" name="id" value="@Model.Id" />
-                                    <button type="submit" class="btn text-dark fw-bold d-inline-flex align-items-center gap-1.5" style="border-radius: 8px; font-size: 13px; padding: 8px 14px; background-color: #ffc107; border-color: #ffc107;">
-                                        <i class="fa-solid fa-rotate-left"></i> Chuyển trạng thái Tái Khám
-                                    </button>
-                                </form>
-                                <button class="btn fw-bold d-inline-flex align-items-center gap-2" onclick="window.print()" style="border-radius: 8px; font-size: 13px; padding: 8px 15px; background-color: #f0f4ff; border: 1px solid #b8ccf8; color: #0056b3;">
+                                @if (Model.Appointment?.Status == 8)
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning px-3 py-2.5 rounded-3" style="font-size: 12.5px;"><i class="fa-solid fa-clock-rotate-left me-1"></i> Hồ sơ bệnh án hẹn tái khám</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2.5 rounded-3" style="font-size: 12.5px;"><i class="fa-solid fa-check-double me-1"></i> Hồ sơ khám đã hoàn thành</span>
+                                    <form action="@Url.Action("ChuyenTaiKham", "Doctor")" method="post" class="m-0 ms-auto d-inline-block">
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <button type="submit" class="btn text-dark fw-bold d-inline-flex align-items-center gap-1.5" style="border-radius: 8px; font-size: 13px; padding: 8px 14px; background-color: #ffc107; border-color: #ffc107;">
+                                            <i class="fa-solid fa-rotate-left"></i> Chuyển trạng thái Tái Khám
+                                        </button>
+                                    </form>
+                                }
+                                <button class="btn fw-bold d-inline-flex align-items-center gap-2 ms-auto" onclick="window.print()" style="border-radius: 8px; font-size: 13px; padding: 8px 15px; background-color: #f0f4ff; border: 1px solid #b8ccf8; color: #0056b3;">
                                     <i class="fa-solid fa-print"></i> In hồ sơ
                                 </button>
                             }

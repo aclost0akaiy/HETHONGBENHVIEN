@@ -4,6 +4,8 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Dashboard Bác sĩ";
+    var today = DateTime.Today;
+    var sevenDaysAgo = today.AddDays(-6);
 }
 
 <div class="container-fluid p-0">
@@ -223,60 +225,79 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4 g-3">
-        <!-- Chờ khám -->
-        <div class="col-xl-4 col-md-6">
-            <div class="glass-card p-4 d-flex justify-content-between align-items-start" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; height: 100%;">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(14, 165, 233, 0.1) !important; color: #0284c7 !important;">
+        <!-- Lượt khám trong tuần -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-week" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(14, 165, 233, 0.1) !important; color: #0284c7 !important; flex-shrink: 0;">
+                            <i class="fa-solid fa-chart-bar" style="font-size: 16px;"></i>
+                        </div>
+                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Lượt khám trong tuần</span>
+                    </div>
+                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; flex-shrink: 0;">
+                        <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +12%
+                    </span>
+                </div>
+                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@((ViewBag.WeeklyVisitsCount ?? 0).ToString("D2"))</div>
+                <small class="text-muted" style="font-size: 0.75rem;">Tổng số lượt khám 7 ngày qua</small>
+            </div>
+        </div>
+
+        <!-- Lịch khám hôm nay -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-today" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(99, 102, 241, 0.1) !important; color: #4f46e5 !important; flex-shrink: 0;">
                             <i class="fa-regular fa-calendar-check" style="font-size: 16px;"></i>
                         </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Chờ khám</span>
+                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Lịch khám hôm nay</span>
                     </div>
-                    <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.TodayPatientsCount.ToString("D2")</div>
-                    <small class="text-muted" style="font-size: 0.75rem;">Dự kiến hoàn thành trong 3h tới</small>
+                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #e0f2fe; color: #0369a1 !important; flex-shrink: 0;">
+                        <i class="fa-solid fa-clock me-1" style="font-size: 10px;"></i> Hôm nay
+                    </span>
                 </div>
-                <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; position: absolute; top: 24px; right: 24px;">
-                    <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +12%
-                </span>
+                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@((ViewBag.TodayVisitsCount ?? 0).ToString("D2"))</div>
+                <small class="text-muted" style="font-size: 0.75rem;">Ca khám chưa hoàn tất hôm nay</small>
             </div>
         </div>
         
         <!-- Đã hoàn thành -->
-        <div class="col-xl-4 col-md-6">
-            <div class="glass-card p-4 d-flex justify-content-between align-items-start" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; height: 100%;">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(16, 185, 129, 0.1) !important; color: #059669 !important;">
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-completed" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(16, 185, 129, 0.1) !important; color: #059669 !important; flex-shrink: 0;">
                             <i class="fa-regular fa-circle-check" style="font-size: 16px;"></i>
                         </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Đã hoàn thành</span>
+                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Đã hoàn thành</span>
                     </div>
-                    <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.CompletedPatientsCount.ToString("D2")</div>
-                    <small class="text-muted" style="font-size: 0.75rem;">So với trung bình 44 bệnh nhân/ngày</small>
+                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; flex-shrink: 0;">
+                        <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +8%
+                    </span>
                 </div>
-                <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; position: absolute; top: 24px; right: 24px;">
-                    <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +8%
-                </span>
+                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.CompletedPatientsCount.ToString("D2")</div>
+                <small class="text-muted" style="font-size: 0.75rem;">So với trung bình 44 bệnh nhân/ngày</small>
             </div>
         </div>
 
         <!-- Chưa xác nhận -->
-        <div class="col-xl-4 col-md-6">
-            <div class="glass-card p-4 d-flex justify-content-between align-items-start" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; height: 100%;">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important;">
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-unconfirmed" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; flex-shrink: 0;">
                             <i class="fa-regular fa-calendar-plus" style="font-size: 16px;"></i>
                         </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Chưa xác nhận</span>
+                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Chưa xác nhận</span>
                     </div>
-                    <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.WaitingResultsCount.ToString("D2")</div>
-                    <small class="text-muted" style="font-size: 0.75rem;">Yêu cầu lịch hẹn mới cần duyệt</small>
+                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #fee2e2; color: #991b1b !important; flex-shrink: 0;">
+                        <i class="fa-solid fa-arrow-down me-1" style="font-size: 10px;"></i> -2%
+                    </span>
                 </div>
-                <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #fee2e2; color: #991b1b !important; position: absolute; top: 24px; right: 24px;">
-                    <i class="fa-solid fa-arrow-down me-1" style="font-size: 10px;"></i> -2%
-                </span>
+                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.WaitingResultsCount.ToString("D2")</div>
+                <small class="text-muted" style="font-size: 0.75rem;">Yêu cầu lịch hẹn mới cần duyệt</small>
             </div>
         </div>
     </div>
@@ -286,28 +307,21 @@
         <!-- CỘT TRÁI (8/12) -->
         <div class="col-xl-8 col-lg-7">
             
-            <!-- CARD 1: Thống kê lưu lượng bệnh nhân -->
-            <div class="glass-card p-4 mb-4" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Thống kê lưu lượng bệnh nhân</h5>
-                        <small class="text-muted" style="font-size: 0.8rem;">Dữ liệu tổng hợp 7 ngày qua</small>
-                    </div>
-                    <div class="d-flex gap-3 align-items-center" style="font-size: 0.8rem; font-weight: 500;">
-                        <span class="d-flex align-items-center gap-1"><span class="rounded-circle" style="width: 8px; height: 8px; background-color: #0ea5e9; display: inline-block;"></span> Bệnh nhân</span>
-                        <span class="d-flex align-items-center gap-1"><span class="rounded-circle" style="width: 8px; height: 8px; background-color: #38bdf8; display: inline-block;"></span> Chỉ số PT</span>
-                    </div>
-                </div>
-                <div style="position: relative; height: 260px; width: 100%;">
-                    <canvas id="patientsChart"></canvas>
-                </div>
-            </div>
+
 
             <!-- CARD 2: Lịch hẹn gần đây -->
             <div class="glass-card p-4" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Lịch hẹn gần đây</h5>
-                    <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.75rem; border-color: rgba(2, 132, 199, 0.2); color: #0284c7;">Xem tất cả</a>
+                    <div class="d-flex align-items-center gap-3 ms-auto flex-wrap">
+                        <div class="input-group" style="max-width: 280px; width: 100%;">
+                            <span class="input-group-text bg-light border-end-0" style="border-radius: 8px 0 0 8px; border-color: #cbd5e1; padding: 6px 10px;">
+                                <i class="fa-solid fa-magnifying-glass text-muted" style="font-size: 13px;"></i>
+                            </span>
+                            <input type="text" id="dashboardApptSearch" class="form-control border-start-0 bg-light" placeholder="Tìm tên, mã bệnh nhân..." style="border-radius: 0 8px 8px 0; border-color: #cbd5e1; font-size: 13px; height: 34px;" />
+                        </div>
+                        <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.75rem; border-color: rgba(2, 132, 199, 0.2); color: #0284c7; height: 34px; display: inline-flex; align-items: center;">Xem tất cả</a>
+                    </div>
                 </div>
                 
                 <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: auto; border: 1px solid #f1f5f9; border-radius: 12px;">
@@ -330,6 +344,9 @@
                             }
                             else
                             {
+                                <tr id="upcomingApptsNoResult" style="display: none;">
+                                    <td colspan="5" class="text-center py-4 text-muted">Không tìm thấy kết quả phù hợp.</td>
+                                </tr>
                                 @foreach (var item in Model.UpcomingAppointments)
                                 {
                                     string nameParts = item.Patient?.FullName?.Trim() ?? "Unknown";
@@ -346,8 +363,16 @@
                                     initials = initials.ToUpper();
 
                                     string bgCircleColor = item.Status == 0 ? "#f43f5e" : item.Status == 1 ? "#0ea5e9" : "#a855f7";
+                                    bool isToday = item.AppointmentTime.Date == today;
+                                    bool inWeek = item.AppointmentTime >= sevenDaysAgo && item.AppointmentTime < today.AddDays(1);
+                                    bool isCompleted = item.Status == AppointmentStatus.HoanThanh || item.Status == AppointmentStatus.HenTaiKham;
 
-                                    <tr class="upcoming-appt-row" style="border-bottom: 1px solid #f1f5f9;">
+                                    <tr class="upcoming-appt-row" style="border-bottom: 1px solid #f1f5f9;"
+                                        data-date="@item.AppointmentTime.ToString("yyyy-MM-dd")"
+                                        data-status="@((int)item.Status)"
+                                        data-is-today="@(isToday ? "true" : "false")"
+                                        data-in-week="@(inWeek ? "true" : "false")"
+                                        data-is-completed="@(isCompleted ? "true" : "false")">
                                         <td class="ps-3 py-3">
                                             <div class="d-flex align-items-center">
                                                 <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style="width: 32px; height: 32px; background-color: @bgCircleColor; font-size: 11px;">@initials</div>
@@ -532,16 +557,6 @@
                         </a>
                     </div>
 
-                    <!-- Lịch Mổ -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("LichMo", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-purple">
-                                <i class="fa-solid fa-signature" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Lịch Mổ</div>
-                        </a>
-                    </div>
-
 
                     <!-- Hẹn Tái Khám -->
                     <div class="col text-center">
@@ -583,15 +598,6 @@
                 
                 <div class="d-flex flex-column gap-3">
                     
-                    <!-- Phẫu thuật -->
-                    <div class="d-flex align-items-center justify-content-between p-3" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-scissors text-muted" style="font-size: 16px;"></i>
-                            <span class="fw-semibold text-dark" style="font-size: 0.85rem;">Phẫu thuật</span>
-                        </div>
-                        <span class="fw-bold text-dark" style="font-size: 1.1rem;">@Model.TodaySurgeries.Count</span>
-                    </div>
-
                     <!-- Tái khám -->
                     <div class="d-flex align-items-center justify-content-between p-3" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
                         <div class="d-flex align-items-center gap-2">
@@ -1052,9 +1058,30 @@
         // ====== PHÂN TRANG CHO LỊCH HẸN GẦN ĐÂY ======
         let apptsCurrentPage = 1;
         let apptsRowsPerPage = 5;
+        let apptsFilteredRows = [];
+        let dashboardActiveFilter = 'all';
+
+        function setActiveDashboardFilterCard(cardId) {
+            $('.dashboard-filter-card').css({
+                'border': '1px solid #e2e8f0',
+                'box-shadow': '0 1px 3px rgba(0,0,0,0.02)'
+            });
+            if (cardId) {
+                let activeColor = '#0284c7'; // default blue
+                if (cardId === '#card-filter-today') activeColor = '#4f46e5'; // indigo
+                if (cardId === '#card-filter-completed') activeColor = '#059669'; // green
+                if (cardId === '#card-filter-unconfirmed') activeColor = '#d97706'; // orange
+
+                $(cardId).css({
+                    'border': `2px solid ${activeColor}`,
+                    'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.05)'
+                });
+            }
+        }
 
         function initUpcomingApptsPagination() {
             const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
+            apptsFilteredRows = allRows;
             
             const rowsSelect = document.getElementById('rowsPerPageSelect');
             if (rowsSelect) {
@@ -1065,15 +1092,110 @@
                 });
             }
 
+            const searchInput = document.getElementById('dashboardApptSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    filterUpcomingAppts();
+                });
+            }
+
+            // Register click handlers for dashboard filter cards
+            $('#card-filter-week').click(function() {
+                if (dashboardActiveFilter === 'week') {
+                    dashboardActiveFilter = 'all';
+                    setActiveDashboardFilterCard(null);
+                } else {
+                    dashboardActiveFilter = 'week';
+                    setActiveDashboardFilterCard('#card-filter-week');
+                }
+                filterUpcomingAppts();
+            });
+
+            $('#card-filter-today').click(function() {
+                if (dashboardActiveFilter === 'today') {
+                    dashboardActiveFilter = 'all';
+                    setActiveDashboardFilterCard(null);
+                } else {
+                    dashboardActiveFilter = 'today';
+                    setActiveDashboardFilterCard('#card-filter-today');
+                }
+                filterUpcomingAppts();
+            });
+
+            $('#card-filter-completed').click(function() {
+                if (dashboardActiveFilter === 'completed') {
+                    dashboardActiveFilter = 'all';
+                    setActiveDashboardFilterCard(null);
+                } else {
+                    dashboardActiveFilter = 'completed';
+                    setActiveDashboardFilterCard('#card-filter-completed');
+                }
+                filterUpcomingAppts();
+            });
+
+            $('#card-filter-unconfirmed').click(function() {
+                if (dashboardActiveFilter === 'unconfirmed') {
+                    dashboardActiveFilter = 'all';
+                    setActiveDashboardFilterCard(null);
+                } else {
+                    dashboardActiveFilter = 'unconfirmed';
+                    setActiveDashboardFilterCard('#card-filter-unconfirmed');
+                }
+                filterUpcomingAppts();
+            });
+
+            filterUpcomingAppts();
+        }
+
+        function filterUpcomingAppts() {
+            const query = (document.getElementById('dashboardApptSearch')?.value || '').toLowerCase().trim();
+            const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
+            
+            apptsFilteredRows = allRows.filter(row => {
+                // 1. Search filter
+                const patientName = (row.querySelector('.fw-semibold.text-dark')?.textContent || '').toLowerCase();
+                const patientCode = (row.querySelector('.text-muted')?.textContent || '').toLowerCase();
+                const reason = (row.querySelector('td:nth-child(3)')?.textContent || '').toLowerCase();
+                const matchesQuery = patientName.includes(query) || patientCode.includes(query) || reason.includes(query);
+                if (!matchesQuery) return false;
+
+                // 2. Card filter
+                const isToday = row.getAttribute('data-is-today') === 'true';
+                const inWeek = row.getAttribute('data-in-week') === 'true';
+                const isCompleted = row.getAttribute('data-is-completed') === 'true';
+                const status = parseInt(row.getAttribute('data-status') || '-1');
+
+                if (dashboardActiveFilter === 'week') {
+                    return inWeek;
+                } else if (dashboardActiveFilter === 'today') {
+                    return isToday && !isCompleted;
+                } else if (dashboardActiveFilter === 'completed') {
+                    return isCompleted;
+                } else if (dashboardActiveFilter === 'unconfirmed') {
+                    return status === 0;
+                }
+                return true;
+            });
+            
+            apptsCurrentPage = 1;
             renderApptsPage();
         }
 
         function renderApptsPage() {
             const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
-            const totalRows = allRows.length;
+            const totalRows = apptsFilteredRows.length;
 
             const infoEl = document.getElementById('paginationInfo');
             const paginationUl = document.getElementById('appointmentsPagination');
+
+            // Hide all rows
+            allRows.forEach(row => row.style.display = 'none');
+
+            // Hide/Show "No results" row if any
+            const noResultRow = document.getElementById('upcomingApptsNoResult');
+            if (noResultRow) {
+                noResultRow.style.display = totalRows === 0 ? '' : 'none';
+            }
 
             if (totalRows === 0) {
                 if (infoEl) infoEl.textContent = 'Không có bản ghi nào';
@@ -1081,16 +1203,13 @@
                 return;
             }
 
-            // Hide all rows
-            allRows.forEach(row => row.style.display = 'none');
-
             // Calculate start and end indices
             const start = (apptsCurrentPage - 1) * apptsRowsPerPage;
             const end = Math.min(start + apptsRowsPerPage, totalRows);
 
             // Show current page rows
             for (let i = start; i < end; i++) {
-                if (allRows[i]) allRows[i].style.display = '';
+                if (apptsFilteredRows[i]) apptsFilteredRows[i].style.display = '';
             }
 
             // Update info text

@@ -82,14 +82,20 @@
             }
         </form>
         
-        <div class="d-flex align-items-center gap-2 shadow-sm px-3 py-1.5 bg-white" style="border-radius: 10px; border: 1px solid #cbd5e1; height: 42px;">
-            <span class="text-muted small fw-semibold" style="white-space: nowrap; font-size: 0.85rem;">Hiển thị:</span>
-            <select id="patientRowsPerPageSelect" class="form-select form-select-sm border-0 bg-transparent p-0 pe-4" style="width: 80px; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; box-shadow: none; outline: none; height: auto;">
-                <option value="10" selected>10 dòng</option>
-                <option value="25">25 dòng</option>
-                <option value="50">50 dòng</option>
-                <option value="100">100 dòng</option>
-            </select>
+        <div class="d-flex align-items-center gap-3 ms-auto flex-wrap">
+            <button class="btn btn-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" data-bs-toggle="modal" data-bs-target="#addPatientModal" style="border-radius: 10px; font-size: 14px; height: 42px; padding: 0 20px; background-color: #0284c7; border-color: #0284c7; color: white;">
+                <i class="fa-solid fa-user-plus"></i> Tiếp nhận mới
+            </button>
+            
+            <div class="d-flex align-items-center gap-2 shadow-sm px-3 py-1.5 bg-white" style="border-radius: 10px; border: 1px solid #cbd5e1; height: 42px;">
+                <span class="text-muted small fw-semibold" style="white-space: nowrap; font-size: 0.85rem;">Hiển thị:</span>
+                <select id="patientRowsPerPageSelect" class="form-select form-select-sm border-0 bg-transparent p-0 pe-4" style="width: 80px; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; box-shadow: none; outline: none; height: auto;">
+                    <option value="10" selected>10 dòng</option>
+                    <option value="25">25 dòng</option>
+                    <option value="50">50 dòng</option>
+                    <option value="100">100 dòng</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -112,10 +118,16 @@
                         foreach (var item in Model)
                         {
                             var patStatuses = ViewBag.PatientStatuses as Dictionary<int, int>;
+                            var apptIdsDict = ViewBag.PatientAppointmentIds as Dictionary<int, int>;
                             int status = -1;
                             if (patStatuses != null && patStatuses.ContainsKey(item.Id))
                             {
                                 status = patStatuses[item.Id];
+                            }
+                            int? apptId = null;
+                            if (apptIdsDict != null && apptIdsDict.ContainsKey(item.Id))
+                            {
+                                apptId = apptIdsDict[item.Id];
                             }
                             string statusText = status == -1 ? "Chưa có hẹn" : HeThongBenhVien.Models.AppointmentStatus.GetLabel(status);
                             string badgeClass = status == -1 ? "badge-chua-den" : HeThongBenhVien.Models.AppointmentStatus.GetBadgeClass(status);
@@ -155,7 +167,7 @@
 
                             <tr class="patient-list-row" data-status="@status">
                                 <td class="ps-4">
-                                    <a href="@Url.Action("HoSoBenhAn", "Doctor", new { searchString = item.PatientCode })" class="fw-bold text-decoration-none text-primary" style="color: #0284c7 !important;">@item.PatientCode</a>
+                                    <a href="@(apptId.HasValue ? Url.Action("ChiTietByAppointment", "Doctor", new { id = apptId.Value }) : Url.Action("HoSoBenhAn", "Doctor", new { searchString = item.PatientCode }))" class="fw-bold text-decoration-none text-primary" style="color: #0284c7 !important;">@item.PatientCode</a>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -170,7 +182,7 @@
                                         <button type="button" class="btn btn-link text-muted p-0 btn-call border-0" data-name="@item.FullName" data-code="@item.PatientCode" data-age="@item.Age" data-gender="@item.Gender" title="Loa gọi Bệnh Nhân" style="box-shadow: none; background: transparent;">
                                             <i class="fa-solid fa-bullhorn" style="font-size: 14px; color: #64748b;"></i>
                                         </button>
-                                        <a href="@Url.Action("HoSoBenhAn", "Doctor", new { searchString = item.PatientCode })" class="text-muted" title="Xem hồ sơ">
+                                        <a href="@(apptId.HasValue ? Url.Action("ChiTietByAppointment", "Doctor", new { id = apptId.Value }) : Url.Action("HoSoBenhAn", "Doctor", new { searchString = item.PatientCode }))" class="text-muted" title="Xem hồ sơ">
                                             <i class="fa-regular fa-clipboard" style="font-size: 14px; color: #64748b;"></i>
                                         </a>
                                         <a href="@Url.Action("EditPatient", "Doctor", new { id = item.Id })" class="text-muted" title="Chỉnh sửa">
@@ -406,6 +418,77 @@
                     alert("Trình duyệt của bạn không hỗ trợ tính năng Gọi Tên (Text-to-Speech).");
                 }
             });
+            
+            // Set current time for new appointment time input
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const formatted = now.toISOString().slice(0, 16);
+            const timeInput = document.getElementById('newAppointmentTimeInput');
+            if (timeInput) {
+                timeInput.value = formatted;
+            }
         });
     </script>
 }
+
+<!-- Modal Thêm Bệnh Nhân Mới -->
+<div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header border-0 bg-primary bg-opacity-10 p-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold text-primary" id="addPatientModalLabel">
+                    <i class="fa-solid fa-user-plus me-2"></i>Tiếp nhận bệnh nhân mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addPatientForm" asp-action="CreateAppointment" asp-controller="Doctor" method="post">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Họ và tên bệnh nhân <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="PatientName" placeholder="Nhập đầy đủ họ và tên" style="border-radius: 8px; font-size: 0.9rem;" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Giới tính <span class="text-danger">*</span></label>
+                            <select class="form-select" name="Gender" style="border-radius: 8px; font-size: 0.9rem;" required>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Tuổi <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="Age" placeholder="Nhập tuổi" min="0" max="120" style="border-radius: 8px; font-size: 0.9rem;" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Số CCCD / Mã BHYT</label>
+                            <input type="text" class="form-control" name="CCCD" placeholder="Nhập số CCCD hoặc mã thẻ BHYT (nếu có)" style="border-radius: 8px; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Lý do khám <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="Reason" placeholder="Nhập lý do khám hoặc triệu chứng" style="border-radius: 8px; font-size: 0.9rem;" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Thời gian khám <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" name="AppointmentTime" id="newAppointmentTimeInput" style="border-radius: 8px; font-size: 0.9rem;" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Trạng thái khám <span class="text-danger">*</span></label>
+                            <select class="form-select" name="Status" style="border-radius: 8px; font-size: 0.9rem;" required>
+                                <option value="1" selected>Đang chờ khám</option>
+                                <option value="2">Đang khám</option>
+                                <option value="0">Chưa đến</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 0.9rem;">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" style="border-radius: 8px; font-size: 0.9rem; background-color: #0284c7; border-color: #0284c7; color: white;">
+                        <i class="fa-solid fa-save me-2"></i>Lưu vào SQL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

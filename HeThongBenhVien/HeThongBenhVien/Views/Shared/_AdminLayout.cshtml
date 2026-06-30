@@ -328,14 +328,13 @@
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyBenhNhan" ? "active" : "")">
                 <a href="@Url.Action("QuanLyBenhNhan", "Admin")"><i class="fa-solid fa-bed-pulse"></i> Quản lý Bệnh nhân</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyXetNghiem" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyCDHA" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyPhauThuat" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNganHangMau" ? "active" : "")">
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyXetNghiem" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyCDHA" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNganHangMau" ? "active" : "")">
                 <a href="#clinicalSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
                     <span><i class="fa-solid fa-stethoscope"></i> Dịch vụ Cận lâm sàng</span>
                 </a>
                 <ul class="collapse list-unstyled ps-4 mt-2" id="clinicalSubmenu" style="font-size: 0.9em;">
                     <li><a href="@Url.Action("QuanLyXetNghiem", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-vial me-2"></i>Xét nghiệm</a></li>
                     <li><a href="@Url.Action("QuanLyCDHA", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-x-ray me-2"></i>Chẩn đoán hình ảnh</a></li>
-                    <li><a href="@Url.Action("QuanLyPhauThuat", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-scissors me-2"></i>Phẫu thuật</a></li>
                     <li><a href="@Url.Action("QuanLyNganHangMau", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-droplet me-2 text-danger"></i>Ngân hàng máu</a></li>
                 </ul>
             </li>

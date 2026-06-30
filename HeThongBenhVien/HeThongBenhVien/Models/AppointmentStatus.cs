@@ -22,17 +22,17 @@ namespace HeThongBenhVien.Models
         /// <summary>Trả về nhãn tiếng Việt cho từng trạng thái</summary>
         public static string GetLabel(int status) => status switch
         {
-            ChuaDen       => "Chưa đến",
-            ChoKham       => "Chờ khám",
+            ChuaDen       => "Đang khám",
+            ChoKham       => "Đang khám",
             DangKham      => "Đang khám",
-            ChoXetNghiem  => "Chờ xét nghiệm",
-            ChoKetQua     => "Chờ kết quả",
-            ChoToaThuoc   => "Chờ toa thuốc",
-            ChoThanhToan  => "Chờ thanh toán",
-            ChoLayThuoc   => "Chờ lấy thuốc",
-            HenTaiKham    => "Hẹn tái khám",
-            DaXacNhan     => "Đã xác nhận",
-            HoanThanh     => "Hoàn thành",
+            ChoXetNghiem  => "Chờ KQ xét nghiệm",
+            ChoKetQua     => "Chờ KQ xét nghiệm",
+            ChoToaThuoc   => "Đã có KQ xét nghiệm chờ lập đơn thuốc",
+            ChoThanhToan  => "Chờ đơn thuốc",
+            ChoLayThuoc   => "Đã có đơn thuốc",
+            HenTaiKham    => "Hoàn thành khám",
+            DaXacNhan     => "Hoàn thành khám",
+            HoanThanh     => "Hoàn thành khám",
             NhapVien      => "Nhập viện",
             _             => "Không xác định"
         };

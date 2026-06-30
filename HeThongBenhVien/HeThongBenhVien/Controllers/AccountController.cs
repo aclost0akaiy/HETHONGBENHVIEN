@@ -71,7 +71,13 @@ namespace HeThongBenhVien.Controllers
                     if (user.Role == "Admin")
                         return RedirectToAction("Dashboard", "Admin");
                     else if (user.Role == "Doctor")
+                    {
+                        if (user.Username == "bs_kedon")
+                        {
+                            return RedirectToAction("KeDonDashboard", "Doctor");
+                        }
                         return RedirectToAction("Dashboard", "Doctor");
+                    }
                     else if (user.Role == "BenhNhan" || user.Role == "Patient")
                         return RedirectToAction("Portal", "Patient");
                     

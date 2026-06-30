@@ -101,7 +101,8 @@ namespace HeThongBenhVien.Controllers
             {
                 var pendingTests = await _context.LabTests
                     .Where(lt => lt.MedicalRecordId == medRecord.Id
-                              && lt.Status != "Hoàn thành")
+                              && lt.Status != "Hoàn thành"
+                              && lt.Status != "Đã có kết quả")
                     .CountAsync();
 
                 if (pendingTests == 0)
@@ -110,7 +111,9 @@ namespace HeThongBenhVien.Controllers
                     var appt = await _context.Appointments.FindAsync(appointmentId);
                     if (appt != null &&
                         (appt.Status == AppointmentStatus.ChoKetQua ||
-                         appt.Status == AppointmentStatus.ChoXetNghiem))
+                         appt.Status == AppointmentStatus.ChoXetNghiem ||
+                         appt.Status == AppointmentStatus.DangKham ||
+                         appt.Status == AppointmentStatus.ChoKham))
                     {
                         appt.Status = AppointmentStatus.ChoToaThuoc;
                         await _context.SaveChangesAsync();

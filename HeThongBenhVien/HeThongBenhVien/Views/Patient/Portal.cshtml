@@ -147,7 +147,7 @@
                             @if (ViewBag.UpcomingAppointment != null)
                             {
                                 <div class="display-6 fw-bold text-primary my-1" style="color: #0b57d0 !important; font-weight: 850 !important; font-size: 2rem;">@ViewBag.AppointmentTimeStr</div>
-                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">HẸN TÁI KHÁM</div>
+                                <div class="text-secondary small" style="font-size: 0.65rem; color: #94a3b8 !important;">@(ViewBag.UpcomingAppointment.Status == 8 ? "HẸN TÁI KHÁM" : "HẸN MỚI SẮP TỚI")</div>
                             }
                             else
                             {
@@ -164,7 +164,7 @@
                     <div class="card portal-sidebar-card p-4 mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="badge px-3 py-2 rounded-pill text-white fw-bold d-flex align-items-center gap-1.5" style="background-color: #0b57d0; font-size: 0.65rem; letter-spacing: 0.3px;">
-                                <i class="fa-solid fa-clipboard-check"></i> LỊCH HẸN SẮP TỚI
+                                <i class="fa-solid fa-clipboard-check"></i> @(ViewBag.UpcomingAppointment.Status == 8 ? "LỊCH HẸN TÁI KHÁM" : "LỊCH HẸN SẮP TỚI")
                             </span>
                             <a href="#" class="text-secondary hover-primary" style="font-size: 1.1rem;" title="Mở rộng"><i class="fa-regular fa-folder-open"></i></a>
                         </div>
