@@ -4,23 +4,22 @@
     var patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
 }
 
-<div class="container-fluid py-4" style="background-color: var(--body-bg);">
-    <div class="container">
+<div class="py-3">
         <!-- Hero Header Card -->
         <div class="card border-0 rounded-4 mb-5 shadow-sm text-white overflow-hidden animate-fade-in" style="background: linear-gradient(135deg, #0b57d0 0%, #1a73e8 100%);">
             <div class="row align-items-center g-0">
                 <!-- Text block -->
-                <div class="col-md-7 p-4 p-md-5 text-start">
+                <div class="col-md-7 p-3 p-sm-4 p-md-5 text-start">
                     <span class="badge px-3 py-2 rounded-pill mb-3 text-white fw-semibold" style="background-color: rgba(255, 255, 255, 0.15); font-size: 0.75rem;">
                         <i class="fa-regular fa-clock me-1"></i> HỆ THỐNG THÔNG MINH
                     </span>
-                    <h1 class="display-5 fw-bold mb-3" style="font-weight: 850 !important; letter-spacing: -0.5px;">Chào, @patientName!</h1>
-                    <p class="mb-4 text-white-50" style="font-size: 1.05rem; line-height: 1.7; max-width: 90%; color: rgba(255, 255, 255, 0.85) !important;">
+                    <h1 class="display-5 fw-bold mb-3" style="font-weight: 850 !important; letter-spacing: -0.5px; font-size: calc(1.625rem + 4.5vw);">Chào, @patientName!</h1>
+                    <p class="mb-4 text-white-50" style="font-size: 1.05rem; line-height: 1.7; color: rgba(255, 255, 255, 0.85) !important;">
                         Chào mừng bạn quay trở lại. Theo dõi hồ sơ sức khỏe và đặt lịch khám với các chuyên gia hàng đầu chỉ trong vài cú chạm.
                     </p>
-                    <div class="d-flex gap-3 flex-wrap">
-                        <a href="@Url.Action("Booking", "Patient")" class="btn btn-light px-4 py-2.5 rounded-3 fw-bold text-primary shadow-sm btn-action-main" style="color: #0b57d0 !important; border-radius: 8px;">Đặt lịch ngay</a>
-                        <a href="@Url.Action("UserGuide", "Patient")" class="btn btn-outline-light px-4 py-2.5 rounded-3 fw-semibold text-white border-2 btn-action-sub" style="border-radius: 8px;">Hướng dẫn sử dụng</a>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a href="@Url.Action("Booking", "Patient")" class="btn btn-light px-4 py-2.5 rounded-3 fw-bold text-primary shadow-sm btn-action-main w-100 w-sm-auto text-center" style="color: #0b57d0 !important; border-radius: 8px;">Đặt lịch ngay</a>
+                        <a href="@Url.Action("UserGuide", "Patient")" class="btn btn-outline-light px-4 py-2.5 rounded-3 fw-semibold text-white border-2 btn-action-sub w-100 w-sm-auto text-center" style="border-radius: 8px;">Hướng dẫn sử dụng</a>
                     </div>
                 </div>
                 <!-- Image block -->
@@ -117,6 +116,18 @@
                             <span class="card-action-link fw-semibold mt-auto" style="color: #ef4444; font-size: 0.9rem;">Xem sơ đồ <i class="fa-solid fa-arrow-right ms-1"></i></span>
                         </div>
                     </div>
+
+                    <!-- Card 7: Trợ Lý Y Tế AI -->
+                    <div class="col-md-6">
+                        <div class="card service-card border-0 shadow-sm rounded-4 p-4 text-start h-100" onclick="location.href='@Url.Action("ChatAI", "Patient")'">
+                            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" style="width: 50px; height: 50px; background-color: rgba(11, 87, 208, 0.08); color: #0b57d0; font-size: 1.3rem;">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem; font-weight: 750 !important;">Trợ Lý Y Tế AI</h5>
+                            <p class="text-secondary small mb-4" style="line-height: 1.6;">Tư vấn sức khỏe trực tuyến 24/7 với mô hình AI chuyên khoa.</p>
+                            <span class="card-action-link fw-semibold mt-auto" style="color: #0b57d0; font-size: 0.9rem;">Trò chuyện ngay <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -126,7 +137,7 @@
                 
                 <!-- Side-by-side stats counters -->
                 <div class="row g-3 mb-4">
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="card portal-sidebar-card p-3 text-center h-100">
                             <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Số hồ sơ</div>
                             @if (ViewBag.RecordCount > 0)
@@ -141,7 +152,7 @@
                             }
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-sm-6">
                         <div class="card portal-sidebar-card p-3 text-center h-100">
                             <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Giờ hẹn</div>
                             @if (ViewBag.UpcomingAppointment != null)
@@ -233,7 +244,6 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
 <style>

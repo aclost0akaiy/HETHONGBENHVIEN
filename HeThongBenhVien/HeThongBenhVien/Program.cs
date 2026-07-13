@@ -36,6 +36,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHostedService<ReexaminationNotificationService>();
+
 var app = builder.Build();
 
 // Seed default application users so login works on first run.
@@ -188,6 +190,43 @@ using (var scope = app.Services.CreateScope())
                     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
                     FOREIGN KEY (FeedbackId) REFERENCES Feedbacks(Id) ON DELETE CASCADE
                 );
+
+            -- Auto-fix corrupted testName and status in LabTests table from double-encoded seed data
+            IF EXISTS (SELECT * FROM sys.tables WHERE name = 'LabTests')
+            BEGIN
+                UPDATE LabTests SET TestName = N'Xét nghiệm sinh hóa máu' WHERE TestName LIKE '%nghi%m%sinh%' OR TestName LIKE '%X%t%nghi%m%sinh%';
+                UPDATE LabTests SET TestName = N'Siêu âm ổ bụng' WHERE TestName LIKE '%S%u%m%b%' OR TestName LIKE '%Sieu%am%';
+                UPDATE LabTests SET TestName = N'Chụp X-Quang ngực' WHERE (TestName LIKE '%Ch%p%X%Quang%' OR TestName LIKE '%Chup%X%Quang%' OR TestName LIKE '%Ch%p%ng%c%') AND TestName NOT IN ('XQuang');
+                UPDATE LabTests SET TestName = N'Xét nghiệm nước tiểu' WHERE TestName LIKE '%n%c%ti%u%' OR TestName LIKE '%NuocTieu%';
+
+                UPDATE LabTests SET Status = N'Đã có kết quả' WHERE Status LIKE '%qu%' OR Status LIKE '%k%t%' OR Status LIKE '%hoan%thanh%';
+                UPDATE LabTests SET Status = N'Chờ xét nghiệm' WHERE Status LIKE '%nghi%m%';
+                UPDATE LabTests SET Status = N'Chờ kết quả' WHERE Status LIKE 'Ch%' AND Status NOT LIKE '%nghi%m%';
+            END
+
+            -- Auto-fix corrupted medical records
+            IF EXISTS (SELECT * FROM sys.tables WHERE name = 'MedicalRecords')
+            BEGIN
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Vim h?ng c?p', N'Viêm họng cấp');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Vim h?ng', N'Viêm họng');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'C?m cm', N'Cảm cúm');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Vim gan c?p', N'Viêm gan cấp');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Vim ru?t', N'Viêm ruột');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Vim ph? qu?n', N'Viêm phế quản');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Suy h h?p c?p', N'Suy hô hấp cấp');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Suy nhu?c co th?', N'Suy nhược cơ thể');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Ch?n don', N'Chẩn đoán');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Chua c ch?n don c? th?', N'Chưa có chẩn đoán cụ thể');
+                UPDATE MedicalRecords SET Diagnosis = REPLACE(Diagnosis, 'Nh?p vi?n', N'Nhập viện');
+
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'Di?u tr?', N'Điều trị');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'Theo doi lm sng', N'Theo dõi lâm sàng');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'Theo doi', N'Theo dõi');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'K don thu?c', N'Kê đơn thuốc');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'nghi? ngoi', N'nghỉ ngơi');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'U?ng thu?c', N'Uống thuốc');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'Ch? d?nh xt nghi?m mu', N'Chỉ định xét nghiệm máu');
+                UPDATE MedicalRecords SET TreatmentPlan = REPLACE(TreatmentPlan, 'Nh?p vi?n theo doi.', N'Nhập viện theo dõi.');
             END
         ");
     }
@@ -492,4 +531,98 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();     
+app.Run();
+
+public static class NotificationBackgroundWorker
+{
+    public static System.Collections.Generic.List<string> Logs { get; } = new System.Collections.Generic.List<string>
+    {
+        $"[{System.DateTime.Now:HH:mm:ss}] [SYSTEM] Khởi động hệ thống gửi thông báo thông minh thành công.",
+        $"[{System.DateTime.Now:HH:mm:ss}] [SYSTEM] Trình quét nền liên tục đang chạy..."
+    };
+
+    public static void AddLog(string log)
+    {
+        lock (Logs)
+        {
+            Logs.Add($"[{System.DateTime.Now:HH:mm:ss}] {log}");
+            if (Logs.Count > 50)
+            {
+                Logs.RemoveAt(2); // Keep the first two logs
+            }
+        }
+    }
+}
+
+public class ReexaminationNotificationService : Microsoft.Extensions.Hosting.BackgroundService
+{
+    private readonly System.IServiceProvider _serviceProvider;
+
+    public ReexaminationNotificationService(System.IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    protected override async System.Threading.Tasks.Task ExecuteAsync(System.Threading.CancellationToken stoppingToken)
+    {
+        NotificationBackgroundWorker.AddLog("[SYSTEM] Bắt đầu quét định kỳ lịch hẹn tái khám.");
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<HeThongBenhVien.Data.ApplicationDbContext>();
+                    
+                    var tomorrow = System.DateTime.Today.AddDays(1);
+                    var appointments = await db.Appointments
+                        .Include(a => a.Patient)
+                        .Where(a => a.Status == 8 && a.Patient != null && a.AppointmentTime.Date == tomorrow)
+                        .ToListAsync(stoppingToken);
+
+                    NotificationBackgroundWorker.AddLog($"[SYSTEM] Tiến hành quét. Tìm thấy {appointments.Count} lịch hẹn tái khám vào ngày mai ({tomorrow:dd/MM/yyyy}).");
+
+                    int sentCount = 0;
+                    foreach (var appt in appointments)
+                    {
+                        bool alreadySent = await db.Notifications
+                            .AnyAsync(n => n.PatientId == appt.PatientId && 
+                                           n.DoctorId == appt.DoctorId && 
+                                           n.IsForPatient && 
+                                           n.Message.Contains("nhắc nhở tái khám"), stoppingToken);
+
+                        if (!alreadySent)
+                        {
+                            string message = $"[TỰ ĐỘNG NHẮC HẸN] Xin chào {appt.Patient.FullName}, bạn có lịch hẹn tái khám với bác sĩ vào ngày {appt.AppointmentTime:dd/MM/yyyy} lúc {appt.AppointmentTime:HH:mm}. Vui lòng đến đúng giờ.";
+                            
+                            var notification = new Notification
+                            {
+                                PatientId = appt.PatientId,
+                                DoctorId = appt.DoctorId ?? 1,
+                                Message = message,
+                                CreatedAt = System.DateTime.Now,
+                                IsRead = false,
+                                IsForPatient = true
+                            };
+                            db.Notifications.Add(notification);
+                            sentCount++;
+                            NotificationBackgroundWorker.AddLog($"[AUTO-SMS] Đã tự động gửi thông báo cho bệnh nhân {appt.Patient.FullName} (Mã: {appt.Patient.PatientCode}).");
+                        }
+                    }
+                    if (sentCount > 0)
+                    {
+                        await db.SaveChangesAsync(stoppingToken);
+                        NotificationBackgroundWorker.AddLog($"[SYSTEM] Đã lưu {sentCount} thông báo nhắc hẹn mới vào cơ sở dữ liệu.");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                NotificationBackgroundWorker.AddLog($"[ERROR] Lỗi khi quét lịch hẹn: {ex.Message}");
+            }
+
+            // Sleep 15 seconds to simulate fast updates
+            await System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(15), stoppingToken);
+        }
+    }
+}     

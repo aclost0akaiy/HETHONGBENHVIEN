@@ -4,617 +4,853 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Dashboard Bác sĩ";
-    var today = DateTime.Today;
-    var sevenDaysAgo = today.AddDays(-6);
 }
 
 <div class="container-fluid p-0">
-    <style>
-        .hover-scale {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .hover-scale:hover {
-            transform: translateY(-2px);
-        }
-        .hover-scale:hover .shadow-sm {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-        }
-        .bg-soft-success {
-            background-color: #d1fae5 !important;
-            color: #065f46 !important;
-        }
-        .bg-soft-danger {
-            background-color: #fee2e2 !important;
-            color: #991b1b !important;
-        }
-        .bg-soft-info {
-            background-color: #e0f2fe !important;
-            color: #0369a1 !important;
-        }
-        .bg-soft-warning {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
-        }
-
-        /* Chức năng y tế - Thiết kế Pastel cao cấp */
-        .med-func-btn {
-            display: block;
-            text-decoration: none !important;
-            transition: transform 0.2s ease;
-        }
-        .med-func-btn:hover {
-            transform: translateY(-3px);
-        }
-        .med-func-circle {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px auto;
-            transition: all 0.25s ease;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-        .med-func-btn:hover .med-func-circle {
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.06);
-            filter: brightness(0.95);
-        }
-        .med-func-label {
-            font-size: 11.5px;
-            color: #334155;
-            font-weight: 500;
-            line-height: 1.3;
-            transition: color 0.2s ease;
-        }
-        .med-func-btn:hover .med-func-label {
-            color: #0f172a;
-        }
-        .theme-blue {
-            background-color: #e0ecfb !important;
-            color: #1a4f7c !important;
-        }
-        .theme-cyan {
-            background-color: #dbf8fa !important;
-            color: #007780 !important;
-        }
-        .theme-grey {
-            background-color: #ebf0f6 !important;
-            color: #435269 !important;
-        }
-        .theme-purple {
-            background-color: #eceaf7 !important;
-            color: #4b3ba8 !important;
-        }
-        .theme-red {
-            background-color: #fde8e8 !important;
-            color: #b81d1d !important;
-        }
-        .no-arrow::after {
-            display: none !important;
-        }
-    </style>
-
-    <!-- Alerts Row -->
-    <div class="row mb-4 g-3">
-        <!-- Red emergency alert -->
-        <div class="col-lg-6">
-            @{
-                var hasCriticalLab = Model.LabAlerts.Any();
-                var criticalVitals = Model.VitalAlerts.Where(v => 
-                    (double.TryParse(v.Pulse, out double pulse) && pulse < 40) ||
-                    (double.TryParse(v.SpO2, out double spo2) && spo2 < 85)
-                ).ToList();
-                var hasCriticalVitals = criticalVitals.Any();
-            }
-            @if (hasCriticalLab)
-            {
-                var labAlert = Model.LabAlerts.First();
-                <div class="p-3 d-flex align-items-center justify-content-between h-100 animate__animated animate__pulse animate__infinite" style="background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #ef4444 !important;">
-                            <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-danger" style="font-size: 0.95rem; color: #991b1b !important;">Cảnh báo khẩn cấp (@Model.LabAlerts.Count.ToString("D2"))</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #7f1d1d !important; line-height: 1.35;">Bệnh nhân @(labAlert.MedicalRecord?.Appointment?.Patient?.FullName) (Mã: @(labAlert.MedicalRecord?.Appointment?.Patient?.PatientCode)) có kết quả @(labAlert.TestName): @(labAlert.Result). Cần xử lý ngay.</p>
-                        </div>
-                    </div>
-                    <a href="@Url.Action("ChiTietBenhAn", "Doctor", new { id = labAlert.MedicalRecordId })" class="btn btn-danger btn-sm fw-semibold px-3 py-2 ms-3" style="border-radius: 8px; background-color: #b91c1c; border: none; font-size: 0.8rem; white-space: nowrap;">Xử lý ngay</a>
-                </div>
-            }
-            else if (hasCriticalVitals)
-            {
-                var vitalAlert = criticalVitals.First();
-                <div class="p-3 d-flex align-items-center justify-content-between h-100 animate__animated animate__pulse animate__infinite" style="background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #ef4444 !important;">
-                            <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-danger" style="font-size: 0.95rem; color: #991b1b !important;">Cảnh báo khẩn cấp (@criticalVitals.Count.ToString("D2"))</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #7f1d1d !important; line-height: 1.35;">Bệnh nhân @(vitalAlert.Appointment?.Patient?.FullName) có dấu hiệu nguy kịch. Mạch @vitalAlert.Pulse l/p, SpO2 @vitalAlert.SpO2%. Yêu cầu hỗ trợ khẩn cấp!</p>
-                        </div>
-                    </div>
-                    <a href="@Url.Action("SinhHieuChiTiet", "Doctor", new { patientId = vitalAlert.Appointment?.PatientId })" class="btn btn-danger btn-sm fw-semibold px-3 py-2 ms-3" style="border-radius: 8px; background-color: #b91c1c; border: none; font-size: 0.8rem; white-space: nowrap;">Xử lý ngay</a>
-                </div>
-            }
-            else if (Model.OverdueWaitingCount > 0)
-            {
-                <div class="p-3 d-flex align-items-center justify-content-between h-100" style="background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #ef4444 !important;">
-                            <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-danger" style="font-size: 0.95rem; color: #991b1b !important;">Cảnh báo khẩn cấp (@Model.OverdueWaitingCount.ToString("D2"))</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #7f1d1d !important; line-height: 1.35;">Có @Model.OverdueWaitingCount bệnh nhân đã chờ khám quá 30 phút. Vui lòng ưu tiên khám ngay!</p>
-                        </div>
-                    </div>
-                    <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-danger btn-sm fw-semibold px-3 py-2 ms-3" style="border-radius: 8px; background-color: #b91c1c; border: none; font-size: 0.8rem; white-space: nowrap;">Xử lý ngay</a>
-                </div>
-            }
-            else
-            {
-                <div class="p-3 d-flex align-items-center h-100" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #10b981 !important;">
-                            <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-success" style="font-size: 0.95rem; color: #065f46 !important;">Trạng thái phòng khám</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #047857 !important; line-height: 1.35;">Không có bệnh nhân nào chờ khám quá giờ. Mọi hoạt động diễn ra ổn định.</p>
-                        </div>
-                    </div>
-                </div>
-            }
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chào buổi sáng, BS. @(ViewBag.DoctorName ?? "Nguyễn Văn A")!</h2>
+            <p class="text-muted mb-0">Dưới đây là tổng quan lịch trình và công việc của bạn trong ngày hôm nay.</p>
         </div>
-        <!-- Yellow warning alert -->
-        <div class="col-lg-6">
+                <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto mt-3 mt-md-0">
             @{
-                var tempAlerts = Model.VitalAlerts.Where(v => double.TryParse(v.Temperature, out double t) && t >= 39.0).ToList();
-                var hasTempAlert = tempAlerts.Any();
+                bool isBusy = ViewBag.IsDoctorBusy == true;
+                string statusBtnClass = isBusy ? "btn-danger" : "btn-outline-success";
+                string statusBtnText = isBusy ? "\u0110ang B\u1eadn" : "S\u1eb5n S\u00e0ng";
+                string statusIcon = isBusy ? "fa-solid fa-user-clock" : "fa-solid fa-circle-check";
             }
-            @if (hasTempAlert)
-            {
-                var tempAlert = tempAlerts.First();
-                <div class="p-3 d-flex align-items-center justify-content-between h-100" style="background-color: #fef3c7; border: 1px solid #fde68a; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #f59e0b !important;">
-                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-warning" style="font-size: 0.95rem; color: #b45309 !important;">Lời nhắc quan trọng (@tempAlerts.Count.ToString("D2"))</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #78350f !important; line-height: 1.35;">Bệnh nhân @(tempAlert.Appointment?.Patient?.FullName) sốt cao: @(tempAlert.Temperature)°C. Vui lòng kiểm tra ngay.</p>
-                        </div>
-                    </div>
-                    <a href="@Url.Action("SinhHieuChiTiet", "Doctor", new { patientId = tempAlert.Appointment?.PatientId })" class="btn btn-warning btn-sm fw-semibold px-3 py-2 ms-3 text-white" style="border-radius: 8px; background-color: #d97706; border: none; font-size: 0.8rem; white-space: nowrap;">Xem sinh hiệu</a>
-                </div>
-            }
-            else if (Model.WaitingPrescriptionCount > 0)
-            {
-                <div class="p-3 d-flex align-items-center justify-content-between h-100" style="background-color: #fef3c7; border: 1px solid #fde68a; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #f59e0b !important;">
-                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-warning" style="font-size: 0.95rem; color: #b45309 !important;">Lời nhắc quan trọng (@Model.WaitingPrescriptionCount.ToString("D2"))</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #78350f !important; line-height: 1.35;">Có @Model.WaitingPrescriptionCount bệnh nhân chờ kê toa thuốc — cần bác sĩ kê đơn sớm.</p>
-                        </div>
-                    </div>
-                    <a href="@Url.Action("KeDonThuoc", "Doctor")" class="btn btn-warning btn-sm fw-semibold px-3 py-2 ms-3 text-white" style="border-radius: 8px; background-color: #d97706; border: none; font-size: 0.8rem; white-space: nowrap;">Kê đơn</a>
-                </div>
-            }
-            else
-            {
-                <div class="p-3 d-flex align-items-center h-100" style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; min-width: 36px; background-color: #3b82f6 !important;">
-                            <i class="fa-solid fa-circle-info" style="font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1 fw-bold text-primary" style="font-size: 0.95rem; color: #1e3a8a !important;">Lời nhắc y tế</h6>
-                            <p class="mb-0 text-muted" style="font-size: 0.85rem; color: #1d4ed8 !important; line-height: 1.35;">Tất cả bệnh nhân khám xong đã được kê toa đầy đủ. Không có lịch chờ.</p>
-                        </div>
-                    </div>
-                </div>
-            }
+            <button id="btnDoctorStatusToggle" class="btn @statusBtnClass px-3 py-2 flex-grow-1" style="border-radius: 10px; font-weight: 500; white-space: nowrap;" onclick="toggleDoctorStatus()">
+                <i class="@statusIcon me-2"></i>@statusBtnText
+            </button>
+            <button class="btn btn-success px-3 py-2 flex-grow-1" style="border-radius: 10px; font-weight: 500; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#identifyPatientModal">
+                <i class="fa-solid fa-user-check me-2"></i> Qu&eacute;t x&aacute;c nh&#7853;n
+            </button>
+            <button class="btn btn-primary px-3 py-2 flex-grow-1" style="border-radius: 10px; font-weight: 500; white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
+                <i class="fa-solid fa-plus me-2"></i> Qu&eacute;t kh&aacute;m m&#7899;i
+            </button>
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="row mb-4 g-3">
-        <!-- Lượt khám trong tuần -->
-        <div class="col-xl-3 col-md-6">
-            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-week" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(14, 165, 233, 0.1) !important; color: #0284c7 !important; flex-shrink: 0;">
-                            <i class="fa-solid fa-chart-bar" style="font-size: 16px;"></i>
-                        </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Lượt khám trong tuần</span>
+
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.8rem;">Tổng bệnh nhân chưa khám</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.TodayPatientsCount</div>
                     </div>
-                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; flex-shrink: 0;">
-                        <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +12%
-                    </span>
+                    <div class="icon-circle" style="background: rgba(14, 165, 233, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0ea5e9; font-size: 20px;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
                 </div>
-                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@((ViewBag.WeeklyVisitsCount ?? 0).ToString("D2"))</div>
-                <small class="text-muted" style="font-size: 0.75rem;">Tổng số lượt khám 7 ngày qua</small>
+                <div class="mt-3 text-sm text-muted">
+                    <span class="text-success"><i class="fa-solid fa-arrow-trend-up"></i> +3</span> so với hôm qua
+                </div>
             </div>
         </div>
 
-        <!-- Lịch khám hôm nay -->
-        <div class="col-xl-3 col-md-6">
-            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-today" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(99, 102, 241, 0.1) !important; color: #4f46e5 !important; flex-shrink: 0;">
-                            <i class="fa-regular fa-calendar-check" style="font-size: 16px;"></i>
-                        </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Lịch khám hôm nay</span>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1" style="font-size: 0.8rem;">Đã khám xong</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.CompletedPatientsCount</div>
                     </div>
-                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #e0f2fe; color: #0369a1 !important; flex-shrink: 0;">
-                        <i class="fa-solid fa-clock me-1" style="font-size: 10px;"></i> Hôm nay
-                    </span>
-                </div>
-                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@((ViewBag.TodayVisitsCount ?? 0).ToString("D2"))</div>
-                <small class="text-muted" style="font-size: 0.75rem;">Ca khám chưa hoàn tất hôm nay</small>
-            </div>
-        </div>
-        
-        <!-- Đã hoàn thành -->
-        <div class="col-xl-3 col-md-6">
-            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-completed" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(16, 185, 129, 0.1) !important; color: #059669 !important; flex-shrink: 0;">
-                            <i class="fa-regular fa-circle-check" style="font-size: 16px;"></i>
-                        </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Đã hoàn thành</span>
+                    <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px;">
+                        <i class="fa-solid fa-check-double"></i>
                     </div>
-                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #d1fae5; color: #065f46 !important; flex-shrink: 0;">
-                        <i class="fa-solid fa-arrow-up me-1" style="font-size: 10px;"></i> +8%
-                    </span>
                 </div>
-                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.CompletedPatientsCount.ToString("D2")</div>
-                <small class="text-muted" style="font-size: 0.75rem;">So với trung bình 44 bệnh nhân/ngày</small>
+                <div class="mt-3 text-sm text-muted">
+                    <span class="text-success">50%</span> tiến độ ngày
+                </div>
             </div>
         </div>
 
-        <!-- Chưa xác nhận -->
-        <div class="col-xl-3 col-md-6">
-            <div class="glass-card p-4 dashboard-filter-card" id="card-filter-unconfirmed" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; cursor: pointer; transition: all 0.2s ease-in-out;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; flex-shrink: 0;">
-                            <i class="fa-regular fa-calendar-plus" style="font-size: 16px;"></i>
-                        </div>
-                        <span class="text-muted fw-semibold" style="font-size: 0.85rem; white-space: nowrap;">Chưa xác nhận</span>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái chờ khám</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.WaitingResultsCount</div>
                     </div>
-                    <span class="badge fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #fee2e2; color: #991b1b !important; flex-shrink: 0;">
-                        <i class="fa-solid fa-arrow-down me-1" style="font-size: 10px;"></i> -2%
-                    </span>
+                    <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 20px;">
+                        <i class="fa-solid fa-flask-vial"></i>
+                    </div>
                 </div>
-                <div class="h2 mb-1 fw-bold text-dark" style="font-weight: 800;">@Model.WaitingResultsCount.ToString("D2")</div>
-                <small class="text-muted" style="font-size: 0.75rem;">Yêu cầu lịch hẹn mới cần duyệt</small>
+                <div class="mt-3 text-sm text-muted">
+                    <span>Cập nhật 5 phút trước</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="glass-card hover-card p-4 h-100 border-start border-4 border-danger">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái ưu tiên</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.EmergencyCount</div>
+                    </div>
+                    <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 20px;">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-danger font-weight-bold">
+                    <i class="fa-solid fa-circle-exclamation blink"></i> Yêu cầu xử lý ngay
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="row g-4">
-        <!-- CỘT TRÁI (8/12) -->
+    <!-- Charts Row -->
+    <div class="row mb-4">
         <div class="col-xl-8 col-lg-7">
-            
-
-
-            <!-- CARD 2: Lịch hẹn gần đây -->
-            <div class="glass-card p-4" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Lịch hẹn gần đây</h5>
-                    <div class="d-flex align-items-center gap-3 ms-auto flex-wrap">
-                        <div class="input-group" style="max-width: 280px; width: 100%;">
-                            <span class="input-group-text bg-light border-end-0" style="border-radius: 8px 0 0 8px; border-color: #cbd5e1; padding: 6px 10px;">
-                                <i class="fa-solid fa-magnifying-glass text-muted" style="font-size: 13px;"></i>
-                            </span>
-                            <input type="text" id="dashboardApptSearch" class="form-control border-start-0 bg-light" placeholder="Tìm tên, mã bệnh nhân..." style="border-radius: 0 8px 8px 0; border-color: #cbd5e1; font-size: 13px; height: 34px;" />
-                        </div>
-                        <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.75rem; border-color: rgba(2, 132, 199, 0.2); color: #0284c7; height: 34px; display: inline-flex; align-items: center;">Xem tất cả</a>
-                    </div>
-                </div>
-                
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: auto; border: 1px solid #f1f5f9; border-radius: 12px;">
-                    <table class="table align-middle mb-0" id="upcomingApptsTable" style="font-size: 13.5px; min-width: 800px;">
-                        <thead>
-                            <tr style="color: #64748b; font-weight: 600; border-bottom: 2px solid #f1f5f9; font-size: 0.75rem; text-transform: uppercase; position: sticky; top: 0; background: white; z-index: 10;">
-                                <th class="ps-3 py-3 border-0">Bệnh nhân</th>
-                                <th class="py-3 border-0">Thời gian</th>
-                                <th class="py-3 border-0">Dịch vụ</th>
-                                <th class="py-3 border-0">Trạng thái</th>
-                                <th class="pe-3 py-3 border-0 text-end">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.UpcomingAppointments.Any())
-                            {
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">Không có lịch hẹn chờ khám nào.</td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr id="upcomingApptsNoResult" style="display: none;">
-                                    <td colspan="5" class="text-center py-4 text-muted">Không tìm thấy kết quả phù hợp.</td>
-                                </tr>
-                                @foreach (var item in Model.UpcomingAppointments)
-                                {
-                                    string nameParts = item.Patient?.FullName?.Trim() ?? "Unknown";
-                                    string initials = "BN";
-                                    if (!string.IsNullOrEmpty(nameParts))
-                                    {
-                                        var words = nameParts.Split(' ');
-                                        if (words.Length > 1) {
-                                            initials = "" + words[0][0] + words[words.Length-1][0];
-                                        } else {
-                                            initials = nameParts.Substring(0, System.Math.Min(2, nameParts.Length));
-                                        }
-                                    }
-                                    initials = initials.ToUpper();
-
-                                    string bgCircleColor = item.Status == 0 ? "#f43f5e" : item.Status == 1 ? "#0ea5e9" : "#a855f7";
-                                    bool isToday = item.AppointmentTime.Date == today;
-                                    bool inWeek = item.AppointmentTime >= sevenDaysAgo && item.AppointmentTime < today.AddDays(1);
-                                    bool isCompleted = item.Status == AppointmentStatus.HoanThanh || item.Status == AppointmentStatus.HenTaiKham;
-
-                                    <tr class="upcoming-appt-row" style="border-bottom: 1px solid #f1f5f9;"
-                                        data-date="@item.AppointmentTime.ToString("yyyy-MM-dd")"
-                                        data-status="@((int)item.Status)"
-                                        data-is-today="@(isToday ? "true" : "false")"
-                                        data-in-week="@(inWeek ? "true" : "false")"
-                                        data-is-completed="@(isCompleted ? "true" : "false")">
-                                        <td class="ps-3 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style="width: 32px; height: 32px; background-color: @bgCircleColor; font-size: 11px;">@initials</div>
-                                                <div>
-                                                    <div class="fw-semibold text-dark">@item.Patient?.FullName</div>
-                                                    <small class="text-muted" style="font-size: 11px;">ID: @item.Patient?.PatientCode</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 fw-medium text-dark">@item.AppointmentTime.ToString("hh:mm tt")</td>
-                                        <td class="py-3 text-muted">@item.Reason</td>
-                                        <td class="py-3">
-                                            @if (item.Status == AppointmentStatus.ChoKham)
-                                            {
-                                                <span class="badge px-2.5 py-1 rounded" style="background-color: #e0f2fe; color: #0369a1; font-weight: 600; font-size: 0.75rem;">CHỜ KHÁM</span>
-                                            }
-                                            else if (item.Status == AppointmentStatus.ChuaDen)
-                                            {
-                                                <span class="badge px-2.5 py-1 rounded" style="background-color: #ffe4e6; color: #b91c1c; font-weight: 600; font-size: 0.75rem;">HẸN MỚI</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge px-2.5 py-1 rounded" style="background-color: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.75rem;">@AppointmentStatus.GetLabel(item.Status).ToUpper()</span>
-                                            }
-                                        </td>
-                                        <td class="pe-3 py-3 text-end" style="white-space: nowrap;">
-                                            <a href="@Url.Action("KhamBenh", "Doctor", new { id = item.Id })" class="btn btn-sm btn-light border fw-semibold me-1 px-2.5 py-1" style="font-size: 0.75rem; border-radius: 6px;">Khám</a>
-                                            <div class="dropdown d-inline-block">
-                                                <button class="btn btn-link text-muted p-0 dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end border shadow-sm" style="font-size: 13px;">
-                                                    <li><a class="dropdown-item" href="@Url.Action("ChiTietByAppointment", "Doctor", new { id = item.Id })">Chi tiết</a></li>
-                                                    <li><a class="dropdown-item text-danger" href="#">Hủy lịch</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-muted small">Hiển thị:</span>
-                        <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: 105px; border-radius: 8px;">
-                            <option value="5" selected>5 dòng</option>
-                            <option value="10">10 dòng</option>
-                            <option value="25">25 dòng</option>
-                            <option value="50">50 dòng</option>
-                            <option value="100">100 dòng</option>
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <span id="paginationInfo" class="text-muted small"></span>
-                        <nav>
-                            <ul class="pagination pagination-sm mb-0" id="appointmentsPagination" style="gap: 4px;">
-                            </ul>
-                        </nav>
-                    </div>
+            <div class="glass-card h-100 p-4 border-top border-4 border-info">
+                <h6 class="font-weight-bold text-info mb-3"><i class="fa-solid fa-chart-line"></i> Lưu Lượng Bệnh Nhân 7 Ngày Qua</h6>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="patientsChart"></canvas>
                 </div>
             </div>
-
         </div>
-
-        <!-- CỘT PHẢI (4/12) -->
         <div class="col-xl-4 col-lg-5">
-            
-            <!-- CARD 1: Chức năng y tế -->
-            <div class="glass-card p-4 mb-4" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <h5 class="fw-bold mb-4 text-dark" style="font-size: 1.1rem;">Chức năng y tế</h5>
-                
-                <div class="row g-4 row-cols-3">
-                    
-                    <!-- DS Bệnh Nhân -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("DanhSach", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-blue">
-                                <i class="fa-solid fa-users" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">DS Bệnh Nhân</div>
-                        </a>
-                    </div>
-
-                    <!-- Tiếp nhận mới -->
-                    <div class="col text-center">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#addAppointmentModal" class="med-func-btn">
-                            <div class="med-func-circle theme-cyan">
-                                <i class="fa-solid fa-user-plus" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Tiếp nhận Mới</div>
-                        </a>
-                    </div>
-
-                    <!-- Xác Nhận Bệnh Nhân (Face/QR scan) -->
-                    <div class="col text-center">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#identifyPatientModal" class="med-func-btn">
-                            <div class="med-func-circle theme-purple">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
-                                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-                                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-                                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-                                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-                                    <path d="M9 10a3 3 0 1 1 6 0v2a3 3 0 0 1-6 0v-2z"></path>
-                                    <path d="M6 20a6 6 0 0 1 12 0"></path>
-                                    <line x1="2" y1="12" x2="22" y2="12" stroke="#ef4444" stroke-width="1.8"></line>
-                                </svg>
-                            </div>
-                            <div class="med-func-label">Xác Nhận BN</div>
-                        </a>
-                    </div>
-
-                    <!-- Lịch Hẹn -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("LichHen", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-grey">
-                                <i class="fa-solid fa-calendar-days" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Lịch Hẹn</div>
-                        </a>
-                    </div>
-
-                    <!-- Hồ Sơ BA -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-purple">
-                                <i class="fa-regular fa-address-card" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Hồ Sơ BA</div>
-                        </a>
-                    </div>
-
-                    <!-- Kê Đơn Thuốc -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("KeDonThuoc", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-cyan">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
-                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
-                                    <line x1="9" y1="9" x2="15" y2="9"></line>
-                                    <line x1="9" y1="13" x2="13" y2="13"></line>
-                                    <g transform="translate(15.5, 15.5) rotate(45)">
-                                        <rect x="-1.5" y="-4" width="3" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
-                                        <line x1="-1.5" y1="0" x2="1.5" y2="0"></line>
-                                    </g>
-                                </svg>
-                            </div>
-                            <div class="med-func-label">Kê Đơn Thuốc</div>
-                        </a>
-                    </div>
-
-                    <!-- Chỉ Định XN -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("ChiDinhXetNghiem", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-blue">
-                                <i class="fa-solid fa-flask" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Chỉ Định XN</div>
-                        </a>
-                    </div>
-
-                    <!-- Kết Quả CLS -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("KetQuaCanLamSang", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-blue">
-                                <i class="fa-solid fa-microscope" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Kết Quả CLS</div>
-                        </a>
-                    </div>
-
-
-                    <!-- Lịch Sử Khám -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("LichSuKham", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-grey">
-                                <i class="fa-solid fa-clock-rotate-left" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">Lịch Sử Khám</div>
-                        </a>
-                    </div>
-
-
-                    <!-- Hẹn Tái Khám -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("HenTaiKham", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-blue">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
-                                    <rect x="3" y="4" width="18" height="15" rx="2" ry="2"></rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                                    <path d="M12 14a3 3 0 1 1-3 3h3" stroke-width="2.2"></path>
-                                    <path d="M10 12l-2 2 2 2" stroke-width="2.2"></path>
-                                </svg>
-                            </div>
-                            <div class="med-func-label">Hẹn Tái Khám</div>
-                        </a>
-                    </div>
-
-                    <!-- QL Giường -->
-                    <div class="col text-center">
-                        <a href="@Url.Action("QuanLyGiuong", "Doctor")" class="med-func-btn">
-                            <div class="med-func-circle theme-grey">
-                                <i class="fa-solid fa-bed" style="font-size: 18px;"></i>
-                            </div>
-                            <div class="med-func-label">QL Giường</div>
-                        </a>
-                    </div>
-
-
+            <div class="glass-card h-100 p-4 border-top border-4 border-warning">
+                <h6 class="font-weight-bold text-warning mb-3"><i class="fa-solid fa-chart-pie"></i> Tỉ Lệ Bệnh Theo Chuyên Khoa</h6>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="departmentsChart"></canvas>
                 </div>
             </div>
-
-            <!-- CARD 2: Công việc trong ngày -->
-            <div class="glass-card p-4 shadow-sm" style="border: 1px solid #e2e8f0; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Công việc trong ngày</h5>
-                    <span class="badge text-primary fw-bold px-2 py-1 rounded" style="font-size: 0.75rem; background-color: #e0f2fe; color: #0369a1 !important;">HÔM NAY</span>
-                </div>
-                
-                <div class="d-flex flex-column gap-3">
-                    
-                    <!-- Tái khám -->
-                    <div class="d-flex align-items-center justify-content-between p-3" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9;">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-stethoscope text-muted" style="font-size: 16px;"></i>
-                            <span class="fw-semibold text-dark" style="font-size: 0.85rem;">Tái khám</span>
-                        </div>
-                        <span class="fw-bold text-dark" style="font-size: 1.1rem;">@Model.TodayFollowUps.Count</span>
-                    </div>
-
-                </div>
-            </div>
-
         </div>
     </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <div class="col-xl-7 mb-4">
+            <div class="glass-card h-100">
+                <!-- Nav Tabs -->
+                <!-- Nav Pills (Button-like tabs) -->
+                <ul class="nav nav-pills gap-2" role="tablist" style="padding: 1rem;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active px-4 py-2 rounded-pill fw-bold shadow-sm" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-pane" type="button" role="tab" aria-controls="schedule-pane" aria-selected="true" style="transition: all 0.3s;">
+                            <i class="fa-solid fa-calendar-days me-2"></i>Lịch trực tháng
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-pane" type="button" role="tab" aria-controls="appointment-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
+                            <i class="fa-solid fa-list-check me-2"></i>Danh sách chờ khám
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab" aria-controls="pending-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
+                            <i class="fa-solid fa-globe me-2"></i>BN Đặt Lịch Khám
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-4 py-2 rounded-pill fw-bold shadow-sm" id="confirmed-tab" data-bs-toggle="tab" data-bs-target="#confirmed-pane" type="button" role="tab" aria-controls="confirmed-pane" aria-selected="false" style="transition: all 0.3s; background-color: #f1f5f9; color: #64748b;">
+                            <i class="fa-solid fa-check-double me-2"></i>Lịch Hẹn Khám
+                        </button>
+                    </li>
+                </ul>
+                
+                <style>
+                    .nav-pills .nav-link.active {
+                        background-color: var(--primary-color) !important;
+                        color: white !important;
+                    }
+                    .nav-pills .nav-link:not(.active):hover {
+                        background-color: #e2e8f0 !important;
+                    }
+                </style>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Schedule Tab -->
+                    <div class="tab-pane fade show active" id="schedule-pane" role="tabpanel" aria-labelledby="schedule-tab">
+                        <div class="p-4">
+                            <form asp-action="Dashboard" method="get" class="bg-white p-3 mb-4 shadow-sm d-flex gap-2 align-items-center flex-wrap" style="border-radius: 12px; border: 1px solid #eaecf4;">
+                                <div class="input-group" style="flex: 1 1 100%; min-width: 220px;">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" name="searchString" value="@Model.SearchString" class="form-control bg-light border-start-0" placeholder="Tìm kiếm bác sĩ..." />
+                                </div>
+                                <select name="month" class="form-select bg-light border-0" style="max-width: 120px;" onchange="this.form.submit()">
+                                    @for (int i = 1; i <= 12; i++)
+                                    {
+                                        <option value="@i" selected="@(i == Model.CurrentMonth ? "selected" : null)">Tháng @i</option>
+                                    }
+                                </select>
+                                <select name="year" class="form-select bg-light border-0" style="max-width: 110px;" onchange="this.form.submit()">
+                                    @for (int y = DateTime.Now.Year - 1; y <= DateTime.Now.Year + 1; y++)
+                                    {
+                                        <option value="@y" selected="@(y == Model.CurrentYear ? "selected" : null)">@y</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm px-4">Lọc</button>
+                            </form>
+
+                            @{ 
+                                int daysInMonth = DateTime.DaysInMonth(Model.CurrentYear, Model.CurrentMonth);
+                                var dates = Enumerable.Range(1, daysInMonth).Select(d => new DateTime(Model.CurrentYear, Model.CurrentMonth, d)).ToList();
+                                var definedShifts = new List<string> {
+                                    "Ca 1 (06:00 - 09:00)",
+                                    "Ca 2 (09:00 - 12:00)",
+                                    "Ca 3 (12:00 - 15:00)",
+                                    "Ca 4 (15:00 - 18:00)",
+                                    "Ca 5 (18:00 - 21:00)",
+                                    "Ca 6 (21:00 - 24:00)",
+                                    "Ca 7 (00:00 - 06:00)"
+                                };
+                            }
+
+                            <div class="custom-scroll" style="max-height: 500px; overflow-x:auto;">
+                                <table class="table table-bordered schedule-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="shift-col sticky-col text-center align-middle">
+                                                <div class="text-primary fw-bold" style="font-size: 1rem;">Ngày & Thứ</div>
+                                                <small class="text-muted fw-normal" style="font-size: 0.75rem;">7 ca</small>
+                                            </th>
+                                            @foreach (var date in dates)
+                                            {
+                                                <th class="date-col text-center">
+                                                    <div class="fs-6 fw-bold @(date.Date == DateTime.Today ? "text-primary" : "text-dark")">
+                                                        @date.ToString("dd/MM")
+                                                    </div>
+                                                    <div class="text-muted fw-normal small">@GetVietnameseDayOfWeek(date)</div>
+                                                </th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var shift in definedShifts)
+                                        {
+                                            <tr>
+                                                <td class="shift-col sticky-col align-middle">
+                                                    <div class="fw-bold text-dark">@shift.Substring(0, 4)</div>
+                                                    <div class="text-muted small">@shift.Substring(5)</div>
+                                                </td>
+                                                @foreach (var date in dates)
+                                                {
+                                                    <td class="schedule-cell">
+                                                        @{ 
+                                                            var matchedSchedules = Model.WorkSchedules
+                                                                .Where(m => m.WorkDate.Date == date.Date && (m.ShiftName ?? string.Empty).StartsWith(shift.Substring(0, 4)))
+                                                                .OrderBy(m => m.User?.FullName)
+                                                                .ToList();
+                                                        }
+                                                        @if (matchedSchedules.Any())
+                                                        {
+                                                            <div class="d-flex flex-column gap-1 mt-1">
+                                                                @foreach (var item in matchedSchedules)
+                                                                {
+                                                                    var isCurrent = Model.CurrentUserId.HasValue && item.UserId == Model.CurrentUserId.Value;
+                                                                    var displayName = item.User?.FullName ?? item.User?.Username ?? "Không xác định";
+                                                                    <span class="badge rounded-pill @(isCurrent ? "bg-success text-white" : "bg-light text-dark")" style="font-size:0.75rem; white-space: normal; word-break: break-word; text-align: left; display: block;">
+                                                                        <i class="fa-solid fa-user-doctor me-1"></i> @displayName
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="text-muted" style="font-size: 12px;">Trống</div>
+                                                        }
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Tab -->
+                    <div class="tab-pane fade" id="appointment-pane" role="tabpanel" aria-labelledby="appointment-tab">
+                        <div class="p-0">
+                            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                                <span style="color: #1e293b; font-weight: 600;">Danh sách chờ khám tiếp theo</span>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="input-group input-group-sm" style="width: 250px;">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                        <input type="text" id="waitingListSearch" class="form-control border-start-0 bg-light" placeholder="Tìm tên bệnh nhân..." onkeyup="filterWaitingList()">
+                                    </div>
+
+                                    <a href="@Url.Action("DanhSach", "Doctor")" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.75rem; height: 34px; display: inline-flex; align-items: center;">Xem tất cả</a>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" id="waitingListTable" style="font-size: 14px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">STT</th>
+                                            <th class="border-0">Bệnh nhân</th>
+                                            <th class="border-0">Lý do khám</th>
+                                            <th class="border-0">Thời gian</th>
+                                            <th class="border-0">Trạng thái</th>
+                                            <th class="pe-4 border-0 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ int stt = 1; }
+                                        @foreach (var item in Model.UpcomingAppointments)
+                                        {
+                                            string nameParts = item.Patient?.FullName?.Trim() ?? "Unknown";
+                                            string initials = "UK";
+                                            if (!string.IsNullOrEmpty(nameParts))
+                                            {
+                                                var words = nameParts.Split(' ');
+                                                if (words.Length > 1) {
+                                                    initials = $"{words[0][0]}{words[words.Length-1][0]}".ToUpper();
+                                                } else {
+                                                    initials = nameParts.Substring(0, 1).ToUpper();
+                                                }
+                                            }
+
+                                            string statusBadgeClass = item.Status switch
+                                             {
+                                                 0 => "bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25",
+                                                 1 => "bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25",
+                                                 2 => "bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25",
+                                                 3 => "bg-info bg-opacity-10 text-info border border-info border-opacity-25",
+                                                 4 => "bg-info bg-opacity-10 text-info border border-info border-opacity-25",
+                                                 5 => "bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25",
+                                                 6 => "bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25",
+                                                 7 => "bg-success bg-opacity-10 text-success border border-success border-opacity-25",
+                                                 8 => "bg-success bg-opacity-10 text-success border border-success border-opacity-25",
+                                                 9 => "bg-success bg-opacity-10 text-success border border-success border-opacity-25",
+                                                 10 => "bg-success bg-opacity-10 text-success border border-success border-opacity-25",
+                                                 11 => "bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25",
+                                                 _ => "bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25"
+                                             };
+
+                                             string statusText = item.Status switch
+                                             {
+                                                 0 => "Chưa đến",
+                                                 1 => "Đang chờ",
+                                                 2 => "Đang khám",
+                                                 3 => "Chờ XN",
+                                                 4 => "Chờ KQ XN",
+                                                 5 => "Chờ toa thuốc",
+                                                 6 => "Ưu tiên",
+                                                 7 => "Chờ lấy thuốc",
+                                                 8 => "Hẹn tái khám",
+                                                 9 => "Đã xác nhận",
+                                                 10 => "Hoàn thành",
+                                                 11 => "Nhập viện",
+                                                 _ => "Không xác định"
+                                             };
+
+                                            <tr class="waiting-item">
+                                                <td class="ps-4 font-weight-bold text-primary">@(stt.ToString("D2"))</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background-color: @(item.Reason.StartsWith("[CẤP CỨU]") ? "#dc2626" : "#f1f5f9"); color: @(item.Reason.StartsWith("[CẤP CỨU]") ? "#fff" : "#64748b"); font-weight: bold;">@initials</div>
+                                                        <div>
+                                                            <div class="waiting-name d-flex align-items-center gap-1.5" style="font-weight: 600; color: #334155;">
+                                                                @item.Patient?.FullName
+                                                                @if (item.Reason.StartsWith("[CẤP CỨU]"))
+                                                                {
+                                                                    <span class="badge bg-danger text-white py-0.5 px-1.5 animate-pulse" style="font-size: 0.65rem; border-radius: 4px; font-weight: 700; line-height: 1;"><i class="fa-solid fa-truck-medical"></i> CẤP CỨU</span>
+                                                                }</div>
+                                                            <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.PatientCode</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="fw-medium">
+                                                    @if (item.Reason.StartsWith("[CẤP CỨU]"))
+                                                    {
+                                                        <span class="text-danger fw-bold">@item.Reason.Replace("[CẤP CỨU]", "").Trim()</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">@item.Reason</span>
+                                                    }
+                                                </td>
+                                                <td>@item.AppointmentTime.ToString("hh:mm tt")</td>
+                                                <td>
+                                                    <span class="badge @statusBadgeClass rounded-pill">@statusText</span>
+                                                    <a href="@Url.Action("SinhHieu", "Doctor", new { id = item.Id })" class="ms-1 text-danger" title="Theo dõi sinh hiệu">
+                                                        <i class="fa-solid fa-heart-pulse"></i>
+                                                    </a>
+                                                </td>
+                                                <td class="pe-4 text-end" style="white-space: nowrap;">
+                                                    @if (item.Status == 0 || item.Status == 1 || item.Status == 2 || item.Status == 3 || item.Status == 6)
+                                                    {
+                                                        <a href="@Url.Action("KhamBenh", "Doctor", new { id = item.Id })" class="btn btn-sm btn-primary rounded-pill px-3 me-1">Khám ngay</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="@Url.Action("ChiTietByAppointment", "Doctor", new { id = item.Id })" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1">Chi tiết</a>
+                                                    }
+                                                    
+                                                    <div class="dropdown d-inline-block">
+                                                        <button class="btn btn-link text-muted p-0 dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown">
+                                                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end border shadow-sm" style="font-size: 13px; z-index: 1050;">
+                                                            <li><a class="dropdown-item" href="@Url.Action("ChiTietByAppointment", "Doctor", new { id = item.Id })"><i class="fa-regular fa-eye me-1.5 text-muted"></i> Chi tiết hẹn</a></li>
+                                                            
+                                                             @if (item.Status != AppointmentStatus.HoanThanh && item.Status != AppointmentStatus.HenTaiKham)
+                                                             {
+                                                                 <li><hr class="dropdown-divider"></li>
+                                                                 
+                                                                 <!-- Đánh dấu Ưu tiên / Cấp cứu -->
+                                                                 <li>
+                                                                     <form asp-action="ToggleEmergency" asp-controller="Doctor" method="post" style="display:inline;">
+                                                                         <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                                         <button type="submit" class="dropdown-item">
+                                                                             @if (item.Reason.StartsWith("[CẤP CỨU]"))
+                                                                             {
+                                                                                 <span class="text-secondary"><i class="fa-regular fa-bell-slash me-1.5"></i> Bỏ ưu tiên</span>
+                                                                             }
+                                                                             else
+                                                                             {
+                                                                                 <span class="text-danger fw-bold"><i class="fa-solid fa-truck-medical me-1.5"></i> Đặt Cấp Cứu</span>
+                                                                             }
+                                                                         </button>
+                                                                     </form>
+                                                                 </li>
+
+                                                                 <!-- Chuyển Bác Sĩ -->
+                             
+
+                                                                 <!-- Đổi lịch hẹn -->
+                                                                 <li>
+                                                                     <a class="dropdown-item" href="javascript:void(0)" onclick="showRescheduleModal(@item.Id, '@item.Patient?.FullName', '@item.AppointmentTime.ToString("yyyy-MM-ddTHH:mm")')">
+                                                                         <i class="fa-regular fa-calendar-days me-1.5 text-muted"></i> Sắp xếp lại lịch
+                                                                     </a>
+                                                                 </li>
+
+                                                                 <!-- Chuyển tuyến -->
+                                                                 <li>
+                                                                     <a class="dropdown-item text-warning" href="javascript:void(0)" onclick="showReferModal(@item.Id, '@item.Patient?.FullName')">
+                                                                         <i class="fa-solid fa-arrow-up-right-from-square me-1.5"></i> Chuyển Tuyến Viện
+                                                                     </a>
+                                                                 </li>
+                                                             }
+                                                        </ul>
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+                                            stt++;
+                                        }
+                                        <tr id="waitingListNoResult" class="d-none">
+                                            <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy bệnh nhân nào.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
+                                <span class="text-muted small" id="waitingListInfo">Đang hiển thị...</span>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0" id="waitingListPagination">
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Online Appointment Tab -->
+                    <div class="tab-pane fade" id="pending-pane" role="tabpanel" aria-labelledby="pending-tab">
+                        <div class="p-0">
+                            <div class="p-4 border-bottom">
+                                <span style="color: #1e293b; font-weight: 600;"><i class="fa-solid fa-globe text-primary me-2"></i>Bệnh nhân đặt lịch trực tuyến (Chưa xác nhận)</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">Bệnh nhân</th>
+                                            <th class="border-0">Lý do khám</th>
+                                            <th class="border-0">Thời gian (Mong muốn)</th>
+                                            <th class="pe-4 border-0 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.PendingOnlineAppointments)
+                                        {
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <div style="font-weight: 600; color: #334155;">@item.Patient?.FullName</div>
+                                                    <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.CCCD</div>
+                                                </td>
+                                                <td>@item.Reason</td>
+                                                <td><span class="text-primary fw-bold">@item.AppointmentTime.ToString("dd/MM/yyyy HH:mm")</span></td>
+                                                <td class="pe-4 text-end">
+                                                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3" onclick="openConfirmModal(@item.Id, '@item.Patient?.FullName', '@item.AppointmentTime.ToString("yyyy-MM-ddTHH:mm")')">
+                                                        <i class="fa-solid fa-check me-1"></i> Xác nhận & Gửi SMS
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                        @if (!Model.PendingOnlineAppointments.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Không có lịch đặt trực tuyến nào đang chờ.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirmed Appointment Tab -->
+                    <div class="tab-pane fade" id="confirmed-pane" role="tabpanel" aria-labelledby="confirmed-tab">
+                        <div class="p-0">
+                            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                                <span style="color: #1e293b; font-weight: 600;"><i class="fa-solid fa-check-double text-success me-2"></i>Lịch hẹn khám đã xác nhận</span>
+                                <small class="text-muted">Sắp xếp theo thời gian đến sớm nhất</small>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 14px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4 border-0">STT</th>
+                                            <th class="border-0">Bệnh nhân</th>
+                                            <th class="border-0">Lý do khám</th>
+                                            <th class="border-0">Thời gian khám</th>
+                                            <th class="border-0">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ int confirmedStt = 1; }
+                                        @foreach (var item in Model.ConfirmedAppointments)
+                                        {
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-success">@(confirmedStt.ToString("D2"))</td>
+                                                <td>
+                                                    <div style="font-weight: 600; color: #334155;" class="d-flex align-items-center gap-1.5">
+                                                        @item.Patient?.FullName</div>
+                                                    <div class="text-muted" style="font-size: 12px;">@item.Patient?.Gender - @item.Patient?.Age T - @item.Patient?.PatientCode</div>
+                                                </td>
+                                                <td>@item.Reason</td>
+                                                <td><span class="fw-bold text-primary">@item.AppointmentTime.ToString("dd/MM/yyyy HH:mm")</span></td>
+                                                <td>
+                                                    <span class="badge bg-success rounded-pill"><i class="fa-solid fa-calendar-check me-1"></i>Đã xác nhận hẹn</span>
+                                                </td>
+                                            </tr>
+                                            confirmedStt++;
+                                        }
+                                        @if (!Model.ConfirmedAppointments.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted"><i class="fa-solid fa-calendar-xmark me-2 text-muted"></i>Không có lịch hẹn nào được xác nhận.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5 mb-4">
+            <div class="glass-card h-100">
+                <div class="p-4 border-bottom">
+                    <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-weight: 600;">Hệ sinh thái Quản lý Bệnh nhân</h6>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("DanhSach", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">DS Bệnh Nhân</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#addAppointmentModal" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Tiếp nhận Mới</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichHen", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Hẹn</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HoSoBenhAn", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-notes-medical"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hồ Sơ BA</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("KeDonThuoc", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-pills"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Kê Đơn Thuốc</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("ChiDinhXetNghiem", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-flask"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Chỉ Định XN</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("KetQuaCanLamSang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-microscope"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Kết Quả CLS</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("SinhHieu", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Sinh Hiệu</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichSuKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Sử Khám</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("LichMo", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-dark bg-opacity-10 text-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-scalpel"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Lịch Mổ</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("ThongKe", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Thống Kê</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("CanhBaoTinhTrang", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Cảnh Báo TT</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HenTaiKham", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hẹn Tái Khám</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("QuanLyGiuong", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-bed"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">QL Giường</div>
+                            </a>
+                        </div>
+                        <div class="col-4 text-center">
+                            <a href="@Url.Action("HoiChanOnline", "Doctor")" class="d-block text-decoration-none menu-item-box p-2 rounded hover-card" style="transition: all 0.2s;">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 45px; height: 45px;">
+                                    <i class="fa-solid fa-video"></i>
+                                </div>
+                                <div style="font-size: 11px; color: #475569; font-weight: 500;">Hội Chẩn Online</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f172a; font-size: 1.45rem;">
+                            <span class="text-primary fw-black" style="color: #1d4ed8 !important;">➤</span> Gửi thông báo thông minh (AI Smart Notification)
+                        </h4>
+                        <p class="text-muted mb-0 small" style="font-size: 0.85rem;">Hệ thống quét tự động gửi tin nhắn nhắc hẹn trước ngày tái khám 1 ngày.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-1.5 px-3 py-2 rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 shadow-sm" style="background-color: #ecfdf5 !important; border-color: #a7f3d0 !important; color: #047857 !important;">
+                            <span class="position-relative d-inline-flex" style="width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 4px;">
+                                <span class="animate-ping position-absolute inline-flex h-full w-full rounded-circle bg-success opacity-75" style="animation: pulse 1.5s infinite; position: absolute; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981;"></span>
+                            </span>
+                            <span class="small fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">AUTO-SENDER ACTIVE</span>
+                        </div>
+                        
+                        @if (TempData["DoctorNotificationSuccess"] != null)
+                        {
+                            <div class="alert alert-success mb-0 py-1.5 px-3 small">@TempData["DoctorNotificationSuccess"]</div>
+                        }
+                        @if (TempData["DoctorNotificationError"] != null)
+                        {
+                            <div class="alert alert-danger mb-0 py-1.5 px-3 small">@TempData["DoctorNotificationError"]</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="row gx-4 gy-3">
+                    <!-- Left Box: Patients scheduled for re-examination and nearest date/time -->
+                    <div class="col-lg-7">
+                        <div class="glass-card mb-3 p-0 bg-white" style="border: 1px solid #e2e8f0 !important; border-radius: 12px; overflow: hidden;">
+                            <div class="d-flex justify-content-between align-items-center p-3 border-bottom" style="background-color: #ffffff;">
+                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">Danh sách tái khám</span>
+                                @{
+                                    var reexamList = ViewBag.ReexaminationAppointments as List<Appointment> ?? new List<Appointment>();
+                                }
+                                <span class="text-muted small" style="font-size: 0.78rem;">Hiện có @reexamList.Count bệnh nhân</span>
+                            </div>
+                            <!-- Search Bar -->
+                            <div class="px-3 py-2 bg-light border-bottom">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0" style="border-color: #e2e8f0; color: #94a3b8;"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input id="patientSearch" type="text" class="form-control border-start-0" style="border-color: #e2e8f0; font-size: 0.82rem;" placeholder="Tìm tên bệnh nhân hoặc mã BN..." oninput="filterPatientTable()" />
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light text-uppercase small" style="font-size: 0.75rem; background-color: #f8fafc;">
+                                        <tr>
+                                            <th style="width: 8%;" class="ps-3 border-0 text-secondary">#</th>
+                                            <th class="border-0 text-secondary">Bệnh nhân</th>
+                                            <th class="text-end pe-3 border-0 text-secondary">Thời gian hẹn gần nhất</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="patientTableBody">
+                                        @for (int i = 0; i < reexamList.Count; i++)
+                                        {
+                                            var appt = reexamList[i];
+                                            var patient = appt.Patient;
+                                            if (patient != null)
+                                            {
+                                                <tr class="patient-row" data-id="@patient.Id" data-name="@(patient.FullName?.ToLower() ?? string.Empty)" data-code="@(patient.PatientCode?.ToLower() ?? string.Empty)" onclick="selectPatient(this)" style="cursor: pointer; border-bottom: 1px solid #f1f5f9;">
+                                                    <td class="ps-3 text-secondary" style="font-size: 0.9rem;">@(i + 1)</td>
+                                                    <td>
+                                                        <span class="fw-bold text-dark patient-name-val" style="font-size: 0.92rem;">@patient.FullName</span>
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary ms-2" style="font-size: 0.68rem; background-color: #eff6ff !important; color: #2563eb !important; border: 1px solid #bfdbfe !important; border-radius: 4px; font-weight: 600;">@patient.PatientCode</span>
+                                                    </td>
+                                                    <td class="text-end text-primary fw-bold pe-3" style="font-size: 0.88rem; color: #2563eb !important;">
+                                                        <i class="fa-regular fa-clock me-1.5"></i>@appt.AppointmentTime.ToString("dd/MM/yyyy HH:mm")
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        @if (!reexamList.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4 text-muted">Không có lịch hẹn tái khám nào.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Notification Efficiency Card -->
+                        <div class="glass-card p-3 bg-white d-flex align-items-center justify-content-between shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: #eff6ff; color: #2563eb;">
+                                    <i class="fa-solid fa-envelope-open-text fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">Hiệu suất thông báo</div>
+                                    <div class="text-muted small mt-1" style="font-size: 0.78rem;">Thống kê tỷ lệ tin nhắn được gửi thành công hôm nay.</div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-primary" style="font-size: 1.6rem; color: #2563eb !important; line-height: 1;">98.2%</div>
+                                <div class="text-success fw-bold small mt-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">TĂNG 2% SO VỚI HÔM QUA</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Box: Live logs & send manual message form -->
+                    <div class="col-lg-5">
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Live Logs Terminal -->
+                            <div class="glass-card p-3 shadow-sm bg-white" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-bold text-uppercase text-muted mb-0" style="font-size: 0.7rem; letter-spacing: 0.5px;"><i class="fa-solid fa-terminal text-secondary me-1"></i>NHẬT KÝ QUÉT TỰ ĐỘNG (LIVE LOGS)</label>
+                                    <small class="text-muted" style="font-size: 0.7rem;">Cập nhật: <span id="bg-worker-last-updated-dash" class="text-primary font-weight-bold">--:--:--</span></small>
+                                </div>
+                                <div id="bg-worker-logs-dash" class="p-3 bg-dark rounded font-monospace" style="font-size: 0.72rem; height: 160px; overflow-y: auto; line-height: 1.4; background-color: #0f172a !important; color: #38bdf8 !important; border-radius: 8px;">
+                                    <div class="text-secondary">[Đang tải nhật ký từ máy chủ...]</div>
+                                </div>
+                            </div>
+
+                            <!-- Manual message sender -->
+                            <div class="glass-card overflow-hidden bg-white shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                                <div class="p-3 text-white" style="background-color: #eff6ff; border-bottom: 1px solid #bfdbfe;">
+                                    <h6 class="fw-bold m-0" style="color: #1e3a8a; font-size: 0.9rem;">Thông tin bệnh nhân chọn</h6>
+                                </div>
+                                <div class="p-4" style="background-color: #ffffff;">
+                                    <!-- Empty State (Hidden when patient selected) -->
+                                    <div id="selectedPatientEmptyState" class="text-center py-4">
+                                        <div class="text-muted mb-3">
+                                            <i class="fa-solid fa-user-check text-opacity-25" style="font-size: 3rem; color: #cbd5e1;"></i>
+                                        </div>
+                                        <p class="text-secondary small mb-0">Chưa có bệnh nhân nào được chọn từ danh sách.</p>
+                                    </div>
+
+                                    <!-- Active Form State (Hidden when no patient selected) -->
+                                    <div id="selectedPatientActiveState" class="d-none">
+                                        <div id="selectedPatientInfo" class="mb-3 p-3 rounded bg-light border border-light" style="font-size: 0.85rem;">
+                                            <!-- Dynamic content injected here -->
+                                        </div>
+                                        <form method="post" asp-action="SendNotification">
+                                            <input type="hidden" id="SelectedPatientId" name="patientId" value="" />
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold small text-secondary">Tên bệnh nhân</label>
+                                                <input id="SelectedPatientName" type="text" class="form-control form-control-sm bg-light" disabled />
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold small text-secondary">Nội dung thông báo</label>
+                                                <textarea name="message" class="form-control form-control-sm" rows="3" placeholder="Nhập nội dung thông báo thủ công..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-sm btn-primary w-100 fw-bold py-2" style="border-radius: 6px; background-color: #2563eb; border-color: #2563eb;"><i class="fa-regular fa-paper-plane me-1.5"></i>Gửi thông báo thủ công</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trợ giúp AI Blue Banner -->
+                            <div class="card border-0 p-3 text-white" style="background-color: #1d4ed8; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-image: linear-gradient(135deg, #1d4ed8, #2563eb);">
+                                <div class="small fw-bold text-uppercase opacity-75" style="font-size: 0.65rem; letter-spacing: 0.5px;">TRỢ GIÚP AI</div>
+                                <h5 class="fw-bold mb-0 mt-1" style="font-size: 1.05rem; line-height: 1.3;">Tự động soạn tin nhắn<br>với AI Clinical</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Xác Nhận Bệnh Nhân -->
     <div class="modal fade" id="identifyPatientModal" tabindex="-1" aria-labelledby="identifyPatientModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                 <div class="modal-header border-0 bg-success bg-opacity-10" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
                     <h5 class="modal-title fw-bold text-success" id="identifyPatientModalLabel"><i class="fa-solid fa-user-check me-2"></i>Xác Nhận Bệnh Nhân</h5>
@@ -654,17 +890,6 @@
                         <p class="mb-1"><small class="fw-bold">Giới tính:</small> <span id="resGender">Nam</span></p>
                         <p class="mb-1"><small class="fw-bold">Tuổi:</small> <span id="resAge">30</span></p>
                         <p class="mb-0"><small class="fw-bold">Mức độ khớp ảnh:</small> <span id="resConfidence" class="text-success">95%</span></p>
-                        
-                        <div class="row mt-3 mb-2 text-center" id="resImagesContainer" style="display: none;">
-                            <div class="col-6">
-                                <small class="text-muted fw-bold mb-1 d-block">Ảnh vừa quét</small>
-                                <img id="resCapturedImage" src="" class="img-fluid rounded border shadow-sm" style="height: 120px; width: 100%; object-fit: cover;" />
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted fw-bold mb-1 d-block">Ảnh đã lưu</small>
-                                <img id="resStoredImage" src="" class="img-fluid rounded border shadow-sm" style="height: 120px; width: 100%; object-fit: cover;" />
-                            </div>
-                        </div>
                         <div class="mt-3 pt-3 border-top d-flex gap-2">
                             <a href="#" id="resPatientRecordBtn" class="btn btn-outline-primary flex-grow-1"><i class="fas fa-file-medical me-2"></i>Hồ Sơ Bệnh Án</a>
                             <button type="button" class="btn btn-success flex-grow-1" data-bs-dismiss="modal"><i class="fas fa-check me-2"></i>Hoàn tất</button>
@@ -799,7 +1024,105 @@
     </div>
 </div>
 
+    <!-- MODAL 1: Chuyển bác sĩ (Đơn lẻ) -->
+    <div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-primary bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-user-doctor me-2"></i>Chuyển Bác Sĩ Điều Trị</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="TransferDoctor" asp-controller="Doctor" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="transferApptId" name="appointmentId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh nhân</label>
+                            <input type="text" id="transferPatientName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Chọn bác sĩ chuyển đến</label>
+                            <select name="targetDoctorId" class="form-select" required>
+                                <option value="">-- Chọn bác sĩ --</option>
+                                @if (ViewBag.OtherDoctors != null)
+                                {
+                                    foreach (var doc in (List<User>)ViewBag.OtherDoctors)
+                                    {
+                                        <option value="@doc.Id">BS. @doc.FullName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary px-4">Xác nhận chuyển</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Khai báo bận / Vắng mặt (Bulk transfer) -->
+    <!-- MODAL 3: Đổi lịch khám (Reschedule) -->
+    <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-info bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-info"><i class="fa-regular fa-calendar-days me-2"></i>Sắp Xếp Lại Lịch Khám</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="RescheduleAppointment" asp-controller="Doctor" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="rescheduleApptId" name="appointmentId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh nhân</label>
+                            <input type="text" id="reschedulePatientName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Chọn thời gian mới</label>
+                            <input type="datetime-local" id="rescheduleTime" name="newTime" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-info text-white px-4">Xác nhận đổi lịch</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Chuyển tuyến viện (Referral) -->
+    <div class="modal fade" id="referModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-warning bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-warning-emphasis"><i class="fa-solid fa-arrow-up-right-from-square me-2"></i>Chuyển Tuyến Viện</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="ReferPatient" asp-controller="Doctor" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="referApptId" name="appointmentId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh nhân</label>
+                            <input type="text" id="referPatientName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh viện cấp trên tiếp nhận</label>
+                            <input type="text" name="destination" class="form-control" placeholder="Ví dụ: Bệnh viện Bạch Mai, Bệnh viện Chợ Rẫy..." required />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning px-4">Xác nhận chuyển tuyến</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @functions {
+
     public string GetVietnameseDayOfWeek(DateTime date)
     {
         return date.DayOfWeek switch
@@ -875,11 +1198,13 @@
         }
 
         .date-col {
-            width: 130px;
+            width: 180px;
+            min-width: 180px;
         }
 
         .schedule-cell {
             height: 100px;
+            min-width: 180px;
             vertical-align: top;
             padding: 0.5rem !important;
             transition: background-color 0.2s ease;
@@ -1055,208 +1380,7 @@
             modal.show();
         }
 
-        // ====== PHÂN TRANG CHO LỊCH HẸN GẦN ĐÂY ======
-        let apptsCurrentPage = 1;
-        let apptsRowsPerPage = 5;
-        let apptsFilteredRows = [];
-        let dashboardActiveFilter = 'all';
-
-        function setActiveDashboardFilterCard(cardId) {
-            $('.dashboard-filter-card').css({
-                'border': '1px solid #e2e8f0',
-                'box-shadow': '0 1px 3px rgba(0,0,0,0.02)'
-            });
-            if (cardId) {
-                let activeColor = '#0284c7'; // default blue
-                if (cardId === '#card-filter-today') activeColor = '#4f46e5'; // indigo
-                if (cardId === '#card-filter-completed') activeColor = '#059669'; // green
-                if (cardId === '#card-filter-unconfirmed') activeColor = '#d97706'; // orange
-
-                $(cardId).css({
-                    'border': `2px solid ${activeColor}`,
-                    'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.05)'
-                });
-            }
-        }
-
-        function initUpcomingApptsPagination() {
-            const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
-            apptsFilteredRows = allRows;
-            
-            const rowsSelect = document.getElementById('rowsPerPageSelect');
-            if (rowsSelect) {
-                rowsSelect.addEventListener('change', (e) => {
-                    apptsRowsPerPage = parseInt(e.target.value);
-                    apptsCurrentPage = 1;
-                    renderApptsPage();
-                });
-            }
-
-            const searchInput = document.getElementById('dashboardApptSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', () => {
-                    filterUpcomingAppts();
-                });
-            }
-
-            // Register click handlers for dashboard filter cards
-            $('#card-filter-week').click(function() {
-                if (dashboardActiveFilter === 'week') {
-                    dashboardActiveFilter = 'all';
-                    setActiveDashboardFilterCard(null);
-                } else {
-                    dashboardActiveFilter = 'week';
-                    setActiveDashboardFilterCard('#card-filter-week');
-                }
-                filterUpcomingAppts();
-            });
-
-            $('#card-filter-today').click(function() {
-                if (dashboardActiveFilter === 'today') {
-                    dashboardActiveFilter = 'all';
-                    setActiveDashboardFilterCard(null);
-                } else {
-                    dashboardActiveFilter = 'today';
-                    setActiveDashboardFilterCard('#card-filter-today');
-                }
-                filterUpcomingAppts();
-            });
-
-            $('#card-filter-completed').click(function() {
-                if (dashboardActiveFilter === 'completed') {
-                    dashboardActiveFilter = 'all';
-                    setActiveDashboardFilterCard(null);
-                } else {
-                    dashboardActiveFilter = 'completed';
-                    setActiveDashboardFilterCard('#card-filter-completed');
-                }
-                filterUpcomingAppts();
-            });
-
-            $('#card-filter-unconfirmed').click(function() {
-                if (dashboardActiveFilter === 'unconfirmed') {
-                    dashboardActiveFilter = 'all';
-                    setActiveDashboardFilterCard(null);
-                } else {
-                    dashboardActiveFilter = 'unconfirmed';
-                    setActiveDashboardFilterCard('#card-filter-unconfirmed');
-                }
-                filterUpcomingAppts();
-            });
-
-            filterUpcomingAppts();
-        }
-
-        function filterUpcomingAppts() {
-            const query = (document.getElementById('dashboardApptSearch')?.value || '').toLowerCase().trim();
-            const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
-            
-            apptsFilteredRows = allRows.filter(row => {
-                // 1. Search filter
-                const patientName = (row.querySelector('.fw-semibold.text-dark')?.textContent || '').toLowerCase();
-                const patientCode = (row.querySelector('.text-muted')?.textContent || '').toLowerCase();
-                const reason = (row.querySelector('td:nth-child(3)')?.textContent || '').toLowerCase();
-                const matchesQuery = patientName.includes(query) || patientCode.includes(query) || reason.includes(query);
-                if (!matchesQuery) return false;
-
-                // 2. Card filter
-                const isToday = row.getAttribute('data-is-today') === 'true';
-                const inWeek = row.getAttribute('data-in-week') === 'true';
-                const isCompleted = row.getAttribute('data-is-completed') === 'true';
-                const status = parseInt(row.getAttribute('data-status') || '-1');
-
-                if (dashboardActiveFilter === 'week') {
-                    return inWeek;
-                } else if (dashboardActiveFilter === 'today') {
-                    return isToday && !isCompleted;
-                } else if (dashboardActiveFilter === 'completed') {
-                    return isCompleted;
-                } else if (dashboardActiveFilter === 'unconfirmed') {
-                    return status === 0;
-                }
-                return true;
-            });
-            
-            apptsCurrentPage = 1;
-            renderApptsPage();
-        }
-
-        function renderApptsPage() {
-            const allRows = Array.from(document.querySelectorAll('#upcomingApptsTable tbody tr.upcoming-appt-row'));
-            const totalRows = apptsFilteredRows.length;
-
-            const infoEl = document.getElementById('paginationInfo');
-            const paginationUl = document.getElementById('appointmentsPagination');
-
-            // Hide all rows
-            allRows.forEach(row => row.style.display = 'none');
-
-            // Hide/Show "No results" row if any
-            const noResultRow = document.getElementById('upcomingApptsNoResult');
-            if (noResultRow) {
-                noResultRow.style.display = totalRows === 0 ? '' : 'none';
-            }
-
-            if (totalRows === 0) {
-                if (infoEl) infoEl.textContent = 'Không có bản ghi nào';
-                if (paginationUl) paginationUl.innerHTML = '';
-                return;
-            }
-
-            // Calculate start and end indices
-            const start = (apptsCurrentPage - 1) * apptsRowsPerPage;
-            const end = Math.min(start + apptsRowsPerPage, totalRows);
-
-            // Show current page rows
-            for (let i = start; i < end; i++) {
-                if (apptsFilteredRows[i]) apptsFilteredRows[i].style.display = '';
-            }
-
-            // Update info text
-            if (infoEl) {
-                infoEl.textContent = `Đang xem ${start + 1}-${end} của ${totalRows}`;
-            }
-
-            // Render pagination links
-            if (paginationUl) {
-                paginationUl.innerHTML = '';
-                const totalPages = Math.ceil(totalRows / apptsRowsPerPage);
-
-                if (totalPages > 1) {
-                    // Previous button
-                    const prevLi = document.createElement('li');
-                    prevLi.className = `page-item ${apptsCurrentPage === 1 ? 'disabled' : ''}`;
-                    prevLi.innerHTML = `<a class="page-link border-0 shadow-none" href="#" style="border-radius: 6px; padding: 4px 8px; color: #475569;" onclick="changeApptsPage(${apptsCurrentPage - 1}); return false;"><i class="fa-solid fa-chevron-left" style="font-size: 10px;"></i></a>`;
-                    paginationUl.appendChild(prevLi);
-
-                    // Page numbers
-                    for (let p = 1; p <= totalPages; p++) {
-                        const pageLi = document.createElement('li');
-                        pageLi.className = `page-item ${apptsCurrentPage === p ? 'active' : ''}`;
-                        
-                        const activeStyle = apptsCurrentPage === p ? 'background-color: #0284c7 !important; color: white !important; font-weight: bold;' : 'color: #475569;';
-                        
-                        pageLi.innerHTML = `<a class="page-link border-0 shadow-none" href="#" style="border-radius: 6px; padding: 4px 8px; ${activeStyle}" onclick="changeApptsPage(${p}); return false;">${p}</a>`;
-                        paginationUl.appendChild(pageLi);
-                    }
-
-                    // Next button
-                    const nextLi = document.createElement('li');
-                    nextLi.className = `page-item ${apptsCurrentPage === totalPages ? 'disabled' : ''}`;
-                    nextLi.innerHTML = `<a class="page-link border-0 shadow-none" href="#" style="border-radius: 6px; padding: 4px 8px; color: #475569;" onclick="changeApptsPage(${apptsCurrentPage + 1}); return false;"><i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i></a>`;
-                    paginationUl.appendChild(nextLi);
-                }
-            }
-        }
-
-        function changeApptsPage(page) {
-            apptsCurrentPage = page;
-            renderApptsPage();
-        }
-
         $(document).ready(function() {
-            // Khởi tạo phân trang cho lịch hẹn gần đây
-            initUpcomingApptsPagination();
             // Khởi tạo phân trang khi tab danh sách chờ được mở
             document.getElementById('appointment-tab')?.addEventListener('shown.bs.tab', function() {
                 initWaitingListPagination();
@@ -1275,10 +1399,10 @@
                 new Chart(ctx1, {
                     type: 'line',
                     data: {
-                        labels: @Html.Raw(Json.Serialize(ViewBag.ChartLabels)),
+                        labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
                         datasets: [{
                             label: 'Số ca khám',
-                            data: @Html.Raw(Json.Serialize(ViewBag.ChartData)),
+                            data: [15, 22, 18, 30, 25, 40, 20],
                             borderColor: '#0ea5e9',
                             borderWidth: 2,
                             tension: 0.4,
@@ -1286,26 +1410,7 @@
                             backgroundColor: 'rgba(14, 165, 233, 0.1)'
                         }]
                     },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                enabled: true,
-                                mode: 'index',
-                                intersect: false
-                            }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
             }
 
@@ -1314,10 +1419,10 @@
                 new Chart(ctx2, {
                     type: 'doughnut',
                     data: {
-                        labels: @Html.Raw(Json.Serialize(ViewBag.PieLabels)),
+                        labels: ['Nội Tổng Hợp', 'Ngoại Khoa', 'Sản Khoa', 'Nhi Khoa'],
                         datasets: [{
-                            data: @Html.Raw(Json.Serialize(ViewBag.PieData)),
-                            backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#f97316'],
+                            data: [45, 25, 20, 10],
+                            backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444'],
                             borderWidth: 0
                         }]
                     },
@@ -1493,20 +1598,19 @@
                     window.scanSeconds = 0;
                     if(identifyInterval) clearInterval(identifyInterval);
                     
-                    // Tích hợp AI động - tăng tốc độ quét và hiển thị UI thông minh hơn
                     identifyInterval = setInterval(() => {
-                        window.scanSeconds += 0.5;
-                        if (window.scanSeconds <= 1) {
-                            scanText.innerHTML = `<i class="fas fa-microchip fa-spin text-info me-1"></i> AI đang phân tích dữ liệu sinh trắc học động...`;
+                        window.scanSeconds++;
+                        if (window.scanSeconds <= 3) {
+                            scanText.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Đang phân tích dữ liệu sinh trắc học... (${window.scanSeconds}s/3s)`;
                         } else {
-                            if (window.scanSeconds >= 4) {
-                                scanText.innerHTML = `<i class="fas fa-magic fa-spin text-primary me-1"></i> AI đang phân tích sâu và mở rộng phạm vi...`;
+                            if (window.scanSeconds >= 8) {
+                                scanText.innerHTML = `<i class="fas fa-magic fa-spin text-primary me-1"></i> Đang mở rộng phạm vi tìm kiếm...`;
                             } else {
-                                scanText.innerHTML = `<i class="fas fa-bolt text-warning me-1"></i> AI đang xử lý và đối chiếu dữ liệu thời gian thực...`;
+                                scanText.innerHTML = `<i class="fas fa-circle-notch fa-spin text-success me-1"></i> Đang truy xuất thông tin...`;
                             }
                             autoProcessIdentifyResult();
                         }
-                    }, 500);
+                    }, 1000);
                 })
                 .catch(function(err) {
                     scanText.innerHTML = `<i class="fas fa-exclamation-triangle text-danger me-1"></i> Không thể truy cập Camera.`;
@@ -1549,7 +1653,7 @@
                 data: JSON.stringify({
                     FaceData: identifyScanType === 'face' ? capturedDataUrl : "",
                     CCCD: identifyScanType === 'qr' ? capturedDataUrl : "",
-                    ForceSuccess: window.scanSeconds >= 4 // Tích hợp AI: Xử lý nhanh, ép buộc thành công sau 4s thay vì 8s
+                    ForceSuccess: window.scanSeconds >= 8 // Sau 5s (3s đếm ngược + 5s quét = 8s), ép buộc thành công
                 }),
                 success: function (res) {
                     if (res.success) {
@@ -1566,15 +1670,6 @@
                             $('#resPatientRecordBtn').removeClass('d-none');
                         } else {
                             $('#resPatientRecordBtn').addClass('d-none');
-                        }
-
-                        // Hiển thị ảnh vừa quét và ảnh đã lưu
-                        if (identifyScanType === 'face' && res.data.faceData) {
-                            $('#resCapturedImage').attr('src', capturedDataUrl);
-                            $('#resStoredImage').attr('src', res.data.faceData);
-                            $('#resImagesContainer').show();
-                        } else {
-                            $('#resImagesContainer').hide();
                         }
 
                         document.getElementById('identifyResult').classList.remove('d-none');
@@ -1595,7 +1690,8 @@
             const query = document.getElementById('patientSearch').value.toLowerCase();
             document.querySelectorAll('#patientTableBody tr.patient-row').forEach(row => {
                 const name = row.getAttribute('data-name') || '';
-                row.style.display = name.includes(query) ? '' : 'none';
+                const code = row.getAttribute('data-code') || '';
+                row.style.display = (name.includes(query) || code.includes(query)) ? '' : 'none';
             });
         }
 
@@ -1604,29 +1700,47 @@
             row.classList.add('table-primary');
 
             const patientId = row.getAttribute('data-id');
-            const patientName = row.querySelector('td:nth-child(2)').textContent.trim();
-            const age = row.querySelector('td:nth-child(3)').textContent.trim();
+            const patientName = row.querySelector('.patient-name-val') ? row.querySelector('.patient-name-val').textContent.trim() : row.querySelector('td:nth-child(2)').textContent.trim();
+            const examTime = row.querySelector('td:nth-child(3)').textContent.trim();
 
             document.getElementById('SelectedPatientId').value = patientId;
             document.getElementById('SelectedPatientName').value = patientName;
+            
+            // Toggle States
+            document.getElementById('selectedPatientEmptyState').classList.add('d-none');
+            document.getElementById('selectedPatientActiveState').classList.remove('d-none');
+
             document.getElementById('selectedPatientInfo').innerHTML = `
-                <div class="mb-3">
-                    <div class="fw-semibold">Bệnh nhân:</div>
-                    <div>${patientName}</div>
+                <div class="mb-2">
+                    <div class="fw-semibold small text-muted">Bệnh nhân:</div>
+                    <div class="fw-bold text-dark">${patientName}</div>
                 </div>
-                <div class="mb-3">
-                    <div class="fw-semibold">Tuổi:</div>
-                    <div>${age}</div>
-                </div>
-                <div class="mb-3">
-                    <div class="fw-semibold">Lưu ý:</div>
-                    <div>Nhập nội dung cụ thể để bệnh nhân nhìn thấy khi đăng nhập.</div>
+                <div class="mb-2">
+                    <div class="fw-semibold small text-muted">Hẹn tái khám gần nhất:</div>
+                    <div class="fw-bold text-primary">${examTime}</div>
                 </div>
             `;
             document.getElementById('SelectedPatientName').focus();
         }
 
-        function showToast(message, type) {
+        function showTransferModal(apptId, currentName) {
+            $("#transferApptId").val(apptId);
+            $("#transferPatientName").val(currentName);
+            $("#transferModal").modal("show");
+        }
+        function showRescheduleModal(apptId, currentName, currentTimeStr) {
+            $("#rescheduleApptId").val(apptId);
+            $("#reschedulePatientName").val(currentName);
+            $("#rescheduleTime").val(currentTimeStr);
+            $("#rescheduleModal").modal("show");
+        }
+        function showReferModal(apptId, currentName) {
+            $("#referApptId").val(apptId);
+            $("#referPatientName").val(currentName);
+            $("#referModal").modal("show");
+        }
+
+                function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = 'position-fixed top-0 start-50 translate-middle-x p-3';
             toast.style.zIndex = '11000';
@@ -1636,5 +1750,82 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
+
+        function toggleDoctorStatus() {
+            const btn = document.getElementById('btnDoctorStatusToggle');
+            fetch('/Doctor/ToggleDoctorStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.isBusy) {
+                        btn.className = "btn btn-danger px-3 py-2 flex-grow-1";
+                        btn.innerHTML = `<i class="fa-solid fa-user-clock me-2"></i>\u0110ang B\u1eadn`;
+                        showToast("Tr\u1ea1ng th\u00e1i: \u0110ang B\u1eadn!", "danger");
+                    } else {
+                        btn.className = "btn btn-outline-success px-3 py-2 flex-grow-1";
+                        btn.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>S\u1eb5n S\u00e0ng`;
+                        showToast("Tr\u1ea1ng th\u00e1i: S\u1eb5n S\u00e0ng!", "success");
+                    }
+                }
+            })
+            .catch(err => console.error("Loi:", err));
+        }
+
+        function viewSbarLog(appointmentId) {
+            fetch(`/Doctor/GetTransferLog?appointmentId=${appointmentId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Khong tim thay ban giao SBAR");
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById('sbarFromDoc').textContent = 'BS. ' + data.fromDoctor;
+                    document.getElementById('sbarTime').textContent = data.createdAt;
+                    
+                    document.getElementById('sbarSituation').textContent = data.situation;
+                    document.getElementById('sbarBackground').textContent = data.background;
+                    document.getElementById('sbarAssessment').textContent = data.assessment;
+                    document.getElementById('sbarRecommendation').textContent = data.recommendation;
+
+                    const emergencyBadge = document.getElementById('sbarConsultationBadge');
+                    if (data.isEmergencyConsultation) {
+                        emergencyBadge.classList.remove('d-none');
+                    } else {
+                        emergencyBadge.classList.add('d-none');
+                    }
+
+                    const modal = new bootstrap.Modal(document.getElementById('viewSbarModal'));
+                    modal.show();
+                })
+                .catch(err => {
+                    showToast(err.message, "danger");
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            function fetchBackgroundLogsDash() {
+                $.get('/Doctor/GetBackgroundSenderLogs', function(res) {
+                    if (res && res.logs) {
+                        $('#bg-worker-last-updated-dash').text(res.lastUpdated);
+                        let logHtml = '';
+                        res.logs.forEach(log => {
+                            let colorClass = 'text-info';
+                            if (log.includes('[ERROR]')) colorClass = 'text-danger';
+                            else if (log.includes('[AUTO-SMS]')) colorClass = 'text-success fw-bold';
+                            else if (log.includes('[SYSTEM]')) colorClass = 'text-info';
+                            
+                            logHtml += `<div class="${colorClass}" style="margin-bottom: 4px; word-break: break-all;">${log}</div>`;
+                        });
+                        $('#bg-worker-logs-dash').html(logHtml);
+                    }
+                });
+            }
+            fetchBackgroundLogsDash();
+            setInterval(fetchBackgroundLogsDash, 3000);
+        });
     </script>
 }

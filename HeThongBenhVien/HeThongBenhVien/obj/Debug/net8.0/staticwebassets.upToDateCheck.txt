@@ -1,0 +1,86 @@
+wwwroot\css\site.css
+wwwroot\favicon.ico
+wwwroot\js\site.js
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.esm.min.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.js.map
+wwwroot\lib\bootstrap\dist\js\bootstrap.min.js
+wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
+wwwroot\lib\bootstrap\LICENSE
+wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
+wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
+wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
+wwwroot\lib\jquery-validation\dist\additional-methods.js
+wwwroot\lib\jquery-validation\dist\additional-methods.min.js
+wwwroot\lib\jquery-validation\dist\jquery.validate.js
+wwwroot\lib\jquery-validation\dist\jquery.validate.min.js
+wwwroot\lib\jquery-validation\LICENSE.md
+wwwroot\lib\jquery\dist\jquery.js
+wwwroot\lib\jquery\dist\jquery.min.js
+wwwroot\lib\jquery\dist\jquery.min.map
+wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\ai_227e15ed-367b-4532-8783-13c761470aeb_gãy tay .jfif
+wwwroot\uploads\ai_2686c3a7-b08f-45f1-aadb-3db7afa7897b_gãy tay .jfif
+wwwroot\uploads\ai_26a78c8a-a394-4f79-9295-ca3b11151921_8.jpg
+wwwroot\uploads\ai_26ec293a-96c4-4a70-bf27-5f8600fda1aa_gãy tay .jfif
+wwwroot\uploads\ai_462733e2-4ba4-4e9a-93e4-b882a966cdbc_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
+wwwroot\uploads\ai_466fb65e-f58d-490f-b113-4580ea23bb0a_8.jpg
+wwwroot\uploads\ai_4734e380-c985-40d4-9c35-d6d03f2af19a_gãy tay .jfif
+wwwroot\uploads\ai_5339a0fa-91aa-406d-b18b-5935f8069cb1_8.jpg
+wwwroot\uploads\ai_53ddb727-1192-49bf-b207-eb786c859ba3_36.jpg
+wwwroot\uploads\ai_5b5d8dae-369d-447c-b351-1f5422dfbe41_8.jpg
+wwwroot\uploads\ai_5cc8b141-b227-47b9-a511-5c7252b08923_8.jpg
+wwwroot\uploads\ai_62d8269e-0318-4bd8-92fb-702a9b72f442_8.jpg
+wwwroot\uploads\ai_666caa84-449b-4ade-acba-18ce5846a5b8_1.jpg
+wwwroot\uploads\ai_74a23d85-6ff5-41bd-90ba-541bfe076335_gãy tay .jfif
+wwwroot\uploads\ai_84e232d1-5dbc-4f7d-b0b4-0f949dcdcea3_gãy tay .jfif
+wwwroot\uploads\ai_868b18d4-f15f-42cc-9e32-e834067bf3df_8.jpg
+wwwroot\uploads\ai_90254c27-defd-4b0b-b211-24b70e12d655_gãy tay .jfif
+wwwroot\uploads\ai_93ef0666-74f3-45ee-b903-ecee27e37d6f_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
+wwwroot\uploads\ai_9e1b2330-e091-4e5d-b702-352d802ac95d_4.jpg
+wwwroot\uploads\ai_e78f7c13-56e6-413e-93c8-0b817febab75_6.jpeg
+wwwroot\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif
+wwwroot\uploads\doctor_mai.png
+wwwroot\uploads\hospital_map_3d.png
+wwwroot\uploads\mobile_rating.png
+wwwroot\uploads\patient_avatar.png
+wwwroot\uploads\patient_hero.png

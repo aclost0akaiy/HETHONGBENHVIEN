@@ -119,10 +119,32 @@ namespace HeThongBenhVien.Controllers
         // ==========================================
         public async Task<IActionResult> QuanLyNhanSu()
         {
-            // Lấy toàn bộ nhân sự để hiển thị, nhưng đánh dấu ai là bác sĩ để filter nút gửi SMS
-            var danhSachNhanSu = await _context.Users.Where(u => u.Role == "Doctor" || u.Role == "Admin").ToListAsync();
-            // Truyền username của Admin đang đăng nhập để ẩn nút SMS cho chính mình
+            // Lấy toàn bộ nhân sự để hiển thị, bao gồm cả khoa phòng
+            var danhSachNhanSu = await _context.Users
+                .Include(u => u.Department)
+                .Where(u => u.Role == "Doctor" || u.Role == "Admin")
+                .ToListAsync();
+
+            // Tính số bệnh nhân đang chờ khám của từng bác sĩ (Status = 1, 2, 3)
+            var activeApptCounts = await _context.Appointments
+                .Where(a => a.Status == 1 || a.Status == 2 || a.Status == 3)
+                .GroupBy(a => a.DoctorId)
+                .Select(g => new { DoctorId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.DoctorId ?? 0, x => x.Count);
+
+            ViewBag.ActiveApptCounts = activeApptCounts;
             ViewBag.CurrentUsername = User?.Identity?.Name;
+            ViewBag.AllDoctors = danhSachNhanSu.Where(u => u.Role == "Doctor").ToList();
+
+            var sbarLogs = await _context.PatientTransferLogs
+                .Include(l => l.FromDoctor)
+                .Include(l => l.ToDoctor)
+                .Include(l => l.Appointment)
+                .ThenInclude(a => a.Patient)
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
+            ViewBag.SbarLogs = sbarLogs;
+
             return View(danhSachNhanSu);
         }
 
@@ -906,7 +928,133 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyNganHangMau));
         }
 
+        // ==========================================
+        // ADMIN SBAR HANDOVER & STATUS TOGGLE
+        // ==========================================
+        [HttpPost]
+        public async Task<IActionResult> ToggleDoctorStatus(int doctorId)
+        {
+            var doctor = await _context.Users.FindAsync(doctorId);
+            if (doctor == null) return NotFound();
 
+            doctor.IsBusy = !doctor.IsBusy;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, isBusy = doctor.IsBusy });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TransferAllActiveDoctorsAdmin(int fromDoctorId, List<int> targetDoctorIds, List<int> patientCounts, string situation, string background, string assessment, string recommendation, bool isEmergencyConsultation)
+        {
+            var fromDoctor = await _context.Users.FindAsync(fromDoctorId);
+            if (fromDoctor == null) return NotFound();
+
+            // Lấy tất cả các ca khám đang chờ của bác sĩ này
+            var activeAppointments = await _context.Appointments
+                .Where(a => a.DoctorId == fromDoctorId && 
+                            (a.Status == 1 || a.Status == 2 || a.Status == 3))
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            fromDoctor.IsBusy = true;
+
+            int apptIndex = 0;
+            int totalTransferred = 0;
+
+            if (targetDoctorIds != null && patientCounts != null)
+            {
+                for (int i = 0; i < targetDoctorIds.Count; i++)
+                {
+                    int targetDocId = targetDoctorIds[i];
+                    int countToTransfer = patientCounts[i];
+
+                    var targetDoctor = await _context.Users.FindAsync(targetDocId);
+                    if (targetDoctor == null) continue;
+
+                    int transferredForThisDoc = 0;
+                    while (transferredForThisDoc < countToTransfer && apptIndex < activeAppointments.Count)
+                    {
+                        var appt = activeAppointments[apptIndex];
+                        appt.DoctorId = targetDocId;
+
+                        var transferLog = new PatientTransferLog
+                        {
+                            AppointmentId = appt.Id,
+                            FromDoctorId = fromDoctorId,
+                            ToDoctorId = targetDocId,
+                            Situation = situation,
+                            Background = background,
+                            Assessment = assessment,
+                            Recommendation = recommendation,
+                            IsEmergencyConsultation = isEmergencyConsultation,
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.PatientTransferLogs.Add(transferLog);
+
+                        transferredForThisDoc++;
+                        apptIndex++;
+                        totalTransferred++;
+                    }
+                }
+            }
+
+            // Nếu vẫn còn sót bệnh nhân nào chưa được gán, chuyển sang bác sĩ đầu tiên trong danh sách nhận bàn giao
+            if (apptIndex < activeAppointments.Count && targetDoctorIds != null && targetDoctorIds.Count > 0)
+            {
+                int firstDocId = targetDoctorIds[0];
+                while (apptIndex < activeAppointments.Count)
+                {
+                    var appt = activeAppointments[apptIndex];
+                    appt.DoctorId = firstDocId;
+
+                    var transferLog = new PatientTransferLog
+                    {
+                        AppointmentId = appt.Id,
+                        FromDoctorId = fromDoctorId,
+                        ToDoctorId = firstDocId,
+                        Situation = situation,
+                        Background = background,
+                        Assessment = assessment,
+                        Recommendation = recommendation,
+                        IsEmergencyConsultation = isEmergencyConsultation,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.PatientTransferLogs.Add(transferLog);
+                    apptIndex++;
+                    totalTransferred++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Đã chuyển giao thành công {totalTransferred} ca khám cho các bác sĩ tiếp nhận và báo bận.";
+            return RedirectToAction("QuanLyNhanSu");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTransferLogById(int id)
+        {
+            var log = await _context.PatientTransferLogs
+                .Include(l => l.FromDoctor)
+                .Include(l => l.ToDoctor)
+                .Include(l => l.Appointment)
+                .ThenInclude(a => a.Patient)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
+            if (log == null) return NotFound();
+
+            return Json(new {
+                patientName = log.Appointment?.Patient?.FullName ?? "N/A",
+                fromDoctor = log.FromDoctor?.FullName ?? "N/A",
+                toDoctor = log.ToDoctor?.FullName ?? "N/A",
+                situation = log.Situation,
+                background = log.Background,
+                assessment = log.Assessment,
+                recommendation = log.Recommendation,
+                isEmergencyConsultation = log.IsEmergencyConsultation,
+                createdAt = log.CreatedAt.ToString("HH:mm dd/MM/yyyy")
+            });
+        }
 
         // ==========================================
         // SAO LƯU & NHẬT KÝ

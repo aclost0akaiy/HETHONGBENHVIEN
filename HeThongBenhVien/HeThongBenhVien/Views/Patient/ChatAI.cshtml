@@ -1,0 +1,437 @@
+@{
+    ViewData["Title"] = "Trợ Lý Y Tế AI";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+
+<div class="py-3" id="chat-ai-app">
+    <!-- Breadcrumb / Back button -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <a href="@Url.Action("Portal", "Patient")" class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-1.5" style="border-radius: 50px;">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Cổng Bệnh Nhân
+        </a>
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-3 py-2 rounded-pill fw-bold">
+            <i class="fa-solid fa-shield-halved me-1"></i> KẾT NỐI AN TOÀN SSL 256-BIT
+        </span>
+    </div>
+
+    <!-- Main Workspace: Sidebar + Chat Box -->
+    <div class="row g-4">
+        <!-- Left Sidebar: Actions & History -->
+        <div class="col-lg-3">
+            <div class="card border-0 rounded-4 shadow-sm p-4 text-start h-100 bg-white d-flex flex-column" style="min-height: 75vh;">
+                <h6 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-primary"></i> Danh Mục Tính Năng
+                </h6>
+                
+                <!-- Button 1: Bắt đầu chat mới -->
+                <button class="btn btn-chat-action w-100 mb-3 text-white border-0 shadow-sm" 
+                        style="background-color: #0b57d0;"
+                        v-on:click="startNewChat">
+                    <i class="fa-regular fa-comment fs-5"></i>
+                    <span>Bắt đầu chat mới</span>
+                </button>
+                
+                <!-- Button 2: Lịch sử chat -->
+                <button class="btn btn-chat-action w-100 mb-4 text-white border-0 shadow-sm" 
+                        style="background-color: #1a73e8;"
+                        v-on:click="toggleHistoryList">
+                    <i class="fa-regular fa-comment fs-5"></i>
+                    <span>Lịch sử chat</span>
+                </button>
+
+                <!-- Saved Sessions List -->
+                <div class="flex-grow-1 overflow-auto mt-2" style="max-height: 40vh;" v-if="showHistory">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <span class="small text-secondary fw-semibold">Hội thoại gần đây</span>
+                        <button class="btn btn-link btn-sm text-danger p-0 text-decoration-none small" v-on:click="clearAllHistory" v-if="savedSessions.length > 0">
+                            Xóa hết
+                        </button>
+                    </div>
+                    
+                    <div v-if="savedSessions.length === 0" class="text-center py-4 text-muted small">
+                        <i class="fa-regular fa-folder-open mb-2 fs-4 d-block text-secondary opacity-50"></i>
+                        Chưa có lịch sử trò chuyện.
+                    </div>
+                    
+                    <div class="list-group list-group-flush gap-1" v-else>
+                        <div v-for="session in savedSessions" :key="session.id" 
+                             :class="['list-group-item list-group-item-action border-0 rounded-3 px-3 py-2.5 d-flex align-items-center justify-content-between text-start text-truncate small cursor-pointer', activeSessionId === session.id ? 'active-session-item fw-semibold' : 'text-dark bg-light bg-opacity-25']"
+                             v-on:click="loadSession(session.id)"
+                             style="border-radius: 10px !important; cursor: pointer;">
+                            <span class="text-truncate flex-grow-1"><i class="fa-regular fa-message me-2 text-secondary"></i> {{ session.title }}</span>
+                            <button class="btn btn-link btn-sm text-danger p-0 ms-2 opacity-50 hover-opacity-100" v-on:click.stop="deleteSession(session.id)">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Active Chat Window -->
+        <div class="col-lg-9">
+            <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="height: 75vh; display: flex; flex-direction: column;">
+                
+                <!-- Chat Header -->
+                <div class="card-header border-bottom bg-white py-3 px-4 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-container d-flex align-items-center justify-content-center text-white" style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #0b57d0 0%, #1a73e8 100%);">
+                            <i class="fa-solid fa-robot fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Trợ Lý Y Tế AI Chuyên Sâu</h5>
+                            <span class="small text-success d-flex align-items-center gap-1.5" style="font-size: 11px; font-weight: 600;">
+                                <span class="rounded-circle bg-success d-inline-block animate-pulse" style="width: 7px; height: 7px;"></span> Sẵn sàng tư vấn trực tuyến
+                            </span>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" v-on:click="clearHistory" v-if="messages.length > 1">
+                        <i class="fa-regular fa-trash-can me-1"></i> Xóa hội thoại
+                    </button>
+                </div>
+
+                <!-- Chat Warning Alert -->
+                <div class="alert alert-warning border-0 rounded-0 m-0 py-2.5 px-4 text-start d-flex align-items-center gap-2" style="background-color: #fffbeb; color: #b45309; font-size: 0.82rem;">
+                    <i class="fa-solid fa-circle-info fs-5"></i>
+                    <div><strong>Khuyến cáo:</strong> Trợ lý AI chỉ cung cấp thông tin y khoa mang tính chất tham khảo, không thay thế cho chẩn đoán hoặc chỉ định điều trị chuyên môn từ bác sĩ chuyên khoa.</div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="card-body p-4 flex-grow-1 overflow-auto" id="messages-container" style="background-color: #f8fafc;">
+                    <div v-for="(msg, index) in messages" :key="index" :class="['d-flex mb-4', msg.role === 'user' ? 'justify-content-end' : 'justify-content-start']">
+                        <!-- AI Avatar -->
+                        <div v-if="msg.role === 'model'" class="avatar-sm me-3 flex-shrink-0 d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; background-color: #0b57d0;">
+                            <i class="fa-solid fa-robot" style="font-size: 0.9rem;"></i>
+                        </div>
+
+                        <!-- Bubble Wrapper -->
+                        <div :class="['message-bubble-wrapper text-start', msg.role === 'user' ? 'user-wrapper' : 'ai-wrapper']" style="max-width: 75%;">
+                            <!-- Sender Name -->
+                            <div class="small text-secondary mb-1 px-1" style="font-size: 10px; font-weight: 600;">
+                                {{ msg.role === 'user' ? 'Bạn' : 'Trợ lý AI Y tế' }}
+                            </div>
+                            <!-- Bubble Content -->
+                            <div :class="['p-3 rounded-4 shadow-xs', msg.role === 'user' ? 'bg-primary text-white' : 'bg-white text-dark border']" 
+                                 style="font-size: 0.95rem; line-height: 1.6; white-space: pre-line;">
+                                {{ msg.content }}
+                            </div>
+                        </div>
+
+                        <!-- User Avatar -->
+                        <div v-if="msg.role === 'user'" class="avatar-sm ms-3 flex-shrink-0 d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; background-color: #64748b;">
+                            <i class="fa-regular fa-user" style="font-size: 0.9rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- AI Typing Indicator -->
+                    <div v-if="isTyping" class="d-flex mb-4 justify-content-start">
+                        <div class="avatar-sm me-3 flex-shrink-0 d-flex align-items-center justify-content-center text-white rounded-circle" style="width: 36px; height: 36px; background-color: #0b57d0;">
+                            <i class="fa-solid fa-robot" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div class="message-bubble-wrapper text-start" style="max-width: 75%;">
+                            <div class="small text-secondary mb-1 px-1" style="font-size: 10px; font-weight: 600;">Trợ lý AI đang phân tích...</div>
+                            <div class="p-3 rounded-4 bg-white text-dark border d-flex align-items-center gap-1">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestion Chips -->
+                <div class="px-4 py-3 border-top bg-white text-start" v-if="messages.length <= 1 && !isTyping">
+                    <div class="small text-secondary fw-semibold mb-2"><i class="fa-regular fa-lightbulb me-1 text-warning"></i> Câu hỏi gợi ý:</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button v-for="suggestion in suggestions" :key="suggestion" class="btn btn-sm btn-outline-primary rounded-pill px-3" v-on:click="sendSuggestion(suggestion)">
+                            {{ suggestion }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Input Footer -->
+                <div class="card-footer border-top bg-white py-3 px-4">
+                    <form v-on:submit.prevent="sendMessage" class="d-flex gap-3">
+                        <input type="text" v-model="inputText" class="form-control rounded-pill px-4" placeholder="Nhập triệu chứng, câu hỏi sức khỏe..." :disabled="isTyping" style="height: 48px; border: 1.5px solid #cbd5e1; font-size: 0.95rem;" />
+                        <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" :disabled="!inputText.trim() || isTyping" style="width: 48px; height: 48px; background-color: #0b57d0; border: none; transition: all 0.2s;">
+                            <i class="fa-solid fa-paper-plane" style="font-size: 1.1rem;"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling Action Buttons */
+    .btn-chat-action {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        gap: 16px;
+        height: 52px;
+        padding: 0 20px !important;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 12px !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-chat-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        opacity: 0.92;
+    }
+    .btn-chat-action i {
+        font-size: 1.15rem;
+        width: 20px;
+        text-align: center;
+    }
+
+    /* Active Session Highlight */
+    .active-session-item {
+        background-color: rgba(11, 87, 208, 0.08) !important;
+        color: #0b57d0 !important;
+    }
+
+    .hover-opacity-100:hover {
+        opacity: 1 !important;
+    }
+
+    #messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    #messages-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #messages-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    #messages-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        background-color: #64748b;
+        border-radius: 50%;
+        display: inline-block;
+        animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @@keyframes typingBounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+
+    .animate-pulse {
+        animation: pulseAnimation 2s infinite;
+    }
+
+    @@keyframes pulseAnimation {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(40, 167, 69, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        new Vue({
+            el: '#chat-ai-app',
+            data: {
+                inputText: '',
+                isTyping: false,
+                activeSessionId: null,
+                savedSessions: [],
+                showHistory: true,
+                messages: [
+                    {
+                        role: 'model',
+                        content: 'Xin chào! Tôi là Trợ Lý Y Tế AI Chuyên Sâu. Tôi có thể hỗ trợ bạn tìm hiểu về các triệu chứng sức khỏe, tư vấn lối sống và chế độ dinh dưỡng lành mạnh, hoặc gợi ý khoa khám phù hợp.\n\nHôm nay bạn đang gặp vấn đề gì sức khỏe cần tôi hỗ trợ không?'
+                    }
+                ],
+                suggestions: [
+                    'Tôi bị đau đầu chóng mặt nên khám khoa nào?',
+                    'Chế độ dinh dưỡng cho người cao huyết áp?',
+                    'Triệu chứng của bệnh sốt xuất huyết là gì?',
+                    'Làm thế nào để giảm mỡ máu tự nhiên?'
+                ]
+            },
+            methods: {
+                loadSessionsFromStorage: function() {
+                    try {
+                        var stored = localStorage.getItem("ai_chat_sessions");
+                        if (stored) {
+                            this.savedSessions = JSON.parse(stored);
+                        }
+                    } catch (e) {
+                        this.savedSessions = [];
+                    }
+                },
+                saveSessionsToStorage: function() {
+                    localStorage.setItem("ai_chat_sessions", JSON.stringify(this.savedSessions));
+                },
+                startNewChat: function() {
+                    this.saveCurrentSession();
+                    
+                    this.activeSessionId = 'session_' + Date.now();
+                    this.messages = [
+                        {
+                            role: 'model',
+                            content: 'Xin chào! Tôi là Trợ Lý Y Tế AI Chuyên Sâu. Tôi có thể hỗ trợ bạn tìm hiểu về các triệu chứng sức khỏe, tư vấn lối sống và chế độ dinh dưỡng lành mạnh, hoặc gợi ý khoa khám phù hợp.\n\nHôm nay bạn đang gặp vấn đề gì sức khỏe cần tôi hỗ trợ không?'
+                        }
+                    ];
+                    this.scrollToBottom();
+                },
+                saveCurrentSession: function() {
+                    var hasUserMessages = this.messages.some(m => m.role === 'user');
+                    if (!hasUserMessages) return;
+
+                    var firstUserMsg = this.messages.find(m => m.role === 'user');
+                    var title = firstUserMsg ? firstUserMsg.content : "Tư vấn sức khỏe";
+                    if (title.length > 22) {
+                        title = title.substring(0, 22) + '...';
+                    }
+
+                    var sessionIndex = this.savedSessions.findIndex(s => s.id === this.activeSessionId);
+                    if (sessionIndex !== -1) {
+                        this.savedSessions[sessionIndex].messages = this.messages;
+                        this.savedSessions[sessionIndex].title = title;
+                    } else {
+                        var newSession = {
+                            id: this.activeSessionId,
+                            title: title,
+                            messages: this.messages,
+                            timestamp: Date.now()
+                        };
+                        this.savedSessions.unshift(newSession);
+                    }
+                    this.saveSessionsToStorage();
+                },
+                loadSession: function(sessionId) {
+                    this.saveCurrentSession();
+
+                    var session = this.savedSessions.find(s => s.id === sessionId);
+                    if (session) {
+                        this.activeSessionId = sessionId;
+                        this.messages = JSON.parse(JSON.stringify(session.messages));
+                        this.scrollToBottom();
+                    }
+                },
+                deleteSession: function(sessionId) {
+                    var confirmDel = confirm("Bạn có chắc chắn muốn xóa cuộc trò chuyện này?");
+                    if (!confirmDel) return;
+
+                    this.savedSessions = this.savedSessions.filter(s => s.id !== sessionId);
+                    this.saveSessionsToStorage();
+
+                    if (this.activeSessionId === sessionId) {
+                        this.activeSessionId = null;
+                        this.startNewChat();
+                    }
+                },
+                clearAllHistory: function() {
+                    var confirmDel = confirm("Bạn có chắc chắn muốn xóa tất cả lịch sử cuộc trò chuyện?");
+                    if (!confirmDel) return;
+
+                    this.savedSessions = [];
+                    this.saveSessionsToStorage();
+                    this.activeSessionId = null;
+                    this.startNewChat();
+                },
+                toggleHistoryList: function() {
+                    this.showHistory = !this.showHistory;
+                },
+                sendMessage: function() {
+                    if (!this.inputText.trim() || this.isTyping) return;
+
+                    var userText = this.inputText.trim();
+                    this.inputText = '';
+                    
+                    this.messages.push({
+                        role: 'user',
+                        content: userText
+                    });
+
+                    this.scrollToBottom();
+                    this.callApi(userText);
+                },
+                sendSuggestion: function(text) {
+                    this.inputText = text;
+                    this.sendMessage();
+                },
+                callApi: function(messageText) {
+                    this.isTyping = true;
+                    var self = this;
+
+                    var chatHistory = this.messages.slice(1, this.messages.length - 1); 
+
+                    fetch('@Url.Action("SendChatMessage", "Patient")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: messageText,
+                            history: chatHistory
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        self.isTyping = false;
+                        if (data.success) {
+                            self.messages.push({
+                                role: 'model',
+                                content: data.reply
+                            });
+                            self.saveCurrentSession();
+                        } else {
+                            self.messages.push({
+                                role: 'model',
+                                content: 'Xin lỗi, hệ thống AI gặp lỗi: ' + (data.message || 'Không có phản hồi từ máy chủ.')
+                            });
+                        }
+                        self.scrollToBottom();
+                    })
+                    .catch(error => {
+                        self.isTyping = false;
+                        self.messages.push({
+                            role: 'model',
+                            content: 'Đã xảy ra lỗi kết nối mạng: ' + error.message
+                        });
+                        self.scrollToBottom();
+                    });
+                },
+                clearHistory: function() {
+                    if (confirm("Bạn có chắc chắn muốn xóa lịch sử cuộc trò chuyện này?")) {
+                        this.messages = [
+                            {
+                                role: 'model',
+                                content: 'Lịch sử trò chuyện đã được làm sạch. Tôi có thể giúp gì thêm cho sức khỏe của bạn?'
+                            }
+                        ];
+                    }
+                },
+                scrollToBottom: function() {
+                    this.$nextTick(() => {
+                        var container = document.getElementById("messages-container");
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
+                }
+            },
+            mounted: function() {
+                this.loadSessionsFromStorage();
+                this.startNewChat();
+                this.scrollToBottom();
+            }
+        });
+    });
+</script>

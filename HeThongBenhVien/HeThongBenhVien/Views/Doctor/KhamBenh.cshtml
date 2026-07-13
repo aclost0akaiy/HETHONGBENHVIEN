@@ -340,55 +340,107 @@
             }
         };
 
-        // Hàm auto-suggest ICD-10 dựa trên triệu chứng
+        // Hàm auto-suggest ICD-10 dựa trên triệu chứng tích hợp AI thông minh
         function autoSuggestICD10() {
-            const text = $('#Symptoms').val().toLowerCase();
-            let predictedIcd = "";
-
-            if (text.includes("khó thở") && text.includes("ho")) {
-                predictedIcd = "J45"; // Hen phế quản
-            } else if (text.includes("ho") && text.includes("sốt") && text.includes("khó thở")) {
-                predictedIcd = "J18"; // Viêm phổi
-            } else if ((text.includes("đau họng") || text.includes("ho khan")) && text.includes("sốt")) {
-                predictedIcd = "J03"; // Viêm amidan
-            } else if (text.includes("sổ mũi") && text.includes("đau đầu")) {
-                predictedIcd = "J01"; // Viêm xoang
-            } else if (text.includes("đau tức ngực") && text.includes("khó thở")) {
-                predictedIcd = "I10"; // Tăng huyết áp (tạm thời gán nếu chưa có mã nhồi máu)
-            } else if (text.includes("đau bụng") || text.includes("tiêu chảy")) {
-                predictedIcd = "A09"; // Tiêu chảy
-            } else if (text.includes("buồn nôn") || text.includes("ợ chua")) {
-                predictedIcd = "K21"; // GERD
-            } else if (text.includes("đau dạ dày") || text.includes("đau thượng vị")) {
-                predictedIcd = "K29"; // Viêm dạ dày
-            } else if (text.includes("mệt mỏi") && text.includes("tiểu nhiều")) {
-                predictedIcd = "E11"; // Tiểu đường
-            } 
-            // Fallback rules for single keywords
-            else if (text.includes("sốt cao") || text.includes("sốt")) {
-                predictedIcd = "J03"; // Viêm amidan cấp
-            } else if (text.includes("ho khan") || text.includes("ho")) {
-                predictedIcd = "J03"; // Viêm amidan cấp
-            } else if (text.includes("đau đầu")) {
-                predictedIcd = "I10"; // Tăng huyết áp
-            } else if (text.includes("khó thở")) {
-                predictedIcd = "J45"; // Hen phế quản
-            } else if (text.includes("đau tức ngực")) {
-                predictedIcd = "I10"; // Tăng huyết áp
-            } else if (text.includes("mệt mỏi")) {
-                predictedIcd = "E11"; // Đái tháo đường
+            const text = $('#Symptoms').val();
+            if (!text || text.trim() === "") {
+                alert("Vui lòng nhập triệu chứng trước khi tìm phác đồ!");
+                return;
             }
 
-            if (predictedIcd !== "") {
-                if ($('#icd10Select').val() !== predictedIcd) {
-                    $('#icd10Select').val(predictedIcd).change();
-                    // Hiển thị thông báo nhỏ báo cho bác sĩ biết AI vừa tự động chọn
+            const btn = $('#btnSearchProtocol');
+            const originalHtml = btn.html();
+            
+            // Đặt trạng thái đang tải
+            btn.prop('disabled', true).html('<i class="fa-solid fa-circle-notch fa-spin me-2"></i>AI đang phân tích...');
+
+            // Gọi API chẩn đoán bằng AI
+            $.get('/Doctor/PredictIcdFromSymptoms', { symptoms: text }, function (res) {
+                btn.prop('disabled', false).html(originalHtml);
+                
+                let predictedIcd = "";
+                if (res && res.success && res.icdCode) {
+                    predictedIcd = res.icdCode;
+                    
+                    // Thêm động vào dropdown nếu chưa có
+                    if ($('#icd10Select option[value="' + res.icdCode + '"]').length === 0) {
+                        $('#icd10Select').append(new Option(res.icdCode + ' - ' + res.diagnosis, res.icdCode));
+                    }
+                    
+                    // Thêm động vào map cục bộ của javascript
+                    if (!icdProtocols[res.icdCode]) {
+                        icdProtocols[res.icdCode] = {
+                            diagnosis: res.diagnosis,
+                            treatmentPlan: res.treatmentPlan,
+                            labTests: res.labTests,
+                            medicines: res.medicines
+                        };
+                    }
+                } else {
+                    // Fallback to local rule engine
+                    const lowerText = text.toLowerCase();
+                    if (lowerText.includes("khó thở") && lowerText.includes("ho")) {
+                        predictedIcd = "J45";
+                    } else if (lowerText.includes("ho") && lowerText.includes("sốt") && lowerText.includes("khó thở")) {
+                        predictedIcd = "J18";
+                    } else if ((lowerText.includes("đau họng") || lowerText.includes("ho khan")) && lowerText.includes("sốt")) {
+                        predictedIcd = "J03";
+                    } else if (lowerText.includes("sổ mũi") && lowerText.includes("đau đầu")) {
+                        predictedIcd = "J01";
+                    } else if (lowerText.includes("đau tức ngực") && lowerText.includes("khó thở")) {
+                        predictedIcd = "I10";
+                    } else if (lowerText.includes("đau bụng") || lowerText.includes("tiêu chảy")) {
+                        predictedIcd = "A09";
+                    } else if (lowerText.includes("buồn nôn") || lowerText.includes("ợ chua")) {
+                        predictedIcd = "K21";
+                    } else if (lowerText.includes("đau dạ dày") || lowerText.includes("đau thượng vị")) {
+                        predictedIcd = "K29";
+                    } else if (lowerText.includes("mệt mỏi") && lowerText.includes("tiểu nhiều")) {
+                        predictedIcd = "E11";
+                    } else if (lowerText.includes("sốt")) {
+                        predictedIcd = "J03";
+                    } else if (lowerText.includes("ho")) {
+                        predictedIcd = "J03";
+                    } else if (lowerText.includes("đau đầu")) {
+                        predictedIcd = "I10";
+                    } else if (lowerText.includes("khó thở")) {
+                        predictedIcd = "J45";
+                    } else if (lowerText.includes("đau tức ngực")) {
+                        predictedIcd = "I10";
+                    } else if (lowerText.includes("mệt mỏi")) {
+                        predictedIcd = "E11";
+                    }
+                }
+
+                if (predictedIcd !== "" && $('#icd10Select option[value="' + predictedIcd + '"]').length > 0) {
+                    if ($('#icd10Select').val() !== predictedIcd) {
+                        $('#icd10Select').val(predictedIcd).change();
+                        
+                        // Hiển thị thông báo nhỏ báo cho bác sĩ biết AI vừa tự động chọn
+                        let toastHtml = `
+                            <div id="aiToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+                                <div class="toast show align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="fa-solid fa-robot me-2"></i>AI đã tự động phân tích và chọn phác đồ ICD-10 (${predictedIcd}) dựa trên triệu chứng.
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $('#aiToast').remove();
+                        $('body').append(toastHtml);
+                        setTimeout(() => $('#aiToast').fadeOut(500, function() { $(this).remove(); }), 4000);
+                    }
+                } else {
+                    // Hiển thị thông báo không tìm thấy
                     let toastHtml = `
                         <div id="aiToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-                            <div class="toast show align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast show align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
                                 <div class="d-flex">
                                     <div class="toast-body">
-                                        <i class="fa-solid fa-robot me-2"></i>AI đã tự động chọn phác đồ ICD-10 (${predictedIcd}) dựa trên triệu chứng.
+                                        <i class="fa-solid fa-circle-exclamation me-2"></i>Chưa tìm thấy phác đồ phù hợp với triệu chứng hiện tại.
                                     </div>
                                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                                 </div>
@@ -399,24 +451,10 @@
                     $('body').append(toastHtml);
                     setTimeout(() => $('#aiToast').fadeOut(500, function() { $(this).remove(); }), 4000);
                 }
-            } else {
-                // Hiển thị thông báo không tìm thấy
-                let toastHtml = `
-                    <div id="aiToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-                        <div class="toast show align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="d-flex">
-                                <div class="toast-body">
-                                    <i class="fa-solid fa-circle-exclamation me-2"></i>Chưa tìm thấy phác đồ phù hợp với từ khóa hiện tại.
-                                </div>
-                                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                $('#aiToast').remove();
-                $('body').append(toastHtml);
-                setTimeout(() => $('#aiToast').fadeOut(500, function() { $(this).remove(); }), 3000);
-            }
+            }).fail(function () {
+                btn.prop('disabled', false).html(originalHtml);
+                alert("Lỗi kết nối máy chủ AI!");
+            });
         }
 
         $(document).ready(function() {

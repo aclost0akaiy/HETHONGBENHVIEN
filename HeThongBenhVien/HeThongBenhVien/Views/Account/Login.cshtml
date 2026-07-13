@@ -3,17 +3,17 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng nhập - QL Khám Chữa Bệnh</title>
+    <title>Đăng nhập hệ thống - QL Khám Chữa Bệnh</title>
     <!-- Bootstrap 4 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Vue 2 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <style>
@@ -21,100 +21,152 @@
             height: 100%;
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #ffffff 100%);
             overflow: hidden;
         }
 
-        /* Animated Background Shapes */
-        .shape {
-            position: absolute;
-            filter: blur(60px);
-            z-index: 0;
-            animation: float 10s infinite ease-in-out alternate;
-        }
-        .shape-1 {
-            width: 400px; height: 400px;
-            background: rgba(14, 165, 233, 0.3);
-            top: -10%; left: -10%;
-        }
-        .shape-2 {
-            width: 300px; height: 300px;
-            background: rgba(56, 189, 248, 0.3);
-            bottom: -5%; right: -5%;
-            animation-delay: -5s;
-        }
-        .shape-3 {
-            width: 250px; height: 250px;
-            background: rgba(2, 132, 199, 0.2);
-            top: 40%; left: 60%;
-            animation-delay: -2s;
+        .navbar-custom {
+            background-color: transparent;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            z-index: 10;
         }
 
-        @@keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 30px) scale(1.1); }
+        .navbar-brand-custom {
+            color: #0b56b9;
+            font-weight: 700;
+            font-size: 1.35rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand-custom:hover {
+            color: #0b56b9;
+            text-decoration: none;
+        }
+
+        .nav-tabs-custom {
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .nav-tab-item {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #0b56b9;
+            padding: 8px 0;
+            border-bottom: 3px solid #0b56b9;
+            cursor: pointer;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .theme-toggle {
+            color: #475569;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        .divider-vertical {
+            width: 1px;
+            height: 20px;
+            background-color: #cbd5e1;
         }
 
         .login-wrapper {
-            height: 100vh;
+            height: calc(100vh - 140px);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
-            z-index: 1;
+            z-index: 5;
+            padding-bottom: 40px;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04);
             width: 100%;
-            max-width: 420px;
-            padding: 45px 40px;
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-
+            max-width: 440px;
+            padding: 40px;
+            text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @@keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 35px;
+        .avatar-circle {
+            width: 75px;
+            height: 75px;
+            border-radius: 18px;
+            background-color: #0b56b9;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            position: relative;
         }
 
-        .login-icon {
-            font-size: 3.5rem;
-            color: #0ea5e9;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .shield-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .login-header h2 {
+        .login-card h2 {
             font-weight: 700;
             color: #0f172a;
-            font-size: 1.75rem;
-            margin-bottom: 8px;
+            font-size: 1.6rem;
+            margin-bottom: 6px;
         }
 
-        .login-header p {
+        .login-card p.card-subtext {
             color: #64748b;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
+            margin-bottom: 30px;
+        }
+
+        .form-label-custom {
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .input-group-custom {
             position: relative;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        .input-group-custom i {
+        .input-group-custom i.prefix-icon {
             position: absolute;
             left: 18px;
             top: 15px;
@@ -126,50 +178,50 @@
         .form-control-custom {
             width: 100%;
             padding: 14px 15px 14px 50px;
-            border: 2px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-            color: #334155;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            color: #1e293b;
             transition: all 0.3s ease;
         }
 
         .form-control-custom:focus {
             outline: none;
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+            border-color: #0b56b9;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(13, 86, 185, 0.1);
         }
 
         .form-control-custom:focus + i,
-        .input-group-custom:focus-within i {
-            color: #0ea5e9;
+        .input-group-custom:focus-within i.prefix-icon {
+            color: #0b56b9;
         }
 
         .btn-login {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            background-color: #0b56b9;
             border: none;
             color: white;
             padding: 14px;
             font-weight: 600;
             border-radius: 12px;
             width: 100%;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: 10px;
         }
 
         .btn-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+            background-color: #084393;
             color: white;
         }
 
         .btn-login:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .form-check {
@@ -183,47 +235,139 @@
             height: 18px;
             cursor: pointer;
             border-radius: 4px;
+            accent-color: #0b56b9;
         }
 
         .form-check-label {
-            color: #475569;
-            font-size: 0.95rem;
+            color: #64748b;
+            font-size: 0.9rem;
             cursor: pointer;
             margin-left: 8px;
             margin-bottom: 0;
-            padding-top: 2px;
             user-select: none;
         }
 
-        .text-danger {
-            font-size: 0.85rem;
-            margin-top: 6px;
-            padding-left: 5px;
-            display: block;
-            color: #ef4444 !important;
-        }
-        
-        .alert-danger {
-            border-radius: 12px;
+        .forgot-link {
+            color: #0b56b9;
             font-size: 0.9rem;
-            background-color: #fee2e2;
-            border-color: #fca5a5;
-            color: #991b1b;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            color: #084393;
+            text-decoration: none;
+        }
+
+        .ssl-text {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            margin-top: 20px;
+        }
+
+        /* Footer Sticky */
+        .footer-sticky {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+        }
+
+        .footer-left-link {
+            color: #0b56b9;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .footer-left-link:hover {
+            color: #084393;
+            text-decoration: none;
+        }
+
+        .footer-copyright {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #0b56b9;
+        }
+
+        /* Responsive Layout */
+        @@media (max-width: 768px) {
+            .navbar-custom {
+                padding: 15px 20px;
+            }
+            .login-card {
+                padding: 30px 20px;
+            }
+            .footer-sticky {
+                position: relative;
+                height: auto;
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+                text-align: center;
+            }
+            .footer-links {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
+    <!-- Header Navbar -->
+    <div class="navbar-custom">
+        <a href="/" class="navbar-brand-custom">Đăng nhập nhân viên y tế</a>
+        <ul class="nav-tabs-custom">
+            <li class="nav-tab-item">Đăng nhập</li>
+        </ul>
+        <div class="navbar-right">
+            <span class="theme-toggle">
+                <i class="fa-regular fa-moon"></i>
+            </span>
+            <div class="divider-vertical"></div>
+        </div>
+    </div>
 
+    <!-- Main Content Container -->
     <div id="login-app" class="login-wrapper">
         <div class="login-card">
-            <div class="login-header">
-                <i class="fa-solid fa-hospital-user login-icon"></i>
-                <h2>QL Khám Chữa Bệnh</h2>
-                <p>Đăng nhập để truy cập hệ thống</p>
+            <div class="avatar-circle">
+                <i class="fa-solid fa-hospital-user"></i>
+                <div class="shield-badge">
+                    <i class="fa-solid fa-shield-halved" style="color: #0b56b9; font-size: 0.85rem;"></i>
+                </div>
             </div>
+            <h2>QL Khám Chữa Bệnh</h2>
+            <p class="card-subtext">Hệ thống quản trị cơ sở y tế thông minh</p>
 
             <!-- Form đăng nhập -->
             <form id="loginForm" method="post" action="/Account/Login" v-on:submit="validateForm">
@@ -231,21 +375,30 @@
                 
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div class="alert alert-danger p-3 mb-4">
+                    <div class="alert alert-danger p-3 mb-4 text-left">
                         @Html.ValidationSummary(false, "", new { @class = "mb-0 list-unstyled" })
                     </div>
                 }
 
+                <div class="text-left">
+                    <label class="form-label-custom" for="Username">Tên đăng nhập</label>
+                </div>
                 <div class="input-group-custom">
-                    <input type="text" id="Username" name="Username" v-model="username" class="form-control-custom" placeholder="Tên đăng nhập" required />
-                    <i class="fa-solid fa-user"></i>
-                    <span v-if="errors.username" class="text-danger"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.username }}</span>
+                    <input type="text" id="Username" name="Username" v-model="username" class="form-control-custom" placeholder="admin_hethong" required />
+                    <i class="fa-regular fa-user prefix-icon"></i>
+                    <span v-if="errors.username" class="text-danger text-left"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.username }}</span>
                 </div>
 
+                <div class="text-left">
+                    <label class="form-label-custom" for="Password">Mật khẩu</label>
+                </div>
                 <div class="input-group-custom">
-                    <input type="password" id="Password" name="Password" v-model="password" class="form-control-custom" placeholder="Mật khẩu" required />
-                    <i class="fa-solid fa-lock"></i>
-                    <span v-if="errors.password" class="text-danger"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.password }}</span>
+                    <input :type="showPassword ? 'text' : 'password'" id="Password" name="Password" v-model="password" class="form-control-custom" placeholder="......" required />
+                    <i class="fa-solid fa-lock prefix-icon"></i>
+                    <span v-on:click="showPassword = !showPassword" style="position: absolute; right: 18px; top: 15px; color: #94a3b8; cursor: pointer; z-index: 10;">
+                        <i :class="showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
+                    </span>
+                    <span v-if="errors.password" class="text-danger text-left"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.password }}</span>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
@@ -253,13 +406,29 @@
                         <input type="checkbox" class="form-check-input" id="RememberMe" name="RememberMe" value="true" v-model="rememberMe">
                         <label class="form-check-label" for="RememberMe">Ghi nhớ</label>
                     </div>
-                    <a href="#" class="text-decoration-none" style="color: #0ea5e9; font-size: 0.95rem; font-weight: 500;">Quên mật khẩu?</a>
+                    <a href="#" class="forgot-link">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="btn btn-login">
-                    Đăng Nhập <i class="fa-solid fa-arrow-right ml-2" style="font-size: 0.9rem;"></i>
+                    Đăng Nhập <i class="fa-solid fa-arrow-right-long ml-2" style="font-size: 0.95rem;"></i>
                 </button>
             </form>
+        </div>
+        <div class="ssl-text text-center">
+            Truy cập an toàn thông qua kết nối SSL/TLS mã hóa 256-bit
+        </div>
+    </div>
+
+    <!-- Sticky Footer -->
+    <div class="footer-sticky">
+        <div class="footer-left">
+            <a href="/Account/Login" class="footer-left-link">Đăng nhập BS - Quản Trị Hệ Thống</a>
+            <span class="footer-copyright">© 2024 Cổng Bệnh Nhân. Tất cả quyền được bảo lưu.</span>
+        </div>
+        <div class="footer-links">
+            <a href="#">Điều khoản sử dụng</a>
+            <a href="#">Chính sách bảo mật</a>
+            <a href="#">Liên hệ</a>
         </div>
     </div>
 
@@ -270,6 +439,7 @@
                 username: '',
                 password: '',
                 rememberMe: false,
+                showPassword: false,
                 errors: {}
             },
             methods: {
@@ -283,7 +453,7 @@
                     }
                     
                     if (Object.keys(this.errors).length > 0) {
-                        e.preventDefault(); // Dừng submit nếu có lỗi
+                        e.preventDefault();
                     }
                 }
             }

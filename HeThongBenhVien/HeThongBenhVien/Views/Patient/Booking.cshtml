@@ -25,129 +25,194 @@
                     <i class="fa-solid fa-pen-to-square"></i>
                     <span>Thông tin đặt lịch</span>
                 </div>
-                <div class="p-4 p-md-5">
+                                <div class="p-3 p-sm-4 p-md-5">
                     <form asp-action="Booking" method="post">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Họ và Tên</label>
-                                <input type="text" class="form-control form-control-lg booking-input" name="FullName" placeholder="Nguyễn Văn A" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Số Điện Thoại</label>
-                                <input type="tel" class="form-control form-control-lg booking-input" name="PhoneNumber" placeholder="0912345678" required>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">S&#7889; &#272;i&#7879;n Tho&#7841;i</label>
+                                <input type="tel" class="form-control form-control-lg booking-input" name="PhoneNumber" value="@ViewBag.UserPhone" placeholder="0912345678" required>
                             </div>
                             <div class="col-12">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <label class="form-label fw-semibold mb-0">Lý do khám (Triệu chứng)</label>
-                                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill" onclick="suggestDepartmentAI()">
-                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Gợi ý khoa AI
-                                    </button>
+                                <label class="form-label fw-semibold">L&#253; do kh&#225;m (Tri&#7879;u ch&#7913;ng)</label>
+                                <textarea id="symptomsText" name="Reason" class="form-control booking-input" rows="2" placeholder="V&iacute; d&#7909;: &#272;au &#273;&#7847;u, ch&#243;ng m&#7867;t, s&#7889;t cao..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Ng&#224;y &amp; Gi&#7901; Kh&#225;m (mong mu&#7889;n)</label>
+                                <div class="row g-2">
+                                    <div class="col-12 col-sm-7">
+                                        <input type="date" id="bookingDate" class="form-control form-control-lg booking-input" required>
+                                    </div>
+                                    <div class="col-12 col-sm-5">
+                                        <div class="dropdown">
+                                            <button class="form-select form-control-lg booking-input text-start d-flex justify-content-between align-items-center" type="button" id="timeDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="color: #64748b; font-weight: 500; font-size: 0.95rem;">
+                                                <span id="selectedTimeText">-- Gi&#7901; --</span>
+                                            </button>
+                                            <ul class="dropdown-menu w-100 shadow border-0 mt-1" id="timeDropdownMenu" aria-labelledby="timeDropdownBtn" style="max-height: 250px; overflow-y: auto; border-radius: 12px; padding: 0.5rem 0; z-index: 1050;">
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('08:00', '08:00 SA')">08:00 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('08:30', '08:30 SA')">08:30 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('09:00', '09:00 SA')">09:00 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('09:30', '09:30 SA')">09:30 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('10:00', '10:00 SA')">10:00 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('10:30', '10:30 SA')">10:30 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('11:00', '11:00 SA')">11:00 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('11:30', '11:30 SA')">11:30 SA</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('13:30', '01:30 CH')">01:30 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('14:00', '02:00 CH')">02:00 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('14:30', '02:30 CH')">02:30 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('15:00', '03:00 CH')">03:00 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('15:30', '03:30 CH')">03:30 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('16:00', '04:00 CH')">04:00 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 border-bottom text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('16:30', '04:30 CH')">04:30 CH</a></li>
+                                                <li><a class="dropdown-item py-2 px-3 text-dark fw-semibold" href="javascript:void(0)" onclick="selectTime('17:00', '05:00 CH')">05:00 CH</a></li>
+                                            </ul>
+                                            <input type="hidden" id="bookingTime" required>
+                                        </div>
+                                    </div>
                                 </div>
-                                <textarea id="symptomsText" name="Reason" class="form-control booking-input" rows="2" placeholder="Ví dụ: Đau đầu, chóng mặt, sốt cao..." required></textarea>
+                                <input type="hidden" name="AppointmentTime" id="AppointmentTime" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold">Ngày & Giờ Khám (mong muốn)</label>
-                                <input name="AppointmentTime" id="AppointmentTime" type="datetime-local" class="form-control form-control-lg booking-input" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Chuyên Khoa</label>
-                                <select id="DepartmentId" name="DepartmentId" class="form-select form-control-lg booking-input" required>
-                                    <option value="" disabled selected>-- Chọn khoa --</option>
-                                    @if(ViewBag.Departments != null)
-                                    {
-                                        foreach(var dept in ViewBag.Departments)
-                                        {
-                                            <option value="@dept.Id">@dept.DepartmentName</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Bác sĩ khám</label>
-                                <select id="DoctorId" name="DoctorId" class="form-select form-control-lg booking-input">
-                                    <option value="" disabled selected>-- Vui lòng chọn ngày và khoa --</option>
-                                </select>
+                                <label class="form-label fw-semibold">B&#225;c s&#297; kh&#225;m</label>
+                                <div class="dropdown">
+                                    <button class="form-select form-control-lg booking-input text-start d-flex justify-content-between align-items-center" type="button" id="doctorDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="color: #64748b; font-weight: 500; font-size: 0.95rem;">
+                                        <span id="selectedDoctorText">-- Ch&#7885;n b&#225;c s&#297; --</span>
+                                    </button>
+                                    <ul class="dropdown-menu w-100 shadow border-0 mt-1" id="doctorDropdownMenu" aria-labelledby="doctorDropdownBtn" style="max-height: 280px; overflow-y: auto; border-radius: 12px; padding: 0.5rem 0; z-index: 1050;">
+                                        <li class="p-3 text-center text-muted">&#272;ang t&#7843;i danh s&#225;ch b&#225;c s&#297;...</li>
+                                    </ul>
+                                    <input type="hidden" name="DoctorId" id="DoctorId">
+                                </div>
                             </div>
                         </div>
-                        
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const deptSelect = document.getElementById('DepartmentId');
-                                const dateInput = document.getElementById('AppointmentTime');
-                                const doctorSelect = document.getElementById('DoctorId');
 
-                                function loadDoctors() {
-                                    const deptId = deptSelect.value;
-                                    const dateVal = dateInput.value;
-                                    
-                                    if (deptId && dateVal) {
-                                        fetch(`/Patient/GetDoctorsByDepartment?departmentId=${deptId}&appointmentDate=${dateVal}`)
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                doctorSelect.innerHTML = '<option value="" disabled selected>-- Chọn bác sĩ --</option>';
-                                                if (data.length > 0) {
-                                                    data.forEach(d => {
-                                                        doctorSelect.innerHTML += `<option value="${d.id}">${d.fullName}</option>`;
-                                                    });
-                                                } else {
-                                                    doctorSelect.innerHTML = '<option value="" disabled selected>Không có BS trực ca ngày này</option>';
-                                                }
-                                            });
-                                    } else {
-                                        doctorSelect.innerHTML = '<option value="" disabled selected>-- Vui lòng chọn ngày và khoa --</option>';
-                                    }
-                                }
+                        <!-- Warning Alert Box -->
+                        <div id="bookingWarningAlert" class="alert alert-danger border-0 rounded-4 mt-4 d-none align-items-start gap-3 shadow-sm" role="alert">
+                            <div class="pending-icon bg-danger bg-opacity-10 text-danger" style="width: 32px; height: 32px; font-size: 0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-danger" style="font-size: 0.9rem;">Th&ocirc;ng b&aacute;o</h6>
+                                <p id="bookingWarningText" class="mb-0 small" style="font-size: 0.8rem;"></p>
+                            </div>
+                        </div>
 
-                                deptSelect.addEventListener('change', loadDoctors);
-                                dateInput.addEventListener('change', loadDoctors);
-                            });
-
-                            function suggestDepartmentAI() {
-                                const text = document.getElementById('symptomsText').value.trim();
-                                if (!text) {
-                                    alert("Vui lòng nhập triệu chứng trước khi sử dụng AI.");
-                                    return;
-                                }
-                                
-                                const btn = document.querySelector('button[onclick="suggestDepartmentAI()"]');
-                                const originalText = btn.innerHTML;
-                                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang phân tích...';
-                                btn.disabled = true;
-
-                                fetch('/Patient/SuggestDepartmentAI', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ symptoms: text })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    btn.innerHTML = originalText;
-                                    btn.disabled = false;
-                                    
-                                    if (data.success && data.departmentId) {
-                                        const select = document.getElementById('DepartmentId');
-                                        select.value = data.departmentId;
-                                        select.dispatchEvent(new Event('change'));
-                                        
-                                        alert(`AI Suggestion: Đã tự động chọn khoa phù hợp (${select.options[select.selectedIndex].text})!`);
-                                    } else {
-                                        alert(data.message || "Không thể phân tích triệu chứng.");
-                                    }
-                                })
-                                .catch(err => {
-                                    btn.innerHTML = originalText;
-                                    btn.disabled = false;
-                                    alert("Có lỗi xảy ra khi kết nối tới AI.");
-                                });
-                            }
-                        </script>
-                        
                         <div class="mt-4 text-center">
                             <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                                <i class="fa-solid fa-paper-plane me-2"></i>Gửi yêu cầu đặt lịch
+                                <i class="fa-solid fa-paper-plane me-2"></i>G&#7917;i y&#234;u c&#7847;u &#273;&#7863;t l&#7883;ch
                             </button>
                         </div>
                     </form>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const doctorDropdownMenu = document.getElementById('doctorDropdownMenu');
+                            const selectedDoctorText = document.getElementById('selectedDoctorText');
+                            const doctorDropdownBtn = document.getElementById('doctorDropdownBtn');
+                            const doctorIdInput = document.getElementById('DoctorId');
+                            
+                            const bookingDate = document.getElementById('bookingDate');
+                            const bookingTime = document.getElementById('bookingTime');
+                            const selectedTimeText = document.getElementById('selectedTimeText');
+                            const timeDropdownBtn = document.getElementById('timeDropdownBtn');
+                            const appointmentTime = document.getElementById('AppointmentTime');
+
+                            function updateAppointmentTime() {
+                                if (bookingDate.value && bookingTime.value) {
+                                    appointmentTime.value = bookingDate.value + 'T' + bookingTime.value;
+                                } else {
+                                    appointmentTime.value = '';
+                                }
+                            }
+
+                            bookingDate.addEventListener('change', updateAppointmentTime);
+
+                            window.selectTime = function(value, text) {
+                                bookingTime.value = value;
+                                selectedTimeText.textContent = text;
+                                timeDropdownBtn.style.color = 'var(--text-color)';
+                                updateAppointmentTime();
+                            };
+
+                            function showBookingWarning(message) {
+                                const alertEl = document.getElementById('bookingWarningAlert');
+                                const textEl = document.getElementById('bookingWarningText');
+                                if (alertEl && textEl) {
+                                    textEl.textContent = message;
+                                    alertEl.classList.remove('d-none');
+                                    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }
+                            }
+
+                            function hideBookingWarning() {
+                                const alertEl = document.getElementById('bookingWarningAlert');
+                                if (alertEl) {
+                                    alertEl.classList.add('d-none');
+                                }
+                            }
+
+                            window.selectDoctor = function(id, name, dept, isBusy) {
+                                if (isBusy === true || isBusy === 'true') {
+                                    showBookingWarning("B\u00e1c s\u0129 \u0111ang b\u1eadn, vui l\u00f2ng ch\u1ecdn b\u00e1c s\u0129 kh\u00e1c!");
+                                    doctorIdInput.value = '';
+                                    selectedDoctorText.textContent = '-- Ch\u1ecdn b\u00e1c s\u0129 --';
+                                    doctorDropdownBtn.style.color = '#64748b';
+                                    return;
+                                }
+                                hideBookingWarning();
+                                doctorIdInput.value = id;
+                                selectedDoctorText.textContent = name;
+                                doctorDropdownBtn.style.color = 'var(--text-color)';
+                            };
+
+                            function loadDoctors() {
+                                fetch(`/Patient/GetDoctorsByDepartment?departmentId=0`)
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.length > 0) {
+                                            let html = '';
+                                            data.forEach(d => {
+                                                let name = d.fullName;
+                                                let depts = '';
+                                                const match = d.fullName.match(/^(.*?)\s*\((.*?)\)$/);
+                                                if (match) {
+                                                    name = match[1];
+                                                    depts = match[2];
+                                                }
+                                                html += `
+                                                    <li>
+                                                        <a class="dropdown-item py-2 px-3 border-bottom d-block" href="javascript:void(0)" onclick="selectDoctor('${d.id}', '${name}', '${depts}', ${d.isBusy})" style="white-space: normal;">
+                                                            <div class="d-flex align-items-center justify-content-between">
+                                                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">${name}</div>
+                                                                ${d.isBusy ? '<span class="badge bg-danger text-white ms-2" style="font-size: 0.75rem;">B&#7853;n</span>' : '<span class="badge bg-success text-white ms-2" style="font-size: 0.75rem;">S&#7861;n S&#224;ng</span>'}
+                                                            </div>
+                                                            ${depts ? `<div class="text-muted small mt-0.5" style="font-size: 0.75rem;"><i class="fa-solid fa-stethoscope me-1 text-primary"></i>${depts}</div>` : ''}
+                                                        </a>
+                                                    </li>
+                                                `;
+                                            });
+                                            doctorDropdownMenu.innerHTML = html;
+                                        } else {
+                                            doctorDropdownMenu.innerHTML = '<li class="dropdown-item text-muted text-center py-3">Kh&#244;ng c&#243; b&#225;c s&#297;</li>';
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error("L\u1ed7i khi t\u1ea3i danh s\u00e1ch b\u00e1c s\u0129:", err);
+                                        doctorDropdownMenu.innerHTML = '<li class="dropdown-item text-danger text-center py-3">Kh&#244;ng th\u1ec3 t\u1ea3i danh s\u00e1ch b\u00e1c s\u0129</li>';
+                                    });
+                            }
+
+                            loadDoctors();
+
+                            const bookingForm = doctorIdInput.closest('form');
+                            if (bookingForm) {
+                                bookingForm.addEventListener('submit', function(e) {
+                                    if (!doctorIdInput.value) {
+                                        showBookingWarning("Vui l\u00f2ng ch\u1ecdn b\u00e1c s\u0129 s\u1eb5n s\u00e0ng \u0111\u1ec3 ti\u1ebfp t\u1ee5c \u0111\u1eb7t l\u1ecbch!");
+                                        e.preventDefault();
+                                        return false;
+                                    }
+                                });
+                            }
+                        });
+                    </script>
 
                     @if (TempData["PendingMessage"] != null)
                     {
@@ -184,35 +249,18 @@
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                                             <h6 class="fw-bold mb-0">@apt.Reason</h6>
-                                            @{
-                                                var badgeClass = apt.Status switch {
-                                                    0 => "status-badge-pending",
-                                                    9 => "status-badge-confirmed",
-                                                    4 => "bg-success text-white",
-                                                    1 => "bg-primary text-white",
-                                                    2 => "bg-warning text-dark",
-                                                    _ => "bg-secondary text-white"
-                                                };
-                                                var statusLabel = apt.Status switch {
-                                                    0 => "Chờ xác nhận",
-                                                    9 => "Đã xác nhận",
-                                                    1 => "Đang chờ khám",
-                                                    2 => "Đang khám",
-                                                    3 => "Có KQ xét nghiệm",
-                                                    4 => "Đã khám xong",
-                                                    _ => "Khác"
-                                                };
-                                                var iconClass = apt.Status switch {
-                                                    0 => "fa-spinner fa-spin-pulse",
-                                                    9 => "fa-check",
-                                                    4 => "fa-flag-checkered",
-                                                    2 => "fa-stethoscope",
-                                                    _ => "fa-info-circle"
-                                                };
+                                            @if (isPending)
+                                            {
+                                                <span class="badge rounded-pill status-badge-pending">
+                                                    <i class="fa-solid fa-spinner fa-spin-pulse me-1"></i>Chờ xác nhận
+                                                </span>
                                             }
-                                            <span class="badge rounded-pill @badgeClass">
-                                                <i class="fa-solid @iconClass me-1"></i>@statusLabel
-                                            </span>
+                                            else
+                                            {
+                                                <span class="badge rounded-pill status-badge-confirmed">
+                                                    <i class="fa-solid fa-check me-1"></i>Đã xác nhận
+                                                </span>
+                                            }
                                         </div>
                                         <p class="mb-1 small text-muted">
                                             <i class="fa-regular fa-calendar me-1"></i>
@@ -349,12 +397,22 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .empty-icon {
+        .empty-icon {
         width: 72px; height: 72px;
         margin: 0 auto;
         background: #f1f5f9;
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         font-size: 2rem; color: #94a3b8;
+    }
+    
+    .dropdown-item {
+        transition: background-color 0.2s;
+    }
+    .dropdown-item:hover {
+        background-color: rgba(14, 165, 233, 0.08) !important;
+    }
+    #doctorDropdownMenu li:last-child a {
+        border-bottom: none !important;
     }
 </style>

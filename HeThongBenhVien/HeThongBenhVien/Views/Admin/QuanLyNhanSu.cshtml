@@ -1,28 +1,360 @@
 @model IEnumerable<HeThongBenhVien.Models.User>
 @using System.Linq
+@using HeThongBenhVien.Models
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Quản Lý Nhân Sự";
 }
 
-@section Styles {
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700;">Quản Lý Nhân Sự</h2>
+            <p class="text-muted mb-0">Danh sách toàn bộ nhân sự bác sĩ và quản trị viên trên hệ thống</p>
+        </div>
+        <div>
+            <a asp-action="ThemNhanSu" asp-controller="Admin" class="btn btn-primary shadow-sm" style="border-radius: 10px; font-weight: 600;">
+                <i class="fas fa-plus fa-sm text-white-50 me-1"></i> Thêm Nhân Sự
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-card p-4">
+        <div class="table-responsive">
+            <table id="nhanSuTable" class="table table-hover align-middle mb-0">
+                <thead class="text-primary" style="background-color: rgba(0,0,0,0.03);">
+                    <tr>
+                        <th class="font-weight-bold">ID</th>
+                        <th class="font-weight-bold">Họ và Tên</th>
+                        <th class="font-weight-bold text-center">Vai Trò</th>
+                        <th class="font-weight-bold">Khoa</th>
+                        <th class="font-weight-bold">Email</th>
+                        <th class="font-weight-bold">Số Điện Thoại</th>
+                        <th class="font-weight-bold text-center">Bệnh Nhân Đang Chờ</th>
+                        <th class="font-weight-bold text-center">Trạng Thái</th>
+                        <th class="font-weight-bold text-center" style="width: 250px;">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="align-middle">@item.Id</td>
+                                <td class="align-middle fw-bold">@item.FullName</td>
+                                <td class="align-middle text-center">
+                                    @if (item.Role == "Admin")
+                                    {
+                                        <span class="badge bg-danger text-white px-3 py-2" style="border-radius: 6px;">Quản trị viên</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success text-white px-3 py-2" style="border-radius: 6px;">Bác sĩ</span>
+                                    }
+                                </td>
+                                <td class="align-middle">@(item.Department?.DepartmentName ?? "—")</td>
+                                <td class="align-middle">@item.Email</td>
+                                <td class="align-middle fw-semibold">@item.SDT</td>
+                                <td class="align-middle text-center fw-bold text-primary">
+                                    @if (item.Role == "Doctor")
+                                    {
+                                        @(ViewBag.ActiveApptCounts != null && ViewBag.ActiveApptCounts.ContainsKey(item.Id) ? ViewBag.ActiveApptCounts[item.Id] : 0)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                                <td class="align-middle text-center">
+                                    @if (item.Role == "Doctor")
+                                    {
+                                        <span id="doctor-status-@item.Id" class="badge @(item.IsBusy ? "bg-danger" : "bg-success") text-white px-3 py-2" style="border-radius: 6px;">
+                                            @(item.IsBusy ? "Bận" : "Sẵn Sàng")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                                <td class="align-middle text-center">
+                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                        <button class="btn btn-sm btn-outline-info px-2 py-1.5" onclick="viewPersonnelDetail('@item.Username', '@item.Password', '@Html.Raw(item.FullName?.Replace("'", "\\'"))')" style="border-radius: 8px; font-weight: 600; font-size: 0.8rem;">
+                                            <i class="fa-solid fa-circle-info"></i> Chi tiết
+                                        </button>
+                                        @if (item.Role == "Doctor")
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary px-2 py-1.5" onclick="toggleDoctorStatusAdmin(@item.Id)" style="border-radius: 8px; font-weight: 600; font-size: 0.8rem;">
+                                                <i class="fa-solid fa-arrows-rotate"></i> Trạng thái
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger px-2 py-1.5" onclick="openSbarHandover(@item.Id, '@Html.Raw(item.FullName?.Replace("'", "\\'"))', @(ViewBag.ActiveApptCounts != null && ViewBag.ActiveApptCounts.ContainsKey(item.Id) ? ViewBag.ActiveApptCounts[item.Id] : 0), @(item.DepartmentId ?? 0), '@Html.Raw(item.Department?.DepartmentName?.Replace("'", "\\'"))')" style="border-radius: 8px; font-weight: 600; font-size: 0.8rem;">
+                                                <i class="fa-solid fa-truck-medical"></i> Bàn Giao
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section: SBAR Handover Logs -->
+    <div class="glass-card mt-4 p-4">
+        <h4 class="fw-bold mb-3" style="color: #1e293b;"><i class="fa-solid fa-file-medical text-primary me-2"></i>Nhật Ký Bàn Giao &amp; Báo Bận</h4>
+        <p class="text-muted small mb-4">Danh sách toàn bộ lịch sử bàn giao bệnh nhân giữa các bác sĩ do Admin thực hiện.</p>
+        <div class="table-responsive">
+            <table id="sbarLogsTable" class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width: 60px;">STT</th>
+                        <th>Bệnh Nhân</th>
+                        <th>BS. Bàn Giao</th>
+                        <th>BS. Tiếp Nhận</th>
+                        <th>Thời Gian</th>
+                        <th class="text-center">Loại Bàn Giao</th>
+                        <th class="text-center">Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.SbarLogs != null && ((List<PatientTransferLog>)ViewBag.SbarLogs).Any())
+                    {
+                        int index = 1;
+                        foreach (var log in (List<PatientTransferLog>)ViewBag.SbarLogs)
+                        {
+                            <tr>
+                                <td class="text-center text-muted fw-bold">@index</td>
+                                <td class="fw-bold text-primary">@(log.Appointment?.Patient?.FullName ?? "N/A")</td>
+                                <td class="fw-semibold">BS. @(log.FromDoctor?.FullName ?? "N/A")</td>
+                                <td class="fw-semibold">BS. @(log.ToDoctor?.FullName ?? "N/A")</td>
+                                <td>@log.CreatedAt.ToString("HH:mm dd/MM/yyyy")</td>
+                                <td class="text-center">
+                                    @if (log.IsEmergencyConsultation)
+                                    {
+                                        <span class="badge bg-danger text-white">Khẩn Cấp</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Thường</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-light text-primary fw-bold" onclick="viewAdminSbarLog(@log.Id)" style="border-radius: 8px;">
+                                        <i class="fa-solid fa-magnifying-glass"></i> Xem chi tiết
+                                    </button>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Personnel Detail Modal -->
+<div class="modal fade" id="personnelDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-light" style="border-radius: 20px 20px 0 0; padding: 20px 30px;">
+                <h5 class="modal-title fw-bold" style="color: #1e293b;">
+                    <i class="fa-solid fa-user-gear me-2 text-primary"></i> Chi Tiết Tài Khoản
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div class="mb-4 text-center">
+                    <div class="text-muted small fw-bold">HỌ VÀ TÊN</div>
+                    <div id="detailFullName" class="fw-bold text-dark fs-4 mt-1">--</div>
+                </div>
+                <div class="row g-3 py-3 bg-light rounded-4">
+                    <div class="col-12 col-md-6 text-center border-end">
+                        <div class="text-muted small fw-bold">TÊN ĐĂNG NHẬP</div>
+                        <div id="detailUsername" class="fw-bold text-primary fs-5 mt-1">--</div>
+                    </div>
+                    <div class="col-12 col-md-6 text-center">
+                        <div class="text-muted small fw-bold">MẬT KHẨU</div>
+                        <div id="detailPassword" class="fw-bold text-danger fs-5 mt-1">--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px; padding: 20px 30px;">
+                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 600;">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: SBAR Handover Modal -->
+<div class="modal fade" id="sbarHandoverModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-danger bg-opacity-10" style="border-radius: 20px 20px 0 0; padding: 20px 30px;">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="fa-solid fa-truck-medical me-2"></i> Quy trình bàn giao bệnh nhân khẩn cấp
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="TransferAllActiveDoctorsAdmin" asp-controller="Admin" method="post">
+                <input type="hidden" name="fromDoctorId" id="sbarFromDoctorId" />
+                <div class="modal-body" style="padding: 30px;">
+                    <div class="alert alert-warning border-0 rounded-4 mb-4 d-flex align-items-start gap-3 shadow-sm" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+                        <div>
+                            Bắt đầu quy trình bàn giao toàn bộ ca khám đang chờ của bác sĩ đang bận/vắng mặt. 
+                            Hệ thống sẽ chuyển các ca này sang bác sĩ tiếp nhận và lưu lại thông tin bàn giao.
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <label class="form-label fw-bold text-muted small">BÁC SĨ BÀN GIAO</label>
+                            <input type="text" class="form-control" id="sbarFromDoctorName" readonly style="background: #f1f5f9; border-radius: 8px; font-weight: 600;" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold text-muted small">SỐ BN ĐANG NHẬN</label>
+                            <input type="text" class="form-control text-center fw-bold text-danger" id="sbarFromDoctorPatientsVal" readonly style="background: #f1f5f9; border-radius: 8px;" />
+                        </div>
+
+                        <div class="col-12">
+                            <!-- Phân bổ bệnh nhân -->
+                            <div class="card border-0 bg-light p-3 rounded-4 mb-3">
+                                <h6 class="fw-bold text-dark mb-3">
+                                    <i class="fa-solid fa-users-viewfinder me-2 text-primary"></i>Phân bổ bệnh nhân tiếp nhận (Cùng khoa)
+                                </h6>
+                                
+                                <div class="row g-2 mb-3 align-items-center">
+                                    <div class="col-8">
+                                        <select id="selEligibleDoctorToAdd" class="form-select" style="border-radius: 8px;">
+                                            <!-- Options filled dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-primary w-100" onclick="addSelectedDoctor()" style="border-radius: 8px; font-weight: 600;">
+                                            <i class="fa-solid fa-plus me-1"></i> Thêm bác sĩ
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info border-0 py-2 px-3 rounded-3 mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                                    <div>
+                                        <i class="fa-solid fa-circle-info me-1"></i> 
+                                        Bác sĩ đang có <strong id="lblTotalPatients">0</strong> bệnh nhân đang chờ khám.
+                                    </div>
+                                    <div>
+                                        Đã phân bổ: <strong id="lblAllocatedPatients">0</strong> / <strong id="lblTotalPatientsMax">0</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Rows Container -->
+                                <div id="targetDoctorsContainer" class="d-flex flex-column gap-2 mb-3">
+                                    <!-- Dynamic rows will be inserted here -->
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="distributePatientsEqually()" style="border-radius: 8px;">
+                                        <i class="fa-solid fa-divide me-1"></i> Chia đều bệnh nhân
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 d-flex align-items-center gap-2 py-2 border-bottom">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="isEmergencyConsultation" value="true" id="isEmergencyConsultationCheck">
+                                <label class="form-check-label fw-bold text-danger" for="isEmergencyConsultationCheck">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i> Yêu cầu Hội chẩn khẩn cấp (nếu cần)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-waveform me-2"></i>Thông tin bàn giao</h6>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold">Lý do bàn giao *</label>
+                            <textarea name="situation" class="form-control" rows="4" placeholder="Nhập lý do bàn giao bệnh nhân..." required style="border-radius: 8px; font-size: 0.95rem;"></textarea>
+                            <input type="hidden" name="background" value="-" />
+                            <input type="hidden" name="assessment" value="-" />
+                            <input type="hidden" name="recommendation" value="-" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px; padding: 20px 30px;">
+                    <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger px-4 py-2" id="btnSbarSubmit" style="border-radius: 10px; font-weight: 600;">
+                        <i class="fa-solid fa-truck-medical me-2"></i> Xác nhận bàn giao &amp; Báo bận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: View SBAR report -->
+<div class="modal fade" id="viewSbarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-primary bg-opacity-10" style="border-radius: 20px 20px 0 0; padding: 20px 30px;">
+                <h5 class="modal-title fw-bold text-primary">
+                    <i class="fa-solid fa-file-waveform me-2"></i> Chi Tiết Bàn Giao Bệnh Nhân
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div class="row g-3 mb-4 py-3 bg-light rounded-4">
+                    <div class="col-12 col-md-4 text-center border-end">
+                        <div class="text-muted small fw-bold">BỆNH NHÂN</div>
+                        <div id="viewSbarPatient" class="fw-bold text-dark fs-5 mt-1">--</div>
+                    </div>
+                    <div class="col-12 col-md-4 text-center border-end">
+                        <div class="text-muted small fw-bold">BS. BÀN GIAO -> BS. NHẬN</div>
+                        <div class="fw-bold text-dark mt-1" style="font-size: 0.95rem;">
+                            <span id="viewSbarFromDoc">--</span> <i class="fa-solid fa-arrow-right mx-1 text-primary"></i> <span id="viewSbarToDoc">--</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 text-center">
+                        <div class="text-muted small fw-bold">THỜI GIAN BÀN GIAO</div>
+                        <div id="viewSbarTime" class="fw-bold text-dark mt-1" style="font-size: 0.95rem;">--</div>
+                    </div>
+                </div>
+
+                <div id="viewSbarConsultationBadge" class="alert alert-danger d-none p-2.5 rounded-3 mb-4 text-center fw-bold" style="font-size: 0.9rem;">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> ĐÂY LÀ CA YÊU CẦU HỘI CHẨN KHẨN CẤP
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="p-3 border rounded-3 bg-white" style="border-left: 4px solid #0284c7 !important;">
+                            <h6 class="fw-bold text-info"><i class="fa-solid fa-file-waveform me-2"></i>Lý do bàn giao</h6>
+                            <p id="viewSbarSituation" class="text-dark mt-2 mb-0" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px; padding: 20px 30px;">
+                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 10px; font-weight: 600;">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
-    /* CSS Tùy chỉnh làm đẹp toàn bộ Table và Glass Card */
     .glass-card {
         background: #ffffff;
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
         border: 1px solid rgba(0,0,0,0.05);
-        padding: 1.5rem !important;
     }
     
-    /* Tuỳ chỉnh header bảng */
-    #nhanSuTable thead th {
-        background: #f8fafc; /* Nền nhạt, sáng, sạch sẽ */
+    .table thead th {
+        background: #f8fafc;
         color: #475569;
         text-transform: uppercase;
         font-size: 0.75rem;
@@ -30,327 +362,239 @@
         font-weight: 700;
         padding: 16px 15px;
         border-bottom: 2px solid #e2e8f0;
-        white-space: nowrap;
     }
 
-    #nhanSuTable tbody td {
+    .table tbody td {
         padding: 16px 15px;
         vertical-align: middle;
         color: #334155;
         border-bottom: 1px solid #f1f5f9;
         font-size: 0.9rem;
     }
-
-    /* Hiệu ứng hover cho dòng */
-    #nhanSuTable tbody tr {
-        transition: all 0.2s ease;
-    }
-    #nhanSuTable tbody tr:hover {
-        background-color: #f8fafc;
-        transform: scale(1.002);
-        box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);
-        position: relative;
-        z-index: 10;
-        border-radius: 8px;
-    }
-
-    /* Tuỳ chỉnh DataTables UI: khung tìm kiếm và chọn số dòng */
-    .dataTables_wrapper .dataTables_length select,
-    .dataTables_wrapper .dataTables_filter input {
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-        padding: 6px 12px;
-        color: #475569;
-        outline: none;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-    }
-    
-    /* Đẩy label xuống cho căn giữa */
-    .dataTables_wrapper .dataTables_length label,
-    .dataTables_wrapper .dataTables_filter label {
-        font-weight: 500;
-        color: #64748b;
-        margin-bottom: 1rem;
-    }
-
-    .dataTables_wrapper .dataTables_length select:focus,
-    .dataTables_wrapper .dataTables_filter input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-    
-    .dataTables_wrapper .dataTables_filter input {
-        margin-left: 10px;
-        background: #f8fafc;
-        width: 250px;
-    }
-
-    /* Phân trang đẹp mắt (Pagination) */
-    .dataTables_wrapper .dataTables_info {
-        padding-top: 1.5em;
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate {
-        padding-top: 1.5em;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate .paginate_button {
-        border-radius: 8px !important;
-        border: 1px solid transparent !important;
-        margin: 0 3px;
-        padding: 5px 14px !important;
-        transition: all 0.2s;
-        color: #475569 !important;
-        font-weight: 600;
-        font-size: 0.9rem;
-        background: transparent !important;
-    }
-    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: #f1f5f9 !important;
-        color: #6366f1 !important;
-        border-color: #e2e8f0 !important;
-    }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-        background: #6366f1 !important;
-        color: white !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3) !important;
-    }
-    
-    /* Scrollbar tinh tế cho bảng */
-    .dataTables_scrollBody::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    .dataTables_scrollBody::-webkit-scrollbar-track {
-        background: #f8fafc;
-        border-radius: 10px;
-    }
-    .dataTables_scrollBody::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-        border: 2px solid #f8fafc;
-    }
-    .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-
-    /* Custom Badges (Vai trò) */
-    .role-badge {
-        padding: 6px 14px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        letter-spacing: 0.3px;
-        border-radius: 8px;
-        display: inline-block;
-    }
-    .badge-admin {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-    .badge-doctor {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-    
-    /* Nút Gửi SMS Cao Cấp */
-    .btn-sms {
-        background: white;
-        color: #0ea5e9;
-        border: 1px solid #bae6fd;
-        border-radius: 8px;
-        padding: 6px 14px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.2s;
-        box-shadow: 0 2px 4px rgba(14, 165, 233, 0.05);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        margin: 0 auto;
-    }
-    .btn-sms:hover {
-        background: #0ea5e9;
-        color: white;
-        border-color: #0ea5e9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
-    }
 </style>
 
-<div class="container-fluid p-0">
-    <!-- Header Area -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-2 text-gray-800" style="font-weight: 800; color: #1e293b;">Quản Lý Nhân Sự</h2>
-            <p class="text-muted mb-0" style="font-size: 0.95rem;">Danh sách toàn bộ nhân sự bác sĩ và quản trị viên trên hệ thống</p>
-        </div>
-        <div>
-            <a asp-action="ThemNhanSu" asp-controller="Admin" class="btn btn-primary" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
-                <i class="fas fa-plus me-2"></i> Thêm Nhân Sự
-            </a>
-        </div>
-    </div>
-
-    <!-- Main Table Card -->
-    <div class="glass-card">
-        <table id="nhanSuTable" class="table w-100 mb-0 border-0">
-            <thead>
-                <tr>
-                    <th class="text-center" style="width: 50px;">ID</th>
-                    <th>Tên Đăng Nhập</th>
-                    <th>Họ và Tên</th>
-                    <th class="text-center">Vai Trò</th>
-                    <th>Email</th>
-                    <th>Số Điện Thoại</th>
-                    <th class="text-center">Hành Động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="text-center text-muted fw-bold">@item.Id</td>
-                            <td class="fw-bold" style="color: #475569;">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.1); color: #6366f1; font-size: 14px;">
-                                        <i class="fa-solid fa-user"></i>
-                                    </div>
-                                    @item.Username
-                                </div>
-                            </td>
-                            <td class="fw-semibold">@item.FullName</td>
-                            <td class="text-center">
-                                @if (item.Role == "Admin")
-                                {
-                                    <span class="role-badge badge-admin"><i class="fa-solid fa-shield-halved me-1"></i> Quản trị viên</span>
-                                }
-                                else
-                                {
-                                    <span class="role-badge badge-doctor"><i class="fa-solid fa-user-doctor me-1"></i> Bác sĩ</span>
-                                }
-                            </td>
-                            <td class="text-muted">@item.Email</td>
-                            <td class="fw-medium text-dark">@item.SDT</td>
-                            <td>
-                                @if (item.Role == "Doctor" && item.Username != ViewBag.CurrentUsername)
-                                {
-                                    <button class="btn-sms" onclick="sendSMS(@item.Id, '@Html.Raw(item.FullName?.Replace("'", "\\'"))')">
-                                        <i class="fa-solid fa-comment-sms"></i> Gửi SMS
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">—</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Modal Gửi SMS -->
-<div class="modal fade" id="smsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-0 bg-light" style="border-radius: 20px 20px 0 0; padding: 20px 30px;">
-                <h5 class="modal-title fw-bold" style="color: #1e293b;">
-                    <i class="fa-solid fa-paper-plane me-2 text-primary"></i> Gửi Tin Nhắn Admin
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" style="padding: 30px;">
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">NGƯỜI NHẬN</label>
-                    <div id="smsRecipient" class="fw-bold text-dark fs-5"></div>
-                </div>
-                <div class="mb-3">
-                    <label for="smsMessage" class="form-label text-muted small fw-bold">NỘI DUNG TIN NHẮN</label>
-                    <textarea class="form-control" id="smsMessage" rows="4" style="border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px;" placeholder="Nhập nội dung tin nhắn gửi đến bác sĩ..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px; padding: 20px 30px;">
-                <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">Hủy bỏ</button>
-                <button type="button" class="btn btn-primary px-4 py-2" id="btnConfirmSend" style="border-radius: 10px; font-weight: 600;">
-                    <i class="fa-solid fa-paper-plane me-2"></i> Gửi Ngay
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
     <script>
-        let currentSmsDoctorId = 0;
+        const allDoctorsList = [
+            @if (ViewBag.AllDoctors != null)
+            {
+                foreach (var doc in (List<User>)ViewBag.AllDoctors)
+                {
+                    @:{ id: @doc.Id, fullName: "@Html.Raw(doc.FullName?.Replace("\"", "\\\""))", departmentId: @(doc.DepartmentId ?? 0), departmentName: "@Html.Raw(doc.Department?.DepartmentName?.Replace("\"", "\\\""))", patientCount: @(ViewBag.ActiveApptCounts != null && ViewBag.ActiveApptCounts.ContainsKey(doc.Id) ? ViewBag.ActiveApptCounts[doc.Id] : 0) },
+                }
+            }
+        ];
+
+        let currentFromDoctorId = 0;
+        let currentDepartmentId = 0;
+        let currentTotalPatients = 0;
 
         $(document).ready(function () {
             $('#nhanSuTable').DataTable({
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json",
-                    "search": "<i class='fa-solid fa-magnifying-glass'></i> Tìm kiếm:"
+                    "search": "Tìm kiếm nhân sự:"
                 },
-                "scrollY": "450px",
-                "scrollCollapse": true,
-                "paging": true,
-                "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Tất cả"]],
                 "pageLength": 10,
-                // Không sort mặc định theo cột ID do data đang demo rải rác
-                "order": [[ 0, "asc" ]]
+                "dom": '<"d-flex justify-content-between align-items-center mb-3"rf>t<"d-flex justify-content-between align-items-center mt-3"ip>'
             });
 
-            $('#btnConfirmSend').click(function() {
-                const message = $('#smsMessage').val().trim();
-                if (!message) {
-                    alert("Vui lòng nhập nội dung tin nhắn!");
-                    return;
-                }
-
-                const token = $('input[name="__RequestVerificationToken"]').val();
-
-                $.ajax({
-                    url: '/Admin/SendDoctorSMS',
-                    type: 'POST',
-                    data: {
-                        doctorId: currentSmsDoctorId,
-                        message: message,
-                        __RequestVerificationToken: token
-                    },
-                    success: function(res) {
-                        if (res && res.success) {
-                            alert('✅ ' + res.message);
-                            $('#smsModal').modal('hide');
-                            $('#smsMessage').val('');
-                        } else {
-                            alert('❌ ' + (res ? res.message : 'Gửi tin nhắn thất bại!'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('SMS Error:', xhr.status, xhr.responseText);
-                        alert('❌ Lỗi kết nối! HTTP ' + xhr.status + ': ' + (xhr.responseJSON?.message || error));
-                    }
-                });
+            $('#sbarLogsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json",
+                    "search": "Tìm kiếm bản ghi:"
+                },
+                "pageLength": 5,
+                "order": [[4, "desc"]]
             });
         });
-        
-        function sendSMS(id, name) {
-            currentSmsDoctorId = id;
-            $('#smsRecipient').text(name);
-            $('#smsModal').modal('show');
+
+        function viewPersonnelDetail(username, password, name) {
+            $('#detailFullName').text(name);
+            $('#detailUsername').text(username);
+            $('#detailPassword').text(password);
+            $('#personnelDetailModal').modal('show');
+        }
+
+        function toggleDoctorStatusAdmin(doctorId) {
+            $.ajax({
+                url: '/Admin/ToggleDoctorStatus',
+                type: 'POST',
+                data: { doctorId: doctorId },
+                success: function(res) {
+                    if (res && res.success) {
+                        const badge = $('#doctor-status-' + doctorId);
+                        if (res.isBusy) {
+                            badge.removeClass('bg-success').addClass('bg-danger').text('Bận');
+                        } else {
+                            badge.removeClass('bg-danger').addClass('bg-success').text('Sẵn Sàng');
+                        }
+                        location.reload();
+                    } else {
+                        alert('Xử lý thất bại!');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Toggle status error:', error);
+                    alert('Lỗi kết nối!');
+                }
+            });
+        }
+
+        function openSbarHandover(doctorId, doctorName, patientCount, departmentId, departmentName) {
+            currentFromDoctorId = doctorId;
+            currentDepartmentId = departmentId;
+            currentTotalPatients = patientCount;
+            
+            $('#sbarFromDoctorId').val(doctorId);
+            $('#sbarFromDoctorName').val('BS. ' + doctorName + (departmentName ? ' (' + departmentName + ')' : ''));
+            $('#sbarFromDoctorPatientsVal').val(patientCount);
+            
+            $('#lblTotalPatients').text(patientCount);
+            $('#lblTotalPatientsMax').text(patientCount);
+            
+            // Populate select dropdown of eligible doctors
+            const selectEl = $('#selEligibleDoctorToAdd');
+            selectEl.empty();
+            
+            const eligibleDocs = allDoctorsList.filter(d => d.departmentId === currentDepartmentId && d.id !== currentFromDoctorId);
+            eligibleDocs.sort((a, b) => a.patientCount - b.patientCount);
+            
+            if (eligibleDocs.length === 0) {
+                selectEl.append('<option value="" disabled selected>Không có bác sĩ khác cùng khoa</option>');
+            } else {
+                eligibleDocs.forEach(d => {
+                    selectEl.append(`<option value="${d.id}">BS. ${d.fullName} (Đang chờ: ${d.patientCount})</option>`);
+                });
+            }
+            
+            $('#targetDoctorsContainer').empty();
+            
+            // Automatically add first eligible doctor as initial target row if patients count > 0
+            if (patientCount > 0 && eligibleDocs.length > 0) {
+                const firstDoc = eligibleDocs[0];
+                addTargetDoctorById(firstDoc.id, firstDoc.fullName, firstDoc.patientCount);
+            }
+            
+            validateAllocation();
+            $('#sbarHandoverModal').modal('show');
+        }
+
+        function addSelectedDoctor() {
+            const selectEl = $('#selEligibleDoctorToAdd');
+            const docId = parseInt(selectEl.val());
+            if (!docId) {
+                alert('Vui lòng chọn một bác sĩ tiếp nhận!');
+                return;
+            }
+            
+            const doctorObj = allDoctorsList.find(d => d.id === docId);
+            if (!doctorObj) return;
+            
+            addTargetDoctorById(doctorObj.id, doctorObj.fullName, doctorObj.patientCount);
+        }
+
+        function addTargetDoctorById(docId, fullName, patientCount) {
+            if ($('#target-row-' + docId).length > 0) {
+                alert('Bác sĩ này đã được thêm vào danh sách tiếp nhận!');
+                return;
+            }
+            
+            const container = $('#targetDoctorsContainer');
+            const rowHtml = `
+                <div class="d-flex align-items-center gap-2 target-doctor-row" id="target-row-${docId}" data-doc-id="${docId}">
+                    <div class="flex-grow-1 bg-white border px-3 py-2 rounded-3 fw-semibold text-dark">
+                        BS. ${fullName} (Đang chờ: ${patientCount})
+                        <input type="hidden" name="targetDoctorIds" value="${docId}" />
+                    </div>
+                    <div style="width: 130px;">
+                        <input type="number" name="patientCounts" class="form-control patient-count-input" min="1" value="1" required oninput="validateAllocation()" placeholder="Số BN" style="border-radius: 8px;" />
+                    </div>
+                    <button type="button" class="btn btn-outline-danger" onclick="removeTargetDoctorRow('${docId}')" style="border-radius: 8px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.append(rowHtml);
+            validateAllocation();
+        }
+
+        function removeTargetDoctorRow(docId) {
+            $('#target-row-' + docId).remove();
+            validateAllocation();
+        }
+
+        function distributePatientsEqually() {
+            const rows = $('.target-doctor-row');
+            if (rows.length === 0) return;
+            
+            const share = Math.floor(currentTotalPatients / rows.length);
+            let remainder = currentTotalPatients % rows.length;
+            
+            rows.each(function(index) {
+                const input = $(this).find('.patient-count-input');
+                let count = share;
+                if (index < remainder) {
+                    count += 1;
+                }
+                input.val(count);
+            });
+            
+            validateAllocation();
+        }
+
+        function validateAllocation() {
+            let totalAllocated = 0;
+            $('.patient-count-input').each(function() {
+                const val = parseInt($(this).val()) || 0;
+                totalAllocated += val;
+            });
+            
+            $('#lblAllocatedPatients').text(totalAllocated);
+            const submitBtn = $('#btnSbarSubmit');
+            
+            if (totalAllocated <= currentTotalPatients) {
+                $('#lblAllocatedPatients').removeClass('text-danger').addClass('text-success');
+                submitBtn.prop('disabled', false);
+            } else {
+                $('#lblAllocatedPatients').removeClass('text-success').addClass('text-danger');
+                submitBtn.prop('disabled', true);
+            }
+        }
+
+        function viewAdminSbarLog(logId) {
+            $.ajax({
+                url: '/Admin/GetTransferLogById?id=' + logId,
+                type: 'GET',
+                success: function(data) {
+                    $('#viewSbarPatient').text(data.patientName);
+                    $('#viewSbarFromDoc').text('BS. ' + data.fromDoctor);
+                    $('#viewSbarToDoc').text('BS. ' + data.toDoctor);
+                    $('#viewSbarTime').text(data.createdAt);
+                    
+                    $('#viewSbarSituation').text(data.situation);
+
+                    const emergencyBadge = $('#viewSbarConsultationBadge');
+                    if (data.isEmergencyConsultation) {
+                        emergencyBadge.removeClass('d-none');
+                    } else {
+                        emergencyBadge.addClass('d-none');
+                    }
+
+                    const modal = new bootstrap.Modal(document.getElementById('viewSbarModal'));
+                    modal.show();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Fetch SBAR log error:', error);
+                    alert('Không thể tải báo cáo bàn giao SBAR!');
+                }
+            });
         }
     </script>
 }

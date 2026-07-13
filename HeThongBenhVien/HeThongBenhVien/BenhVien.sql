@@ -52,7 +52,8 @@ CREATE TABLE Users (
     Username NVARCHAR(50) NOT NULL,
     Password NVARCHAR(255) NOT NULL,
     Role NVARCHAR(50) NOT NULL,
-    FullName NVARCHAR(100) NULL
+    FullName NVARCHAR(100) NULL,
+    IsBusy BIT NOT NULL DEFAULT 0
 );
 GO
 
@@ -5359,6 +5360,12 @@ BEGIN
     ALTER TABLE Users ADD CONSTRAINT FK_Users_Departments FOREIGN KEY (DepartmentId) REFERENCES Departments(Id) ON DELETE SET NULL;
 END
 GO
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'IsBusy' AND Object_ID = Object_ID(N'Users'))
+BEGIN
+    ALTER TABLE Users ADD IsBusy BIT NOT NULL DEFAULT 0;
+END
+GO
 -- =========================================
 -- CREATE TABLE DoctorDepartments
 -- =========================================
@@ -5442,23 +5449,16 @@ IF COL_LENGTH('Notifications', 'Type') IS NULL ALTER TABLE Notifications ADD Typ
 IF COL_LENGTH('Notifications', 'IsForPatient') IS NULL ALTER TABLE Notifications ADD IsForPatient BIT NOT NULL DEFAULT 0;
 GO
 
--- ==========================================================================
+
 
 -- ==========================================================================
-
--- ==========================================================================
-
--- ==========================================================================
-
--- ==========================================================================
-
 
 -- ==========================================================================
 -- NAP DU LIEU CHAY THU CHUAN CHO DOCTOR (90 CHO KHAM, 3 DA KHAM, 1 CHUA DEN, 6 KHOI TAO)
 -- ==========================================================================
-
 BEGIN TRANSACTION;
 BEGIN TRY
+    -- Don dep cac ban ghi seed cu va chuyen cac ca goc cua doctor sang bac si khac de dam bao con so chinh xac 100%
     DELETE FROM PrescriptionDetails WHERE PrescriptionId IN (SELECT Id FROM Prescriptions WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%'))));
     DELETE FROM Prescriptions WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%')));
     DELETE FROM LabTests WHERE MedicalRecordId IN (SELECT Id FROM MedicalRecords WHERE AppointmentId IN (SELECT Id FROM Appointments WHERE PatientId IN (SELECT Id FROM Patients WHERE PatientCode LIKE 'BN_SEED_%')));
@@ -5470,1101 +5470,3385 @@ BEGIN TRY
     UPDATE Appointments SET DoctorId = 2 WHERE DoctorId = 6;
     DECLARE @CurrentDocId INT = 6;
 
-    -- Patient 001: Dương Thu Vy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dương Thu Vy', N'Nữ', 55, 'BN_SEED_001', '', '082719270056');
+    -- Patient 1: Pham Nhu Lan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Nhu Lan', N'Nu', 48, 'BN_SEED_001', '', '010925413347');
     DECLARE @PId_1 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user001', '123', 'BenhNhan', N'Dương Thu Vy', 'duongthuvy001@outlook.com', '0904054923', 'BN_SEED_001');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_1, N'Ho sốt nhẹ', DATEADD(day, -1, DATEADD(minute, 106, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user001', '123', 'BenhNhan', N'Pham Nhu Lan', 'patient001@gmail.com', '0351323917', 'BN_SEED_001');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_1, N'Dau dau keo dai', DATEADD(day, -2, DATEADD(minute, 50, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_1 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_1, '87', '37.0', '110/85', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 50, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_1, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem phe quan cap tinh', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -2, DATEADD(minute, 50, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_1 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_1, DATEADD(day, -2, DATEADD(minute, 50, GETDATE())), N'Da ke don');
+    DECLARE @PrId_1 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_1, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_1, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -2, DATEADD(minute, 50, GETDATE())), DATEADD(day, -2, DATEADD(minute, 50, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_1, '91', '37.4', '120/85', '98', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 106, GETDATE()))));
-
-    -- Patient 002: Trần Ngọc Yến
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Trần Ngọc Yến', N'Nữ', 30, 'BN_SEED_002', '', '021289625866');
+    -- Patient 2: Bui Truc Quynh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Truc Quynh', N'Nu', 56, 'BN_SEED_002', '', '041497717824');
     DECLARE @PId_2 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user002', '123', 'BenhNhan', N'Trần Ngọc Yến', 'tranngicyen002@yahoo.com', '0906341828', 'BN_SEED_002');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_2, N'Khám tai mũi họng', DATEADD(day, -2, DATEADD(minute, 75, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user002', '123', 'BenhNhan', N'Bui Truc Quynh', 'patient002@yahoo.com', '0896913023', 'BN_SEED_002');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_2, N'Dau dau keo dai', DATEADD(day, -3, DATEADD(minute, 111, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_2 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_2, '92', '37.0', '130/85', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 111, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_2, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Tranh be vac nang, tap vat ly tri lieu nhe nhang, uong thuoc giam dau khi can.', DATEADD(day, -3, DATEADD(minute, 111, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_2 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_2, DATEADD(day, -3, DATEADD(minute, 111, GETDATE())), N'Da ke don');
+    DECLARE @PrId_2 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_2, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_2, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -3, DATEADD(minute, 111, GETDATE())), DATEADD(day, -3, DATEADD(minute, 111, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_2, '77', '37.4', '130/80', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 75, GETDATE()))));
-
-    -- Patient 003: Phạm Đức Long
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phạm Đức Long', N'Nam', 26, 'BN_SEED_003', '', '085773345159');
+    -- Patient 3: Vu Minh Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Minh Son', N'Nam', 33, 'BN_SEED_003', '', '064542349358');
     DECLARE @PId_3 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user003', '123', 'BenhNhan', N'Phạm Đức Long', 'phamduclong003@yahoo.com', '0907011976', 'BN_SEED_003');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_3, N'Kiểm tra tim mạch', DATEADD(day, -3, DATEADD(minute, 129, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user003', '123', 'BenhNhan', N'Vu Minh Son', 'patient003@gmail.com', '0856464998', 'BN_SEED_003');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_3, N'Dau bung am i', DATEADD(day, -4, DATEADD(minute, 143, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_3 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_3, '73', '37.3', '120/70', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 143, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_3, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -4, DATEADD(minute, 143, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_3 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_3, DATEADD(day, -4, DATEADD(minute, 143, GETDATE())), N'Da ke don');
+    DECLARE @PrId_3 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_3, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_3, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -4, DATEADD(minute, 143, GETDATE())), DATEADD(day, -4, DATEADD(minute, 143, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_3, '80', '36.4', '130/85', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 129, GETDATE()))));
-
-    -- Patient 004: Vũ Thanh Lâm
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vũ Thanh Lâm', N'Nam', 25, 'BN_SEED_004', '', '027438638637');
+    -- Patient 4: Vu Ngoc Khoa
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Ngoc Khoa', N'Nam', 45, 'BN_SEED_004', '', '013683923723');
     DECLARE @PId_4 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user004', '123', 'BenhNhan', N'Vũ Thanh Lâm', 'vuthanhlam004@yahoo.com', '0908249898', 'BN_SEED_004');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_4, N'Khám sức khỏe định kỳ', DATEADD(day, -4, DATEADD(minute, 131, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user004', '123', 'BenhNhan', N'Vu Ngoc Khoa', 'patient004@yahoo.com', '0909700375', 'BN_SEED_004');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_4, N'Ho sot nhe', DATEADD(day, -5, DATEADD(minute, 105, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_4 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_4, '80', '37.0', '120/85', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 105, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_4, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Viem da day ta trang cap', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -5, DATEADD(minute, 105, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_4 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_4, DATEADD(day, -5, DATEADD(minute, 105, GETDATE())), N'Da ke don');
+    DECLARE @PrId_4 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_4, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_4, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -5, DATEADD(minute, 105, GETDATE())), DATEADD(day, -5, DATEADD(minute, 105, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_4, '68', '37.2', '120/85', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 131, GETDATE()))));
-
-    -- Patient 005: Võ Anh Khoa
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Võ Anh Khoa', N'Nam', 43, 'BN_SEED_005', '', '035514155830');
+    -- Patient 5: Vo Ngoc Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Ngoc Quan', N'Nam', 23, 'BN_SEED_005', '', '053780147254');
     DECLARE @PId_5 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user005', '123', 'BenhNhan', N'Võ Anh Khoa', 'vOanhkhoa005@yahoo.com', '0904658672', 'BN_SEED_005');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_5, N'Mệt mỏi suy nhược', DATEADD(day, -5, DATEADD(minute, 150, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user005', '123', 'BenhNhan', N'Vo Ngoc Quan', 'patient005@gmail.com', '0359288053', 'BN_SEED_005');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_5, N'Kiem tra huyet ap', DATEADD(day, -6, DATEADD(minute, 107, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_5 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_5, '71', '36.5', '110/85', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 107, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_5, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -6, DATEADD(minute, 107, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_5 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_5, DATEADD(day, -6, DATEADD(minute, 107, GETDATE())), N'Da ke don');
+    DECLARE @PrId_5 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_5, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_5, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -6, DATEADD(minute, 107, GETDATE())), DATEADD(day, -6, DATEADD(minute, 107, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_5, '69', '36.3', '110/80', '95', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 150, GETDATE()))));
-
-    -- Patient 006: Nguyễn Đình Tuấn
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Đình Tuấn', N'Nam', 49, 'BN_SEED_006', '', '011770790713');
+    -- Patient 6: Ngo Xuan Khoa
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngo Xuan Khoa', N'Nam', 19, 'BN_SEED_006', '', '038296943707');
     DECLARE @PId_6 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user006', '123', 'BenhNhan', N'Nguyễn Đình Tuấn', 'nguyendinhtuan006@outlook.com', '0907512170', 'BN_SEED_006');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_6, N'Đau nhức khớp gối', DATEADD(day, -6, DATEADD(minute, 83, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user006', '123', 'BenhNhan', N'Ngo Xuan Khoa', 'patient006@yahoo.com', '0384020774', 'BN_SEED_006');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_6, N'Dau nhuc khop goi', DATEADD(day, -1, DATEADD(minute, 32, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_6 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_6, '82', '36.9', '110/70', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 32, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_6, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -1, DATEADD(minute, 32, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_6 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_6, DATEADD(day, -1, DATEADD(minute, 32, GETDATE())), N'Da ke don');
+    DECLARE @PrId_6 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_6, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_6, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -1, DATEADD(minute, 32, GETDATE())), DATEADD(day, -1, DATEADD(minute, 32, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_6, '78', '36.7', '120/80', '95', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 83, GETDATE()))));
-
-    -- Patient 007: Lê Ngọc Quân
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lê Ngọc Quân', N'Nam', 38, 'BN_SEED_007', '', '064313816814');
+    -- Patient 7: Nguyen Cong Anh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Cong Anh', N'Nam', 45, 'BN_SEED_007', '', '094048772949');
     DECLARE @PId_7 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user007', '123', 'BenhNhan', N'Lê Ngọc Quân', 'lengicquan007@outlook.com', '0905289112', 'BN_SEED_007');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_7, N'Đau họng khó nuốt', DATEADD(day, -0, DATEADD(minute, 145, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user007', '123', 'BenhNhan', N'Nguyen Cong Anh', 'patient007@gmail.com', '0974483682', 'BN_SEED_007');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_7, N'Kham suc khoe dinh ky', DATEADD(day, -2, DATEADD(minute, 16, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_7 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_7, '88', '36.7', '110/85', '97', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 16, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_7, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -2, DATEADD(minute, 16, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_7 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_7, DATEADD(day, -2, DATEADD(minute, 16, GETDATE())), N'Da ke don');
+    DECLARE @PrId_7 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_7, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_7, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -2, DATEADD(minute, 16, GETDATE())), DATEADD(day, -2, DATEADD(minute, 16, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_7, '70', '36.3', '130/85', '95', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 145, GETDATE()))));
-
-    -- Patient 008: Ngô Hải Nam
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Hải Nam', N'Nam', 68, 'BN_SEED_008', '', '051043551327');
+    -- Patient 8: Do Duc Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Duc Son', N'Nam', 18, 'BN_SEED_008', '', '055327505137');
     DECLARE @PId_8 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user008', '123', 'BenhNhan', N'Ngô Hải Nam', 'ngOhainam008@yahoo.com', '0902906385', 'BN_SEED_008');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_8, N'Khám tai mũi họng', DATEADD(day, -1, DATEADD(minute, 233, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user008', '123', 'BenhNhan', N'Do Duc Son', 'patient008@outlook.com', '0779701526', 'BN_SEED_008');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_8, N'Dau nhuc khop goi', DATEADD(day, -3, DATEADD(minute, 117, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_8 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_8, '68', '37.0', '130/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 117, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_8, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem phe quan cap tinh', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -3, DATEADD(minute, 117, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_8 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_8, DATEADD(day, -3, DATEADD(minute, 117, GETDATE())), N'Da ke don');
+    DECLARE @PrId_8 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_8, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_8, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -3, DATEADD(minute, 117, GETDATE())), DATEADD(day, -3, DATEADD(minute, 117, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_8, '89', '36.3', '110/70', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 233, GETDATE()))));
-
-    -- Patient 009: Phan Hồng Quỳnh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hồng Quỳnh', N'Nữ', 39, 'BN_SEED_009', '', '012491391263');
+    -- Patient 9: Ho Truc Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Truc Trinh', N'Nu', 25, 'BN_SEED_009', '', '003484355128');
     DECLARE @PId_9 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user009', '123', 'BenhNhan', N'Phan Hồng Quỳnh', 'phanhongquunh009@gmail.com', '0904535221', 'BN_SEED_009');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_9, N'Đau đầu kéo dài', DATEADD(day, -2, DATEADD(minute, 110, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user009', '123', 'BenhNhan', N'Ho Truc Trinh', 'patient009@gmail.com', '0852163981', 'BN_SEED_009');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_9, N'Dau bung am i', DATEADD(day, -4, DATEADD(minute, 29, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_9 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_9, '93', '37.1', '120/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 29, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_9, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem da day ta trang cap', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -4, DATEADD(minute, 29, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_9 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_9, DATEADD(day, -4, DATEADD(minute, 29, GETDATE())), N'Da ke don');
+    DECLARE @PrId_9 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_9, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_9, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -4, DATEADD(minute, 29, GETDATE())), DATEADD(day, -4, DATEADD(minute, 29, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_9, '91', '36.8', '120/80', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 110, GETDATE()))));
-
-    -- Patient 010: Hồ Xuân Bình
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Xuân Bình', N'Nam', 53, 'BN_SEED_010', '', '044790783741');
+    -- Patient 10: Vu Minh Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Minh Tu', N'Nu', 43, 'BN_SEED_010', '', '086000515783');
     DECLARE @PId_10 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user010', '123', 'BenhNhan', N'Hồ Xuân Bình', 'hoxuanbinh010@yahoo.com', '0906775364', 'BN_SEED_010');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_10, N'Khám sức khỏe định kỳ', DATEADD(day, -3, DATEADD(minute, 157, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user010', '123', 'BenhNhan', N'Vu Minh Tu', 'patient010@outlook.com', '0901759212', 'BN_SEED_010');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_10, N'Kiem tra tim mach', DATEADD(day, -5, DATEADD(minute, 44, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_10 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_10, '77', '36.3', '120/80', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 44, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_10, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Viem phe quan cap tinh', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -5, DATEADD(minute, 44, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_10 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_10, DATEADD(day, -5, DATEADD(minute, 44, GETDATE())), N'Da ke don');
+    DECLARE @PrId_10 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_10, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_10, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -5, DATEADD(minute, 44, GETDATE())), DATEADD(day, -5, DATEADD(minute, 44, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_10, '72', '36.6', '120/80', '95', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 157, GETDATE()))));
-
-    -- Patient 011: Đặng Ngọc Dũng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Ngọc Dũng', N'Nam', 67, 'BN_SEED_011', '', '072274824379');
+    -- Patient 11: Le Phuong Mai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Phuong Mai', N'Nu', 58, 'BN_SEED_011', '', '042923614997');
     DECLARE @PId_11 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user011', '123', 'BenhNhan', N'Đặng Ngọc Dũng', 'dặngngicdung011@outlook.com', '0903681354', 'BN_SEED_011');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_11, N'Kiểm tra huyết áp', DATEADD(day, -4, DATEADD(minute, 14, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user011', '123', 'BenhNhan', N'Le Phuong Mai', 'patient011@yahoo.com', '0916543875', 'BN_SEED_011');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_11, N'Kham suc khoe dinh ky', DATEADD(day, -6, DATEADD(minute, 100, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_11 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_11, '88', '37.2', '110/80', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 100, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_11, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Thoai hoa cot song that lung', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -6, DATEADD(minute, 100, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_11 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_11, DATEADD(day, -6, DATEADD(minute, 100, GETDATE())), N'Da ke don');
+    DECLARE @PrId_11 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_11, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_11, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -6, DATEADD(minute, 100, GETDATE())), DATEADD(day, -6, DATEADD(minute, 100, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_11, '74', '36.7', '110/80', '97', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 14, GETDATE()))));
-
-    -- Patient 012: Hoàng Hoàng Hải
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Hoàng Hải', N'Nam', 63, 'BN_SEED_012', '', '086154928730');
+    -- Patient 12: Do Khanh Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Khanh Huyen', N'Nu', 59, 'BN_SEED_012', '', '093833286679');
     DECLARE @PId_12 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user012', '123', 'BenhNhan', N'Hoàng Hoàng Hải', 'hoanghoanghai012@outlook.com', '0906398432', 'BN_SEED_012');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_12, N'Kiểm tra tim mạch', DATEADD(day, -5, DATEADD(minute, 100, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user012', '123', 'BenhNhan', N'Do Khanh Huyen', 'patient012@yahoo.com', '0795200247', 'BN_SEED_012');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_12, N'Dau bung am i', DATEADD(day, -1, DATEADD(minute, 188, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_12 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_12, '72', '37.2', '110/85', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 188, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_12, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Suy nhuoc co the nhe / Theo doi huyet ap', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -1, DATEADD(minute, 188, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_12 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_12, DATEADD(day, -1, DATEADD(minute, 188, GETDATE())), N'Da ke don');
+    DECLARE @PrId_12 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_12, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_12, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -1, DATEADD(minute, 188, GETDATE())), DATEADD(day, -1, DATEADD(minute, 188, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_12, '75', '36.3', '130/85', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 100, GETDATE()))));
-
-    -- Patient 013: Ngô Hoàng Việt
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Hoàng Việt', N'Nam', 64, 'BN_SEED_013', '', '076787759898');
+    -- Patient 13: Le Hong Nhung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Hong Nhung', N'Nu', 43, 'BN_SEED_013', '', '041655971302');
     DECLARE @PId_13 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user013', '123', 'BenhNhan', N'Ngô Hoàng Việt', 'ngOhoangviet013@outlook.com', '0904321613', 'BN_SEED_013');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_13, N'Đau đầu kéo dài', DATEADD(day, -6, DATEADD(minute, 94, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user013', '123', 'BenhNhan', N'Le Hong Nhung', 'patient013@outlook.com', '0975346210', 'BN_SEED_013');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_13, N'Kiem tra tim mach', DATEADD(day, -2, DATEADD(minute, 91, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_13 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_13, '74', '36.2', '130/85', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 91, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_13, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -2, DATEADD(minute, 91, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_13 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_13, DATEADD(day, -2, DATEADD(minute, 91, GETDATE())), N'Da ke don');
+    DECLARE @PrId_13 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_13, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_13, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -2, DATEADD(minute, 91, GETDATE())), DATEADD(day, -2, DATEADD(minute, 91, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_13, '65', '36.5', '130/70', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 94, GETDATE()))));
-
-    -- Patient 014: Hoàng Đình Dũng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Đình Dũng', N'Nam', 48, 'BN_SEED_014', '', '097556371182');
+    -- Patient 14: Vu Thanh Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Thanh Long', N'Nam', 38, 'BN_SEED_014', '', '069730199092');
     DECLARE @PId_14 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user014', '123', 'BenhNhan', N'Hoàng Đình Dũng', 'hoangdinhdung014@outlook.com', '0902155368', 'BN_SEED_014');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_14, N'Đau họng khó nuốt', DATEADD(day, -0, DATEADD(minute, 79, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user014', '123', 'BenhNhan', N'Vu Thanh Long', 'patient014@outlook.com', '0919702774', 'BN_SEED_014');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_14, N'Dau hong kho nuot', DATEADD(day, -3, DATEADD(minute, 204, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_14 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_14, '90', '37.1', '110/80', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 204, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_14, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -3, DATEADD(minute, 204, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_14 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_14, DATEADD(day, -3, DATEADD(minute, 204, GETDATE())), N'Da ke don');
+    DECLARE @PrId_14 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_14, N'Vitamin C 500mg', 10, N'Vien', N'Uong 1 vien sau bua sang', 2000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_14, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -3, DATEADD(minute, 204, GETDATE())), DATEADD(day, -3, DATEADD(minute, 204, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_14, '78', '37.2', '130/70', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 79, GETDATE()))));
-
-    -- Patient 015: Hồ Như Quỳnh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Như Quỳnh', N'Nữ', 64, 'BN_SEED_015', '', '082429948920');
+    -- Patient 15: Duong Quoc Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Quoc Dat', N'Nam', 74, 'BN_SEED_015', '', '089625419031');
     DECLARE @PId_15 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user015', '123', 'BenhNhan', N'Hồ Như Quỳnh', 'honhuquunh015@gmail.com', '0903092182', 'BN_SEED_015');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_15, N'Mệt mỏi suy nhược', DATEADD(day, -1, DATEADD(minute, 121, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user015', '123', 'BenhNhan', N'Duong Quoc Dat', 'patient015@outlook.com', '0905221464', 'BN_SEED_015');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_15, N'Dau hong kho nuot', DATEADD(day, -4, DATEADD(minute, 204, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_15 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_15, '86', '37.1', '110/85', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 204, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_15, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Viem da day ta trang cap', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -4, DATEADD(minute, 204, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_15 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_15, DATEADD(day, -4, DATEADD(minute, 204, GETDATE())), N'Da ke don');
+    DECLARE @PrId_15 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_15, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_15, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -4, DATEADD(minute, 204, GETDATE())), DATEADD(day, -4, DATEADD(minute, 204, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_15, '71', '36.9', '110/80', '97', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 121, GETDATE()))));
-
-    -- Patient 016: Đặng Văn Huy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Văn Huy', N'Nam', 67, 'BN_SEED_016', '', '062191185989');
+    -- Patient 16: Duong Khanh Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Khanh Chi', N'Nu', 46, 'BN_SEED_016', '', '030285517128');
     DECLARE @PId_16 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user016', '123', 'BenhNhan', N'Đặng Văn Huy', 'dặngvanhuy016@gmail.com', '0907618167', 'BN_SEED_016');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_16, N'Đau đầu kéo dài', DATEADD(day, -2, DATEADD(minute, 111, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user016', '123', 'BenhNhan', N'Duong Khanh Chi', 'patient016@yahoo.com', '0773185031', 'BN_SEED_016');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_16, N'Dau dau keo dai', DATEADD(day, -5, DATEADD(minute, 102, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_16 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_16, '94', '36.5', '130/70', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 102, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_16, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Viem phe quan cap tinh', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -5, DATEADD(minute, 102, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_16 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_16, DATEADD(day, -5, DATEADD(minute, 102, GETDATE())), N'Da ke don');
+    DECLARE @PrId_16 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_16, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_16, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -5, DATEADD(minute, 102, GETDATE())), DATEADD(day, -5, DATEADD(minute, 102, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_16, '82', '37.5', '120/70', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 111, GETDATE()))));
-
-    -- Patient 017: Hoàng Trúc Oanh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Trúc Oanh', N'Nữ', 36, 'BN_SEED_017', '', '085660016493');
+    -- Patient 17: Dang Tuan Thinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Tuan Thinh', N'Nam', 66, 'BN_SEED_017', '', '006550786334');
     DECLARE @PId_17 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user017', '123', 'BenhNhan', N'Hoàng Trúc Oanh', 'hoangtrUcoanh017@outlook.com', '0906607277', 'BN_SEED_017');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_17, N'Khám sức khỏe định kỳ', DATEADD(day, -3, DATEADD(minute, 123, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user017', '123', 'BenhNhan', N'Dang Tuan Thinh', 'patient017@outlook.com', '0985393416', 'BN_SEED_017');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_17, N'Kiem tra tim mach', DATEADD(day, -6, DATEADD(minute, 68, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_17 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_17, '76', '36.7', '110/85', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 68, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_17, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -6, DATEADD(minute, 68, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_17 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_17, DATEADD(day, -6, DATEADD(minute, 68, GETDATE())), N'Da ke don');
+    DECLARE @PrId_17 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_17, N'Vitamin C 500mg', 10, N'Vien', N'Uong 1 vien sau bua sang', 2000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_17, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -6, DATEADD(minute, 68, GETDATE())), DATEADD(day, -6, DATEADD(minute, 68, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_17, '84', '37.4', '120/85', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 123, GETDATE()))));
-
-    -- Patient 018: Đặng Trọng Thắng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Trọng Thắng', N'Nam', 40, 'BN_SEED_018', '', '037057285668');
+    -- Patient 18: Ly Hong Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Hong Chi', N'Nu', 70, 'BN_SEED_018', '', '038521230002');
     DECLARE @PId_18 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user018', '123', 'BenhNhan', N'Đặng Trọng Thắng', 'dặngtringthang018@outlook.com', '0907326269', 'BN_SEED_018');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_18, N'Đau đầu kéo dài', DATEADD(day, -4, DATEADD(minute, 94, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user018', '123', 'BenhNhan', N'Ly Hong Chi', 'patient018@gmail.com', '0905122034', 'BN_SEED_018');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_18, N'Kham tai mui hong', DATEADD(day, -1, DATEADD(minute, 112, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_18 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_18, '93', '36.5', '130/70', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 112, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_18, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh be vac nang, tap vat ly tri lieu nhe nhang, uong thuoc giam dau khi can.', DATEADD(day, -1, DATEADD(minute, 112, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_18 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_18, DATEADD(day, -1, DATEADD(minute, 112, GETDATE())), N'Da ke don');
+    DECLARE @PrId_18 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_18, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_18, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -1, DATEADD(minute, 112, GETDATE())), DATEADD(day, -1, DATEADD(minute, 112, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_18, '81', '37.3', '110/70', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 94, GETDATE()))));
-
-    -- Patient 019: Nguyễn Trọng Quân
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Trọng Quân', N'Nam', 41, 'BN_SEED_019', '', '027206442033');
+    -- Patient 19: Hoang Nhu Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Nhu Trinh', N'Nu', 66, 'BN_SEED_019', '', '086081901356');
     DECLARE @PId_19 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user019', '123', 'BenhNhan', N'Nguyễn Trọng Quân', 'nguyentringquan019@yahoo.com', '0903062335', 'BN_SEED_019');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_19, N'Khám sức khỏe định kỳ', DATEADD(day, -5, DATEADD(minute, 30, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user019', '123', 'BenhNhan', N'Hoang Nhu Trinh', 'patient019@outlook.com', '0892076626', 'BN_SEED_019');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_19, N'Kiem tra huyet ap', DATEADD(day, -2, DATEADD(minute, 63, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_19 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_19, '75', '36.5', '130/80', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 63, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_19, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -2, DATEADD(minute, 63, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_19 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_19, DATEADD(day, -2, DATEADD(minute, 63, GETDATE())), N'Da ke don');
+    DECLARE @PrId_19 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_19, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_19, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -2, DATEADD(minute, 63, GETDATE())), DATEADD(day, -2, DATEADD(minute, 63, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_19, '73', '37.4', '120/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 30, GETDATE()))));
-
-    -- Patient 020: Bùi Cẩm Dung
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Cẩm Dung', N'Nữ', 32, 'BN_SEED_020', '', '066721156282');
+    -- Patient 20: Nguyen Truc Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Truc Huyen', N'Nu', 62, 'BN_SEED_020', '', '078539728279');
     DECLARE @PId_20 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user020', '123', 'BenhNhan', N'Bùi Cẩm Dung', 'bUicamdung020@yahoo.com', '0906813331', 'BN_SEED_020');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_20, N'Đau họng khó nuốt', DATEADD(day, -6, DATEADD(minute, 119, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user020', '123', 'BenhNhan', N'Nguyen Truc Huyen', 'patient020@gmail.com', '0792012007', 'BN_SEED_020');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_20, N'Kham tai mui hong', DATEADD(day, -3, DATEADD(minute, 56, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_20 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_20, '83', '36.5', '130/85', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 56, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_20, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -3, DATEADD(minute, 56, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_20 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_20, DATEADD(day, -3, DATEADD(minute, 56, GETDATE())), N'Da ke don');
+    DECLARE @PrId_20 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_20, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_20, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -3, DATEADD(minute, 56, GETDATE())), DATEADD(day, -3, DATEADD(minute, 56, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_20, '77', '36.9', '130/70', '98', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 119, GETDATE()))));
-
-    -- Patient 021: Dương Quốc Khoa
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dương Quốc Khoa', N'Nam', 34, 'BN_SEED_021', '', '047997026868');
+    -- Patient 21: Ho Tuyet Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Tuyet Yen', N'Nu', 60, 'BN_SEED_021', '', '092241390266');
     DECLARE @PId_21 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user021', '123', 'BenhNhan', N'Dương Quốc Khoa', 'duongquockhoa021@outlook.com', '0906952502', 'BN_SEED_021');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_21, N'Mệt mỏi suy nhược', DATEADD(day, -0, DATEADD(minute, 59, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user021', '123', 'BenhNhan', N'Ho Tuyet Yen', 'patient021@yahoo.com', '0902107234', 'BN_SEED_021');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_21, N'Dau bung am i', DATEADD(day, -4, DATEADD(minute, 66, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_21 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_21, '76', '36.8', '110/85', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 66, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_21, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Thoai hoa cot song that lung', N'Tranh cang thang, uong thuoc bo nao, ngu du giac 7-8 tieng/ngay.', DATEADD(day, -4, DATEADD(minute, 66, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_21 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_21, DATEADD(day, -4, DATEADD(minute, 66, GETDATE())), N'Da ke don');
+    DECLARE @PrId_21 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_21, N'Omeprazole 20mg', 10, N'Vien', N'Uong 1 vien truoc an sang 30 phut', 3500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_21, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -4, DATEADD(minute, 66, GETDATE())), DATEADD(day, -4, DATEADD(minute, 66, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_21, '76', '36.8', '120/85', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 59, GETDATE()))));
-
-    -- Patient 022: Bùi Văn Long
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Văn Long', N'Nam', 75, 'BN_SEED_022', '', '098236517874');
+    -- Patient 22: Do Dinh Tung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Dinh Tung', N'Nam', 56, 'BN_SEED_022', '', '075029170079');
     DECLARE @PId_22 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user022', '123', 'BenhNhan', N'Bùi Văn Long', 'bUivanlong022@yahoo.com', '0902842202', 'BN_SEED_022');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_22, N'Khám tai mũi họng', DATEADD(day, -1, DATEADD(minute, 175, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user022', '123', 'BenhNhan', N'Do Dinh Tung', 'patient022@outlook.com', '0353839430', 'BN_SEED_022');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_22, N'Kham tai mui hong', DATEADD(day, -5, DATEADD(minute, 200, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_22 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_22, '75', '37.2', '120/70', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 200, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_22, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Viem phe quan cap tinh', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -5, DATEADD(minute, 200, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_22 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_22, DATEADD(day, -5, DATEADD(minute, 200, GETDATE())), N'Da ke don');
+    DECLARE @PrId_22 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_22, N'Vitamin C 500mg', 10, N'Vien', N'Uong 1 vien sau bua sang', 2000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_22, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -5, DATEADD(minute, 200, GETDATE())), DATEADD(day, -5, DATEADD(minute, 200, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_22, '92', '37.4', '110/85', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 175, GETDATE()))));
-
-    -- Patient 023: Đặng Xuân Quang
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Xuân Quang', N'Nam', 38, 'BN_SEED_023', '', '041057313155');
+    -- Patient 23: Tran Thu Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Thu Tu', N'Nu', 20, 'BN_SEED_023', '', '078197979060');
     DECLARE @PId_23 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user023', '123', 'BenhNhan', N'Đặng Xuân Quang', 'dặngxuanquang023@yahoo.com', '0908518353', 'BN_SEED_023');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_23, N'Kiểm tra tim mạch', DATEADD(day, -2, DATEADD(minute, 106, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user023', '123', 'BenhNhan', N'Tran Thu Tu', 'patient023@outlook.com', '0989111347', 'BN_SEED_023');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_23, N'Kham tai mui hong', DATEADD(day, -6, DATEADD(minute, 181, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_23 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_23, '69', '36.2', '130/80', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 181, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_23, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem da day ta trang cap', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -6, DATEADD(minute, 181, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_23 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_23, DATEADD(day, -6, DATEADD(minute, 181, GETDATE())), N'Da ke don');
+    DECLARE @PrId_23 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_23, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_23, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -6, DATEADD(minute, 181, GETDATE())), DATEADD(day, -6, DATEADD(minute, 181, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_23, '78', '37.2', '110/80', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 106, GETDATE()))));
-
-    -- Patient 024: Đặng Hải Hải
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Hải Hải', N'Nam', 57, 'BN_SEED_024', '', '036198414056');
+    -- Patient 24: Vo Truc Quynh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Truc Quynh', N'Nu', 22, 'BN_SEED_024', '', '056653428058');
     DECLARE @PId_24 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user024', '123', 'BenhNhan', N'Đặng Hải Hải', 'dặnghaihai024@yahoo.com', '0905898515', 'BN_SEED_024');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_24, N'Đau đầu kéo dài', DATEADD(day, -3, DATEADD(minute, 173, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user024', '123', 'BenhNhan', N'Vo Truc Quynh', 'patient024@yahoo.com', '0779375424', 'BN_SEED_024');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_24, N'Kiem tra huyet ap', DATEADD(day, -1, DATEADD(minute, 184, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_24 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_24, '75', '37.1', '110/70', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 184, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_24, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem da day ta trang cap', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -1, DATEADD(minute, 184, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_24 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_24, DATEADD(day, -1, DATEADD(minute, 184, GETDATE())), N'Da ke don');
+    DECLARE @PrId_24 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_24, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_24, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -1, DATEADD(minute, 184, GETDATE())), DATEADD(day, -1, DATEADD(minute, 184, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_24, '89', '36.7', '120/80', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 173, GETDATE()))));
-
-    -- Patient 025: Hoàng Xuân Tùng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Xuân Tùng', N'Nam', 67, 'BN_SEED_025', '', '074053158182');
+    -- Patient 25: Nguyen Thi Trang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Thi Trang', N'Nu', 56, 'BN_SEED_025', '', '025232014186');
     DECLARE @PId_25 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user025', '123', 'BenhNhan', N'Hoàng Xuân Tùng', 'hoangxuantUng025@gmail.com', '0909618540', 'BN_SEED_025');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_25, N'Đau nhức khớp gối', DATEADD(day, -4, DATEADD(minute, 140, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user025', '123', 'BenhNhan', N'Nguyen Thi Trang', 'patient025@gmail.com', '0986828311', 'BN_SEED_025');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_25, N'Met moi suy nhuoc', DATEADD(day, -2, DATEADD(minute, 95, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_25 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_25, '83', '36.9', '120/85', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 95, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_25, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(day, -2, DATEADD(minute, 95, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_25 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_25, DATEADD(day, -2, DATEADD(minute, 95, GETDATE())), N'Da ke don');
+    DECLARE @PrId_25 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_25, N'Vitamin C 500mg', 10, N'Vien', N'Uong 1 vien sau bua sang', 2000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_25, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -2, DATEADD(minute, 95, GETDATE())), DATEADD(day, -2, DATEADD(minute, 95, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_25, '73', '36.5', '120/70', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 140, GETDATE()))));
-
-    -- Patient 026: Hoàng Cẩm Lan
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Cẩm Lan', N'Nữ', 27, 'BN_SEED_026', '', '021660152049');
+    -- Patient 26: Hoang Minh Khoa
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Minh Khoa', N'Nam', 32, 'BN_SEED_026', '', '033592139580');
     DECLARE @PId_26 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user026', '123', 'BenhNhan', N'Hoàng Cẩm Lan', 'hoangcamlan026@gmail.com', '0903317148', 'BN_SEED_026');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_26, N'Kiểm tra huyết áp', DATEADD(day, -5, DATEADD(minute, 157, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user026', '123', 'BenhNhan', N'Hoang Minh Khoa', 'patient026@gmail.com', '0859689243', 'BN_SEED_026');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_26, N'Met moi suy nhuoc', DATEADD(day, -3, DATEADD(minute, 220, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_26 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_26, '67', '36.5', '110/70', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 220, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_26, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Viem phe quan cap tinh', N'Tranh be vac nang, tap vat ly tri lieu nhe nhang, uong thuoc giam dau khi can.', DATEADD(day, -3, DATEADD(minute, 220, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_26 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_26, DATEADD(day, -3, DATEADD(minute, 220, GETDATE())), N'Da ke don');
+    DECLARE @PrId_26 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_26, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_26, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -3, DATEADD(minute, 220, GETDATE())), DATEADD(day, -3, DATEADD(minute, 220, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_26, '87', '37.5', '120/70', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 157, GETDATE()))));
-
-    -- Patient 027: Hoàng Ngọc Lan
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Ngọc Lan', N'Nữ', 58, 'BN_SEED_027', '', '012065337738');
+    -- Patient 27: Nguyen Dinh Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Dinh Dung', N'Nam', 39, 'BN_SEED_027', '', '072813400599');
     DECLARE @PId_27 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user027', '123', 'BenhNhan', N'Hoàng Ngọc Lan', 'hoangngiclan027@yahoo.com', '0901263005', 'BN_SEED_027');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_27, N'Khám tai mũi họng', DATEADD(day, -6, DATEADD(minute, 178, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user027', '123', 'BenhNhan', N'Nguyen Dinh Dung', 'patient027@outlook.com', '0963126832', 'BN_SEED_027');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_27, N'Kham tai mui hong', DATEADD(day, -4, DATEADD(minute, 172, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_27 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_27, '69', '36.8', '110/85', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 172, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_27, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem phe quan cap tinh', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -4, DATEADD(minute, 172, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_27 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_27, DATEADD(day, -4, DATEADD(minute, 172, GETDATE())), N'Da ke don');
+    DECLARE @PrId_27 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_27, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_27, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -4, DATEADD(minute, 172, GETDATE())), DATEADD(day, -4, DATEADD(minute, 172, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_27, '72', '36.8', '120/80', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 178, GETDATE()))));
-
-    -- Patient 028: Nguyễn Ngọc Vân
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Ngọc Vân', N'Nữ', 64, 'BN_SEED_028', '', '037540854826');
+    -- Patient 28: Vu Tuan Hai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Tuan Hai', N'Nam', 55, 'BN_SEED_028', '', '002023076971');
     DECLARE @PId_28 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user028', '123', 'BenhNhan', N'Nguyễn Ngọc Vân', 'nguyenngicvan028@gmail.com', '0906115491', 'BN_SEED_028');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_28, N'Đau nhức khớp gối', DATEADD(day, -0, DATEADD(minute, 26, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user028', '123', 'BenhNhan', N'Vu Tuan Hai', 'patient028@yahoo.com', '0982975810', 'BN_SEED_028');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_28, N'Kham suc khoe dinh ky', DATEADD(day, -5, DATEADD(minute, 168, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_28 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_28, '70', '37.2', '120/80', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 168, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_28, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Thoai hoa cot song that lung', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -5, DATEADD(minute, 168, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_28 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_28, DATEADD(day, -5, DATEADD(minute, 168, GETDATE())), N'Da ke don');
+    DECLARE @PrId_28 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_28, N'Vitamin C 500mg', 10, N'Vien', N'Uong 1 vien sau bua sang', 2000);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_28, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -5, DATEADD(minute, 168, GETDATE())), DATEADD(day, -5, DATEADD(minute, 168, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_28, '67', '37.3', '110/80', '98', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 26, GETDATE()))));
-
-    -- Patient 029: Ngô Hồng Trinh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Hồng Trinh', N'Nữ', 50, 'BN_SEED_029', '', '076037421497');
+    -- Patient 29: Do Khanh Nhung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Khanh Nhung', N'Nu', 26, 'BN_SEED_029', '', '000926664350');
     DECLARE @PId_29 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user029', '123', 'BenhNhan', N'Ngô Hồng Trinh', 'ngOhongtrinh029@outlook.com', '0902897398', 'BN_SEED_029');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_29, N'Đau bụng âm ỉ', DATEADD(day, -1, DATEADD(minute, 102, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user029', '123', 'BenhNhan', N'Do Khanh Nhung', 'patient029@gmail.com', '0983318444', 'BN_SEED_029');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_29, N'Dau dau keo dai', DATEADD(day, -6, DATEADD(minute, 48, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_29 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_29, '84', '36.2', '130/80', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 48, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_29, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Suy nhuoc co the nhe / Theo doi huyet ap', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(day, -6, DATEADD(minute, 48, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_29 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_29, DATEADD(day, -6, DATEADD(minute, 48, GETDATE())), N'Da ke don');
+    DECLARE @PrId_29 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_29, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_29, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -6, DATEADD(minute, 48, GETDATE())), DATEADD(day, -6, DATEADD(minute, 48, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_29, '71', '37.1', '130/70', '96', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 102, GETDATE()))));
-
-    -- Patient 030: Nguyễn Tuyết An
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Tuyết An', N'Nữ', 31, 'BN_SEED_030', '', '081725376517');
+    -- Patient 30: Dang Ngoc Lam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Ngoc Lam', N'Nam', 35, 'BN_SEED_030', '', '093638162906');
     DECLARE @PId_30 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user030', '123', 'BenhNhan', N'Nguyễn Tuyết An', 'nguyentuyetan030@gmail.com', '0907885781', 'BN_SEED_030');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_30, N'Khám sức khỏe định kỳ', DATEADD(day, -2, DATEADD(minute, 229, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user030', '123', 'BenhNhan', N'Dang Ngoc Lam', 'patient030@outlook.com', '0797312110', 'BN_SEED_030');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_30, N'Ho sot nhe', DATEADD(day, -1, DATEADD(minute, 114, GETDATE())), 10, @CurrentDocId);
     DECLARE @AId_30 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_30, '69', '37.0', '110/85', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 114, GETDATE()))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes, DigitalSignature) VALUES (@AId_30, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Thoai hoa cot song that lung', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(day, -1, DATEADD(minute, 114, GETDATE())), 1, N'[KEDONTHUOC]', N'[BS. Dinh Van Long] - (SHA-256)');
+    DECLARE @MRId_30 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_30, DATEADD(day, -1, DATEADD(minute, 114, GETDATE())), N'Da ke don');
+    DECLARE @PrId_30 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_30, N'Omeprazole 20mg', 10, N'Vien', N'Uong 1 vien truoc an sang 30 phut', 3500);
+        INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_30, N'Xet nghiem mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Huyet hoc binh thuong', DATEADD(day, -1, DATEADD(minute, 114, GETDATE())), DATEADD(day, -1, DATEADD(minute, 114, GETDATE())));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_30, '72', '37.3', '130/70', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 229, GETDATE()))));
-
-    -- Patient 031: Hồ Hồng Trinh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Hồng Trinh', N'Nữ', 18, 'BN_SEED_031', '', '045658166376');
+    -- Patient 31: Ho Hong Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Hong Yen', N'Nu', 56, 'BN_SEED_031', '', '022490510636');
     DECLARE @PId_31 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user031', '123', 'BenhNhan', N'Hồ Hồng Trinh', 'hohongtrinh031@gmail.com', '0901048998', 'BN_SEED_031');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_31, N'Kiểm tra tim mạch', DATEADD(day, -3, DATEADD(minute, 218, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user031', '123', 'BenhNhan', N'Ho Hong Yen', 'patient031@gmail.com', '0854975929', 'BN_SEED_031');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_31, N'Kiem tra tim mach', DATEADD(minute, -24, CAST(GETDATE() AS DATETIME)), 1, @CurrentDocId);
     DECLARE @AId_31 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_31, '80', '36.4', '130/70', '95', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -24, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_31, '95', '36.3', '120/70', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 218, GETDATE()))));
-
-    -- Patient 032: Vũ Quốc Phúc
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vũ Quốc Phúc', N'Nam', 74, 'BN_SEED_032', '', '048949945465');
+    -- Patient 32: Vu Thu Mai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Thu Mai', N'Nu', 54, 'BN_SEED_032', '', '016340766184');
     DECLARE @PId_32 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user032', '123', 'BenhNhan', N'Vũ Quốc Phúc', 'vuquocphUc032@outlook.com', '0906035589', 'BN_SEED_032');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_32, N'Đau họng khó nuốt', DATEADD(day, -4, DATEADD(minute, 191, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user032', '123', 'BenhNhan', N'Vu Thu Mai', 'patient032@yahoo.com', '0851135924', 'BN_SEED_032');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_32, N'Dau dau keo dai', DATEADD(minute, -145, CAST(GETDATE() AS DATETIME)), 1, @CurrentDocId);
     DECLARE @AId_32 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_32, '80', '37.4', '130/85', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -145, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_32, '88', '37.2', '120/70', '98', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 191, GETDATE()))));
-
-    -- Patient 033: Hoàng Văn Thịnh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Văn Thịnh', N'Nam', 61, 'BN_SEED_033', '', '012268284833');
+    -- Patient 33: Do Nhu Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Nhu Nga', N'Nu', 66, 'BN_SEED_033', '', '027716935106');
     DECLARE @PId_33 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user033', '123', 'BenhNhan', N'Hoàng Văn Thịnh', 'hoangvanthinh033@outlook.com', '0903082179', 'BN_SEED_033');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_33, N'Đau bụng âm ỉ', DATEADD(day, -5, DATEADD(minute, 216, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user033', '123', 'BenhNhan', N'Do Nhu Nga', 'patient033@gmail.com', '0351396033', 'BN_SEED_033');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_33, N'Dau hong kho nuot', DATEADD(minute, -40, CAST(GETDATE() AS DATETIME)), 1, @CurrentDocId);
     DECLARE @AId_33 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_33, '88', '37.0', '110/80', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, -40, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_33, '68', '36.4', '120/85', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 216, GETDATE()))));
-
-    -- Patient 034: Hồ Đức Phúc
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Đức Phúc', N'Nam', 19, 'BN_SEED_034', '', '080776623615');
+    -- Patient 34: Nguyen Anh Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Anh Dat', N'Nam', 32, 'BN_SEED_034', '', '029278089126');
     DECLARE @PId_34 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user034', '123', 'BenhNhan', N'Hồ Đức Phúc', 'hoducphUc034@gmail.com', '0906618245', 'BN_SEED_034');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_34, N'Đau nhức khớp gối', DATEADD(day, -6, DATEADD(minute, 151, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user034', '123', 'BenhNhan', N'Nguyen Anh Dat', 'patient034@yahoo.com', '0966527570', 'BN_SEED_034');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_34, N'Dau dau keo dai', DATEADD(minute, -40, CAST(GETDATE() AS DATETIME)), 1, @CurrentDocId);
     DECLARE @AId_34 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_34, '68', '36.7', '130/85', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -40, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_34, '95', '36.5', '120/85', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 151, GETDATE()))));
-
-    -- Patient 035: Đỗ Hải Phong
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đỗ Hải Phong', N'Nam', 64, 'BN_SEED_035', '', '035713983830');
+    -- Patient 35: Duong Duc Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Duc Long', N'Nam', 62, 'BN_SEED_035', '', '074448369637');
     DECLARE @PId_35 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user035', '123', 'BenhNhan', N'Đỗ Hải Phong', 'dohaiphong035@outlook.com', '0906720467', 'BN_SEED_035');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_35, N'Đau nhức khớp gối', DATEADD(day, -0, DATEADD(minute, 134, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user035', '123', 'BenhNhan', N'Duong Duc Long', 'patient035@outlook.com', '0792283458', 'BN_SEED_035');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_35, N'Dau nhuc khop goi', DATEADD(minute, -68, CAST(GETDATE() AS DATETIME)), 1, @CurrentDocId);
     DECLARE @AId_35 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_35, '67', '36.8', '110/80', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, -68, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_35, '81', '37.3', '110/85', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 134, GETDATE()))));
-
-    -- Patient 036: Phan Anh Lâm
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Anh Lâm', N'Nam', 29, 'BN_SEED_036', '', '034715842282');
+    -- Patient 36: Pham Thanh Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Thanh Viet', N'Nam', 41, 'BN_SEED_036', '', '033879843324');
     DECLARE @PId_36 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user036', '123', 'BenhNhan', N'Phan Anh Lâm', 'phananhlam036@gmail.com', '0902378597', 'BN_SEED_036');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_36, N'Đau đầu kéo dài', DATEADD(day, -1, DATEADD(minute, 105, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user036', '123', 'BenhNhan', N'Pham Thanh Viet', 'patient036@outlook.com', '0791751781', 'BN_SEED_036');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_36, N'Dau nhuc khop goi', DATEADD(minute, 23, CAST(GETDATE() AS DATETIME)), 2, @CurrentDocId);
     DECLARE @AId_36 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_36, '80', '36.4', '130/80', '99', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 23, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_36, '73', '36.8', '130/70', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 105, GETDATE()))));
-
-    -- Patient 037: Phạm Hải Dũng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phạm Hải Dũng', N'Nam', 65, 'BN_SEED_037', '', '092037856330');
+    -- Patient 37: Phan Hoang Hung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hoang Hung', N'Nam', 66, 'BN_SEED_037', '', '061927265110');
     DECLARE @PId_37 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user037', '123', 'BenhNhan', N'Phạm Hải Dũng', 'phamhaidung037@gmail.com', '0903454080', 'BN_SEED_037');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_37, N'Kiểm tra huyết áp', DATEADD(day, -2, DATEADD(minute, 66, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user037', '123', 'BenhNhan', N'Phan Hoang Hung', 'patient037@outlook.com', '0351283469', 'BN_SEED_037');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_37, N'Ho sot nhe', DATEADD(minute, -13, CAST(GETDATE() AS DATETIME)), 2, @CurrentDocId);
     DECLARE @AId_37 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_37, '73', '36.9', '120/85', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -13, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_37, '81', '36.5', '110/85', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 66, GETDATE()))));
-
-    -- Patient 038: Phan Tuấn Anh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tuấn Anh', N'Nam', 43, 'BN_SEED_038', '', '052165085963');
+    -- Patient 38: Pham Thi Van
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Thi Van', N'Nu', 48, 'BN_SEED_038', '', '049359042971');
     DECLARE @PId_38 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user038', '123', 'BenhNhan', N'Phan Tuấn Anh', 'phantuananh038@yahoo.com', '0906899971', 'BN_SEED_038');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_38, N'Đau nhức khớp gối', DATEADD(day, -3, DATEADD(minute, 211, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user038', '123', 'BenhNhan', N'Pham Thi Van', 'patient038@outlook.com', '0904725978', 'BN_SEED_038');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_38, N'Dau bung am i', DATEADD(minute, -12, CAST(GETDATE() AS DATETIME)), 2, @CurrentDocId);
     DECLARE @AId_38 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_38, '68', '37.2', '120/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -12, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_38, '95', '36.6', '130/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 211, GETDATE()))));
-
-    -- Patient 039: Bùi Trọng Hùng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Trọng Hùng', N'Nam', 37, 'BN_SEED_039', '', '062614608215');
+    -- Patient 39: Vo Xuan Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Xuan Dung', N'Nam', 68, 'BN_SEED_039', '', '098490670544');
     DECLARE @PId_39 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user039', '123', 'BenhNhan', N'Bùi Trọng Hùng', 'bUitringhUng039@yahoo.com', '0903755873', 'BN_SEED_039');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_39, N'Khám tai mũi họng', DATEADD(day, -4, DATEADD(minute, 16, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user039', '123', 'BenhNhan', N'Vo Xuan Dung', 'patient039@gmail.com', '0357783612', 'BN_SEED_039');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_39, N'Dau bung am i', DATEADD(minute, -4, CAST(GETDATE() AS DATETIME)), 2, @CurrentDocId);
     DECLARE @AId_39 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_39, '83', '36.6', '130/80', '96', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, -4, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_39, '73', '36.2', '130/80', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 16, GETDATE()))));
-
-    -- Patient 040: Ngô Văn Bình
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Văn Bình', N'Nam', 66, 'BN_SEED_040', '', '030010937952');
+    -- Patient 40: Tran Cong Quan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Cong Quan', N'Nam', 72, 'BN_SEED_040', '', '022569568820');
     DECLARE @PId_40 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user040', '123', 'BenhNhan', N'Ngô Văn Bình', 'ngOvanbinh040@outlook.com', '0909568768', 'BN_SEED_040');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_40, N'Đau nhức khớp gối', DATEADD(day, -5, DATEADD(minute, 19, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user040', '123', 'BenhNhan', N'Tran Cong Quan', 'patient040@gmail.com', '0973264519', 'BN_SEED_040');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_40, N'Dau dau keo dai', DATEADD(minute, 218, CAST(GETDATE() AS DATETIME)), 2, @CurrentDocId);
     DECLARE @AId_40 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_40, '68', '36.4', '120/85', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 218, CAST(GETDATE() AS DATETIME))));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_40, '73', '36.9', '130/85', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 19, GETDATE()))));
-
-    -- Patient 041: Lê Thị Huyền
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lê Thị Huyền', N'Nữ', 36, 'BN_SEED_041', '', '029351223097');
+    -- Patient 41: Phan Thanh Khanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thanh Khanh', N'Nam', 71, 'BN_SEED_041', '', '099106906508');
     DECLARE @PId_41 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user041', '123', 'BenhNhan', N'Lê Thị Huyền', 'lethihuyen041@gmail.com', '0905789256', 'BN_SEED_041');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_41, N'Đau nhức khớp gối', DATEADD(day, -6, DATEADD(minute, 111, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user041', '123', 'BenhNhan', N'Phan Thanh Khanh', 'patient041@outlook.com', '0387243193', 'BN_SEED_041');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_41, N'Dau nhuc khop goi', DATEADD(minute, -107, CAST(GETDATE() AS DATETIME)), 3, @CurrentDocId);
     DECLARE @AId_41 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_41, '77', '36.5', '110/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -107, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_41, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem phe quan cap tinh', N'Cho ket qua can lam sang', DATEADD(minute, -107, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_41 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_41, N'Chá»¥p X-Quang ngá»±c', N'Chá» KQ', N'', DATEADD(minute, -107, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_41, '75', '36.8', '120/70', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 111, GETDATE()))));
-
-    -- Patient 042: Đặng Hải Khoa
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Hải Khoa', N'Nam', 44, 'BN_SEED_042', '', '045953930569');
+    -- Patient 42: Ho Khanh Linh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Khanh Linh', N'Nu', 40, 'BN_SEED_042', '', '091796723083');
     DECLARE @PId_42 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user042', '123', 'BenhNhan', N'Đặng Hải Khoa', 'dặnghaikhoa042@outlook.com', '0907955056', 'BN_SEED_042');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_42, N'Khám tai mũi họng', DATEADD(day, -0, DATEADD(minute, 135, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user042', '123', 'BenhNhan', N'Ho Khanh Linh', 'patient042@outlook.com', '0963401629', 'BN_SEED_042');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_42, N'Ho sot nhe', DATEADD(minute, 229, CAST(GETDATE() AS DATETIME)), 3, @CurrentDocId);
     DECLARE @AId_42 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_42, '77', '36.3', '120/70', '97', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 229, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_42, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Thoai hoa cot song that lung', N'Cho ket qua can lam sang', DATEADD(minute, 229, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_42 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_42, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, 229, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_42, '89', '37.3', '110/70', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 135, GETDATE()))));
-
-    -- Patient 043: Võ Mỹ Thảo
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Võ Mỹ Thảo', N'Nữ', 54, 'BN_SEED_043', '', '081046632781');
+    -- Patient 43: Bui Quoc Lam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Quoc Lam', N'Nam', 40, 'BN_SEED_043', '', '055100538394');
     DECLARE @PId_43 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user043', '123', 'BenhNhan', N'Võ Mỹ Thảo', 'vOmythao043@outlook.com', '0904809965', 'BN_SEED_043');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_43, N'Đau bụng âm ỉ', DATEADD(day, -1, DATEADD(minute, 190, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user043', '123', 'BenhNhan', N'Bui Quoc Lam', 'patient043@gmail.com', '0357899429', 'BN_SEED_043');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_43, N'Kiem tra tim mach', DATEADD(minute, -34, CAST(GETDATE() AS DATETIME)), 3, @CurrentDocId);
     DECLARE @AId_43 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_43, '78', '36.2', '110/80', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -34, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_43, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Thoai hoa cot song that lung', N'Cho ket qua can lam sang', DATEADD(minute, -34, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_43 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_43, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, -34, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_43, '69', '36.7', '130/85', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 190, GETDATE()))));
-
-    -- Patient 044: Hoàng Ngọc Vy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Ngọc Vy', N'Nữ', 21, 'BN_SEED_044', '', '069587923027');
+    -- Patient 44: Phan Thi Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thi Tu', N'Nu', 29, 'BN_SEED_044', '', '085653367892');
     DECLARE @PId_44 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user044', '123', 'BenhNhan', N'Hoàng Ngọc Vy', 'hoangngicvy044@yahoo.com', '0907419456', 'BN_SEED_044');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_44, N'Đau đầu kéo dài', DATEADD(day, -2, DATEADD(minute, 164, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user044', '123', 'BenhNhan', N'Phan Thi Tu', 'patient044@gmail.com', '0904496461', 'BN_SEED_044');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_44, N'Ho sot nhe', DATEADD(minute, 149, CAST(GETDATE() AS DATETIME)), 3, @CurrentDocId);
     DECLARE @AId_44 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_44, '92', '36.6', '120/70', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 149, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_44, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Cho ket qua can lam sang', DATEADD(minute, 149, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_44 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_44, N'SiÃªu Ã¢m á»• bá»¥ng', N'Chá» KQ', N'', DATEADD(minute, 149, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_44, '70', '36.9', '120/70', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 164, GETDATE()))));
-
-    -- Patient 045: Đỗ Như Hương
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đỗ Như Hương', N'Nữ', 26, 'BN_SEED_045', '', '093126926748');
+    -- Patient 45: Do Ngoc Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Ngoc Tu', N'Nu', 33, 'BN_SEED_045', '', '093851644869');
     DECLARE @PId_45 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user045', '123', 'BenhNhan', N'Đỗ Như Hương', 'donhuhuong045@outlook.com', '0904090521', 'BN_SEED_045');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_45, N'Đau nhức khớp gối', DATEADD(day, -3, DATEADD(minute, 152, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user045', '123', 'BenhNhan', N'Do Ngoc Tu', 'patient045@outlook.com', '0355647215', 'BN_SEED_045');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_45, N'Dau nhuc khop goi', DATEADD(minute, -120, CAST(GETDATE() AS DATETIME)), 3, @CurrentDocId);
     DECLARE @AId_45 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_45, '77', '37.0', '120/85', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -120, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_45, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Thoai hoa cot song that lung', N'Cho ket qua can lam sang', DATEADD(minute, -120, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_45 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_45, N'Chá»¥p X-Quang ngá»±c', N'Chá» KQ', N'', DATEADD(minute, -120, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_45, '81', '36.3', '130/85', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 152, GETDATE()))));
-
-    -- Patient 046: Dương Thu Huyền
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dương Thu Huyền', N'Nữ', 38, 'BN_SEED_046', '', '087020560845');
+    -- Patient 46: Vo Bich Huong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Bich Huong', N'Nu', 36, 'BN_SEED_046', '', '013653110152');
     DECLARE @PId_46 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user046', '123', 'BenhNhan', N'Dương Thu Huyền', 'duongthuhuyen046@gmail.com', '0908042917', 'BN_SEED_046');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_46, N'Mệt mỏi suy nhược', DATEADD(day, -4, DATEADD(minute, 37, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user046', '123', 'BenhNhan', N'Vo Bich Huong', 'patient046@gmail.com', '0987406341', 'BN_SEED_046');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_46, N'Dau dau keo dai', DATEADD(minute, -175, CAST(GETDATE() AS DATETIME)), 4, @CurrentDocId);
     DECLARE @AId_46 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_46, '94', '37.2', '110/70', '98', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -175, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_46, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Thoai hoa cot song that lung', N'Cho ket qua can lam sang', DATEADD(minute, -175, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_46 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_46, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, -175, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_46, '84', '36.3', '130/80', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 37, GETDATE()))));
-
-    -- Patient 047: Trần Công Phong
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Trần Công Phong', N'Nam', 50, 'BN_SEED_047', '', '027134461055');
+    -- Patient 47: Phan Kieu Lan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kieu Lan', N'Nu', 29, 'BN_SEED_047', '', '023674809591');
     DECLARE @PId_47 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user047', '123', 'BenhNhan', N'Trần Công Phong', 'trancOngphong047@yahoo.com', '0906978889', 'BN_SEED_047');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_47, N'Đau họng khó nuốt', DATEADD(day, -5, DATEADD(minute, 20, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user047', '123', 'BenhNhan', N'Phan Kieu Lan', 'patient047@gmail.com', '0918617251', 'BN_SEED_047');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_47, N'Dau hong kho nuot', DATEADD(minute, 83, CAST(GETDATE() AS DATETIME)), 4, @CurrentDocId);
     DECLARE @AId_47 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_47, '89', '36.8', '130/70', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 83, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_47, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Viem phe quan cap tinh', N'Cho ket qua can lam sang', DATEADD(minute, 83, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_47 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_47, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, 83, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_47, '85', '36.2', '110/85', '96', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 20, GETDATE()))));
-
-    -- Patient 048: Phan Hoàng Việt
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hoàng Việt', N'Nam', 75, 'BN_SEED_048', '', '011599811684');
+    -- Patient 48: Duong Ngoc Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Ngoc Tu', N'Nu', 49, 'BN_SEED_048', '', '048865184003');
     DECLARE @PId_48 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user048', '123', 'BenhNhan', N'Phan Hoàng Việt', 'phanhoangviet048@yahoo.com', '0903457755', 'BN_SEED_048');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_48, N'Đau đầu kéo dài', DATEADD(day, -6, DATEADD(minute, 195, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user048', '123', 'BenhNhan', N'Duong Ngoc Tu', 'patient048@yahoo.com', '0890584859', 'BN_SEED_048');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_48, N'Kham suc khoe dinh ky', DATEADD(minute, -129, CAST(GETDATE() AS DATETIME)), 4, @CurrentDocId);
     DECLARE @AId_48 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_48, '78', '36.9', '120/70', '99', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, -129, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_48, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Cho ket qua can lam sang', DATEADD(minute, -129, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_48 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_48, N'Chá»¥p X-Quang ngá»±c', N'Chá» KQ', N'', DATEADD(minute, -129, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_48, '90', '36.2', '130/70', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 195, GETDATE()))));
-
-    -- Patient 049: Bùi Công Tuấn
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Công Tuấn', N'Nam', 30, 'BN_SEED_049', '', '022785798842');
+    -- Patient 49: Ly Cam An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Cam An', N'Nu', 63, 'BN_SEED_049', '', '020914717823');
     DECLARE @PId_49 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user049', '123', 'BenhNhan', N'Bùi Công Tuấn', 'bUicOngtuan049@yahoo.com', '0904244824', 'BN_SEED_049');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_49, N'Ho sốt nhẹ', DATEADD(day, -0, DATEADD(minute, 197, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user049', '123', 'BenhNhan', N'Ly Cam An', 'patient049@yahoo.com', '0972790809', 'BN_SEED_049');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_49, N'Met moi suy nhuoc', DATEADD(minute, 228, CAST(GETDATE() AS DATETIME)), 4, @CurrentDocId);
     DECLARE @AId_49 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_49, '72', '36.6', '130/80', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 228, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_49, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Cho ket qua can lam sang', DATEADD(minute, 228, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_49 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_49, N'SiÃªu Ã¢m á»• bá»¥ng', N'Chá» KQ', N'', DATEADD(minute, 228, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_49, '87', '36.6', '110/70', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 197, GETDATE()))));
-
-    -- Patient 050: Lê Khánh Anh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lê Khánh Anh', N'Nữ', 57, 'BN_SEED_050', '', '097850460664');
+    -- Patient 50: Tran Xuan Hai
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Xuan Hai', N'Nam', 39, 'BN_SEED_050', '', '016543057327');
     DECLARE @PId_50 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user050', '123', 'BenhNhan', N'Lê Khánh Anh', 'lekhanhanh050@yahoo.com', '0906715164', 'BN_SEED_050');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_50, N'Ho sốt nhẹ', DATEADD(day, -1, DATEADD(minute, 99, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user050', '123', 'BenhNhan', N'Tran Xuan Hai', 'patient050@outlook.com', '0973410536', 'BN_SEED_050');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_50, N'Kham suc khoe dinh ky', DATEADD(minute, -13, CAST(GETDATE() AS DATETIME)), 4, @CurrentDocId);
     DECLARE @AId_50 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_50, '95', '36.9', '110/70', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -13, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_50, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Suy nhuoc co the nhe / Theo doi huyet ap', N'Cho ket qua can lam sang', DATEADD(minute, -13, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_50 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt) VALUES (@MRId_50, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'Chá» KQ', N'', DATEADD(minute, -13, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_50, '86', '36.9', '130/85', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 99, GETDATE()))));
-
-    -- Patient 051: Phan Thu Trinh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thu Trinh', N'Nữ', 21, 'BN_SEED_051', '', '047033468542');
+    -- Patient 51: Bui Thu Oanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Thu Oanh', N'Nu', 71, 'BN_SEED_051', '', '093599948677');
     DECLARE @PId_51 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user051', '123', 'BenhNhan', N'Phan Thu Trinh', 'phanthutrinh051@outlook.com', '0902554995', 'BN_SEED_051');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_51, N'Đau đầu kéo dài', DATEADD(day, -2, DATEADD(minute, 57, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user051', '123', 'BenhNhan', N'Bui Thu Oanh', 'patient051@yahoo.com', '0851716622', 'BN_SEED_051');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_51, N'Ho sot nhe', DATEADD(minute, 208, CAST(GETDATE() AS DATETIME)), 5, @CurrentDocId);
     DECLARE @AId_51 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_51, '68', '37.3', '120/80', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 208, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_51, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Viem da day ta trang cap', N'Da co ket qua CLS', DATEADD(minute, 208, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_51 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_51, N'Chup X-Quang nguc', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Chi so binh thuong', DATEADD(minute, 208, CAST(GETDATE() AS DATETIME)), DATEADD(minute, 208, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_51, '68', '37.0', '130/80', '97', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 57, GETDATE()))));
-
-    -- Patient 052: Lý Hoàng Hùng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lý Hoàng Hùng', N'Nam', 57, 'BN_SEED_052', '', '096854406016');
+    -- Patient 52: Bui Thi Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Thi Huyen', N'Nu', 69, 'BN_SEED_052', '', '059747238550');
     DECLARE @PId_52 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user052', '123', 'BenhNhan', N'Lý Hoàng Hùng', 'lyhoanghUng052@gmail.com', '0903874976', 'BN_SEED_052');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_52, N'Đau đầu kéo dài', DATEADD(day, -3, DATEADD(minute, 184, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user052', '123', 'BenhNhan', N'Bui Thi Huyen', 'patient052@gmail.com', '0356731667', 'BN_SEED_052');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_52, N'Kham suc khoe dinh ky', DATEADD(minute, 175, CAST(GETDATE() AS DATETIME)), 5, @CurrentDocId);
     DECLARE @AId_52 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_52, '81', '36.3', '120/70', '98', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 175, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_52, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Viem da day ta trang cap', N'Da co ket qua CLS', DATEADD(minute, 175, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_52 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_52, N'Xet nghiem sinh hoa mau', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Chi so binh thuong', DATEADD(minute, 175, CAST(GETDATE() AS DATETIME)), DATEADD(minute, 175, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_52, '85', '37.1', '120/85', '96', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 184, GETDATE()))));
-
-    -- Patient 053: Ngô Minh Anh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Minh Anh', N'Nam', 51, 'BN_SEED_053', '', '036548612274');
+    -- Patient 53: Nguyen Huu Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Huu Long', N'Nam', 55, 'BN_SEED_053', '', '078131940992');
     DECLARE @PId_53 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user053', '123', 'BenhNhan', N'Ngô Minh Anh', 'ngOminhanh053@gmail.com', '0909798739', 'BN_SEED_053');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_53, N'Kiểm tra huyết áp', DATEADD(day, -4, DATEADD(minute, 187, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user053', '123', 'BenhNhan', N'Nguyen Huu Long', 'patient053@gmail.com', '0903773336', 'BN_SEED_053');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_53, N'Kham suc khoe dinh ky', DATEADD(minute, 90, CAST(GETDATE() AS DATETIME)), 5, @CurrentDocId);
     DECLARE @AId_53 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_53, '65', '37.2', '130/70', '96', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 90, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_53, N'Dau moi that lung, lan xuong chan te bi nhe khi van dong.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Da co ket qua CLS', DATEADD(minute, 90, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_53 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_53, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Chi so binh thuong', DATEADD(minute, 90, CAST(GETDATE() AS DATETIME)), DATEADD(minute, 90, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_53, '80', '36.2', '120/85', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 187, GETDATE()))));
-
-    -- Patient 054: Lý Bích Thảo
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lý Bích Thảo', N'Nữ', 46, 'BN_SEED_054', '', '040100451266');
+    -- Patient 54: Duong Quoc Khanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Quoc Khanh', N'Nam', 39, 'BN_SEED_054', '', '013151290869');
     DECLARE @PId_54 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user054', '123', 'BenhNhan', N'Lý Bích Thảo', 'lybichthao054@gmail.com', '0901409672', 'BN_SEED_054');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_54, N'Khám tai mũi họng', DATEADD(day, -5, DATEADD(minute, 161, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user054', '123', 'BenhNhan', N'Duong Quoc Khanh', 'patient054@gmail.com', '0793574835', 'BN_SEED_054');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_54, N'Ho sot nhe', DATEADD(minute, 211, CAST(GETDATE() AS DATETIME)), 5, @CurrentDocId);
     DECLARE @AId_54 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_54, '88', '36.3', '110/80', '99', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 211, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_54, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Viem da day ta trang cap', N'Da co ket qua CLS', DATEADD(minute, 211, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_54 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_54, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Chi so binh thuong', DATEADD(minute, 211, CAST(GETDATE() AS DATETIME)), DATEADD(minute, 211, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_54, '86', '36.7', '130/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 161, GETDATE()))));
-
-    -- Patient 055: Hồ Thành Lâm
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Thành Lâm', N'Nam', 61, 'BN_SEED_055', '', '033956610847');
+    -- Patient 55: Tran Huu Long
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Huu Long', N'Nam', 64, 'BN_SEED_055', '', '007849272349');
     DECLARE @PId_55 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user055', '123', 'BenhNhan', N'Hồ Thành Lâm', 'hothanhlam055@outlook.com', '0907623240', 'BN_SEED_055');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_55, N'Đau nhức khớp gối', DATEADD(day, -6, DATEADD(minute, 55, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user055', '123', 'BenhNhan', N'Tran Huu Long', 'patient055@yahoo.com', '0965113476', 'BN_SEED_055');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_55, N'Dau nhuc khop goi', DATEADD(minute, 35, CAST(GETDATE() AS DATETIME)), 5, @CurrentDocId);
     DECLARE @AId_55 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_55, '86', '36.4', '130/80', '95', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 35, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_55, N'Thinh thoang chong mat, hoi hop trong nguc, ngu khong sau giac.', N'Viem phe quan cap tinh', N'Da co ket qua CLS', DATEADD(minute, 35, CAST(GETDATE() AS DATETIME)), 0, N'');
+    DECLARE @MRId_55 INT = SCOPE_IDENTITY();
+    INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt, CompletedAt) VALUES (@MRId_55, N'Sieu am o bung', N'ÄÃ£ cÃ³ káº¿t quáº£', N'Chi so binh thuong', DATEADD(minute, 35, CAST(GETDATE() AS DATETIME)), DATEADD(minute, 35, CAST(GETDATE() AS DATETIME)));
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_55, '82', '37.0', '130/85', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 55, GETDATE()))));
-
-    -- Patient 056: Dương Minh Vy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dương Minh Vy', N'Nữ', 46, 'BN_SEED_056', '', '077371147344');
+    -- Patient 56: Duong Quoc Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Quoc Viet', N'Nam', 68, 'BN_SEED_056', '', '055917265250');
     DECLARE @PId_56 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user056', '123', 'BenhNhan', N'Dương Minh Vy', 'duongminhvy056@yahoo.com', '0908946135', 'BN_SEED_056');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_56, N'Ho sốt nhẹ', DATEADD(day, -0, DATEADD(minute, 157, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user056', '123', 'BenhNhan', N'Duong Quoc Viet', 'patient056@yahoo.com', '0358082002', 'BN_SEED_056');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_56, N'Kham tai mui hong', DATEADD(minute, -168, CAST(GETDATE() AS DATETIME)), 6, @CurrentDocId);
     DECLARE @AId_56 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_56, '72', '37.3', '120/70', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, -168, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_56, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Roi loan tien dinh / Thieu mau nao nhe', N'Kieng do cay nong, chat kich thich, uong thuoc da day truoc an 30 phut.', DATEADD(minute, -168, CAST(GETDATE() AS DATETIME)), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_56 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_56, DATEADD(minute, -168, CAST(GETDATE() AS DATETIME)), N'Da ke don');
+    DECLARE @PrId_56 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_56, N'Ginkgo Biloba 80mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 4000);
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_56, '66', '36.5', '130/80', '98', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 157, GETDATE()))));
-
-    -- Patient 057: Lý Như Vy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lý Như Vy', N'Nữ', 35, 'BN_SEED_057', '', '061915020228');
+    -- Patient 57: Vu Hai Phuc
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vu Hai Phuc', N'Nam', 50, 'BN_SEED_057', '', '098669732854');
     DECLARE @PId_57 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user057', '123', 'BenhNhan', N'Lý Như Vy', 'lynhuvy057@gmail.com', '0905376211', 'BN_SEED_057');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_57, N'Đau họng khó nuốt', DATEADD(day, -1, DATEADD(minute, 42, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user057', '123', 'BenhNhan', N'Vu Hai Phuc', 'patient057@yahoo.com', '0906544634', 'BN_SEED_057');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_57, N'Dau dau keo dai', DATEADD(minute, 38, CAST(GETDATE() AS DATETIME)), 6, @CurrentDocId);
     DECLARE @AId_57 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_57, '67', '36.6', '110/70', '98', N'DD. Tran Thi Hanh', DATEADD(minute, -10, DATEADD(minute, 38, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_57, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Viem da day ta trang cap', N'Dung khang sinh uong theo don, uong nhieu nuoc am, xuc hong nuoc muoi.', DATEADD(minute, 38, CAST(GETDATE() AS DATETIME)), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_57 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_57, DATEADD(minute, 38, CAST(GETDATE() AS DATETIME)), N'Da ke don');
+    DECLARE @PrId_57 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_57, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_57, '67', '37.3', '110/80', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 42, GETDATE()))));
-
-    -- Patient 058: Vũ Quốc Hùng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vũ Quốc Hùng', N'Nam', 32, 'BN_SEED_058', '', '064024303389');
+    -- Patient 58: Le Kieu Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Kieu Huyen', N'Nu', 48, 'BN_SEED_058', '', '013114882825');
     DECLARE @PId_58 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user058', '123', 'BenhNhan', N'Vũ Quốc Hùng', 'vuquochUng058@gmail.com', '0901647983', 'BN_SEED_058');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_58, N'Kiểm tra huyết áp', DATEADD(day, -2, DATEADD(minute, 154, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user058', '123', 'BenhNhan', N'Le Kieu Huyen', 'patient058@yahoo.com', '0964484331', 'BN_SEED_058');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_58, N'Dau dau keo dai', DATEADD(minute, -76, CAST(GETDATE() AS DATETIME)), 6, @CurrentDocId);
     DECLARE @AId_58 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_58, '77', '37.3', '120/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, -76, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_58, N'Met moi, an uong kem, thinh thoang dau dau nhe.', N'Viem da day ta trang cap', N'Tranh be vac nang, tap vat ly tri lieu nhe nhang, uong thuoc giam dau khi can.', DATEADD(minute, -76, CAST(GETDATE() AS DATETIME)), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_58 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_58, DATEADD(minute, -76, CAST(GETDATE() AS DATETIME)), N'Da ke don');
+    DECLARE @PrId_58 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_58, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_58, '77', '36.9', '130/85', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 154, GETDATE()))));
-
-    -- Patient 059: Nguyễn Minh Phương
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Minh Phương', N'Nữ', 51, 'BN_SEED_059', '', '091238513974');
+    -- Patient 59: Do Tuyet Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Tuyet Chi', N'Nu', 19, 'BN_SEED_059', '', '088742286331');
     DECLARE @PId_59 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user059', '123', 'BenhNhan', N'Nguyễn Minh Phương', 'nguyenminhphuong059@outlook.com', '0907533949', 'BN_SEED_059');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_59, N'Đau họng khó nuốt', DATEADD(day, -3, DATEADD(minute, 150, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user059', '123', 'BenhNhan', N'Do Tuyet Chi', 'patient059@gmail.com', '0776171165', 'BN_SEED_059');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_59, N'Dau nhuc khop goi', DATEADD(minute, 23, CAST(GETDATE() AS DATETIME)), 6, @CurrentDocId);
     DECLARE @AId_59 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_59, '75', '37.3', '130/70', '97', N'DD. Nguyen Van Minh', DATEADD(minute, -10, DATEADD(minute, 23, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_59, N'Dau am i vung thuong vi, day bung kho tieu sau khi an.', N'Thoai hoa cot song that lung', N'Tranh be vac nang, tap vat ly tri lieu nhe nhang, uong thuoc giam dau khi can.', DATEADD(minute, 23, CAST(GETDATE() AS DATETIME)), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_59 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_59, DATEADD(minute, 23, CAST(GETDATE() AS DATETIME)), N'Da ke don');
+    DECLARE @PrId_59 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_59, N'Amoxicillin 500mg', 10, N'Vien', N'Uong 2 vien/ngay chia 2 lan', 3000);
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_59, '74', '37.0', '110/85', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 150, GETDATE()))));
-
-    -- Patient 060: Lý Tuyết Yến
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lý Tuyết Yến', N'Nữ', 31, 'BN_SEED_060', '', '038289193914');
+    -- Patient 60: Le Huu Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Huu Son', N'Nam', 38, 'BN_SEED_060', '', '098388132052');
     DECLARE @PId_60 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user060', '123', 'BenhNhan', N'Lý Tuyết Yến', 'lytuyetyen060@outlook.com', '0904582644', 'BN_SEED_060');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_60, N'Mệt mỏi suy nhược', DATEADD(day, -4, DATEADD(minute, 229, GETDATE())), 1, @CurrentDocId);
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user060', '123', 'BenhNhan', N'Le Huu Son', 'patient060@yahoo.com', '0790163527', 'BN_SEED_060');
+    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_60, N'Dau bung am i', DATEADD(minute, 195, CAST(GETDATE() AS DATETIME)), 6, @CurrentDocId);
     DECLARE @AId_60 INT = SCOPE_IDENTITY();
+    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_60, '68', '36.9', '110/85', '95', N'DD. Le Thi Mai', DATEADD(minute, -10, DATEADD(minute, 195, CAST(GETDATE() AS DATETIME))));
+    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_60, N'Ho khan kem rat hong, sot nhe 37.8 do C ve chieu.', N'Thoai hoa cot song that lung', N'Nghi ngoi, an uong dieu do, bo sung vitamin nhom B va sat.', DATEADD(minute, 195, CAST(GETDATE() AS DATETIME)), 0, N'[KEDONTHUOC]');
+    DECLARE @MRId_60 INT = SCOPE_IDENTITY();
+    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_60, DATEADD(minute, 195, CAST(GETDATE() AS DATETIME)), N'Da ke don');
+    DECLARE @PrId_60 INT = SCOPE_IDENTITY();
+        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_60, N'Paracetamol 500mg', 10, N'Vien', N'Uong 1 vien khi dau dau >38.5 do', 1500);
 
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_60, '90', '37.2', '130/80', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 229, GETDATE()))));
-
-    -- Patient 061: Bùi Tuấn Phong
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Tuấn Phong', N'Nam', 46, 'BN_SEED_061', '', '046534366848');
+    -- Patient 61: Hoang Phuong Linh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Phuong Linh', N'Nu', 71, 'BN_SEED_061', '', '077541669218');
     DECLARE @PId_61 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user061', '123', 'BenhNhan', N'Hoang Phuong Linh', 'patient061@gmail.com', '0971911922', 'BN_SEED_061');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user061', '123', 'BenhNhan', N'Bùi Tuấn Phong', 'bUituanphong061@outlook.com', '0908096007', 'BN_SEED_061');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_61, N'Đau nhức khớp gối', DATEADD(day, -5, DATEADD(minute, 238, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_61 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_61, '83', '37.0', '120/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 238, GETDATE()))));
-
-    -- Patient 062: Hồ Anh Thắng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Anh Thắng', N'Nam', 46, 'BN_SEED_062', '', '026050816250');
+    -- Patient 62: Dang Xuan Phong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Xuan Phong', N'Nam', 48, 'BN_SEED_062', '', '027432098332');
     DECLARE @PId_62 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user062', '123', 'BenhNhan', N'Dang Xuan Phong', 'patient062@gmail.com', '0962725559', 'BN_SEED_062');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user062', '123', 'BenhNhan', N'Hồ Anh Thắng', 'hoanhthang062@yahoo.com', '0908277802', 'BN_SEED_062');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_62, N'Khám sức khỏe định kỳ', DATEADD(day, -6, DATEADD(minute, 230, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_62 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_62, '93', '37.3', '130/70', '95', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 230, GETDATE()))));
-
-    -- Patient 063: Phan Trúc Tú
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Trúc Tú', N'Nữ', 70, 'BN_SEED_063', '', '099829637341');
+    -- Patient 63: Le Van Phuc
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Le Van Phuc', N'Nam', 29, 'BN_SEED_063', '', '007659110498');
     DECLARE @PId_63 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user063', '123', 'BenhNhan', N'Le Van Phuc', 'patient063@gmail.com', '0901735774', 'BN_SEED_063');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user063', '123', 'BenhNhan', N'Phan Trúc Tú', 'phantrUctU063@gmail.com', '0904583502', 'BN_SEED_063');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_63, N'Đau đầu kéo dài', DATEADD(day, -0, DATEADD(minute, 84, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_63 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_63, '79', '37.0', '110/70', '95', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 84, GETDATE()))));
-
-    -- Patient 064: Bùi Cẩm Hà
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Cẩm Hà', N'Nữ', 35, 'BN_SEED_064', '', '065067860096');
+    -- Patient 64: Ly Minh Thinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Minh Thinh', N'Nam', 36, 'BN_SEED_064', '', '015476706823');
     DECLARE @PId_64 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user064', '123', 'BenhNhan', N'Ly Minh Thinh', 'patient064@gmail.com', '0982184222', 'BN_SEED_064');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user064', '123', 'BenhNhan', N'Bùi Cẩm Hà', 'bUicamha064@gmail.com', '0902543234', 'BN_SEED_064');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_64, N'Mệt mỏi suy nhược', DATEADD(day, -1, DATEADD(minute, 114, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_64 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_64, '81', '37.1', '120/85', '97', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 114, GETDATE()))));
-
-    -- Patient 065: Hoàng Khánh Nhung
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoàng Khánh Nhung', N'Nữ', 70, 'BN_SEED_065', '', '050726369861');
+    -- Patient 65: Phan Hong Anh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Hong Anh', N'Nu', 58, 'BN_SEED_065', '', '033555644286');
     DECLARE @PId_65 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user065', '123', 'BenhNhan', N'Phan Hong Anh', 'patient065@yahoo.com', '0982124008', 'BN_SEED_065');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user065', '123', 'BenhNhan', N'Hoàng Khánh Nhung', 'hoangkhanhnhung065@yahoo.com', '0903718092', 'BN_SEED_065');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_65, N'Đau bụng âm ỉ', DATEADD(day, -2, DATEADD(minute, 207, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_65 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_65, '95', '37.3', '130/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 207, GETDATE()))));
-
-    -- Patient 066: Bùi Thành Long
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Thành Long', N'Nam', 23, 'BN_SEED_066', '', '041531102188');
+    -- Patient 66: Duong Kieu Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Kieu Tu', N'Nu', 47, 'BN_SEED_066', '', '042009743934');
     DECLARE @PId_66 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user066', '123', 'BenhNhan', N'Duong Kieu Tu', 'patient066@yahoo.com', '0857757890', 'BN_SEED_066');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user066', '123', 'BenhNhan', N'Bùi Thành Long', 'bUithanhlong066@gmail.com', '0909720245', 'BN_SEED_066');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_66, N'Mệt mỏi suy nhược', DATEADD(day, -3, DATEADD(minute, 135, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_66 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_66, '90', '36.5', '120/80', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 135, GETDATE()))));
-
-    -- Patient 067: Nguyễn Mỹ Anh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Mỹ Anh', N'Nữ', 33, 'BN_SEED_067', '', '038170921965');
+    -- Patient 67: Pham Phuong Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pham Phuong Tu', N'Nu', 44, 'BN_SEED_067', '', '075232545413');
     DECLARE @PId_67 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user067', '123', 'BenhNhan', N'Pham Phuong Tu', 'patient067@outlook.com', '0905531302', 'BN_SEED_067');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user067', '123', 'BenhNhan', N'Nguyễn Mỹ Anh', 'nguyenmyanh067@gmail.com', '0908635730', 'BN_SEED_067');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_67, N'Khám sức khỏe định kỳ', DATEADD(day, -4, DATEADD(minute, 184, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_67 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_67, '95', '36.8', '130/85', '98', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 184, GETDATE()))));
-
-    -- Patient 068: Lê Hữu Đạt
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lê Hữu Đạt', N'Nam', 29, 'BN_SEED_068', '', '039233882058');
+    -- Patient 68: Phan Ngoc Ha
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Ngoc Ha', N'Nu', 26, 'BN_SEED_068', '', '076336389711');
     DECLARE @PId_68 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user068', '123', 'BenhNhan', N'Phan Ngoc Ha', 'patient068@yahoo.com', '0975733628', 'BN_SEED_068');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user068', '123', 'BenhNhan', N'Lê Hữu Đạt', 'lehuudat068@gmail.com', '0903349416', 'BN_SEED_068');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_68, N'Khám tai mũi họng', DATEADD(day, -5, DATEADD(minute, 219, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_68 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_68, '88', '37.1', '120/70', '95', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 219, GETDATE()))));
-
-    -- Patient 069: Bùi Đức Khoa
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Đức Khoa', N'Nam', 58, 'BN_SEED_069', '', '011656860571');
+    -- Patient 69: Ho Cam Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Cam Nga', N'Nu', 23, 'BN_SEED_069', '', '008739390459');
     DECLARE @PId_69 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user069', '123', 'BenhNhan', N'Ho Cam Nga', 'patient069@outlook.com', '0770134643', 'BN_SEED_069');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user069', '123', 'BenhNhan', N'Bùi Đức Khoa', 'bUiduckhoa069@yahoo.com', '0909295604', 'BN_SEED_069');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_69, N'Khám sức khỏe định kỳ', DATEADD(day, -6, DATEADD(minute, 146, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_69 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_69, '92', '37.0', '130/85', '95', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 146, GETDATE()))));
-
-    -- Patient 070: Vũ Ngọc Khánh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vũ Ngọc Khánh', N'Nam', 55, 'BN_SEED_070', '', '025965160356');
+    -- Patient 70: Ho Bich Phuong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Bich Phuong', N'Nu', 25, 'BN_SEED_070', '', '037504299964');
     DECLARE @PId_70 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user070', '123', 'BenhNhan', N'Ho Bich Phuong', 'patient070@yahoo.com', '0771903587', 'BN_SEED_070');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user070', '123', 'BenhNhan', N'Vũ Ngọc Khánh', 'vungickhanh070@outlook.com', '0908378732', 'BN_SEED_070');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_70, N'Ho sốt nhẹ', DATEADD(day, -0, DATEADD(minute, 103, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_70 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_70, '92', '37.0', '120/80', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 103, GETDATE()))));
-
-    -- Patient 071: Lê Mỹ Chi
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Lê Mỹ Chi', N'Nữ', 50, 'BN_SEED_071', '', '022471991514');
+    -- Patient 71: Ho Tuan Huy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ho Tuan Huy', N'Nam', 40, 'BN_SEED_071', '', '088453729556');
     DECLARE @PId_71 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user071', '123', 'BenhNhan', N'Ho Tuan Huy', 'patient071@gmail.com', '0382887826', 'BN_SEED_071');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user071', '123', 'BenhNhan', N'Lê Mỹ Chi', 'lemychi071@outlook.com', '0909128920', 'BN_SEED_071');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_71, N'Đau đầu kéo dài', DATEADD(day, -1, DATEADD(minute, 179, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_71 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_71, '85', '36.9', '110/70', '98', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 179, GETDATE()))));
-
-    -- Patient 072: Ngô Đức Phúc
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Đức Phúc', N'Nam', 34, 'BN_SEED_072', '', '014819666874');
+    -- Patient 72: Ly Thu Vy
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Thu Vy', N'Nu', 45, 'BN_SEED_072', '', '097309582364');
     DECLARE @PId_72 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user072', '123', 'BenhNhan', N'Ly Thu Vy', 'patient072@gmail.com', '0981339847', 'BN_SEED_072');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user072', '123', 'BenhNhan', N'Ngô Đức Phúc', 'ngOducphUc072@outlook.com', '0908527222', 'BN_SEED_072');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_72, N'Đau đầu kéo dài', DATEADD(day, -2, DATEADD(minute, 151, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_72 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_72, '90', '36.3', '120/70', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 151, GETDATE()))));
-
-    -- Patient 073: Đặng Minh Yến
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Minh Yến', N'Nữ', 33, 'BN_SEED_073', '', '071220174977');
+    -- Patient 73: Bui Truc Lan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Truc Lan', N'Nu', 65, 'BN_SEED_073', '', '065793990839');
     DECLARE @PId_73 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user073', '123', 'BenhNhan', N'Bui Truc Lan', 'patient073@gmail.com', '0911080598', 'BN_SEED_073');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user073', '123', 'BenhNhan', N'Đặng Minh Yến', 'dặngminhyen073@outlook.com', '0908525423', 'BN_SEED_073');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_73, N'Mệt mỏi suy nhược', DATEADD(day, -3, DATEADD(minute, 112, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_73 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_73, '92', '36.3', '110/70', '95', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 112, GETDATE()))));
-
-    -- Patient 074: Bùi Tuấn Việt
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Tuấn Việt', N'Nam', 54, 'BN_SEED_074', '', '055397677442');
+    -- Patient 74: Dang Van Khanh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Van Khanh', N'Nam', 23, 'BN_SEED_074', '', '018638924120');
     DECLARE @PId_74 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user074', '123', 'BenhNhan', N'Dang Van Khanh', 'patient074@gmail.com', '0793848510', 'BN_SEED_074');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user074', '123', 'BenhNhan', N'Bùi Tuấn Việt', 'bUituanviet074@yahoo.com', '0904844275', 'BN_SEED_074');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_74, N'Đau nhức khớp gối', DATEADD(day, -4, DATEADD(minute, 131, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_74 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_74, '72', '36.8', '120/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 131, GETDATE()))));
-
-    -- Patient 075: Đặng Đức Quang
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Đức Quang', N'Nam', 51, 'BN_SEED_075', '', '056232444471');
+    -- Patient 75: Ly Khanh Nhung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Khanh Nhung', N'Nu', 35, 'BN_SEED_075', '', '072104805811');
     DECLARE @PId_75 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user075', '123', 'BenhNhan', N'Ly Khanh Nhung', 'patient075@yahoo.com', '0382943512', 'BN_SEED_075');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user075', '123', 'BenhNhan', N'Đặng Đức Quang', 'dặngducquang075@gmail.com', '0901556951', 'BN_SEED_075');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_75, N'Đau đầu kéo dài', DATEADD(day, -5, DATEADD(minute, 150, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_75 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_75, '91', '36.5', '130/80', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 150, GETDATE()))));
-
-    -- Patient 076: Võ Kiều Vân
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Võ Kiều Vân', N'Nữ', 30, 'BN_SEED_076', '', '098083629747');
+    -- Patient 76: Duong Xuan Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Xuan Viet', N'Nam', 21, 'BN_SEED_076', '', '002226824016');
     DECLARE @PId_76 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user076', '123', 'BenhNhan', N'Duong Xuan Viet', 'patient076@yahoo.com', '0793077764', 'BN_SEED_076');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user076', '123', 'BenhNhan', N'Võ Kiều Vân', 'vOkieuvan076@gmail.com', '0901250880', 'BN_SEED_076');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_76, N'Đau bụng âm ỉ', DATEADD(day, -6, DATEADD(minute, 45, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_76 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_76, '81', '37.2', '110/85', '95', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 45, GETDATE()))));
-
-    -- Patient 077: Bùi Công Bình
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Công Bình', N'Nam', 67, 'BN_SEED_077', '', '033681534511');
+    -- Patient 77: Do Tuyet Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Tuyet Nga', N'Nu', 61, 'BN_SEED_077', '', '005115954646');
     DECLARE @PId_77 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user077', '123', 'BenhNhan', N'Do Tuyet Nga', 'patient077@yahoo.com', '0358516692', 'BN_SEED_077');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user077', '123', 'BenhNhan', N'Bùi Công Bình', 'bUicOngbinh077@yahoo.com', '0905152248', 'BN_SEED_077');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_77, N'Đau bụng âm ỉ', DATEADD(day, -0, DATEADD(minute, 217, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_77 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_77, '81', '36.8', '120/70', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 217, GETDATE()))));
-
-    -- Patient 078: Trần Phương Linh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Trần Phương Linh', N'Nữ', 67, 'BN_SEED_078', '', '031645739061');
+    -- Patient 78: Hoang Thu Tu
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Thu Tu', N'Nu', 22, 'BN_SEED_078', '', '012912353953');
     DECLARE @PId_78 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user078', '123', 'BenhNhan', N'Hoang Thu Tu', 'patient078@outlook.com', '0777669090', 'BN_SEED_078');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user078', '123', 'BenhNhan', N'Trần Phương Linh', 'tranphuonglinh078@yahoo.com', '0906644885', 'BN_SEED_078');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_78, N'Khám tai mũi họng', DATEADD(day, -1, DATEADD(minute, 92, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_78 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_78, '70', '37.2', '130/85', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 92, GETDATE()))));
-
-    -- Patient 079: Đỗ Khánh Oanh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đỗ Khánh Oanh', N'Nữ', 28, 'BN_SEED_079', '', '089411911275');
+    -- Patient 79: Vo Kieu Dung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Kieu Dung', N'Nu', 53, 'BN_SEED_079', '', '029826142137');
     DECLARE @PId_79 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user079', '123', 'BenhNhan', N'Vo Kieu Dung', 'patient079@yahoo.com', '0792711157', 'BN_SEED_079');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user079', '123', 'BenhNhan', N'Đỗ Khánh Oanh', 'dokhanhoanh079@gmail.com', '0906711312', 'BN_SEED_079');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_79, N'Kiểm tra tim mạch', DATEADD(day, -2, DATEADD(minute, 29, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_79 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_79, '93', '37.2', '120/70', '99', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 29, GETDATE()))));
-
-    -- Patient 080: Hồ Trọng Tuấn
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Trọng Tuấn', N'Nam', 53, 'BN_SEED_080', '', '075007165931');
+    -- Patient 80: Phan Thi An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thi An', N'Nu', 58, 'BN_SEED_080', '', '001818903494');
     DECLARE @PId_80 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user080', '123', 'BenhNhan', N'Phan Thi An', 'patient080@yahoo.com', '0967975165', 'BN_SEED_080');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user080', '123', 'BenhNhan', N'Hồ Trọng Tuấn', 'hotringtuan080@gmail.com', '0909343251', 'BN_SEED_080');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_80, N'Mệt mỏi suy nhược', DATEADD(day, -3, DATEADD(minute, 218, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_80 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_80, '91', '36.3', '110/70', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 218, GETDATE()))));
-
-    -- Patient 081: Vũ Trúc Trang
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vũ Trúc Trang', N'Nữ', 44, 'BN_SEED_081', '', '073072556864');
+    -- Patient 81: Hoang Tuyet Huyen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Tuyet Huyen', N'Nu', 53, 'BN_SEED_081', '', '077459772650');
     DECLARE @PId_81 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user081', '123', 'BenhNhan', N'Hoang Tuyet Huyen', 'patient081@outlook.com', '0981452427', 'BN_SEED_081');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user081', '123', 'BenhNhan', N'Vũ Trúc Trang', 'vutrUctrang081@gmail.com', '0908172693', 'BN_SEED_081');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_81, N'Kiểm tra huyết áp', DATEADD(day, -4, DATEADD(minute, 46, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_81 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_81, '85', '36.3', '110/80', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 46, GETDATE()))));
-
-    -- Patient 082: Nguyễn Ngọc Quỳnh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Ngọc Quỳnh', N'Nữ', 19, 'BN_SEED_082', '', '094925011131');
+    -- Patient 82: Hoang Tuyet Trang
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hoang Tuyet Trang', N'Nu', 53, 'BN_SEED_082', '', '093019865302');
     DECLARE @PId_82 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user082', '123', 'BenhNhan', N'Hoang Tuyet Trang', 'patient082@gmail.com', '0893632131', 'BN_SEED_082');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user082', '123', 'BenhNhan', N'Nguyễn Ngọc Quỳnh', 'nguyenngicquunh082@yahoo.com', '0905141029', 'BN_SEED_082');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_82, N'Ho sốt nhẹ', DATEADD(day, -5, DATEADD(minute, 236, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_82 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_82, '92', '36.3', '120/85', '95', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 236, GETDATE()))));
-
-    -- Patient 083: Đặng Trúc Nga
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Trúc Nga', N'Nữ', 45, 'BN_SEED_083', '', '087777012213');
+    -- Patient 83: Vo Duc Tung
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Duc Tung', N'Nam', 60, 'BN_SEED_083', '', '032064560494');
     DECLARE @PId_83 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user083', '123', 'BenhNhan', N'Vo Duc Tung', 'patient083@yahoo.com', '0357327977', 'BN_SEED_083');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user083', '123', 'BenhNhan', N'Đặng Trúc Nga', 'dặngtrUcnga083@yahoo.com', '0909346491', 'BN_SEED_083');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_83, N'Khám tai mũi họng', DATEADD(day, -6, DATEADD(minute, 140, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_83 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_83, '82', '36.9', '120/80', '97', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 140, GETDATE()))));
-
-    -- Patient 084: Trần Khánh Trang
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Trần Khánh Trang', N'Nữ', 62, 'BN_SEED_084', '', '010528695248');
+    -- Patient 84: Do Khanh Linh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Khanh Linh', N'Nu', 52, 'BN_SEED_084', '', '087398243465');
     DECLARE @PId_84 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user084', '123', 'BenhNhan', N'Do Khanh Linh', 'patient084@gmail.com', '0792104410', 'BN_SEED_084');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user084', '123', 'BenhNhan', N'Trần Khánh Trang', 'trankhanhtrang084@outlook.com', '0907566889', 'BN_SEED_084');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_84, N'Đau họng khó nuốt', DATEADD(day, -0, DATEADD(minute, 176, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_84 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_84, '87', '36.7', '130/70', '97', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -0, DATEADD(minute, 176, GETDATE()))));
-
-    -- Patient 085: Hồ Thành Hùng
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Thành Hùng', N'Nam', 74, 'BN_SEED_085', '', '034525232756');
+    -- Patient 85: Duong Hoang Son
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Duong Hoang Son', N'Nam', 33, 'BN_SEED_085', '', '029657989657');
     DECLARE @PId_85 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user085', '123', 'BenhNhan', N'Duong Hoang Son', 'patient085@yahoo.com', '0964783700', 'BN_SEED_085');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user085', '123', 'BenhNhan', N'Hồ Thành Hùng', 'hothanhhUng085@yahoo.com', '0903797358', 'BN_SEED_085');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_85, N'Mệt mỏi suy nhược', DATEADD(day, -1, DATEADD(minute, 97, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_85 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_85, '85', '36.8', '130/80', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -1, DATEADD(minute, 97, GETDATE()))));
-
-    -- Patient 086: Ngô Xuân Thịnh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Xuân Thịnh', N'Nam', 26, 'BN_SEED_086', '', '095367789256');
+    -- Patient 86: Dang Cam An
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Cam An', N'Nu', 59, 'BN_SEED_086', '', '049031503962');
     DECLARE @PId_86 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user086', '123', 'BenhNhan', N'Dang Cam An', 'patient086@yahoo.com', '0770171865', 'BN_SEED_086');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user086', '123', 'BenhNhan', N'Ngô Xuân Thịnh', 'ngOxuanthinh086@yahoo.com', '0907695286', 'BN_SEED_086');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_86, N'Kiểm tra tim mạch', DATEADD(day, -2, DATEADD(minute, 42, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_86 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_86, '74', '36.4', '110/80', '99', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -2, DATEADD(minute, 42, GETDATE()))));
-
-    -- Patient 087: Hồ Đức Đạt
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Hồ Đức Đạt', N'Nam', 61, 'BN_SEED_087', '', '046554913322');
+    -- Patient 87: Do Tuan Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Tuan Dat', N'Nam', 64, 'BN_SEED_087', '', '046793010929');
     DECLARE @PId_87 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user087', '123', 'BenhNhan', N'Do Tuan Dat', 'patient087@yahoo.com', '0973724877', 'BN_SEED_087');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user087', '123', 'BenhNhan', N'Hồ Đức Đạt', 'hoducdat087@outlook.com', '0907657066', 'BN_SEED_087');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_87, N'Đau bụng âm ỉ', DATEADD(day, -3, DATEADD(minute, 154, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_87 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_87, '88', '36.6', '130/70', '96', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(day, -3, DATEADD(minute, 154, GETDATE()))));
-
-    -- Patient 088: Phan Kiều Thảo
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kiều Thảo', N'Nữ', 27, 'BN_SEED_088', '', '043345925168');
+    -- Patient 88: Vo Van Dat
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Vo Van Dat', N'Nam', 33, 'BN_SEED_088', '', '008493012678');
     DECLARE @PId_88 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user088', '123', 'BenhNhan', N'Vo Van Dat', 'patient088@outlook.com', '0989426924', 'BN_SEED_088');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user088', '123', 'BenhNhan', N'Phan Kiều Thảo', 'phankieuthao088@gmail.com', '0909824871', 'BN_SEED_088');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_88, N'Kiểm tra huyết áp', DATEADD(day, -4, DATEADD(minute, 40, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_88 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_88, '71', '37.3', '120/70', '98', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(day, -4, DATEADD(minute, 40, GETDATE()))));
-
-    -- Patient 089: Đỗ Ngọc Mai
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đỗ Ngọc Mai', N'Nữ', 75, 'BN_SEED_089', '', '010541341476');
+    -- Patient 89: Dang My Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang My Chi', N'Nu', 58, 'BN_SEED_089', '', '032824764521');
     DECLARE @PId_89 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user089', '123', 'BenhNhan', N'Dang My Chi', 'patient089@outlook.com', '0794890730', 'BN_SEED_089');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user089', '123', 'BenhNhan', N'Đỗ Ngọc Mai', 'dongicmai089@gmail.com', '0908830651', 'BN_SEED_089');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_89, N'Ho sốt nhẹ', DATEADD(day, -5, DATEADD(minute, 84, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_89 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_89, '88', '37.3', '110/85', '99', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -5, DATEADD(minute, 84, GETDATE()))));
-
-    -- Patient 090: Nguyễn Ngọc Nam
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Ngọc Nam', N'Nam', 51, 'BN_SEED_090', '', '089090082819');
+    -- Patient 90: Do Kieu Trinh
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Do Kieu Trinh', N'Nu', 37, 'BN_SEED_090', '', '059544901998');
     DECLARE @PId_90 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user090', '123', 'BenhNhan', N'Do Kieu Trinh', 'patient090@yahoo.com', '0897145633', 'BN_SEED_090');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user090', '123', 'BenhNhan', N'Nguyễn Ngọc Nam', 'nguyenngicnam090@yahoo.com', '0907691613', 'BN_SEED_090');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_90, N'Đau bụng âm ỉ', DATEADD(day, -6, DATEADD(minute, 73, GETDATE())), 1, @CurrentDocId);
-    DECLARE @AId_90 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_90, '94', '37.4', '120/80', '95', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(day, -6, DATEADD(minute, 73, GETDATE()))));
-
-    -- Patient 091: Bùi Thành Bình
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bùi Thành Bình', N'Nam', 75, 'BN_SEED_091', '', '024315828088');
+    -- Patient 91: Tran Truc Ha
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tran Truc Ha', N'Nu', 25, 'BN_SEED_091', '', '031015764997');
     DECLARE @PId_91 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user091', '123', 'BenhNhan', N'Tran Truc Ha', 'patient091@outlook.com', '0852336021', 'BN_SEED_091');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user091', '123', 'BenhNhan', N'Bùi Thành Bình', 'bUithanhbinh091@gmail.com', '0903760382', 'BN_SEED_091');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_91, N'Đau họng khó nuốt', DATEADD(minute, -126, GETDATE()), 10, @CurrentDocId);
-    DECLARE @AId_91 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_91, '92', '36.6', '120/70', '96', N'ĐD. Trần Thị Hạnh', DATEADD(minute, -10, DATEADD(minute, -126, GETDATE())));
-
-    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_91, N'Thỉnh thoảng chóng mặt, hồi hộp trống ngực, ngủ không sâu giấc.', N'Rối loạn tiền đình / Thiếu máu não nhẹ', N'Tránh căng thẳng, uống thuốc bổ não, ngủ đủ giấc 7-8 tiếng/ngày.', DATEADD(minute, -126, GETDATE()), 0, N'[KEDONTHUOC]');
-    DECLARE @MRId_91 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_91, DATEADD(minute, -126, GETDATE()), N'Đã kê đơn');
-    DECLARE @PrId_91 INT = SCOPE_IDENTITY();
-
-        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_91, N'Paracetamol 500mg', 10, N'Viên', N'Uống 1 viên khi đau đầu >38.5 độ', 1500);
-    -- Patient 092: Nguyễn Kiều Lan
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Kiều Lan', N'Nữ', 23, 'BN_SEED_092', '', '075740224181');
+    -- Patient 92: Nguyen Thu Chi
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyen Thu Chi', N'Nu', 20, 'BN_SEED_092', '', '066309882308');
     DECLARE @PId_92 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user092', '123', 'BenhNhan', N'Nguyen Thu Chi', 'patient092@yahoo.com', '0917335879', 'BN_SEED_092');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user092', '123', 'BenhNhan', N'Nguyễn Kiều Lan', 'nguyenkieulan092@outlook.com', '0903578298', 'BN_SEED_092');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_92, N'Đau họng khó nuốt', DATEADD(minute, -1042, GETDATE()), 10, @CurrentDocId);
-    DECLARE @AId_92 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_92, '86', '36.2', '120/70', '98', N'ĐD. Lê Thị Mai', DATEADD(minute, -10, DATEADD(minute, -1042, GETDATE())));
-
-    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_92, N'Đau âm ỉ vùng thượng vị, đầy bụng khó tiêu sau khi ăn.', N'Rối loạn tiền đình / Thiếu máu não nhẹ', N'Tránh bê vác nặng, tập vật lý trị liệu nhẹ nhàng, uống thuốc giảm đau khi cần.', DATEADD(minute, -1042, GETDATE()), 0, N'[KEDONTHUOC]');
-    DECLARE @MRId_92 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_92, DATEADD(minute, -1042, GETDATE()), N'Đã kê đơn');
-    DECLARE @PrId_92 INT = SCOPE_IDENTITY();
-
-        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_92, N'Amoxicillin 500mg', 10, N'Viên', N'Uống 2 viên/ngày chia 2 lần', 3000);
-    -- Patient 093: Ngô Ngọc Huy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ngô Ngọc Huy', N'Nam', 75, 'BN_SEED_093', '', '099738441269');
+    -- Patient 93: Phan Kieu Ha
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kieu Ha', N'Nu', 32, 'BN_SEED_093', '', '084397822180');
     DECLARE @PId_93 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user093', '123', 'BenhNhan', N'Phan Kieu Ha', 'patient093@outlook.com', '0911108892', 'BN_SEED_093');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user093', '123', 'BenhNhan', N'Ngô Ngọc Huy', 'ngOngichuy093@outlook.com', '0903647566', 'BN_SEED_093');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_93, N'Đau họng khó nuốt', DATEADD(minute, -918, GETDATE()), 10, @CurrentDocId);
-    DECLARE @AId_93 INT = SCOPE_IDENTITY();
-
-    INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt) VALUES (@AId_93, '71', '37.2', '110/80', '95', N'ĐD. Nguyễn Văn Minh', DATEADD(minute, -10, DATEADD(minute, -918, GETDATE())));
-
-    INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked, Notes) VALUES (@AId_93, N'Mệt mỏi, ăn uống kém, thỉnh thoảng đau đầu nhẹ.', N'Viêm phế quản cấp tính', N'Kiêng đồ cay nóng, chất kích thích, uống thuốc dạ dày trước ăn 30 phút.', DATEADD(minute, -918, GETDATE()), 0, N'[KEDONTHUOC]');
-    DECLARE @MRId_93 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status) VALUES (@MRId_93, DATEADD(minute, -918, GETDATE()), N'Đã kê đơn');
-    DECLARE @PrId_93 INT = SCOPE_IDENTITY();
-
-        INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price) VALUES (@PrId_93, N'Paracetamol 500mg', 10, N'Viên', N'Uống 1 viên khi đau đầu >38.5 độ', 1500);
-    -- Patient 094: Nguyễn Thành Huy
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Thành Huy', N'Nam', 60, 'BN_SEED_094', '', '014442799569');
+    -- Patient 94: Ly Thi Nga
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Ly Thi Nga', N'Nu', 43, 'BN_SEED_094', '', '043658883713');
     DECLARE @PId_94 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user094', '123', 'BenhNhan', N'Ly Thi Nga', 'patient094@outlook.com', '0779405851', 'BN_SEED_094');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user094', '123', 'BenhNhan', N'Nguyễn Thành Huy', 'nguyenthanhhuy094@outlook.com', '0903265977', 'BN_SEED_094');
-
-    INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (@PId_94, N'Đau bụng âm ỉ', DATEADD(hour, 8, GETDATE()), 0, @CurrentDocId);
-    DECLARE @AId_94 INT = SCOPE_IDENTITY();
-
-    -- Patient 095: Đặng Khánh Hà
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Đặng Khánh Hà', N'Nữ', 60, 'BN_SEED_095', '', '099307316997');
+    -- Patient 95: Dang Kieu Phuong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Kieu Phuong', N'Nu', 51, 'BN_SEED_095', '', '021941268734');
     DECLARE @PId_95 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user095', '123', 'BenhNhan', N'Dang Kieu Phuong', 'patient095@outlook.com', '0794094102', 'BN_SEED_095');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user095', '123', 'BenhNhan', N'Đặng Khánh Hà', 'dặngkhanhha095@gmail.com', '0904278030', 'BN_SEED_095');
-
-    -- Patient 096: Trần Trúc Anh
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Trần Trúc Anh', N'Nữ', 45, 'BN_SEED_096', '', '034883804268');
+    -- Patient 96: Phan Minh Lam
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Minh Lam', N'Nam', 68, 'BN_SEED_096', '', '027341926367');
     DECLARE @PId_96 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user096', '123', 'BenhNhan', N'Phan Minh Lam', 'patient096@outlook.com', '0388655179', 'BN_SEED_096');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user096', '123', 'BenhNhan', N'Trần Trúc Anh', 'trantrUcanh096@gmail.com', '0905152615', 'BN_SEED_096');
-
-    -- Patient 097: Võ Hoàng Khoa
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Võ Hoàng Khoa', N'Nam', 75, 'BN_SEED_097', '', '085510039753');
+    -- Patient 97: Bui Ngoc Viet
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Ngoc Viet', N'Nam', 37, 'BN_SEED_097', '', '008347691595');
     DECLARE @PId_97 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user097', '123', 'BenhNhan', N'Bui Ngoc Viet', 'patient097@yahoo.com', '0352791438', 'BN_SEED_097');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user097', '123', 'BenhNhan', N'Võ Hoàng Khoa', 'vOhoangkhoa097@outlook.com', '0904980699', 'BN_SEED_097');
-
-    -- Patient 098: Nguyễn Trúc An
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyễn Trúc An', N'Nữ', 31, 'BN_SEED_098', '', '052136282512');
+    -- Patient 98: Bui Thu Lan
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Thu Lan', N'Nu', 65, 'BN_SEED_098', '', '090909029611');
     DECLARE @PId_98 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user098', '123', 'BenhNhan', N'Bui Thu Lan', 'patient098@outlook.com', '0987340099', 'BN_SEED_098');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user098', '123', 'BenhNhan', N'Nguyễn Trúc An', 'nguyentrUcan098@yahoo.com', '0903364345', 'BN_SEED_098');
-
-    -- Patient 099: Phan Tuấn Nam
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tuấn Nam', N'Nam', 63, 'BN_SEED_099', '', '072573820894');
+    -- Patient 99: Bui Truc Yen
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Bui Truc Yen', N'Nu', 74, 'BN_SEED_099', '', '099704084476');
     DECLARE @PId_99 INT = SCOPE_IDENTITY();
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user099', '123', 'BenhNhan', N'Bui Truc Yen', 'patient099@outlook.com', '0976330984', 'BN_SEED_099');
 
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user099', '123', 'BenhNhan', N'Phan Tuấn Nam', 'phantuannam099@gmail.com', '0901251352', 'BN_SEED_099');
-
-    -- Patient 100: Phạm Cẩm Nga
-    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phạm Cẩm Nga', N'Nữ', 63, 'BN_SEED_100', '', '027616380913');
+    -- Patient 100: Dang Bich Huong
+    INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Dang Bich Huong', N'Nu', 49, 'BN_SEED_100', '', '067365810601');
     DECLARE @PId_100 INT = SCOPE_IDENTITY();
-
-    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user100', '123', 'BenhNhan', N'Phạm Cẩm Nga', 'phamcamnga100@yahoo.com', '0906519454', 'BN_SEED_100');
+    INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode) VALUES ('user100', '123', 'BenhNhan', N'Dang Bich Huong', 'patient100@yahoo.com', '0854248675', 'BN_SEED_100');
 
     COMMIT TRANSACTION;
     PRINT 'Seed data inserted successfully!';
 END TRY
 BEGIN CATCH
     ROLLBACK TRANSACTION;
-    PRINT 'Error occurred: ' + ERROR_MESSAGE();
+    DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+    PRINT 'Error occurred: ' + @ErrMsg;
 END CATCH;
 GO
+-- =========================================
+-- CREATE TABLE PatientTransferLogs
+-- =========================================
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PatientTransferLogs]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[PatientTransferLogs] (
+        [Id] INT IDENTITY(1,1) PRIMARY KEY,
+        [AppointmentId] INT NOT NULL,
+        [FromDoctorId] INT NOT NULL,
+        [ToDoctorId] INT NOT NULL,
+        [Situation] NVARCHAR(MAX) NULL,
+        [Background] NVARCHAR(MAX) NULL,
+        [Assessment] NVARCHAR(MAX) NULL,
+        [Recommendation] NVARCHAR(MAX) NULL,
+        [IsEmergencyConsultation] BIT NOT NULL DEFAULT 0,
+        [CreatedAt] DATETIME NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT [FK_PatientTransferLogs_Appointments] FOREIGN KEY ([AppointmentId]) REFERENCES [dbo].[Appointments] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_PatientTransferLogs_FromDoctor] FOREIGN KEY ([FromDoctorId]) REFERENCES [dbo].[Users] ([Id]),
+        CONSTRAINT [FK_PatientTransferLogs_ToDoctor] FOREIGN KEY ([ToDoctorId]) REFERENCES [dbo].[Users] ([Id])
+    );
+END
+GO
 
+-- =========================================
+-- CREATE TABLE PatientTransferLogs
+-- =========================================
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PatientTransferLogs]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[PatientTransferLogs] (
+        [Id] INT IDENTITY(1,1) PRIMARY KEY,
+        [AppointmentId] INT NOT NULL,
+        [FromDoctorId] INT NOT NULL,
+        [ToDoctorId] INT NOT NULL,
+        [Situation] NVARCHAR(MAX) NULL,
+        [Background] NVARCHAR(MAX) NULL,
+        [Assessment] NVARCHAR(MAX) NULL,
+        [Recommendation] NVARCHAR(MAX) NULL,
+        [IsEmergencyConsultation] BIT NOT NULL DEFAULT 0,
+        [CreatedAt] DATETIME NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT [FK_PatientTransferLogs_Appointments] FOREIGN KEY ([AppointmentId]) REFERENCES [dbo].[Appointments] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_PatientTransferLogs_FromDoctor] FOREIGN KEY ([FromDoctorId]) REFERENCES [dbo].[Users] ([Id]),
+        CONSTRAINT [FK_PatientTransferLogs_ToDoctor] FOREIGN KEY ([ToDoctorId]) REFERENCES [dbo].[Users] ([Id])
+    );
+END
+GO
+
+
+-- =============================================
+-- ADDED 1000 PATIENTS DISTRIBUTED EQUALLY
+-- =============================================
+
+USE QuanLyBenhVienDb;
+GO
+
+BEGIN TRANSACTION;
+BEGIN TRY
+
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ ThÃ nh KhÃ¡nh', N'Nam', 8, 'BN_ADD_1', N'Dá»‹ á»©ng háº£i sáº£n', '030615508573');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -15, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thu Anh', N'Ná»¯', 43, 'BN_ADD_2', N'KhÃ¡ng sinh Aspirin', '030255597171');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Kim Anh', N'Ná»¯', 60, 'BN_ADD_3', N'KhÃ¡ng sinh Aspirin', '030335457758');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh Linh', N'Ná»¯', 84, 'BN_ADD_4', N'KhÃ´ng', '030245240048');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -30, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— VÄƒn Minh', N'Nam', 19, 'BN_ADD_5', N'Dá»‹ á»©ng pháº¥n hoa', '030135279069');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -20, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Há»“ng Quá»³nh', N'Ná»¯', 33, 'BN_ADD_6', N'Dá»‹ á»©ng háº£i sáº£n', '030785187126');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -12, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Há»¯u Vinh', N'Nam', 58, 'BN_ADD_7', N'KhÃ´ng', '030875961370');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -12, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh PhÆ°Æ¡ng', N'Ná»¯', 84, 'BN_ADD_8', N'Dá»‹ á»©ng háº£i sáº£n', '030235586447');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thanh ChÃ¢u', N'Ná»¯', 75, 'BN_ADD_9', N'KhÃ´ng', '030695872506');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -30, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh TÃ¹ng', N'Nam', 63, 'BN_ADD_10', N'KhÃ´ng', '030485741639');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -20, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng KhÃ¡nh PhÆ°Æ¡ng', N'Ná»¯', 65, 'BN_ADD_11', N'KhÃ´ng', '030535521261');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -23, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thanh PhÆ°Æ¡ng', N'Ná»¯', 83, 'BN_ADD_12', N'KhÃ´ng', '030945934320');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª PhÆ°Æ¡ng TÃº', N'Ná»¯', 29, 'BN_ADD_13', N'KhÃ´ng', '030445258818');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -20, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª VÄƒn DÅ©ng', N'Nam', 66, 'BN_ADD_14', N'KhÃ´ng', '030915916403');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -20, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Há»¯u Phong', N'Nam', 77, 'BN_ADD_15', N'Dá»‹ á»©ng háº£i sáº£n', '030605296365');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -11, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Cáº©m VÃ¢n', N'Ná»¯', 83, 'BN_ADD_16', N'KhÃ¡ng sinh Penicillin', '030155176914');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -42, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh TÃ¹ng', N'Nam', 30, 'BN_ADD_17', N'Dá»‹ á»©ng háº£i sáº£n', '030855715116');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -4, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Äá»©c LÃ¢m', N'Nam', 19, 'BN_ADD_18', N'Dá»‹ á»©ng pháº¥n hoa', '030365655772');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -21, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Ngá»c Quá»³nh', N'Ná»¯', 63, 'BN_ADD_19', N'KhÃ´ng', '030495287374');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -47, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quá»³nh Trang', N'Ná»¯', 29, 'BN_ADD_20', N'KhÃ´ng', '030465136917');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -25, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Máº¡nh CÆ°á»ng', N'Nam', 30, 'BN_ADD_21', N'KhÃ´ng', '030525229653');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -19, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»³nh Hoa', N'Ná»¯', 47, 'BN_ADD_22', N'KhÃ´ng', '030325101110');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -36, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thá»‹ TÃº', N'Ná»¯', 12, 'BN_ADD_23', N'KhÃ´ng', '030865525517');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -30, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tuáº¥n QuÃ¢n', N'Nam', 77, 'BN_ADD_24', N'KhÃ´ng', '030305736800');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -29, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª KhÃ¡nh Dung', N'Ná»¯', 45, 'BN_ADD_25', N'KhÃ´ng', '030695883254');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -34, GETDATE()), 0, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Má»¹ VÃ¢n', N'Ná»¯', 43, 'BN_ADD_26', N'Dá»‹ á»©ng pháº¥n hoa', '030265295697');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Tiáº¿n Tuáº¥n', N'Nam', 27, 'BN_ADD_27', N'KhÃ¡ng sinh Aspirin', '030965677388');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -14, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m HÃ ', N'Ná»¯', 8, 'BN_ADD_28', N'KhÃ¡ng sinh Aspirin', '030925687717');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -23, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh DÅ©ng', N'Nam', 75, 'BN_ADD_29', N'Dá»‹ á»©ng pháº¥n hoa', '030245307865');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Ngá»c Trinh', N'Ná»¯', 54, 'BN_ADD_30', N'KhÃ´ng', '030635250349');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -25, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Há»¯u Minh', N'Nam', 81, 'BN_ADD_31', N'KhÃ´ng', '030165734354');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -16, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Minh Trinh', N'Ná»¯', 25, 'BN_ADD_32', N'KhÃ´ng', '030175338147');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -44, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— VÄƒn ÄÃ´ng', N'Nam', 17, 'BN_ADD_33', N'KhÃ´ng', '030695463197');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -36, GETDATE()), 4, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quá»³nh Nhung', N'Ná»¯', 30, 'BN_ADD_34', N'KhÃ´ng', '030715885701');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -8, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh ÄÃ´ng', N'Nam', 17, 'BN_ADD_35', N'KhÃ´ng', '030825437589');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -4, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thá»‹ Tháº£o', N'Ná»¯', 53, 'BN_ADD_36', N'KhÃ´ng', '030435988962');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -23, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Minh Lan', N'Ná»¯', 74, 'BN_ADD_37', N'Dá»‹ á»©ng háº£i sáº£n', '030205935792');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -35, GETDATE()), 2, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Ngá»c Quá»³nh', N'Ná»¯', 11, 'BN_ADD_38', N'Dá»‹ á»©ng pháº¥n hoa', '030125201283');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -44, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Háº£i Quang', N'Nam', 44, 'BN_ADD_39', N'KhÃ¡ng sinh Penicillin', '030115969314');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -22, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thu Yáº¿n', N'Ná»¯', 57, 'BN_ADD_40', N'Dá»‹ á»©ng pháº¥n hoa', '030795288060');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -24, GETDATE()), 1, 2);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng Lan', N'Ná»¯', 42, 'BN_ADD_41', N'Dá»‹ á»©ng pháº¥n hoa', '030415969061');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thá»‹ Chi', N'Ná»¯', 73, 'BN_ADD_42', N'Dá»‹ á»©ng pháº¥n hoa', '030785825783');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -2, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thanh QuÃ¢n', N'Nam', 27, 'BN_ADD_43', N'KhÃ´ng', '030845708598');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -28, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Tuáº¥n Nam', N'Nam', 19, 'BN_ADD_44', N'KhÃ´ng', '030345405944');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -2, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Anh Tuáº¥n', N'Nam', 33, 'BN_ADD_45', N'KhÃ¡ng sinh Penicillin', '030605407978');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tiáº¿n KhÃ¡nh', N'Nam', 22, 'BN_ADD_46', N'KhÃ¡ng sinh Penicillin', '030905988445');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh HÃ¹ng', N'Nam', 5, 'BN_ADD_47', N'KhÃ´ng', '030895588907');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -25, GETDATE()), 4, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh Quang', N'Nam', 22, 'BN_ADD_48', N'KhÃ´ng', '030705977493');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thá»‹ Oanh', N'Ná»¯', 69, 'BN_ADD_49', N'KhÃ´ng', '030295789207');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -12, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Má»¹ HÃ ', N'Ná»¯', 72, 'BN_ADD_50', N'KhÃ¡ng sinh Aspirin', '030905131226');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -22, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tuáº¥n SÆ¡n', N'Nam', 47, 'BN_ADD_51', N'KhÃ¡ng sinh Aspirin', '030275809743');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -37, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Äá»©c Phong', N'Nam', 72, 'BN_ADD_52', N'KhÃ¡ng sinh Penicillin', '030815776214');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -46, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng KhÃ¡nh Oanh', N'Ná»¯', 37, 'BN_ADD_53', N'KhÃ´ng', '030295227626');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -44, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Äá»©c LÃ¢m', N'Nam', 59, 'BN_ADD_54', N'Dá»‹ á»©ng háº£i sáº£n', '030165172431');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 0, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m Hoa', N'Ná»¯', 41, 'BN_ADD_55', N'Dá»‹ á»©ng háº£i sáº£n', '030385376032');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -2, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Tuáº¥n', N'Nam', 43, 'BN_ADD_56', N'KhÃ´ng', '030625180938');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -27, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thá»‹ ChÃ¢u', N'Ná»¯', 50, 'BN_ADD_57', N'KhÃ´ng', '030535173811');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 0, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Háº£i Äáº¡t', N'Nam', 59, 'BN_ADD_58', N'Dá»‹ á»©ng háº£i sáº£n', '030675634868');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -6, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thá»‹ VÃ¢n', N'Ná»¯', 26, 'BN_ADD_59', N'KhÃ´ng', '030465406889');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -26, GETDATE()), 4, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thá»‹ ChÃ¢u', N'Ná»¯', 35, 'BN_ADD_60', N'KhÃ¡ng sinh Penicillin', '030165396590');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -38, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thanh Dung', N'Ná»¯', 59, 'BN_ADD_61', N'KhÃ¡ng sinh Penicillin', '030795348564');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -2, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Quá»³nh Oanh', N'Ná»¯', 31, 'BN_ADD_62', N'KhÃ´ng', '030445329762');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -5, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh Tháº£o', N'Ná»¯', 72, 'BN_ADD_63', N'KhÃ¡ng sinh Aspirin', '030745889281');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -12, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan KhÃ¡nh Nhung', N'Ná»¯', 79, 'BN_ADD_64', N'Dá»‹ á»©ng pháº¥n hoa', '030445515367');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -27, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Quá»³nh Linh', N'Ná»¯', 22, 'BN_ADD_65', N'KhÃ´ng', '030335671563');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -8, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Ngá»c VÃ¢n', N'Ná»¯', 43, 'BN_ADD_66', N'KhÃ´ng', '030255550037');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -13, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kim ChÃ¢u', N'Ná»¯', 64, 'BN_ADD_67', N'KhÃ´ng', '030965820611');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -8, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tiáº¿n TÃ¹ng', N'Nam', 48, 'BN_ADD_68', N'Dá»‹ á»©ng pháº¥n hoa', '030505911150');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -31, GETDATE()), 4, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh Quang', N'Nam', 22, 'BN_ADD_69', N'Dá»‹ á»©ng háº£i sáº£n', '030525137219');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -5, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng KhÃ¡nh TÃº', N'Ná»¯', 43, 'BN_ADD_70', N'KhÃ¡ng sinh Penicillin', '030175628554');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -41, GETDATE()), 4, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Anh HÃ¹ng', N'Nam', 57, 'BN_ADD_71', N'Dá»‹ á»©ng háº£i sáº£n', '030885338661');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -13, GETDATE()), 0, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m VÃ¢n', N'Ná»¯', 70, 'BN_ADD_72', N'Dá»‹ á»©ng pháº¥n hoa', '030225520915');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -37, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh DÅ©ng', N'Nam', 17, 'BN_ADD_73', N'KhÃ´ng', '030295145998');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -45, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Anh KhÃ¡nh', N'Nam', 72, 'BN_ADD_74', N'Dá»‹ á»©ng háº£i sáº£n', '030555284100');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -36, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Há»¯u Long', N'Nam', 29, 'BN_ADD_75', N'KhÃ´ng', '030105826324');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -41, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Quá»‘c Tuáº¥n', N'Nam', 17, 'BN_ADD_76', N'KhÃ´ng', '030555977728');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -37, GETDATE()), 2, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh Diá»‡p', N'Ná»¯', 76, 'BN_ADD_77', N'KhÃ´ng', '030455136477');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª KhÃ¡nh Lan', N'Ná»¯', 56, 'BN_ADD_78', N'KhÃ´ng', '030795301470');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -7, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n ThÃ nh PhÃºc', N'Nam', 46, 'BN_ADD_79', N'KhÃ¡ng sinh Aspirin', '030765853571');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -27, GETDATE()), 1, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh Diá»‡p', N'Ná»¯', 28, 'BN_ADD_80', N'Dá»‹ á»©ng háº£i sáº£n', '030945706699');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -34, GETDATE()), 4, 3);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tiáº¿n LÃ¢m', N'Nam', 71, 'BN_ADD_81', N'Dá»‹ á»©ng pháº¥n hoa', '030625418264');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -7, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ KhÃ¡nh Tháº£o', N'Ná»¯', 64, 'BN_ADD_82', N'Dá»‹ á»©ng pháº¥n hoa', '030215398932');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -28, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Trang', N'Ná»¯', 15, 'BN_ADD_83', N'KhÃ´ng', '030725423069');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -8, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng PhÆ°Æ¡ng TÃº', N'Ná»¯', 55, 'BN_ADD_84', N'KhÃ´ng', '030945761123');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -23, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh Tuáº¥n', N'Nam', 64, 'BN_ADD_85', N'KhÃ¡ng sinh Aspirin', '030225188988');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -30, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ PhÆ°Æ¡ng ChÃ¢u', N'Ná»¯', 43, 'BN_ADD_86', N'KhÃ´ng', '030335769127');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -17, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ PhÆ°Æ¡ng Yáº¿n', N'Ná»¯', 17, 'BN_ADD_87', N'KhÃ¡ng sinh Aspirin', '030385837399');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -4, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Äá»©c TÃ i', N'Nam', 55, 'BN_ADD_88', N'KhÃ´ng', '030675505041');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -12, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Há»“ng Yáº¿n', N'Ná»¯', 75, 'BN_ADD_89', N'KhÃ´ng', '030495867980');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -8, GETDATE()), 0, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª KhÃ¡nh PhÆ°Æ¡ng', N'Ná»¯', 13, 'BN_ADD_90', N'KhÃ´ng', '030115861039');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -20, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»‘c PhÃºc', N'Nam', 14, 'BN_ADD_91', N'KhÃ´ng', '030885512884');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -34, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n VÄƒn PhÃºc', N'Nam', 11, 'BN_ADD_92', N'Dá»‹ á»©ng háº£i sáº£n', '030455332399');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -31, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Háº£i Quang', N'Nam', 12, 'BN_ADD_93', N'KhÃ´ng', '030415983485');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -37, GETDATE()), 0, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c HÃ¹ng', N'Nam', 25, 'BN_ADD_94', N'Dá»‹ á»©ng háº£i sáº£n', '030725334362');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -14, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quá»‘c Phong', N'Nam', 77, 'BN_ADD_95', N'KhÃ´ng', '030325160177');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -8, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Kim HÆ°Æ¡ng', N'Ná»¯', 30, 'BN_ADD_96', N'KhÃ´ng', '030385671970');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -26, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Quang HÃ¹ng', N'Nam', 64, 'BN_ADD_97', N'KhÃ´ng', '030745574762');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -35, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Äá»©c HÃ¹ng', N'Nam', 21, 'BN_ADD_98', N'KhÃ´ng', '030465146421');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -27, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n PhÆ°Æ¡ng Mai', N'Ná»¯', 17, 'BN_ADD_99', N'KhÃ´ng', '030485632155');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -45, GETDATE()), 0, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thá»‹ Trinh', N'Ná»¯', 80, 'BN_ADD_100', N'Dá»‹ á»©ng pháº¥n hoa', '030875482579');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -2, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Háº£i Long', N'Nam', 6, 'BN_ADD_101', N'KhÃ´ng', '030655780114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 4, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»“ng Anh', N'Ná»¯', 67, 'BN_ADD_102', N'KhÃ´ng', '030545738788');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -25, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Minh Mai', N'Ná»¯', 71, 'BN_ADD_103', N'KhÃ´ng', '030825183327');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -36, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Há»¯u KhÃ¡nh', N'Nam', 41, 'BN_ADD_104', N'KhÃ´ng', '030425743049');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -28, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tuáº¥n SÆ¡n', N'Nam', 41, 'BN_ADD_105', N'KhÃ´ng', '030725821829');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -29, GETDATE()), 4, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Há»“ng HÃ ', N'Ná»¯', 67, 'BN_ADD_106', N'Dá»‹ á»©ng háº£i sáº£n', '030825349021');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -7, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Ngá»c Tháº£o', N'Ná»¯', 38, 'BN_ADD_107', N'KhÃ¡ng sinh Penicillin', '030675428115');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -17, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Tuáº¥n Minh', N'Nam', 81, 'BN_ADD_108', N'KhÃ¡ng sinh Penicillin', '030135687095');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -39, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tuáº¥n ÄÃ´ng', N'Nam', 82, 'BN_ADD_109', N'Dá»‹ á»©ng pháº¥n hoa', '030595830234');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -13, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thá»‹ Hoa', N'Ná»¯', 38, 'BN_ADD_110', N'KhÃ¡ng sinh Aspirin', '030345332257');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -2, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Háº£i Tuáº¥n', N'Nam', 58, 'BN_ADD_111', N'KhÃ´ng', '030195989957');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -14, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tuáº¥n PhÃºc', N'Nam', 5, 'BN_ADD_112', N'Dá»‹ á»©ng háº£i sáº£n', '030825949447');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -33, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Máº¡nh PhÃºc', N'Nam', 9, 'BN_ADD_113', N'KhÃ´ng', '030785448169');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -1, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thu Háº¡nh', N'Ná»¯', 9, 'BN_ADD_114', N'KhÃ¡ng sinh Aspirin', '030855546444');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -9, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh ChÃ¢u', N'Ná»¯', 79, 'BN_ADD_115', N'KhÃ¡ng sinh Penicillin', '030165364138');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -5, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh Tuáº¥n', N'Nam', 73, 'BN_ADD_116', N'Dá»‹ á»©ng pháº¥n hoa', '030955157123');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -42, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ PhÆ°Æ¡ng Trinh', N'Ná»¯', 61, 'BN_ADD_117', N'KhÃ¡ng sinh Aspirin', '030795126627');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -1, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Anh LÃ¢m', N'Nam', 53, 'BN_ADD_118', N'KhÃ´ng', '030885643024');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -33, GETDATE()), 1, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Anh PhÃºc', N'Nam', 29, 'BN_ADD_119', N'Dá»‹ á»©ng pháº¥n hoa', '030305696057');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -34, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quang PhÃºc', N'Nam', 29, 'BN_ADD_120', N'KhÃ¡ng sinh Penicillin', '030685785869');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -17, GETDATE()), 2, 4);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Minh HÃ ', N'Ná»¯', 56, 'BN_ADD_121', N'Dá»‹ á»©ng pháº¥n hoa', '030465613919');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -38, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quá»³nh HÆ°Æ¡ng', N'Ná»¯', 17, 'BN_ADD_122', N'KhÃ´ng', '030675490101');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -2, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Má»¹ Anh', N'Ná»¯', 26, 'BN_ADD_123', N'Dá»‹ á»©ng háº£i sáº£n', '030715355669');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -26, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quang Äáº¡t', N'Nam', 48, 'BN_ADD_124', N'KhÃ´ng', '030575818997');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -5, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang Tuáº¥n', N'Nam', 20, 'BN_ADD_125', N'KhÃ¡ng sinh Penicillin', '030805361368');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -27, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Linh', N'Ná»¯', 64, 'BN_ADD_126', N'KhÃ¡ng sinh Aspirin', '030755884325');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -4, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ VÄƒn TÃ¹ng', N'Nam', 72, 'BN_ADD_127', N'Dá»‹ á»©ng pháº¥n hoa', '030625461170');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -41, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ ThÃ nh CÆ°á»ng', N'Nam', 6, 'BN_ADD_128', N'KhÃ´ng', '030685259308');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Tuáº¥n Vinh', N'Nam', 5, 'BN_ADD_129', N'KhÃ´ng', '030515151052');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -41, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng PhÆ°Æ¡ng TÃº', N'Ná»¯', 53, 'BN_ADD_130', N'KhÃ´ng', '030195831053');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -27, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Tuáº¥n Minh', N'Nam', 22, 'BN_ADD_131', N'KhÃ´ng', '030205375575');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -2, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Quang Háº£i', N'Nam', 51, 'BN_ADD_132', N'KhÃ´ng', '030125605965');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thu Lan', N'Ná»¯', 41, 'BN_ADD_133', N'KhÃ¡ng sinh Penicillin', '030225960424');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -41, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Tuáº¥n ÄÃ´ng', N'Nam', 15, 'BN_ADD_134', N'KhÃ´ng', '030975688656');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -24, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ PhÆ°Æ¡ng HÆ°Æ¡ng', N'Ná»¯', 70, 'BN_ADD_135', N'KhÃ¡ng sinh Aspirin', '030765568575');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -39, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Má»¹ Dung', N'Ná»¯', 41, 'BN_ADD_136', N'Dá»‹ á»©ng pháº¥n hoa', '030765233943');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -10, GETDATE()), 4, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© PhÆ°Æ¡ng Trang', N'Ná»¯', 20, 'BN_ADD_137', N'KhÃ´ng', '030115674433');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -47, GETDATE()), 4, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Äá»©c Phong', N'Nam', 47, 'BN_ADD_138', N'KhÃ´ng', '030795293717');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -9, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ VÄƒn PhÃºc', N'Nam', 34, 'BN_ADD_139', N'KhÃ¡ng sinh Aspirin', '030305361174');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -38, GETDATE()), 4, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Ngá»c Dung', N'Ná»¯', 78, 'BN_ADD_140', N'Dá»‹ á»©ng háº£i sáº£n', '030465444477');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -31, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ VÄƒn CÆ°á»ng', N'Nam', 43, 'BN_ADD_141', N'Dá»‹ á»©ng pháº¥n hoa', '030345432639');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -35, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Quang Äáº¡t', N'Nam', 53, 'BN_ADD_142', N'Dá»‹ á»©ng pháº¥n hoa', '030595565396');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Kim ChÃ¢u', N'Ná»¯', 60, 'BN_ADD_143', N'KhÃ´ng', '030125372803');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -45, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thu Háº¡nh', N'Ná»¯', 28, 'BN_ADD_144', N'KhÃ´ng', '030315867678');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -43, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Máº¡nh TÃ i', N'Nam', 58, 'BN_ADD_145', N'KhÃ´ng', '030315635100');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -6, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng ThÃ nh Vinh', N'Nam', 68, 'BN_ADD_146', N'KhÃ´ng', '030195806233');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -39, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tuáº¥n SÆ¡n', N'Nam', 27, 'BN_ADD_147', N'KhÃ´ng', '030785615124');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -24, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh TÃ i', N'Nam', 70, 'BN_ADD_148', N'KhÃ´ng', '030845538730');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -25, GETDATE()), 4, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Háº£i SÆ¡n', N'Nam', 39, 'BN_ADD_149', N'KhÃ¡ng sinh Penicillin', '030305764254');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -40, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thu Nhung', N'Ná»¯', 41, 'BN_ADD_150', N'KhÃ´ng', '030325954081');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -28, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Cáº©m PhÆ°Æ¡ng', N'Ná»¯', 52, 'BN_ADD_151', N'KhÃ´ng', '030925906573');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -5, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tuáº¥n CÆ°á»ng', N'Nam', 48, 'BN_ADD_152', N'KhÃ´ng', '030425162703');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -8, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Máº¡nh Háº£i', N'Nam', 21, 'BN_ADD_153', N'Dá»‹ á»©ng háº£i sáº£n', '030765961828');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -37, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thu Lan', N'Ná»¯', 47, 'BN_ADD_154', N'Dá»‹ á»©ng pháº¥n hoa', '030165981389');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -15, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh HÃ¹ng', N'Nam', 54, 'BN_ADD_155', N'KhÃ´ng', '030515145180');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -34, GETDATE()), 4, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Ngá»c Hoa', N'Ná»¯', 42, 'BN_ADD_156', N'KhÃ¡ng sinh Aspirin', '030255545418');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -1, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Äá»©c PhÃºc', N'Nam', 40, 'BN_ADD_157', N'Dá»‹ á»©ng pháº¥n hoa', '030975433571');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 2, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng VÄƒn TÃ¹ng', N'Nam', 70, 'BN_ADD_158', N'KhÃ´ng', '030885990162');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -24, GETDATE()), 0, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Máº¡nh TÃ i', N'Nam', 83, 'BN_ADD_159', N'Dá»‹ á»©ng pháº¥n hoa', '030335776343');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -42, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Thá»‹ Mai', N'Ná»¯', 83, 'BN_ADD_160', N'KhÃ´ng', '030175486389');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -15, GETDATE()), 1, 5);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Ngá»c HÆ°Æ¡ng', N'Ná»¯', 75, 'BN_ADD_161', N'KhÃ´ng', '030655813421');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -16, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng Dung', N'Ná»¯', 45, 'BN_ADD_162', N'KhÃ´ng', '030155322362');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -33, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng Oanh', N'Ná»¯', 33, 'BN_ADD_163', N'KhÃ¡ng sinh Penicillin', '030335808782');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -21, GETDATE()), 4, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Háº£i LÃ¢m', N'Nam', 49, 'BN_ADD_164', N'KhÃ´ng', '030665887282');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -35, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Há»¯u ÄÃ´ng', N'Nam', 42, 'BN_ADD_165', N'Dá»‹ á»©ng pháº¥n hoa', '030245836758');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -6, GETDATE()), 4, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thá»‹ HÆ°Æ¡ng', N'Ná»¯', 75, 'BN_ADD_166', N'KhÃ´ng', '030345669912');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -33, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Äá»©c Quang', N'Nam', 6, 'BN_ADD_167', N'KhÃ¡ng sinh Aspirin', '030185703035');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -28, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— KhÃ¡nh Linh', N'Ná»¯', 72, 'BN_ADD_168', N'KhÃ¡ng sinh Penicillin', '030185969761');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -29, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»¯u ÄÃ´ng', N'Nam', 22, 'BN_ADD_169', N'KhÃ´ng', '030435975767');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -17, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Háº£i KhÃ¡nh', N'Nam', 29, 'BN_ADD_170', N'KhÃ¡ng sinh Aspirin', '030735906593');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -16, GETDATE()), 4, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ PhÆ°Æ¡ng Quá»³nh', N'Ná»¯', 32, 'BN_ADD_171', N'KhÃ´ng', '030685964824');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -30, GETDATE()), 0, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m PhÆ°Æ¡ng Trinh', N'Ná»¯', 65, 'BN_ADD_172', N'Dá»‹ á»©ng pháº¥n hoa', '030315724399');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -28, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Tiáº¿n SÆ¡n', N'Nam', 39, 'BN_ADD_173', N'KhÃ¡ng sinh Aspirin', '030255118269');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -28, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thanh ChÃ¢u', N'Ná»¯', 17, 'BN_ADD_174', N'KhÃ¡ng sinh Penicillin', '030885921530');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -3, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tiáº¿n CÆ°á»ng', N'Nam', 71, 'BN_ADD_175', N'KhÃ´ng', '030195995679');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -29, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c CÆ°á»ng', N'Nam', 29, 'BN_ADD_176', N'KhÃ´ng', '030765269781');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -29, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng KhÃ¡nh Chi', N'Ná»¯', 65, 'BN_ADD_177', N'KhÃ´ng', '030935257354');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -33, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh HÃ¹ng', N'Nam', 27, 'BN_ADD_178', N'KhÃ´ng', '030435287213');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -10, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»‘c Quang', N'Nam', 38, 'BN_ADD_179', N'KhÃ¡ng sinh Penicillin', '030725334111');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -40, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»¯u Äáº¡t', N'Nam', 38, 'BN_ADD_180', N'KhÃ´ng', '030925480996');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -13, GETDATE()), 4, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh Äáº¡t', N'Nam', 69, 'BN_ADD_181', N'KhÃ´ng', '030235377308');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -19, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Kim Chi', N'Ná»¯', 63, 'BN_ADD_182', N'KhÃ¡ng sinh Penicillin', '030265522164');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -32, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Quang Huy', N'Nam', 67, 'BN_ADD_183', N'Dá»‹ á»©ng háº£i sáº£n', '030755522097');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -44, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m ThÃ nh Háº£i', N'Nam', 40, 'BN_ADD_184', N'KhÃ´ng', '030425959221');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -33, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quang Vinh', N'Nam', 10, 'BN_ADD_185', N'Dá»‹ á»©ng háº£i sáº£n', '030885642208');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -7, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh VÃ¢n', N'Ná»¯', 69, 'BN_ADD_186', N'KhÃ´ng', '030945885047');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Máº¡nh TÃ¹ng', N'Nam', 60, 'BN_ADD_187', N'KhÃ´ng', '030415608243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -34, GETDATE()), 4, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Má»¹ Yáº¿n', N'Ná»¯', 42, 'BN_ADD_188', N'KhÃ¡ng sinh Penicillin', '030565201827');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -18, GETDATE()), 0, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan PhÆ°Æ¡ng Mai', N'Ná»¯', 44, 'BN_ADD_189', N'KhÃ¡ng sinh Aspirin', '030495352744');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -13, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Ngá»c Tháº£o', N'Ná»¯', 67, 'BN_ADD_190', N'KhÃ´ng', '030255168509');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -11, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Quá»³nh', N'Ná»¯', 12, 'BN_ADD_191', N'KhÃ´ng', '030115817923');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -47, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»‘c KhÃ¡nh', N'Nam', 56, 'BN_ADD_192', N'KhÃ´ng', '030655659027');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -11, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m Diá»‡p', N'Ná»¯', 19, 'BN_ADD_193', N'KhÃ´ng', '030865508169');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -25, GETDATE()), 0, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Kim Háº¡nh', N'Ná»¯', 31, 'BN_ADD_194', N'Dá»‹ á»©ng pháº¥n hoa', '030565166975');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -18, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thu Trang', N'Ná»¯', 7, 'BN_ADD_195', N'Dá»‹ á»©ng háº£i sáº£n', '030175639131');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -25, GETDATE()), 0, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Tiáº¿n TÃ¹ng', N'Nam', 7, 'BN_ADD_196', N'KhÃ´ng', '030905323954');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -18, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Anh Nam', N'Nam', 58, 'BN_ADD_197', N'KhÃ´ng', '030555497898');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -5, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Tuáº¥n HÃ¹ng', N'Nam', 9, 'BN_ADD_198', N'Dá»‹ á»©ng háº£i sáº£n', '030985924275');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -45, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Kim TÃº', N'Ná»¯', 74, 'BN_ADD_199', N'Dá»‹ á»©ng háº£i sáº£n', '030185992254');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -6, GETDATE()), 2, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng KhÃ¡nh PhÆ°Æ¡ng', N'Ná»¯', 50, 'BN_ADD_200', N'Dá»‹ á»©ng pháº¥n hoa', '030375887876');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -18, GETDATE()), 1, 6);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Há»“ng Anh', N'Ná»¯', 52, 'BN_ADD_201', N'Dá»‹ á»©ng pháº¥n hoa', '030745951933');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -19, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh Dung', N'Ná»¯', 50, 'BN_ADD_202', N'KhÃ¡ng sinh Penicillin', '030615655912');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -29, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Minh KhÃ¡nh', N'Nam', 74, 'BN_ADD_203', N'KhÃ¡ng sinh Penicillin', '030855826382');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -6, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Há»“ng Quá»³nh', N'Ná»¯', 78, 'BN_ADD_204', N'KhÃ´ng', '030155656393');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -2, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»¯u Huy', N'Nam', 75, 'BN_ADD_205', N'Dá»‹ á»©ng pháº¥n hoa', '030905331686');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -6, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh ThÃ nh KhÃ¡nh', N'Nam', 48, 'BN_ADD_206', N'KhÃ´ng', '030245175613');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -28, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thu HÃ ', N'Ná»¯', 70, 'BN_ADD_207', N'Dá»‹ á»©ng pháº¥n hoa', '030235192916');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -14, GETDATE()), 0, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh QuÃ¢n', N'Nam', 67, 'BN_ADD_208', N'Dá»‹ á»©ng háº£i sáº£n', '030305367378');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -8, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tiáº¿n Long', N'Nam', 38, 'BN_ADD_209', N'KhÃ´ng', '030365460014');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -23, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh Oanh', N'Ná»¯', 47, 'BN_ADD_210', N'KhÃ´ng', '030795588542');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -38, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan PhÆ°Æ¡ng Anh', N'Ná»¯', 68, 'BN_ADD_211', N'KhÃ´ng', '030445369843');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -19, GETDATE()), 4, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»‘c Phong', N'Nam', 42, 'BN_ADD_212', N'KhÃ´ng', '030145440935');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -33, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Tuáº¥n Tuáº¥n', N'Nam', 74, 'BN_ADD_213', N'KhÃ´ng', '030625426402');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -47, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª ThÃ nh Vinh', N'Nam', 25, 'BN_ADD_214', N'KhÃ¡ng sinh Penicillin', '030115680545');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -21, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Minh Tuáº¥n', N'Nam', 20, 'BN_ADD_215', N'KhÃ´ng', '030945308884');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -32, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Kim PhÆ°Æ¡ng', N'Ná»¯', 21, 'BN_ADD_216', N'KhÃ´ng', '030455460565');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -25, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n ThÃ nh LÃ¢m', N'Nam', 38, 'BN_ADD_217', N'Dá»‹ á»©ng háº£i sáº£n', '030945921785');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -31, GETDATE()), 4, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Háº£i Nam', N'Nam', 61, 'BN_ADD_218', N'KhÃ´ng', '030435536533');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -38, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Äá»©c QuÃ¢n', N'Nam', 63, 'BN_ADD_219', N'KhÃ´ng', '030525417269');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -17, GETDATE()), 0, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n HÃ¹ng', N'Nam', 68, 'BN_ADD_220', N'Dá»‹ á»©ng pháº¥n hoa', '030215313747');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -41, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh ChÃ¢u', N'Ná»¯', 56, 'BN_ADD_221', N'KhÃ¡ng sinh Aspirin', '030235324865');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -43, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thá»‹ HÃ ', N'Ná»¯', 16, 'BN_ADD_222', N'KhÃ´ng', '030295227716');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -12, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n PhÆ°Æ¡ng Trinh', N'Ná»¯', 26, 'BN_ADD_223', N'KhÃ´ng', '030105559295');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -25, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh LÃ¢m', N'Nam', 27, 'BN_ADD_224', N'KhÃ¡ng sinh Aspirin', '030285895022');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -8, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh Huy', N'Nam', 68, 'BN_ADD_225', N'KhÃ´ng', '030305922562');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -43, GETDATE()), 4, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Tuáº¥n HÃ¹ng', N'Nam', 67, 'BN_ADD_226', N'Dá»‹ á»©ng háº£i sáº£n', '030655935663');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»‘c An', N'Nam', 53, 'BN_ADD_227', N'KhÃ´ng', '030855204782');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -31, GETDATE()), 4, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Ngá»c Mai', N'Ná»¯', 24, 'BN_ADD_228', N'Dá»‹ á»©ng háº£i sáº£n', '030625711646');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -41, GETDATE()), 0, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Háº£i Long', N'Nam', 24, 'BN_ADD_229', N'KhÃ´ng', '030455732856');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -38, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng HÃ ', N'Ná»¯', 51, 'BN_ADD_230', N'KhÃ´ng', '030665153631');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -30, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh PhÃºc', N'Nam', 55, 'BN_ADD_231', N'KhÃ´ng', '030925352907');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Tuáº¥n LÃ¢m', N'Nam', 10, 'BN_ADD_232', N'KhÃ´ng', '030265736594');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -44, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh Nam', N'Nam', 12, 'BN_ADD_233', N'KhÃ´ng', '030825782488');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -35, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»³nh Tháº£o', N'Ná»¯', 70, 'BN_ADD_234', N'KhÃ´ng', '030265197770');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -24, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Quá»‘c Tuáº¥n', N'Nam', 49, 'BN_ADD_235', N'KhÃ´ng', '030725267619');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i KhÃ¡nh Yáº¿n', N'Ná»¯', 63, 'BN_ADD_236', N'Dá»‹ á»©ng háº£i sáº£n', '030275395826');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -44, GETDATE()), 1, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Dung', N'Ná»¯', 13, 'BN_ADD_237', N'KhÃ´ng', '030955602327');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -8, GETDATE()), 0, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Kim Nga', N'Ná»¯', 7, 'BN_ADD_238', N'KhÃ¡ng sinh Aspirin', '030415650379');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -14, GETDATE()), 0, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Linh', N'Ná»¯', 75, 'BN_ADD_239', N'KhÃ¡ng sinh Aspirin', '030665594806');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 2, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh TÃº', N'Ná»¯', 20, 'BN_ADD_240', N'KhÃ¡ng sinh Penicillin', '030555183126');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -19, GETDATE()), 4, 8);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n Phong', N'Nam', 19, 'BN_ADD_241', N'KhÃ¡ng sinh Aspirin', '030175299461');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -8, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Cáº©m HÆ°Æ¡ng', N'Ná»¯', 63, 'BN_ADD_242', N'KhÃ´ng', '030195432209');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -18, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Ngá»c Trinh', N'Ná»¯', 16, 'BN_ADD_243', N'KhÃ´ng', '030905849186');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -42, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Háº£i QuÃ¢n', N'Nam', 58, 'BN_ADD_244', N'Dá»‹ á»©ng háº£i sáº£n', '030125327448');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -28, GETDATE()), 4, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Háº£i Long', N'Nam', 64, 'BN_ADD_245', N'KhÃ´ng', '030905924797');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -8, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Anh Phong', N'Nam', 59, 'BN_ADD_246', N'KhÃ´ng', '030575873553');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -14, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Cáº©m Lan', N'Ná»¯', 61, 'BN_ADD_247', N'KhÃ´ng', '030675768761');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -29, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Minh VÃ¢n', N'Ná»¯', 53, 'BN_ADD_248', N'KhÃ´ng', '030785293595');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 0, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Minh Trang', N'Ná»¯', 63, 'BN_ADD_249', N'KhÃ´ng', '030195472229');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -15, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Kim Mai', N'Ná»¯', 19, 'BN_ADD_250', N'KhÃ¡ng sinh Aspirin', '030155943678');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thu Trinh', N'Ná»¯', 84, 'BN_ADD_251', N'KhÃ´ng', '030835638924');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -34, GETDATE()), 4, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh BÃ¬nh', N'Nam', 6, 'BN_ADD_252', N'KhÃ¡ng sinh Penicillin', '030365545474');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -20, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Máº¡nh Phong', N'Nam', 76, 'BN_ADD_253', N'KhÃ´ng', '030605374655');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -11, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Má»¹ TÃº', N'Ná»¯', 46, 'BN_ADD_254', N'KhÃ¡ng sinh Penicillin', '030495207012');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -4, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Äá»©c CÆ°á»ng', N'Nam', 24, 'BN_ADD_255', N'KhÃ´ng', '030945273770');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -30, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh DÅ©ng', N'Nam', 24, 'BN_ADD_256', N'KhÃ¡ng sinh Aspirin', '030865243667');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -9, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Tuáº¥n Phong', N'Nam', 28, 'BN_ADD_257', N'KhÃ´ng', '030105557337');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -33, GETDATE()), 4, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Háº£i HÃ¹ng', N'Nam', 47, 'BN_ADD_258', N'Dá»‹ á»©ng pháº¥n hoa', '030245501857');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -28, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Há»“ng Trang', N'Ná»¯', 61, 'BN_ADD_259', N'Dá»‹ á»©ng pháº¥n hoa', '030855977006');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -12, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Há»¯u Quang', N'Nam', 42, 'BN_ADD_260', N'KhÃ¡ng sinh Penicillin', '030425131877');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -16, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thanh Oanh', N'Ná»¯', 14, 'BN_ADD_261', N'KhÃ¡ng sinh Penicillin', '030535945237');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 4, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Há»“ng Trang', N'Ná»¯', 5, 'BN_ADD_262', N'KhÃ´ng', '030515810919');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -21, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m Nga', N'Ná»¯', 61, 'BN_ADD_263', N'KhÃ¡ng sinh Penicillin', '030655795301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -27, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Thanh BÃ¬nh', N'Nam', 32, 'BN_ADD_264', N'KhÃ´ng', '030825252316');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -11, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Kim Háº¡nh', N'Ná»¯', 13, 'BN_ADD_265', N'KhÃ´ng', '030185564772');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -21, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Mai', N'Ná»¯', 35, 'BN_ADD_266', N'KhÃ´ng', '030135592715');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -10, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ ThÃ nh HÃ¹ng', N'Nam', 25, 'BN_ADD_267', N'KhÃ´ng', '030305823815');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -35, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh KhÃ¡nh Yáº¿n', N'Ná»¯', 20, 'BN_ADD_268', N'Dá»‹ á»©ng háº£i sáº£n', '030835492060');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -35, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Má»¹ Nhung', N'Ná»¯', 48, 'BN_ADD_269', N'KhÃ´ng', '030725381186');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -12, GETDATE()), 0, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i VÄƒn SÆ¡n', N'Nam', 32, 'BN_ADD_270', N'KhÃ´ng', '030235711508');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -10, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh TÃº', N'Ná»¯', 37, 'BN_ADD_271', N'KhÃ´ng', '030875253699');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -30, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Má»¹ HÆ°Æ¡ng', N'Ná»¯', 73, 'BN_ADD_272', N'KhÃ´ng', '030685210461');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -3, GETDATE()), 0, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Tiáº¿n Vinh', N'Nam', 75, 'BN_ADD_273', N'KhÃ´ng', '030685810662');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -35, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Ngá»c Trang', N'Ná»¯', 33, 'BN_ADD_274', N'KhÃ¡ng sinh Penicillin', '030715902945');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -22, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Háº£i ÄÃ´ng', N'Nam', 67, 'BN_ADD_275', N'KhÃ¡ng sinh Penicillin', '030305294713');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -13, GETDATE()), 0, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Cáº©m Mai', N'Ná»¯', 41, 'BN_ADD_276', N'Dá»‹ á»©ng pháº¥n hoa', '030745471111');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh Háº¡nh', N'Ná»¯', 80, 'BN_ADD_277', N'Dá»‹ á»©ng pháº¥n hoa', '030315716241');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -43, GETDATE()), 4, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thu Trinh', N'Ná»¯', 13, 'BN_ADD_278', N'KhÃ´ng', '030355267340');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -1, GETDATE()), 2, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»³nh Nhung', N'Ná»¯', 28, 'BN_ADD_279', N'KhÃ¡ng sinh Penicillin', '030415522064');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -8, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Cáº©m Linh', N'Ná»¯', 66, 'BN_ADD_280', N'Dá»‹ á»©ng háº£i sáº£n', '030595625431');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -29, GETDATE()), 1, 9);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Cáº©m HÃ ', N'Ná»¯', 46, 'BN_ADD_281', N'KhÃ´ng', '030205649151');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -15, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ VÄƒn Quang', N'Nam', 76, 'BN_ADD_282', N'Dá»‹ á»©ng pháº¥n hoa', '030205270778');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -27, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Cáº©m HÃ ', N'Ná»¯', 42, 'BN_ADD_283', N'Dá»‹ á»©ng háº£i sáº£n', '030525571641');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -24, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© KhÃ¡nh Hoa', N'Ná»¯', 28, 'BN_ADD_284', N'KhÃ´ng', '030815836159');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -35, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh HÃ¹ng', N'Nam', 55, 'BN_ADD_285', N'KhÃ´ng', '030525265157');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -24, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»‘c QuÃ¢n', N'Nam', 72, 'BN_ADD_286', N'Dá»‹ á»©ng háº£i sáº£n', '030515564785');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -4, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Cáº©m Yáº¿n', N'Ná»¯', 10, 'BN_ADD_287', N'KhÃ´ng', '030855772832');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -18, GETDATE()), 0, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Kim HÃ ', N'Ná»¯', 12, 'BN_ADD_288', N'KhÃ´ng', '030635219012');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -33, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thanh KhÃ¡nh', N'Nam', 27, 'BN_ADD_289', N'Dá»‹ á»©ng pháº¥n hoa', '030565556418');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -19, GETDATE()), 0, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»“ng Mai', N'Ná»¯', 57, 'BN_ADD_290', N'KhÃ´ng', '030175960164');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -29, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kim Quá»³nh', N'Ná»¯', 84, 'BN_ADD_291', N'KhÃ´ng', '030715894627');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -21, GETDATE()), 0, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang PhÃºc', N'Nam', 33, 'BN_ADD_292', N'KhÃ´ng', '030745153729');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -43, GETDATE()), 4, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Máº¡nh CÆ°á»ng', N'Nam', 80, 'BN_ADD_293', N'KhÃ´ng', '030935177948');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -32, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh Háº¡nh', N'Ná»¯', 5, 'BN_ADD_294', N'Dá»‹ á»©ng pháº¥n hoa', '030655145464');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -45, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tuáº¥n Long', N'Nam', 13, 'BN_ADD_295', N'KhÃ´ng', '030215805973');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -43, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m TÃº', N'Ná»¯', 71, 'BN_ADD_296', N'Dá»‹ á»©ng pháº¥n hoa', '030315327589');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -9, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»‘c Minh', N'Nam', 79, 'BN_ADD_297', N'Dá»‹ á»©ng háº£i sáº£n', '030135298001');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -3, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Ngá»c Mai', N'Ná»¯', 38, 'BN_ADD_298', N'Dá»‹ á»©ng háº£i sáº£n', '030245101078');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -15, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Äá»©c Quang', N'Nam', 45, 'BN_ADD_299', N'KhÃ´ng', '030685923979');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -33, GETDATE()), 4, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh PhÃºc', N'Nam', 26, 'BN_ADD_300', N'Dá»‹ á»©ng háº£i sáº£n', '030955748958');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -27, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ VÄƒn TÃ¹ng', N'Nam', 9, 'BN_ADD_301', N'KhÃ´ng', '030985900620');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -23, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Tuáº¥n Vinh', N'Nam', 72, 'BN_ADD_302', N'KhÃ¡ng sinh Aspirin', '030695114407');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -21, GETDATE()), 4, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quá»³nh Hoa', N'Ná»¯', 77, 'BN_ADD_303', N'Dá»‹ á»©ng pháº¥n hoa', '030655383358');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -31, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thá»‹ TÃº', N'Ná»¯', 74, 'BN_ADD_304', N'KhÃ´ng', '030345718322');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Tiáº¿n QuÃ¢n', N'Nam', 63, 'BN_ADD_305', N'KhÃ¡ng sinh Penicillin', '030625680792');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -38, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh SÆ¡n', N'Nam', 61, 'BN_ADD_306', N'KhÃ´ng', '030135892317');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -15, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»¯u Tuáº¥n', N'Nam', 36, 'BN_ADD_307', N'KhÃ´ng', '030275984516');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -14, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh Háº¡nh', N'Ná»¯', 50, 'BN_ADD_308', N'KhÃ´ng', '030355134877');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -6, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thu Oanh', N'Ná»¯', 82, 'BN_ADD_309', N'KhÃ´ng', '030525144131');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -18, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Anh BÃ¬nh', N'Nam', 58, 'BN_ADD_310', N'KhÃ´ng', '030955520703');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -5, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tiáº¿n HÃ¹ng', N'Nam', 66, 'BN_ADD_311', N'KhÃ¡ng sinh Penicillin', '030955375483');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -40, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Háº£i CÆ°á»ng', N'Nam', 42, 'BN_ADD_312', N'Dá»‹ á»©ng háº£i sáº£n', '030565709319');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -3, GETDATE()), 0, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Kim ChÃ¢u', N'Ná»¯', 40, 'BN_ADD_313', N'KhÃ´ng', '030595739594');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -5, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Ngá»c Trinh', N'Ná»¯', 12, 'BN_ADD_314', N'Dá»‹ á»©ng háº£i sáº£n', '030935770451');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -45, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Kim Lan', N'Ná»¯', 18, 'BN_ADD_315', N'KhÃ´ng', '030745899302');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -12, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Há»¯u ÄÃ´ng', N'Nam', 73, 'BN_ADD_316', N'KhÃ´ng', '030365919165');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -23, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang Minh', N'Nam', 43, 'BN_ADD_317', N'KhÃ´ng', '030885771078');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -10, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh ChÃ¢u', N'Ná»¯', 47, 'BN_ADD_318', N'Dá»‹ á»©ng háº£i sáº£n', '030875566818');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -7, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Ngá»c Dung', N'Ná»¯', 40, 'BN_ADD_319', N'KhÃ´ng', '030155317873');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -34, GETDATE()), 1, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— KhÃ¡nh Háº¡nh', N'Ná»¯', 9, 'BN_ADD_320', N'KhÃ´ng', '030485830693');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -10, GETDATE()), 2, 10);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh SÆ¡n', N'Nam', 66, 'BN_ADD_321', N'KhÃ´ng', '030175672831');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -6, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Há»“ng Diá»‡p', N'Ná»¯', 57, 'BN_ADD_322', N'KhÃ´ng', '030165593546');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -32, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Anh QuÃ¢n', N'Nam', 12, 'BN_ADD_323', N'KhÃ´ng', '030545803084');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -28, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— ThÃ nh Vinh', N'Nam', 11, 'BN_ADD_324', N'KhÃ´ng', '030195571459');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -36, GETDATE()), 0, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ PhÆ°Æ¡ng Anh', N'Ná»¯', 52, 'BN_ADD_325', N'KhÃ¡ng sinh Aspirin', '030495417106');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -47, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Má»¹ Trinh', N'Ná»¯', 32, 'BN_ADD_326', N'KhÃ¡ng sinh Penicillin', '030195812167');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -37, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Äá»©c TÃ i', N'Nam', 41, 'BN_ADD_327', N'KhÃ´ng', '030865502097');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -15, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thu Lan', N'Ná»¯', 38, 'BN_ADD_328', N'KhÃ´ng', '030335927958');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -28, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Má»¹ Chi', N'Ná»¯', 44, 'BN_ADD_329', N'Dá»‹ á»©ng pháº¥n hoa', '030265721167');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -22, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Má»¹ Háº¡nh', N'Ná»¯', 6, 'BN_ADD_330', N'KhÃ´ng', '030715833783');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -1, GETDATE()), 4, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Há»“ng Hoa', N'Ná»¯', 33, 'BN_ADD_331', N'Dá»‹ á»©ng háº£i sáº£n', '030925588246');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -26, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Nhung', N'Ná»¯', 80, 'BN_ADD_332', N'Dá»‹ á»©ng háº£i sáº£n', '030285584977');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -12, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh Quang', N'Nam', 11, 'BN_ADD_333', N'KhÃ´ng', '030145276522');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Má»¹ Nga', N'Ná»¯', 53, 'BN_ADD_334', N'KhÃ¡ng sinh Penicillin', '030335726320');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -36, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thanh Oanh', N'Ná»¯', 51, 'BN_ADD_335', N'KhÃ´ng', '030925506008');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -18, GETDATE()), 0, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Minh Long', N'Nam', 47, 'BN_ADD_336', N'KhÃ¡ng sinh Penicillin', '030315347438');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -23, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n PhÆ°Æ¡ng HÃ ', N'Ná»¯', 63, 'BN_ADD_337', N'Dá»‹ á»©ng pháº¥n hoa', '030405212247');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -29, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Äá»©c QuÃ¢n', N'Nam', 64, 'BN_ADD_338', N'KhÃ´ng', '030565120638');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -12, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Tiáº¿n Phong', N'Nam', 47, 'BN_ADD_339', N'Dá»‹ á»©ng pháº¥n hoa', '030345588665');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -42, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Äá»©c CÆ°á»ng', N'Nam', 33, 'BN_ADD_340', N'KhÃ¡ng sinh Penicillin', '030635523968');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -6, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh TÃ¹ng', N'Nam', 54, 'BN_ADD_341', N'Dá»‹ á»©ng pháº¥n hoa', '030725561377');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -7, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thá»‹ Dung', N'Ná»¯', 84, 'BN_ADD_342', N'KhÃ¡ng sinh Penicillin', '030625345007');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 0, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u Huy', N'Nam', 37, 'BN_ADD_343', N'KhÃ´ng', '030945912392');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -43, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Kim TÃº', N'Ná»¯', 32, 'BN_ADD_344', N'KhÃ´ng', '030455979010');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -19, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»³nh Lan', N'Ná»¯', 29, 'BN_ADD_345', N'KhÃ´ng', '030325671617');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -13, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Háº£i Háº£i', N'Nam', 8, 'BN_ADD_346', N'Dá»‹ á»©ng háº£i sáº£n', '030615896967');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -45, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Tuáº¥n Phong', N'Nam', 78, 'BN_ADD_347', N'KhÃ¡ng sinh Penicillin', '030895958321');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -3, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh ChÃ¢u', N'Ná»¯', 67, 'BN_ADD_348', N'KhÃ¡ng sinh Aspirin', '030185699078');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -10, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Máº¡nh Háº£i', N'Nam', 57, 'BN_ADD_349', N'Dá»‹ á»©ng háº£i sáº£n', '030645371747');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -18, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng VÄƒn HÃ¹ng', N'Nam', 66, 'BN_ADD_350', N'KhÃ´ng', '030685179187');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -12, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»¯u Vinh', N'Nam', 15, 'BN_ADD_351', N'KhÃ¡ng sinh Aspirin', '030965299284');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -39, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Háº£i Háº£i', N'Nam', 42, 'BN_ADD_352', N'KhÃ´ng', '030625106167');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -21, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»³nh VÃ¢n', N'Ná»¯', 20, 'BN_ADD_353', N'KhÃ´ng', '030815414894');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -35, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m PhÆ°Æ¡ng Háº¡nh', N'Ná»¯', 47, 'BN_ADD_354', N'KhÃ´ng', '030185992215');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -41, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n VÄƒn LÃ¢m', N'Nam', 31, 'BN_ADD_355', N'KhÃ´ng', '030375434155');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -35, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ VÄƒn Minh', N'Nam', 21, 'BN_ADD_356', N'KhÃ´ng', '030925507986');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -43, GETDATE()), 4, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»“ng Anh', N'Ná»¯', 11, 'BN_ADD_357', N'KhÃ´ng', '030245717984');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -1, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Má»¹ Oanh', N'Ná»¯', 65, 'BN_ADD_358', N'KhÃ¡ng sinh Penicillin', '030635470718');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -32, GETDATE()), 2, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thanh ÄÃ´ng', N'Nam', 12, 'BN_ADD_359', N'KhÃ´ng', '030435573138');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -18, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Tuáº¥n Phong', N'Nam', 32, 'BN_ADD_360', N'KhÃ´ng', '030675624405');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -39, GETDATE()), 1, 11);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tiáº¿n An', N'Nam', 84, 'BN_ADD_361', N'KhÃ¡ng sinh Penicillin', '030295776611');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -7, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Cáº©m PhÆ°Æ¡ng', N'Ná»¯', 48, 'BN_ADD_362', N'KhÃ´ng', '030465811221');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Tuáº¥n Phong', N'Nam', 6, 'BN_ADD_363', N'KhÃ¡ng sinh Penicillin', '030595712728');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tiáº¿n HÃ¹ng', N'Nam', 57, 'BN_ADD_364', N'Dá»‹ á»©ng pháº¥n hoa', '030955630717');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -33, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»³nh TÃº', N'Ná»¯', 49, 'BN_ADD_365', N'KhÃ´ng', '030735820636');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -42, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Má»¹ Trinh', N'Ná»¯', 74, 'BN_ADD_366', N'KhÃ´ng', '030925609603');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -36, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Ngá»c TÃº', N'Ná»¯', 48, 'BN_ADD_367', N'KhÃ´ng', '030415335483');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -40, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»‘c Phong', N'Nam', 11, 'BN_ADD_368', N'KhÃ´ng', '030645716895');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -31, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Äá»©c Nam', N'Nam', 84, 'BN_ADD_369', N'Dá»‹ á»©ng háº£i sáº£n', '030725866389');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -37, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quang Minh', N'Nam', 63, 'BN_ADD_370', N'KhÃ¡ng sinh Aspirin', '030785846420');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -30, GETDATE()), 4, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thanh ÄÃ´ng', N'Nam', 7, 'BN_ADD_371', N'KhÃ´ng', '030815788284');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -22, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang Háº£i', N'Nam', 74, 'BN_ADD_372', N'KhÃ´ng', '030725276176');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -34, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thu Trang', N'Ná»¯', 21, 'BN_ADD_373', N'KhÃ´ng', '030955487871');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -38, GETDATE()), 0, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Quang TÃ¹ng', N'Nam', 18, 'BN_ADD_374', N'Dá»‹ á»©ng pháº¥n hoa', '030565290354');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -37, GETDATE()), 4, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tuáº¥n Phong', N'Nam', 60, 'BN_ADD_375', N'KhÃ´ng', '030415486683');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -6, GETDATE()), 0, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Cáº©m Anh', N'Ná»¯', 57, 'BN_ADD_376', N'KhÃ´ng', '030935181512');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -43, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng KhÃ¡nh Yáº¿n', N'Ná»¯', 9, 'BN_ADD_377', N'Dá»‹ á»©ng pháº¥n hoa', '030745609294');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -7, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng Yáº¿n', N'Ná»¯', 37, 'BN_ADD_378', N'KhÃ´ng', '030905861474');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -35, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Háº£i Háº£i', N'Nam', 74, 'BN_ADD_379', N'Dá»‹ á»©ng pháº¥n hoa', '030165526238');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Máº¡nh PhÃºc', N'Nam', 66, 'BN_ADD_380', N'KhÃ¡ng sinh Aspirin', '030975344138');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -14, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Tiáº¿n LÃ¢m', N'Nam', 41, 'BN_ADD_381', N'KhÃ´ng', '030175205577');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -28, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»“ng VÃ¢n', N'Ná»¯', 12, 'BN_ADD_382', N'KhÃ´ng', '030635828541');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -46, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u Äáº¡t', N'Nam', 8, 'BN_ADD_383', N'KhÃ´ng', '030495371820');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -2, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ ThÃ nh KhÃ¡nh', N'Nam', 53, 'BN_ADD_384', N'KhÃ´ng', '030445534276');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh SÆ¡n', N'Nam', 75, 'BN_ADD_385', N'Dá»‹ á»©ng háº£i sáº£n', '030765669695');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -10, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ PhÆ°Æ¡ng Háº¡nh', N'Ná»¯', 14, 'BN_ADD_386', N'Dá»‹ á»©ng háº£i sáº£n', '030695706653');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -37, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Má»¹ Trinh', N'Ná»¯', 40, 'BN_ADD_387', N'Dá»‹ á»©ng pháº¥n hoa', '030375825666');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -32, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»³nh Trinh', N'Ná»¯', 8, 'BN_ADD_388', N'KhÃ¡ng sinh Aspirin', '030405648812');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -21, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Kim Trang', N'Ná»¯', 51, 'BN_ADD_389', N'KhÃ¡ng sinh Aspirin', '030435990012');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -11, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Ngá»c Anh', N'Ná»¯', 22, 'BN_ADD_390', N'KhÃ´ng', '030555444853');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -4, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Cáº©m Oanh', N'Ná»¯', 68, 'BN_ADD_391', N'KhÃ´ng', '030805324663');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -30, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thu Trang', N'Ná»¯', 23, 'BN_ADD_392', N'Dá»‹ á»©ng háº£i sáº£n', '030675140378');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -17, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª VÄƒn ÄÃ´ng', N'Nam', 67, 'BN_ADD_393', N'Dá»‹ á»©ng pháº¥n hoa', '030545298137');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -6, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Má»¹ Lan', N'Ná»¯', 66, 'BN_ADD_394', N'KhÃ´ng', '030295758969');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -43, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh KhÃ¡nh', N'Nam', 12, 'BN_ADD_395', N'KhÃ´ng', '030725416700');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -14, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n ThÃ nh Long', N'Nam', 47, 'BN_ADD_396', N'KhÃ¡ng sinh Aspirin', '030145739109');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -9, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Há»¯u SÆ¡n', N'Nam', 69, 'BN_ADD_397', N'KhÃ´ng', '030375685444');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -47, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thu TÃº', N'Ná»¯', 42, 'BN_ADD_398', N'KhÃ´ng', '030755738800');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -34, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u Phong', N'Nam', 12, 'BN_ADD_399', N'KhÃ´ng', '030865785198');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -22, GETDATE()), 1, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Má»¹ Trang', N'Ná»¯', 62, 'BN_ADD_400', N'KhÃ´ng', '030335724044');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -38, GETDATE()), 2, 12);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan VÄƒn ÄÃ´ng', N'Nam', 32, 'BN_ADD_401', N'KhÃ¡ng sinh Aspirin', '030755478457');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -4, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh Trinh', N'Ná»¯', 19, 'BN_ADD_402', N'KhÃ´ng', '030345145020');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -26, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»“ng Hoa', N'Ná»¯', 65, 'BN_ADD_403', N'Dá»‹ á»©ng pháº¥n hoa', '030585441517');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -19, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Há»¯u LÃ¢m', N'Nam', 22, 'BN_ADD_404', N'KhÃ¡ng sinh Aspirin', '030475775132');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -46, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Máº¡nh Háº£i', N'Nam', 73, 'BN_ADD_405', N'KhÃ´ng', '030925497394');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -23, GETDATE()), 0, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Má»¹ HÆ°Æ¡ng', N'Ná»¯', 5, 'BN_ADD_406', N'KhÃ´ng', '030205860465');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -41, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»“ng Trang', N'Ná»¯', 53, 'BN_ADD_407', N'KhÃ´ng', '030275764243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -27, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Äá»©c Tuáº¥n', N'Nam', 48, 'BN_ADD_408', N'KhÃ¡ng sinh Penicillin', '030245475351');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -25, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Háº£i HÃ¹ng', N'Nam', 59, 'BN_ADD_409', N'KhÃ´ng', '030135184567');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -26, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh TÃº', N'Ná»¯', 56, 'BN_ADD_410', N'KhÃ¡ng sinh Penicillin', '030805476393');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -8, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quang Phong', N'Nam', 64, 'BN_ADD_411', N'KhÃ¡ng sinh Penicillin', '030235604858');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -29, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thá»‹ PhÆ°Æ¡ng', N'Ná»¯', 48, 'BN_ADD_412', N'Dá»‹ á»©ng pháº¥n hoa', '030435912413');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -28, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Minh ÄÃ´ng', N'Nam', 34, 'BN_ADD_413', N'KhÃ´ng', '030765589893');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -32, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Kim Tháº£o', N'Ná»¯', 38, 'BN_ADD_414', N'KhÃ¡ng sinh Aspirin', '030385934337');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -43, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ PhÆ°Æ¡ng Trang', N'Ná»¯', 63, 'BN_ADD_415', N'KhÃ´ng', '030355960892');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh An', N'Nam', 84, 'BN_ADD_416', N'KhÃ´ng', '030475175515');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -34, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i VÄƒn Háº£i', N'Nam', 6, 'BN_ADD_417', N'KhÃ´ng', '030775761785');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -43, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»³nh Trinh', N'Ná»¯', 61, 'BN_ADD_418', N'Dá»‹ á»©ng háº£i sáº£n', '030905183276');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -40, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Lan', N'Ná»¯', 25, 'BN_ADD_419', N'KhÃ´ng', '030395276992');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -22, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Ngá»c Yáº¿n', N'Ná»¯', 82, 'BN_ADD_420', N'Dá»‹ á»©ng pháº¥n hoa', '030715168405');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -5, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n PhÆ°Æ¡ng HÆ°Æ¡ng', N'Ná»¯', 37, 'BN_ADD_421', N'KhÃ´ng', '030135130554');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -42, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª PhÆ°Æ¡ng Lan', N'Ná»¯', 11, 'BN_ADD_422', N'KhÃ¡ng sinh Penicillin', '030735539568');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -34, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c TÃ¹ng', N'Nam', 9, 'BN_ADD_423', N'KhÃ¡ng sinh Aspirin', '030135957339');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -13, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh ChÃ¢u', N'Ná»¯', 62, 'BN_ADD_424', N'Dá»‹ á»©ng pháº¥n hoa', '030875964260');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -30, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Cáº©m VÃ¢n', N'Ná»¯', 74, 'BN_ADD_425', N'Dá»‹ á»©ng háº£i sáº£n', '030195213219');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -30, GETDATE()), 0, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Ngá»c HÃ ', N'Ná»¯', 77, 'BN_ADD_426', N'KhÃ´ng', '030905674651');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -19, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Má»¹ HÃ ', N'Ná»¯', 50, 'BN_ADD_427', N'KhÃ¡ng sinh Aspirin', '030405148768');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -39, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Minh Long', N'Nam', 36, 'BN_ADD_428', N'Dá»‹ á»©ng pháº¥n hoa', '030295760087');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -36, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»‘c LÃ¢m', N'Nam', 7, 'BN_ADD_429', N'KhÃ¡ng sinh Aspirin', '030825161060');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -38, GETDATE()), 2, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© PhÆ°Æ¡ng Nhung', N'Ná»¯', 78, 'BN_ADD_430', N'KhÃ´ng', '030765445121');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -21, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thá»‹ ChÃ¢u', N'Ná»¯', 7, 'BN_ADD_431', N'KhÃ´ng', '030165515460');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -11, GETDATE()), 4, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Cáº©m Anh', N'Ná»¯', 49, 'BN_ADD_432', N'Dá»‹ á»©ng háº£i sáº£n', '030785976305');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -28, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quang Minh', N'Nam', 39, 'BN_ADD_433', N'KhÃ¡ng sinh Aspirin', '030575719773');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -21, GETDATE()), 0, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»“ng Nhung', N'Ná»¯', 44, 'BN_ADD_434', N'Dá»‹ á»©ng pháº¥n hoa', '030605743181');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Äá»©c Quang', N'Nam', 8, 'BN_ADD_435', N'KhÃ¡ng sinh Aspirin', '030925294958');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -34, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh Lan', N'Ná»¯', 84, 'BN_ADD_436', N'KhÃ´ng', '030195267686');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -44, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»¯u Vinh', N'Nam', 36, 'BN_ADD_437', N'KhÃ´ng', '030645551815');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -29, GETDATE()), 4, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Cáº©m Háº¡nh', N'Ná»¯', 77, 'BN_ADD_438', N'Dá»‹ á»©ng háº£i sáº£n', '030535815198');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -21, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Cáº©m Dung', N'Ná»¯', 75, 'BN_ADD_439', N'KhÃ´ng', '030595732222');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -32, GETDATE()), 4, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tiáº¿n CÆ°á»ng', N'Nam', 50, 'BN_ADD_440', N'KhÃ¡ng sinh Penicillin', '030155833859');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -16, GETDATE()), 1, 13);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng PhÆ°Æ¡ng VÃ¢n', N'Ná»¯', 12, 'BN_ADD_441', N'KhÃ´ng', '030765481675');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -21, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh CÆ°á»ng', N'Nam', 48, 'BN_ADD_442', N'KhÃ´ng', '030575214502');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -23, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Cáº©m VÃ¢n', N'Ná»¯', 68, 'BN_ADD_443', N'Dá»‹ á»©ng pháº¥n hoa', '030885221842');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -16, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Äá»©c Phong', N'Nam', 34, 'BN_ADD_444', N'KhÃ¡ng sinh Penicillin', '030575628396');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -6, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh Dung', N'Ná»¯', 56, 'BN_ADD_445', N'Dá»‹ á»©ng háº£i sáº£n', '030535258860');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -1, GETDATE()), 4, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Anh BÃ¬nh', N'Nam', 48, 'BN_ADD_446', N'KhÃ´ng', '030795494503');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -30, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng PhÆ°Æ¡ng Hoa', N'Ná»¯', 26, 'BN_ADD_447', N'KhÃ´ng', '030195806825');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -38, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Anh Huy', N'Nam', 17, 'BN_ADD_448', N'KhÃ´ng', '030865616136');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -34, GETDATE()), 0, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Quang TÃ¹ng', N'Nam', 77, 'BN_ADD_449', N'KhÃ´ng', '030645489964');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -8, GETDATE()), 4, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Ngá»c ChÃ¢u', N'Ná»¯', 51, 'BN_ADD_450', N'KhÃ¡ng sinh Penicillin', '030275868017');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -37, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh An', N'Nam', 36, 'BN_ADD_451', N'KhÃ´ng', '030175258341');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -37, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng VÄƒn CÆ°á»ng', N'Nam', 6, 'BN_ADD_452', N'KhÃ´ng', '030165218954');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -46, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Quá»³nh Anh', N'Ná»¯', 60, 'BN_ADD_453', N'KhÃ´ng', '030375992631');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -19, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Trinh', N'Ná»¯', 13, 'BN_ADD_454', N'KhÃ´ng', '030535102655');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -19, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© PhÆ°Æ¡ng TÃº', N'Ná»¯', 33, 'BN_ADD_455', N'KhÃ¡ng sinh Aspirin', '030885263792');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -27, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m VÄƒn Äáº¡t', N'Nam', 57, 'BN_ADD_456', N'KhÃ¡ng sinh Penicillin', '030985908270');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -26, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Máº¡nh Nam', N'Nam', 10, 'BN_ADD_457', N'KhÃ´ng', '030515394021');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -1, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m PhÆ°Æ¡ng', N'Ná»¯', 84, 'BN_ADD_458', N'KhÃ¡ng sinh Penicillin', '030925683014');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -5, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Quá»³nh Hoa', N'Ná»¯', 41, 'BN_ADD_459', N'KhÃ¡ng sinh Penicillin', '030335111262');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -43, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thá»‹ Háº¡nh', N'Ná»¯', 42, 'BN_ADD_460', N'KhÃ¡ng sinh Penicillin', '030855580165');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -8, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thá»‹ Quá»³nh', N'Ná»¯', 29, 'BN_ADD_461', N'KhÃ¡ng sinh Aspirin', '030375179872');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -34, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Há»¯u Huy', N'Nam', 62, 'BN_ADD_462', N'KhÃ´ng', '030105344573');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -3, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Tiáº¿n TÃ i', N'Nam', 55, 'BN_ADD_463', N'Dá»‹ á»©ng pháº¥n hoa', '030535229139');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -12, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh ThÃ nh KhÃ¡nh', N'Nam', 6, 'BN_ADD_464', N'KhÃ´ng', '030695139653');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -40, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thá»‹ Tháº£o', N'Ná»¯', 30, 'BN_ADD_465', N'KhÃ´ng', '030145369957');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -46, GETDATE()), 0, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u QuÃ¢n', N'Nam', 14, 'BN_ADD_466', N'KhÃ´ng', '030925482107');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -45, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh ThÃ nh TÃ¹ng', N'Nam', 32, 'BN_ADD_467', N'Dá»‹ á»©ng háº£i sáº£n', '030295477175');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -31, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i VÄƒn KhÃ¡nh', N'Nam', 84, 'BN_ADD_468', N'KhÃ¡ng sinh Aspirin', '030645452049');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -15, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tuáº¥n Nam', N'Nam', 21, 'BN_ADD_469', N'Dá»‹ á»©ng pháº¥n hoa', '030815977246');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -35, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Quá»‘c Nam', N'Nam', 46, 'BN_ADD_470', N'KhÃ´ng', '030175706567');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -31, GETDATE()), 0, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i ThÃ nh HÃ¹ng', N'Nam', 48, 'BN_ADD_471', N'KhÃ´ng', '030935269114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»³nh Lan', N'Ná»¯', 47, 'BN_ADD_472', N'KhÃ´ng', '030245980145');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»¯u LÃ¢m', N'Nam', 25, 'BN_ADD_473', N'KhÃ´ng', '030925669495');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -47, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan PhÆ°Æ¡ng Linh', N'Ná»¯', 83, 'BN_ADD_474', N'Dá»‹ á»©ng pháº¥n hoa', '030895772743');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -9, GETDATE()), 0, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Ngá»c Nga', N'Ná»¯', 14, 'BN_ADD_475', N'KhÃ¡ng sinh Penicillin', '030555858113');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -35, GETDATE()), 4, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quang Phong', N'Nam', 53, 'BN_ADD_476', N'KhÃ´ng', '030285373657');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -29, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Má»¹ Diá»‡p', N'Ná»¯', 30, 'BN_ADD_477', N'Dá»‹ á»©ng pháº¥n hoa', '030935600355');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -30, GETDATE()), 2, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Minh HÃ ', N'Ná»¯', 32, 'BN_ADD_478', N'KhÃ´ng', '030425162715');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -25, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Anh Long', N'Nam', 67, 'BN_ADD_479', N'KhÃ´ng', '030625954524');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -39, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng PhÆ°Æ¡ng Hoa', N'Ná»¯', 40, 'BN_ADD_480', N'KhÃ¡ng sinh Aspirin', '030345405966');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -24, GETDATE()), 1, 14);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ KhÃ¡nh Chi', N'Ná»¯', 6, 'BN_ADD_481', N'Dá»‹ á»©ng háº£i sáº£n', '030565226814');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -4, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh SÆ¡n', N'Nam', 8, 'BN_ADD_482', N'KhÃ´ng', '030485539490');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -29, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thanh Yáº¿n', N'Ná»¯', 52, 'BN_ADD_483', N'KhÃ´ng', '030575585205');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -18, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh Trinh', N'Ná»¯', 21, 'BN_ADD_484', N'KhÃ´ng', '030325975433');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -9, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh Hoa', N'Ná»¯', 46, 'BN_ADD_485', N'KhÃ´ng', '030215950773');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -13, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© PhÆ°Æ¡ng Lan', N'Ná»¯', 40, 'BN_ADD_486', N'KhÃ¡ng sinh Aspirin', '030255399225');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -24, GETDATE()), 0, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh Minh', N'Nam', 43, 'BN_ADD_487', N'KhÃ´ng', '030465865093');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -24, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thanh KhÃ¡nh', N'Nam', 84, 'BN_ADD_488', N'Dá»‹ á»©ng pháº¥n hoa', '030795633907');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -36, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Tuáº¥n ÄÃ´ng', N'Nam', 20, 'BN_ADD_489', N'KhÃ¡ng sinh Penicillin', '030385836472');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -28, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Máº¡nh LÃ¢m', N'Nam', 28, 'BN_ADD_490', N'KhÃ´ng', '030115792857');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -19, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thu HÆ°Æ¡ng', N'Ná»¯', 74, 'BN_ADD_491', N'KhÃ¡ng sinh Aspirin', '030435370721');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Má»¹ Anh', N'Ná»¯', 31, 'BN_ADD_492', N'KhÃ´ng', '030655130903');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Anh Minh', N'Nam', 28, 'BN_ADD_493', N'KhÃ´ng', '030625626223');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -22, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng VÄƒn SÆ¡n', N'Nam', 17, 'BN_ADD_494', N'KhÃ´ng', '030225761583');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -38, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh Vinh', N'Nam', 41, 'BN_ADD_495', N'KhÃ¡ng sinh Aspirin', '030955496682');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -4, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thanh Quang', N'Nam', 65, 'BN_ADD_496', N'KhÃ´ng', '030235968568');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -13, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quá»³nh HÆ°Æ¡ng', N'Ná»¯', 49, 'BN_ADD_497', N'Dá»‹ á»©ng háº£i sáº£n', '030715803572');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -25, GETDATE()), 0, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Minh Diá»‡p', N'Ná»¯', 39, 'BN_ADD_498', N'KhÃ¡ng sinh Penicillin', '030305604229');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -44, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thanh Chi', N'Ná»¯', 12, 'BN_ADD_499', N'KhÃ¡ng sinh Penicillin', '030885170239');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -34, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»³nh Nhung', N'Ná»¯', 35, 'BN_ADD_500', N'KhÃ¡ng sinh Penicillin', '030605645243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -39, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng KhÃ¡nh Oanh', N'Ná»¯', 29, 'BN_ADD_501', N'Dá»‹ á»©ng háº£i sáº£n', '030895359358');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -28, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n Huy', N'Nam', 43, 'BN_ADD_502', N'KhÃ¡ng sinh Aspirin', '030725433716');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -25, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i PhÆ°Æ¡ng Yáº¿n', N'Ná»¯', 70, 'BN_ADD_503', N'KhÃ´ng', '030125330761');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -47, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thu Háº¡nh', N'Ná»¯', 14, 'BN_ADD_504', N'KhÃ´ng', '030225398860');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -24, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Ngá»c Trang', N'Ná»¯', 25, 'BN_ADD_505', N'Dá»‹ á»©ng háº£i sáº£n', '030605219243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -12, GETDATE()), 4, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© VÄƒn An', N'Nam', 49, 'BN_ADD_506', N'Dá»‹ á»©ng háº£i sáº£n', '030825407748');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -3, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Háº£i BÃ¬nh', N'Nam', 62, 'BN_ADD_507', N'KhÃ´ng', '030725279936');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thu Trinh', N'Ná»¯', 65, 'BN_ADD_508', N'Dá»‹ á»©ng háº£i sáº£n', '030855846653');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -3, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ ThÃ nh LÃ¢m', N'Nam', 43, 'BN_ADD_509', N'KhÃ´ng', '030125960516');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -25, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n PhÆ°Æ¡ng Tháº£o', N'Ná»¯', 25, 'BN_ADD_510', N'Dá»‹ á»©ng pháº¥n hoa', '030285620048');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -15, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh Phong', N'Nam', 82, 'BN_ADD_511', N'KhÃ´ng', '030665410930');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -32, GETDATE()), 4, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Há»“ng HÃ ', N'Ná»¯', 18, 'BN_ADD_512', N'KhÃ´ng', '030135659708');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -18, GETDATE()), 0, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Háº£i Tuáº¥n', N'Nam', 6, 'BN_ADD_513', N'KhÃ¡ng sinh Penicillin', '030465917047');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -42, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Minh TÃ¹ng', N'Nam', 42, 'BN_ADD_514', N'KhÃ´ng', '030415405301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -31, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Cáº©m Nga', N'Ná»¯', 64, 'BN_ADD_515', N'Dá»‹ á»©ng háº£i sáº£n', '030685483345');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -20, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tiáº¿n Nam', N'Nam', 61, 'BN_ADD_516', N'KhÃ´ng', '030935157535');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -24, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tiáº¿n HÃ¹ng', N'Nam', 75, 'BN_ADD_517', N'Dá»‹ á»©ng háº£i sáº£n', '030335863832');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -5, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Quang KhÃ¡nh', N'Nam', 68, 'BN_ADD_518', N'KhÃ¡ng sinh Penicillin', '030465956950');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -29, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh Äáº¡t', N'Nam', 57, 'BN_ADD_519', N'KhÃ´ng', '030625340965');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -15, GETDATE()), 2, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh TÃ i', N'Nam', 63, 'BN_ADD_520', N'KhÃ´ng', '030335248106');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -46, GETDATE()), 1, 15);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Háº£i BÃ¬nh', N'Nam', 35, 'BN_ADD_521', N'KhÃ´ng', '030465713824');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh PhÃºc', N'Nam', 42, 'BN_ADD_522', N'KhÃ´ng', '030835163374');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -24, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thu Quá»³nh', N'Ná»¯', 43, 'BN_ADD_523', N'KhÃ´ng', '030305152695');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -6, GETDATE()), 0, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u Phong', N'Nam', 16, 'BN_ADD_524', N'KhÃ´ng', '030295773755');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -24, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Anh Long', N'Nam', 65, 'BN_ADD_525', N'Dá»‹ á»©ng pháº¥n hoa', '030325979114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -17, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Äá»©c An', N'Nam', 38, 'BN_ADD_526', N'KhÃ¡ng sinh Penicillin', '030725214728');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -14, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Kim Diá»‡p', N'Ná»¯', 17, 'BN_ADD_527', N'Dá»‹ á»©ng háº£i sáº£n', '030665493970');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -41, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng VÄƒn TÃ¹ng', N'Nam', 74, 'BN_ADD_528', N'KhÃ¡ng sinh Aspirin', '030105460053');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -28, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Minh HÃ¹ng', N'Nam', 64, 'BN_ADD_529', N'KhÃ´ng', '030855622161');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -46, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thanh Anh', N'Ná»¯', 53, 'BN_ADD_530', N'KhÃ´ng', '030245823400');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -15, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Äá»©c BÃ¬nh', N'Nam', 52, 'BN_ADD_531', N'KhÃ´ng', '030825754788');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -22, GETDATE()), 0, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thá»‹ VÃ¢n', N'Ná»¯', 13, 'BN_ADD_532', N'KhÃ´ng', '030655260978');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -16, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Minh CÆ°á»ng', N'Nam', 41, 'BN_ADD_533', N'Dá»‹ á»©ng pháº¥n hoa', '030545166441');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -35, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ ThÃ nh KhÃ¡nh', N'Nam', 66, 'BN_ADD_534', N'KhÃ¡ng sinh Aspirin', '030665836097');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -27, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Háº£i Vinh', N'Nam', 17, 'BN_ADD_535', N'KhÃ¡ng sinh Penicillin', '030325164662');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -34, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Cáº©m Linh', N'Ná»¯', 77, 'BN_ADD_536', N'KhÃ´ng', '030555107725');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -44, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Má»¹ Hoa', N'Ná»¯', 11, 'BN_ADD_537', N'Dá»‹ á»©ng háº£i sáº£n', '030555856146');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -14, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Minh Quá»³nh', N'Ná»¯', 47, 'BN_ADD_538', N'KhÃ´ng', '030605141339');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -23, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh HÆ°Æ¡ng', N'Ná»¯', 41, 'BN_ADD_539', N'Dá»‹ á»©ng háº£i sáº£n', '030805545397');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -26, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng ThÃ nh Phong', N'Nam', 60, 'BN_ADD_540', N'KhÃ´ng', '030125138422');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -18, GETDATE()), 0, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Ngá»c PhÆ°Æ¡ng', N'Ná»¯', 8, 'BN_ADD_541', N'KhÃ´ng', '030665847054');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -23, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Há»“ng Trinh', N'Ná»¯', 69, 'BN_ADD_542', N'Dá»‹ á»©ng háº£i sáº£n', '030145720432');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -47, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Thá»‹ VÃ¢n', N'Ná»¯', 40, 'BN_ADD_543', N'Dá»‹ á»©ng háº£i sáº£n', '030435599151');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng PhÆ°Æ¡ng Nga', N'Ná»¯', 77, 'BN_ADD_544', N'Dá»‹ á»©ng háº£i sáº£n', '030745875428');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh TÃ¹ng', N'Nam', 38, 'BN_ADD_545', N'Dá»‹ á»©ng pháº¥n hoa', '030895668575');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -1, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m KhÃ¡nh HÃ ', N'Ná»¯', 9, 'BN_ADD_546', N'KhÃ¡ng sinh Penicillin', '030125266398');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -26, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Má»¹ HÃ ', N'Ná»¯', 77, 'BN_ADD_547', N'KhÃ´ng', '030815312551');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 4, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Cáº©m PhÆ°Æ¡ng', N'Ná»¯', 7, 'BN_ADD_548', N'Dá»‹ á»©ng háº£i sáº£n', '030405812562');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -2, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Tiáº¿n TÃ i', N'Nam', 84, 'BN_ADD_549', N'KhÃ¡ng sinh Penicillin', '030975153893');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -11, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ PhÆ°Æ¡ng Dung', N'Ná»¯', 20, 'BN_ADD_550', N'KhÃ´ng', '030585184149');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -25, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Thanh Long', N'Nam', 7, 'BN_ADD_551', N'KhÃ´ng', '030505744291');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Tiáº¿n LÃ¢m', N'Nam', 7, 'BN_ADD_552', N'Dá»‹ á»©ng pháº¥n hoa', '030775695450');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -16, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Minh Huy', N'Nam', 19, 'BN_ADD_553', N'KhÃ¡ng sinh Penicillin', '030725164107');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -43, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ ThÃ nh Quang', N'Nam', 13, 'BN_ADD_554', N'KhÃ´ng', '030775904616');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -4, GETDATE()), 0, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m Nga', N'Ná»¯', 68, 'BN_ADD_555', N'KhÃ´ng', '030975738338');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -30, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Kim VÃ¢n', N'Ná»¯', 35, 'BN_ADD_556', N'Dá»‹ á»©ng pháº¥n hoa', '030775307301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -4, GETDATE()), 0, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng VÄƒn LÃ¢m', N'Nam', 82, 'BN_ADD_557', N'Dá»‹ á»©ng háº£i sáº£n', '030415969426');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -46, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Cáº©m VÃ¢n', N'Ná»¯', 81, 'BN_ADD_558', N'KhÃ´ng', '030565293504');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -9, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Kim Trang', N'Ná»¯', 58, 'BN_ADD_559', N'KhÃ´ng', '030745128847');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -22, GETDATE()), 2, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Anh Nam', N'Nam', 80, 'BN_ADD_560', N'KhÃ´ng', '030115903382');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -43, GETDATE()), 1, 16);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Tuáº¥n DÅ©ng', N'Nam', 39, 'BN_ADD_561', N'KhÃ´ng', '030605151243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -18, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Anh Quang', N'Nam', 20, 'BN_ADD_562', N'Dá»‹ á»©ng pháº¥n hoa', '030685306461');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -35, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ VÄƒn DÅ©ng', N'Nam', 51, 'BN_ADD_563', N'KhÃ´ng', '030255692507');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -36, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng VÄƒn Quang', N'Nam', 17, 'BN_ADD_564', N'KhÃ¡ng sinh Aspirin', '030515825420');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -36, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Äá»©c KhÃ¡nh', N'Nam', 41, 'BN_ADD_565', N'Dá»‹ á»©ng háº£i sáº£n', '030255203623');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -46, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»³nh Nga', N'Ná»¯', 39, 'BN_ADD_566', N'KhÃ´ng', '030905115065');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -13, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ KhÃ¡nh TÃº', N'Ná»¯', 19, 'BN_ADD_567', N'KhÃ´ng', '030235874055');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh HÃ¹ng', N'Nam', 43, 'BN_ADD_568', N'KhÃ´ng', '030925847497');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -46, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh TÃº', N'Ná»¯', 53, 'BN_ADD_569', N'KhÃ´ng', '030345452148');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -23, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Háº£i DÅ©ng', N'Nam', 63, 'BN_ADD_570', N'Dá»‹ á»©ng pháº¥n hoa', '030355566778');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -27, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Cáº©m Yáº¿n', N'Ná»¯', 70, 'BN_ADD_571', N'KhÃ´ng', '030655275952');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -5, GETDATE()), 0, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Äá»©c Háº£i', N'Nam', 23, 'BN_ADD_572', N'KhÃ´ng', '030955842668');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Há»“ng Trang', N'Ná»¯', 81, 'BN_ADD_573', N'KhÃ´ng', '030155605143');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -22, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Máº¡nh KhÃ¡nh', N'Nam', 27, 'BN_ADD_574', N'KhÃ¡ng sinh Aspirin', '030955213301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -3, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thá»‹ Hoa', N'Ná»¯', 32, 'BN_ADD_575', N'Dá»‹ á»©ng háº£i sáº£n', '030285284011');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m ThÃ nh TÃ¹ng', N'Nam', 20, 'BN_ADD_576', N'Dá»‹ á»©ng pháº¥n hoa', '030965996298');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -14, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thu HÆ°Æ¡ng', N'Ná»¯', 18, 'BN_ADD_577', N'KhÃ´ng', '030375169558');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -11, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n VÄƒn TÃ i', N'Nam', 77, 'BN_ADD_578', N'KhÃ´ng', '030635311102');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -3, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Kim Trang', N'Ná»¯', 13, 'BN_ADD_579', N'KhÃ´ng', '030985610593');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -8, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh ÄÃ´ng', N'Nam', 39, 'BN_ADD_580', N'KhÃ´ng', '030695876927');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -29, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Minh Trang', N'Ná»¯', 15, 'BN_ADD_581', N'KhÃ¡ng sinh Aspirin', '030785266584');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -8, GETDATE()), 4, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan VÄƒn ÄÃ´ng', N'Nam', 72, 'BN_ADD_582', N'KhÃ´ng', '030375691724');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -13, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Anh An', N'Nam', 62, 'BN_ADD_583', N'KhÃ¡ng sinh Penicillin', '030925374625');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -25, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Tuáº¥n HÃ¹ng', N'Nam', 29, 'BN_ADD_584', N'KhÃ´ng', '030365108828');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -39, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Háº£i LÃ¢m', N'Nam', 26, 'BN_ADD_585', N'KhÃ´ng', '030555642036');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -23, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Äá»©c HÃ¹ng', N'Nam', 54, 'BN_ADD_586', N'KhÃ´ng', '030285499429');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -27, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng VÄƒn TÃ i', N'Nam', 31, 'BN_ADD_587', N'KhÃ´ng', '030375134395');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -28, GETDATE()), 0, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan PhÆ°Æ¡ng VÃ¢n', N'Ná»¯', 69, 'BN_ADD_588', N'Dá»‹ á»©ng pháº¥n hoa', '030915625318');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -11, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Quang SÆ¡n', N'Nam', 18, 'BN_ADD_589', N'KhÃ´ng', '030825686377');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -4, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Kim HÃ ', N'Ná»¯', 81, 'BN_ADD_590', N'KhÃ´ng', '030645175345');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Anh DÅ©ng', N'Nam', 67, 'BN_ADD_591', N'KhÃ´ng', '030885217550');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -44, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª ThÃ nh Äáº¡t', N'Nam', 34, 'BN_ADD_592', N'KhÃ´ng', '030635393142');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -14, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Minh Yáº¿n', N'Ná»¯', 13, 'BN_ADD_593', N'KhÃ¡ng sinh Aspirin', '030925481949');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -47, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thanh Oanh', N'Ná»¯', 72, 'BN_ADD_594', N'KhÃ´ng', '030295655369');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -8, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thanh Phong', N'Nam', 28, 'BN_ADD_595', N'Dá»‹ á»©ng pháº¥n hoa', '030945668677');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -37, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thá»‹ Dung', N'Ná»¯', 26, 'BN_ADD_596', N'KhÃ´ng', '030515476977');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -46, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Máº¡nh PhÃºc', N'Nam', 10, 'BN_ADD_597', N'KhÃ´ng', '030585618488');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -5, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n PhÆ°Æ¡ng PhÆ°Æ¡ng', N'Ná»¯', 44, 'BN_ADD_598', N'KhÃ¡ng sinh Penicillin', '030625673528');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -27, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thanh LÃ¢m', N'Nam', 34, 'BN_ADD_599', N'KhÃ´ng', '030595636248');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -11, GETDATE()), 2, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Má»¹ Anh', N'Ná»¯', 41, 'BN_ADD_600', N'KhÃ¡ng sinh Penicillin', '030255233071');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -20, GETDATE()), 1, 17);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ PhÆ°Æ¡ng Tháº£o', N'Ná»¯', 55, 'BN_ADD_601', N'Dá»‹ á»©ng pháº¥n hoa', '030255692170');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -5, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thu Diá»‡p', N'Ná»¯', 82, 'BN_ADD_602', N'KhÃ´ng', '030675230370');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -35, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan KhÃ¡nh Mai', N'Ná»¯', 10, 'BN_ADD_603', N'KhÃ´ng', '030845515958');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -43, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»“ng Quá»³nh', N'Ná»¯', 38, 'BN_ADD_604', N'KhÃ¡ng sinh Aspirin', '030805441326');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -21, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Há»¯u Minh', N'Nam', 36, 'BN_ADD_605', N'Dá»‹ á»©ng pháº¥n hoa', '030495128814');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -45, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thá»‹ Quá»³nh', N'Ná»¯', 73, 'BN_ADD_606', N'Dá»‹ á»©ng pháº¥n hoa', '030625817118');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -14, GETDATE()), 0, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng PhÆ°Æ¡ng PhÆ°Æ¡ng', N'Ná»¯', 42, 'BN_ADD_607', N'KhÃ´ng', '030195657896');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -36, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Ngá»c Mai', N'Ná»¯', 29, 'BN_ADD_608', N'KhÃ´ng', '030385916703');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh DÅ©ng', N'Nam', 46, 'BN_ADD_609', N'Dá»‹ á»©ng háº£i sáº£n', '030375391269');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -41, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh TÃ¹ng', N'Nam', 37, 'BN_ADD_610', N'KhÃ´ng', '030205894148');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -14, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thá»‹ Hoa', N'Ná»¯', 22, 'BN_ADD_611', N'KhÃ¡ng sinh Aspirin', '030615543352');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -22, GETDATE()), 4, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tiáº¿n TÃ¹ng', N'Nam', 35, 'BN_ADD_612', N'KhÃ´ng', '030855501199');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -17, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quá»‘c HÃ¹ng', N'Nam', 41, 'BN_ADD_613', N'KhÃ´ng', '030485142346');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -34, GETDATE()), 0, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n ThÃ nh Háº£i', N'Nam', 6, 'BN_ADD_614', N'Dá»‹ á»©ng háº£i sáº£n', '030745440935');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -39, GETDATE()), 4, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan PhÆ°Æ¡ng Quá»³nh', N'Ná»¯', 38, 'BN_ADD_615', N'KhÃ´ng', '030755143097');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -47, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»³nh Linh', N'Ná»¯', 73, 'BN_ADD_616', N'KhÃ´ng', '030255383120');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -21, GETDATE()), 4, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quang CÆ°á»ng', N'Nam', 70, 'BN_ADD_617', N'KhÃ´ng', '030335873969');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -45, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Kim Oanh', N'Ná»¯', 46, 'BN_ADD_618', N'KhÃ¡ng sinh Penicillin', '030725792250');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quá»‘c An', N'Nam', 9, 'BN_ADD_619', N'KhÃ´ng', '030755905044');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -3, GETDATE()), 0, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»‘c Minh', N'Nam', 7, 'BN_ADD_620', N'Dá»‹ á»©ng pháº¥n hoa', '030895397300');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -26, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Ngá»c Nga', N'Ná»¯', 82, 'BN_ADD_621', N'KhÃ´ng', '030705323451');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -5, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh TÃ¹ng', N'Nam', 72, 'BN_ADD_622', N'KhÃ¡ng sinh Penicillin', '030395553236');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -46, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Ngá»c ChÃ¢u', N'Ná»¯', 55, 'BN_ADD_623', N'KhÃ´ng', '030485461593');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -31, GETDATE()), 4, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quá»‘c TÃ¹ng', N'Nam', 73, 'BN_ADD_624', N'KhÃ´ng', '030475755184');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -4, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thanh Dung', N'Ná»¯', 56, 'BN_ADD_625', N'KhÃ¡ng sinh Aspirin', '030255128957');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -11, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quang HÃ¹ng', N'Nam', 64, 'BN_ADD_626', N'KhÃ´ng', '030105354712');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -15, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n KhÃ¡nh Lan', N'Ná»¯', 84, 'BN_ADD_627', N'KhÃ´ng', '030625945875');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -32, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»“ng Oanh', N'Ná»¯', 65, 'BN_ADD_628', N'KhÃ´ng', '030495858213');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -38, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh Dung', N'Ná»¯', 71, 'BN_ADD_629', N'KhÃ´ng', '030265429429');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -21, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thu Dung', N'Ná»¯', 35, 'BN_ADD_630', N'KhÃ´ng', '030785464939');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -23, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Há»“ng Trinh', N'Ná»¯', 70, 'BN_ADD_631', N'Dá»‹ á»©ng háº£i sáº£n', '030405325041');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Tuáº¥n SÆ¡n', N'Nam', 22, 'BN_ADD_632', N'KhÃ¡ng sinh Aspirin', '030875816865');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -47, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thanh Minh', N'Nam', 67, 'BN_ADD_633', N'KhÃ´ng', '030585431282');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Cáº©m Linh', N'Ná»¯', 40, 'BN_ADD_634', N'KhÃ´ng', '030645263768');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -34, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Anh Minh', N'Nam', 45, 'BN_ADD_635', N'KhÃ´ng', '030775408512');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thá»‹ HÃ ', N'Ná»¯', 62, 'BN_ADD_636', N'KhÃ´ng', '030285634797');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -7, GETDATE()), 0, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Äá»©c Háº£i', N'Nam', 34, 'BN_ADD_637', N'Dá»‹ á»©ng háº£i sáº£n', '030545431017');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -43, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh Vinh', N'Nam', 71, 'BN_ADD_638', N'KhÃ´ng', '030595705013');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -40, GETDATE()), 0, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Kim PhÆ°Æ¡ng', N'Ná»¯', 84, 'BN_ADD_639', N'KhÃ´ng', '030785136115');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 2, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª PhÆ°Æ¡ng Oanh', N'Ná»¯', 69, 'BN_ADD_640', N'Dá»‹ á»©ng háº£i sáº£n', '030455426986');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -20, GETDATE()), 1, 18);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tiáº¿n TÃ¹ng', N'Nam', 71, 'BN_ADD_641', N'KhÃ´ng', '030425753007');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -10, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng VÄƒn Long', N'Nam', 37, 'BN_ADD_642', N'Dá»‹ á»©ng pháº¥n hoa', '030205374058');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -36, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Há»¯u ÄÃ´ng', N'Nam', 11, 'BN_ADD_643', N'KhÃ´ng', '030835385395');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -17, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thanh Hoa', N'Ná»¯', 37, 'BN_ADD_644', N'Dá»‹ á»©ng háº£i sáº£n', '030175611937');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -13, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thanh Nam', N'Nam', 77, 'BN_ADD_645', N'KhÃ´ng', '030515323242');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -47, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Anh LÃ¢m', N'Nam', 70, 'BN_ADD_646', N'Dá»‹ á»©ng háº£i sáº£n', '030285370502');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -20, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Háº£i CÆ°á»ng', N'Nam', 34, 'BN_ADD_647', N'KhÃ¡ng sinh Aspirin', '030585640153');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -14, GETDATE()), 4, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Cáº©m Oanh', N'Ná»¯', 52, 'BN_ADD_648', N'KhÃ´ng', '030655557400');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -39, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Quang DÅ©ng', N'Nam', 29, 'BN_ADD_649', N'Dá»‹ á»©ng háº£i sáº£n', '030335299832');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -20, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quang QuÃ¢n', N'Nam', 23, 'BN_ADD_650', N'KhÃ´ng', '030175915114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -39, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© VÄƒn Phong', N'Nam', 47, 'BN_ADD_651', N'Dá»‹ á»©ng pháº¥n hoa', '030975920338');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -17, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Háº£i CÆ°á»ng', N'Nam', 14, 'BN_ADD_652', N'KhÃ¡ng sinh Penicillin', '030215825438');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -3, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Äá»©c Quang', N'Nam', 16, 'BN_ADD_653', N'Dá»‹ á»©ng háº£i sáº£n', '030725604315');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -32, GETDATE()), 4, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Äá»©c DÅ©ng', N'Nam', 26, 'BN_ADD_654', N'KhÃ¡ng sinh Penicillin', '030915887020');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -35, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh Oanh', N'Ná»¯', 83, 'BN_ADD_655', N'KhÃ¡ng sinh Penicillin', '030155969894');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -19, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Háº£i TÃ¹ng', N'Nam', 27, 'BN_ADD_656', N'KhÃ´ng', '030405288678');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -40, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n KhÃ¡nh Trang', N'Ná»¯', 47, 'BN_ADD_657', N'Dá»‹ á»©ng pháº¥n hoa', '030205238288');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -20, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thanh Trinh', N'Ná»¯', 31, 'BN_ADD_658', N'Dá»‹ á»©ng pháº¥n hoa', '030405947677');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -47, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Yáº¿n', N'Ná»¯', 59, 'BN_ADD_659', N'Dá»‹ á»©ng háº£i sáº£n', '030165173647');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -20, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ ThÃ nh HÃ¹ng', N'Nam', 44, 'BN_ADD_660', N'KhÃ¡ng sinh Penicillin', '030515474123');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -28, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Háº£i Long', N'Nam', 65, 'BN_ADD_661', N'Dá»‹ á»©ng pháº¥n hoa', '030485269042');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -36, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh Vinh', N'Nam', 56, 'BN_ADD_662', N'Dá»‹ á»©ng háº£i sáº£n', '030795226448');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -22, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng VÄƒn CÆ°á»ng', N'Nam', 16, 'BN_ADD_663', N'KhÃ´ng', '030175588773');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -42, GETDATE()), 4, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Há»¯u An', N'Nam', 12, 'BN_ADD_664', N'KhÃ´ng', '030525123883');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -3, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thu Nhung', N'Ná»¯', 28, 'BN_ADD_665', N'KhÃ¡ng sinh Aspirin', '030765294724');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -40, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»¯u Tuáº¥n', N'Nam', 77, 'BN_ADD_666', N'KhÃ¡ng sinh Penicillin', '030315904168');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -4, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»³nh ChÃ¢u', N'Ná»¯', 49, 'BN_ADD_667', N'KhÃ´ng', '030335183114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -39, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Thanh Mai', N'Ná»¯', 68, 'BN_ADD_668', N'KhÃ´ng', '030195230413');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -26, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thá»‹ Nhung', N'Ná»¯', 72, 'BN_ADD_669', N'Dá»‹ á»©ng háº£i sáº£n', '030695712122');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -26, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n ThÃ nh Long', N'Nam', 44, 'BN_ADD_670', N'KhÃ´ng', '030985873016');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -2, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thu Chi', N'Ná»¯', 11, 'BN_ADD_671', N'KhÃ´ng', '030835137833');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -41, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»³nh HÃ ', N'Ná»¯', 20, 'BN_ADD_672', N'Dá»‹ á»©ng háº£i sáº£n', '030665379212');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -40, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© VÄƒn Háº£i', N'Nam', 41, 'BN_ADD_673', N'Dá»‹ á»©ng pháº¥n hoa', '030335192670');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Thá»‹ HÃ ', N'Ná»¯', 53, 'BN_ADD_674', N'KhÃ´ng', '030415684925');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -23, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang SÆ¡n', N'Nam', 31, 'BN_ADD_675', N'KhÃ´ng', '030695138489');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -45, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng KhÃ¡nh Hoa', N'Ná»¯', 14, 'BN_ADD_676', N'KhÃ´ng', '030935108222');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -3, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh Quá»³nh', N'Ná»¯', 28, 'BN_ADD_677', N'KhÃ¡ng sinh Penicillin', '030655485379');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -15, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thá»‹ Dung', N'Ná»¯', 28, 'BN_ADD_678', N'KhÃ´ng', '030725449376');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -29, GETDATE()), 1, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thu Nga', N'Ná»¯', 43, 'BN_ADD_679', N'KhÃ¡ng sinh Penicillin', '030345245591');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -6, GETDATE()), 2, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª VÄƒn Quang', N'Nam', 32, 'BN_ADD_680', N'KhÃ¡ng sinh Aspirin', '030425361267');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -10, GETDATE()), 0, 19);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Minh Tháº£o', N'Ná»¯', 6, 'BN_ADD_681', N'KhÃ´ng', '030735550054');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -10, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»‘c CÆ°á»ng', N'Nam', 54, 'BN_ADD_682', N'KhÃ´ng', '030155583873');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -18, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Má»¹ Háº¡nh', N'Ná»¯', 72, 'BN_ADD_683', N'KhÃ´ng', '030915188299');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -39, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Cáº©m Lan', N'Ná»¯', 65, 'BN_ADD_684', N'Dá»‹ á»©ng pháº¥n hoa', '030605447485');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -10, GETDATE()), 0, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Quá»‘c DÅ©ng', N'Nam', 38, 'BN_ADD_685', N'KhÃ¡ng sinh Aspirin', '030745257466');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m VÄƒn QuÃ¢n', N'Nam', 74, 'BN_ADD_686', N'KhÃ´ng', '030425418343');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -20, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Cáº©m Dung', N'Ná»¯', 7, 'BN_ADD_687', N'KhÃ´ng', '030495772131');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -30, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Äá»©c DÅ©ng', N'Nam', 82, 'BN_ADD_688', N'KhÃ´ng', '030145833312');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -26, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Quá»‘c Phong', N'Nam', 82, 'BN_ADD_689', N'KhÃ¡ng sinh Penicillin', '030935392969');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -26, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Quang PhÃºc', N'Nam', 30, 'BN_ADD_690', N'KhÃ´ng', '030545774301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -1, GETDATE()), 4, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Má»¹ Trang', N'Ná»¯', 15, 'BN_ADD_691', N'KhÃ´ng', '030885771574');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -30, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»“ng Nga', N'Ná»¯', 51, 'BN_ADD_692', N'KhÃ´ng', '030325252092');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -28, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ PhÆ°Æ¡ng PhÆ°Æ¡ng', N'Ná»¯', 38, 'BN_ADD_693', N'Dá»‹ á»©ng háº£i sáº£n', '030345552262');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -28, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh QuÃ¢n', N'Nam', 45, 'BN_ADD_694', N'Dá»‹ á»©ng pháº¥n hoa', '030545536708');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -16, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Tiáº¿n BÃ¬nh', N'Nam', 24, 'BN_ADD_695', N'Dá»‹ á»©ng pháº¥n hoa', '030245682146');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -4, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ KhÃ¡nh Mai', N'Ná»¯', 72, 'BN_ADD_696', N'Dá»‹ á»©ng pháº¥n hoa', '030635678974');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -19, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Máº¡nh Huy', N'Nam', 74, 'BN_ADD_697', N'KhÃ´ng', '030675328842');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -38, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Háº£i Phong', N'Nam', 23, 'BN_ADD_698', N'KhÃ´ng', '030685798639');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -10, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Tuáº¥n CÆ°á»ng', N'Nam', 8, 'BN_ADD_699', N'KhÃ´ng', '030465183315');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -17, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh Chi', N'Ná»¯', 52, 'BN_ADD_700', N'KhÃ´ng', '030115877238');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -22, GETDATE()), 0, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Háº£i QuÃ¢n', N'Nam', 11, 'BN_ADD_701', N'KhÃ´ng', '030535854075');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -3, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh Äáº¡t', N'Nam', 82, 'BN_ADD_702', N'Dá»‹ á»©ng pháº¥n hoa', '030535841835');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -20, GETDATE()), 0, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© KhÃ¡nh Mai', N'Ná»¯', 83, 'BN_ADD_703', N'Dá»‹ á»©ng pháº¥n hoa', '030425685273');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -30, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Quá»³nh ChÃ¢u', N'Ná»¯', 10, 'BN_ADD_704', N'Dá»‹ á»©ng pháº¥n hoa', '030725397154');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -14, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh Phong', N'Nam', 22, 'BN_ADD_705', N'KhÃ¡ng sinh Aspirin', '030335535654');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -39, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Äá»©c Äáº¡t', N'Nam', 66, 'BN_ADD_706', N'KhÃ¡ng sinh Aspirin', '030125600232');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -36, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Minh PhÃºc', N'Nam', 76, 'BN_ADD_707', N'KhÃ´ng', '030485577166');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -30, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ VÄƒn ÄÃ´ng', N'Nam', 13, 'BN_ADD_708', N'Dá»‹ á»©ng pháº¥n hoa', '030285681662');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -22, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Tiáº¿n CÆ°á»ng', N'Nam', 51, 'BN_ADD_709', N'Dá»‹ á»©ng pháº¥n hoa', '030625924168');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -45, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c Minh', N'Nam', 81, 'BN_ADD_710', N'KhÃ¡ng sinh Aspirin', '030655206289');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -27, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n DÅ©ng', N'Nam', 63, 'BN_ADD_711', N'KhÃ´ng', '030485425210');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -22, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh Nam', N'Nam', 84, 'BN_ADD_712', N'KhÃ¡ng sinh Penicillin', '030435971807');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -29, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Ngá»c Mai', N'Ná»¯', 10, 'BN_ADD_713', N'Dá»‹ á»©ng pháº¥n hoa', '030215989077');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -47, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quang TÃ¹ng', N'Nam', 66, 'BN_ADD_714', N'KhÃ´ng', '030175595863');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -20, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quang ÄÃ´ng', N'Nam', 57, 'BN_ADD_715', N'KhÃ´ng', '030805115051');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -45, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Ngá»c Mai', N'Ná»¯', 75, 'BN_ADD_716', N'Dá»‹ á»©ng pháº¥n hoa', '030485222099');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -37, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m HÆ°Æ¡ng', N'Ná»¯', 30, 'BN_ADD_717', N'Dá»‹ á»©ng pháº¥n hoa', '030715403003');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -5, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Cáº©m Tháº£o', N'Ná»¯', 39, 'BN_ADD_718', N'KhÃ´ng', '030845522734');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 2, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng ThÃ nh Phong', N'Nam', 65, 'BN_ADD_719', N'KhÃ´ng', '030235823439');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -35, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh Anh', N'Ná»¯', 15, 'BN_ADD_720', N'KhÃ´ng', '030395370912');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -12, GETDATE()), 1, 20);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thanh Diá»‡p', N'Ná»¯', 33, 'BN_ADD_721', N'KhÃ´ng', '030705613061');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -19, GETDATE()), 0, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Háº£i DÅ©ng', N'Nam', 8, 'BN_ADD_722', N'Dá»‹ á»©ng háº£i sáº£n', '030335231317');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -34, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Minh Lan', N'Ná»¯', 35, 'BN_ADD_723', N'Dá»‹ á»©ng háº£i sáº£n', '030325234104');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 4, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n ÄÃ´ng', N'Nam', 10, 'BN_ADD_724', N'KhÃ¡ng sinh Penicillin', '030565173586');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -46, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh LÃ¢m', N'Nam', 81, 'BN_ADD_725', N'KhÃ´ng', '030895770998');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -8, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Kim PhÆ°Æ¡ng', N'Ná»¯', 41, 'BN_ADD_726', N'Dá»‹ á»©ng háº£i sáº£n', '030375344365');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -10, GETDATE()), 4, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quá»‘c LÃ¢m', N'Nam', 60, 'BN_ADD_727', N'Dá»‹ á»©ng pháº¥n hoa', '030685972138');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Cáº©m Anh', N'Ná»¯', 68, 'BN_ADD_728', N'KhÃ´ng', '030815254244');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thá»‹ Chi', N'Ná»¯', 50, 'BN_ADD_729', N'KhÃ¡ng sinh Aspirin', '030415693314');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -42, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thu Anh', N'Ná»¯', 39, 'BN_ADD_730', N'KhÃ´ng', '030715756493');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -7, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Anh DÅ©ng', N'Nam', 18, 'BN_ADD_731', N'KhÃ´ng', '030165599403');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -45, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thá»‹ Mai', N'Ná»¯', 48, 'BN_ADD_732', N'KhÃ¡ng sinh Aspirin', '030885963057');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -15, GETDATE()), 0, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Cáº©m VÃ¢n', N'Ná»¯', 81, 'BN_ADD_733', N'KhÃ´ng', '030225791837');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -23, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Tiáº¿n ÄÃ´ng', N'Nam', 76, 'BN_ADD_734', N'Dá»‹ á»©ng pháº¥n hoa', '030375834350');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -34, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Má»¹ TÃº', N'Ná»¯', 38, 'BN_ADD_735', N'KhÃ´ng', '030575767419');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -10, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Hoa', N'Ná»¯', 7, 'BN_ADD_736', N'KhÃ´ng', '030405930497');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -5, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Ngá»c Dung', N'Ná»¯', 73, 'BN_ADD_737', N'KhÃ´ng', '030355613352');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -14, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan VÄƒn DÅ©ng', N'Nam', 72, 'BN_ADD_738', N'KhÃ´ng', '030515637446');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -44, GETDATE()), 4, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh KhÃ¡nh', N'Nam', 61, 'BN_ADD_739', N'Dá»‹ á»©ng háº£i sáº£n', '030455779840');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -10, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quá»³nh Anh', N'Ná»¯', 18, 'BN_ADD_740', N'KhÃ¡ng sinh Aspirin', '030775587875');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -5, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thanh BÃ¬nh', N'Nam', 17, 'BN_ADD_741', N'KhÃ¡ng sinh Penicillin', '030595544515');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -16, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Ngá»c Lan', N'Ná»¯', 66, 'BN_ADD_742', N'Dá»‹ á»©ng pháº¥n hoa', '030385573196');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -14, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª VÄƒn Äáº¡t', N'Nam', 79, 'BN_ADD_743', N'KhÃ´ng', '030965183164');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -13, GETDATE()), 0, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thu HÃ ', N'Ná»¯', 47, 'BN_ADD_744', N'KhÃ´ng', '030785253185');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -8, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Minh Tháº£o', N'Ná»¯', 68, 'BN_ADD_745', N'Dá»‹ á»©ng háº£i sáº£n', '030315480338');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -36, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ KhÃ¡nh Yáº¿n', N'Ná»¯', 71, 'BN_ADD_746', N'KhÃ´ng', '030475725805');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -43, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— ThÃ nh HÃ¹ng', N'Nam', 24, 'BN_ADD_747', N'KhÃ´ng', '030195433107');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -9, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Quá»³nh Dung', N'Ná»¯', 25, 'BN_ADD_748', N'KhÃ¡ng sinh Penicillin', '030735104085');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -12, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Minh Háº£i', N'Nam', 20, 'BN_ADD_749', N'KhÃ´ng', '030705410678');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -33, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Ngá»c Nga', N'Ná»¯', 71, 'BN_ADD_750', N'KhÃ´ng', '030195427639');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -21, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Máº¡nh Phong', N'Nam', 81, 'BN_ADD_751', N'KhÃ´ng', '030465448564');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -35, GETDATE()), 0, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Máº¡nh ÄÃ´ng', N'Nam', 46, 'BN_ADD_752', N'KhÃ´ng', '030945481612');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -39, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ KhÃ¡nh Trang', N'Ná»¯', 13, 'BN_ADD_753', N'KhÃ´ng', '030835855801');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -2, GETDATE()), 2, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Quá»‘c DÅ©ng', N'Nam', 40, 'BN_ADD_754', N'KhÃ¡ng sinh Aspirin', '030595414228');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i VÄƒn TÃ¹ng', N'Nam', 9, 'BN_ADD_755', N'KhÃ´ng', '030285269470');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -12, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— PhÆ°Æ¡ng VÃ¢n', N'Ná»¯', 58, 'BN_ADD_756', N'KhÃ´ng', '030535968194');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -21, GETDATE()), 4, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Chi', N'Ná»¯', 14, 'BN_ADD_757', N'KhÃ´ng', '030475928754');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -10, GETDATE()), 4, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»“ng Nhung', N'Ná»¯', 71, 'BN_ADD_758', N'KhÃ¡ng sinh Penicillin', '030105708690');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -11, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thu TÃº', N'Ná»¯', 38, 'BN_ADD_759', N'KhÃ´ng', '030595518325');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -25, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Máº¡nh Long', N'Nam', 35, 'BN_ADD_760', N'KhÃ´ng', '030955356606');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -39, GETDATE()), 1, 21);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Äá»©c Nam', N'Nam', 47, 'BN_ADD_761', N'KhÃ´ng', '030135701097');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -13, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tiáº¿n Háº£i', N'Nam', 44, 'BN_ADD_762', N'KhÃ¡ng sinh Penicillin', '030675142047');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -34, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh ÄÃ´ng', N'Nam', 67, 'BN_ADD_763', N'KhÃ´ng', '030445482672');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -37, GETDATE()), 0, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh HÆ°Æ¡ng', N'Ná»¯', 66, 'BN_ADD_764', N'Dá»‹ á»©ng pháº¥n hoa', '030775334473');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -10, GETDATE()), 4, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n ThÃ nh Tuáº¥n', N'Nam', 73, 'BN_ADD_765', N'Dá»‹ á»©ng háº£i sáº£n', '030555742547');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -38, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Má»¹ Hoa', N'Ná»¯', 11, 'BN_ADD_766', N'KhÃ´ng', '030945353267');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -7, GETDATE()), 4, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Äá»©c SÆ¡n', N'Nam', 74, 'BN_ADD_767', N'KhÃ´ng', '030765596504');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -14, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Minh Quang', N'Nam', 31, 'BN_ADD_768', N'Dá»‹ á»©ng háº£i sáº£n', '030465446150');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -21, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng ThÃ nh Huy', N'Nam', 58, 'BN_ADD_769', N'KhÃ¡ng sinh Aspirin', '030925305114');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -17, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh VÃ¢n', N'Ná»¯', 43, 'BN_ADD_770', N'KhÃ¡ng sinh Aspirin', '030845406336');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -25, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Kim Nga', N'Ná»¯', 64, 'BN_ADD_771', N'Dá»‹ á»©ng pháº¥n hoa', '030615849986');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -17, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quang Minh', N'Nam', 45, 'BN_ADD_772', N'KhÃ¡ng sinh Aspirin', '030175219099');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -7, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Cáº©m VÃ¢n', N'Ná»¯', 58, 'BN_ADD_773', N'KhÃ¡ng sinh Penicillin', '030815673753');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -35, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quang Huy', N'Nam', 25, 'BN_ADD_774', N'KhÃ´ng', '030655873133');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -21, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Thu Dung', N'Ná»¯', 43, 'BN_ADD_775', N'Dá»‹ á»©ng háº£i sáº£n', '030165367532');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -18, GETDATE()), 4, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Äá»©c Vinh', N'Nam', 84, 'BN_ADD_776', N'KhÃ¡ng sinh Penicillin', '030625864962');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -41, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Äá»©c Minh', N'Nam', 78, 'BN_ADD_777', N'KhÃ´ng', '030935977529');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -9, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan KhÃ¡nh Diá»‡p', N'Ná»¯', 28, 'BN_ADD_778', N'KhÃ´ng', '030285551811');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -41, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»“ng Diá»‡p', N'Ná»¯', 78, 'BN_ADD_779', N'KhÃ¡ng sinh Aspirin', '030465637927');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -42, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thanh Háº¡nh', N'Ná»¯', 48, 'BN_ADD_780', N'Dá»‹ á»©ng háº£i sáº£n', '030165352052');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -36, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Äá»©c An', N'Nam', 6, 'BN_ADD_781', N'KhÃ´ng', '030915898801');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -24, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Má»¹ Hoa', N'Ná»¯', 83, 'BN_ADD_782', N'KhÃ¡ng sinh Aspirin', '030545561868');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -38, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Má»¹ Mai', N'Ná»¯', 29, 'BN_ADD_783', N'KhÃ´ng', '030805310537');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -39, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tuáº¥n Phong', N'Nam', 47, 'BN_ADD_784', N'KhÃ¡ng sinh Penicillin', '030655768150');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -11, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Háº£i KhÃ¡nh', N'Nam', 47, 'BN_ADD_785', N'Dá»‹ á»©ng pháº¥n hoa', '030245700234');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -41, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n VÄƒn CÆ°á»ng', N'Nam', 50, 'BN_ADD_786', N'KhÃ¡ng sinh Penicillin', '030915209988');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -2, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Máº¡nh SÆ¡n', N'Nam', 75, 'BN_ADD_787', N'KhÃ´ng', '030445446948');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Cáº©m Chi', N'Ná»¯', 16, 'BN_ADD_788', N'Dá»‹ á»©ng pháº¥n hoa', '030295592427');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -10, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tuáº¥n HÃ¹ng', N'Nam', 48, 'BN_ADD_789', N'KhÃ¡ng sinh Penicillin', '030455501510');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -42, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n LÃ¢m', N'Nam', 30, 'BN_ADD_790', N'Dá»‹ á»©ng pháº¥n hoa', '030115639144');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -38, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Minh Nhung', N'Ná»¯', 69, 'BN_ADD_791', N'KhÃ´ng', '030195310198');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -28, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Há»¯u Quang', N'Nam', 12, 'BN_ADD_792', N'KhÃ´ng', '030955796243');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -6, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ VÄƒn Tuáº¥n', N'Nam', 13, 'BN_ADD_793', N'KhÃ´ng', '030185618036');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -22, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thu HÆ°Æ¡ng', N'Ná»¯', 71, 'BN_ADD_794', N'KhÃ´ng', '030595689184');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -29, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Quá»‘c TÃ¹ng', N'Nam', 30, 'BN_ADD_795', N'Dá»‹ á»©ng háº£i sáº£n', '030555686637');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -8, GETDATE()), 2, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m Tháº£o', N'Ná»¯', 54, 'BN_ADD_796', N'Dá»‹ á»©ng háº£i sáº£n', '030905194598');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -2, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Máº¡nh An', N'Nam', 45, 'BN_ADD_797', N'KhÃ´ng', '030555898277');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -43, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Äá»©c Quang', N'Nam', 62, 'BN_ADD_798', N'KhÃ¡ng sinh Aspirin', '030765659049');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -30, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»‘c LÃ¢m', N'Nam', 12, 'BN_ADD_799', N'Dá»‹ á»©ng háº£i sáº£n', '030635166949');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -1, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Kim Oanh', N'Ná»¯', 36, 'BN_ADD_800', N'KhÃ¡ng sinh Aspirin', '030595263500');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -46, GETDATE()), 1, 22);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n PhÆ°Æ¡ng ChÃ¢u', N'Ná»¯', 8, 'BN_ADD_801', N'Dá»‹ á»©ng háº£i sáº£n', '030305380403');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -33, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thá»‹ TÃº', N'Ná»¯', 33, 'BN_ADD_802', N'KhÃ´ng', '030415391149');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -1, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Há»“ng Oanh', N'Ná»¯', 59, 'BN_ADD_803', N'KhÃ´ng', '030355973234');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -34, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Máº¡nh ÄÃ´ng', N'Nam', 19, 'BN_ADD_804', N'KhÃ´ng', '030935897667');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -25, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tiáº¿n Äáº¡t', N'Nam', 6, 'BN_ADD_805', N'KhÃ¡ng sinh Aspirin', '030345321640');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -37, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Thanh KhÃ¡nh', N'Nam', 11, 'BN_ADD_806', N'KhÃ¡ng sinh Penicillin', '030105248586');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -8, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Tuáº¥n Äáº¡t', N'Nam', 79, 'BN_ADD_807', N'Dá»‹ á»©ng pháº¥n hoa', '030715396530');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -19, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Ngá»c Tháº£o', N'Ná»¯', 63, 'BN_ADD_808', N'KhÃ´ng', '030235513399');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -47, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Ngá»c Yáº¿n', N'Ná»¯', 22, 'BN_ADD_809', N'KhÃ´ng', '030355211470');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -15, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thu Nhung', N'Ná»¯', 50, 'BN_ADD_810', N'KhÃ¡ng sinh Penicillin', '030175776252');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -38, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Kim Diá»‡p', N'Ná»¯', 31, 'BN_ADD_811', N'Dá»‹ á»©ng pháº¥n hoa', '030565168731');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -23, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Quá»‘c QuÃ¢n', N'Nam', 65, 'BN_ADD_812', N'KhÃ¡ng sinh Penicillin', '030495525145');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -10, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Há»“ng Mai', N'Ná»¯', 9, 'BN_ADD_813', N'KhÃ´ng', '030385877527');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -8, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thu Trinh', N'Ná»¯', 71, 'BN_ADD_814', N'KhÃ´ng', '030365720500');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -30, GETDATE()), 4, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Ngá»c PhÆ°Æ¡ng', N'Ná»¯', 22, 'BN_ADD_815', N'KhÃ¡ng sinh Penicillin', '030415275649');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -21, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Minh An', N'Nam', 15, 'BN_ADD_816', N'KhÃ¡ng sinh Aspirin', '030925654311');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -40, GETDATE()), 4, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Kim HÃ ', N'Ná»¯', 30, 'BN_ADD_817', N'Dá»‹ á»©ng háº£i sáº£n', '030915320351');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -29, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Quá»³nh Trang', N'Ná»¯', 53, 'BN_ADD_818', N'KhÃ´ng', '030425992354');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -9, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Ngá»c Tháº£o', N'Ná»¯', 57, 'BN_ADD_819', N'KhÃ´ng', '030855953687');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -28, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Máº¡nh DÅ©ng', N'Nam', 84, 'BN_ADD_820', N'KhÃ´ng', '030475736117');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -39, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tiáº¿n Huy', N'Nam', 33, 'BN_ADD_821', N'KhÃ´ng', '030735768872');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -33, GETDATE()), 0, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Kim ChÃ¢u', N'Ná»¯', 11, 'BN_ADD_822', N'Dá»‹ á»©ng háº£i sáº£n', '030845359406');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -47, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh ChÃ¢u', N'Ná»¯', 15, 'BN_ADD_823', N'KhÃ¡ng sinh Aspirin', '030615915005');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -41, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thanh TÃ i', N'Nam', 27, 'BN_ADD_824', N'KhÃ¡ng sinh Penicillin', '030645861719');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -40, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Há»¯u LÃ¢m', N'Nam', 62, 'BN_ADD_825', N'KhÃ´ng', '030485782989');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -22, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh An', N'Nam', 79, 'BN_ADD_826', N'Dá»‹ á»©ng pháº¥n hoa', '030945735341');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -29, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thanh Diá»‡p', N'Ná»¯', 67, 'BN_ADD_827', N'Dá»‹ á»©ng háº£i sáº£n', '030555469586');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -43, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan VÄƒn Nam', N'Nam', 29, 'BN_ADD_828', N'KhÃ´ng', '030885404301');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -4, GETDATE()), 0, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh QuÃ¢n', N'Nam', 69, 'BN_ADD_829', N'KhÃ´ng', '030105843047');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -21, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Ngá»c Háº¡nh', N'Ná»¯', 44, 'BN_ADD_830', N'KhÃ´ng', '030825425731');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -18, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quá»³nh ChÃ¢u', N'Ná»¯', 30, 'BN_ADD_831', N'KhÃ¡ng sinh Penicillin', '030355626738');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -38, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh Huy', N'Nam', 34, 'BN_ADD_832', N'KhÃ´ng', '030735167712');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -20, GETDATE()), 4, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quá»‘c PhÃºc', N'Nam', 22, 'BN_ADD_833', N'KhÃ´ng', '030565492520');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -26, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»³nh HÆ°Æ¡ng', N'Ná»¯', 25, 'BN_ADD_834', N'KhÃ¡ng sinh Aspirin', '030705317264');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -17, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c KhÃ¡nh', N'Nam', 59, 'BN_ADD_835', N'Dá»‹ á»©ng háº£i sáº£n', '030665875747');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -19, GETDATE()), 0, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh Tháº£o', N'Ná»¯', 62, 'BN_ADD_836', N'KhÃ´ng', '030635857188');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -24, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— PhÆ°Æ¡ng PhÆ°Æ¡ng', N'Ná»¯', 62, 'BN_ADD_837', N'KhÃ¡ng sinh Penicillin', '030165966187');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -39, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Minh Tháº£o', N'Ná»¯', 34, 'BN_ADD_838', N'KhÃ¡ng sinh Penicillin', '030235111914');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -38, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m Yáº¿n', N'Ná»¯', 48, 'BN_ADD_839', N'KhÃ´ng', '030415478729');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -31, GETDATE()), 1, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Äá»©c Háº£i', N'Nam', 55, 'BN_ADD_840', N'KhÃ´ng', '030965938713');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -41, GETDATE()), 2, 23);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Anh PhÃºc', N'Nam', 84, 'BN_ADD_841', N'KhÃ´ng', '030705356704');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -18, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n KhÃ¡nh TÃº', N'Ná»¯', 27, 'BN_ADD_842', N'Dá»‹ á»©ng pháº¥n hoa', '030655778979');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -14, GETDATE()), 4, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Há»¯u KhÃ¡nh', N'Nam', 80, 'BN_ADD_843', N'KhÃ´ng', '030685926121');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -30, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quá»³nh Oanh', N'Ná»¯', 43, 'BN_ADD_844', N'KhÃ´ng', '030875343152');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -24, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Kim HÆ°Æ¡ng', N'Ná»¯', 34, 'BN_ADD_845', N'KhÃ¡ng sinh Penicillin', '030375873855');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -12, GETDATE()), 4, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Máº¡nh Minh', N'Nam', 6, 'BN_ADD_846', N'KhÃ´ng', '030185844371');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -41, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng VÄƒn Háº£i', N'Nam', 80, 'BN_ADD_847', N'KhÃ´ng', '030225645491');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -17, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Thá»‹ Quá»³nh', N'Ná»¯', 21, 'BN_ADD_848', N'Dá»‹ á»©ng háº£i sáº£n', '030645877672');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -40, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Háº£i Nam', N'Nam', 9, 'BN_ADD_849', N'KhÃ´ng', '030195953013');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -8, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Tiáº¿n TÃ i', N'Nam', 79, 'BN_ADD_850', N'KhÃ´ng', '030255247485');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 4, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thanh An', N'Nam', 6, 'BN_ADD_851', N'KhÃ¡ng sinh Penicillin', '030985253269');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -7, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Háº£i Äáº¡t', N'Nam', 15, 'BN_ADD_852', N'Dá»‹ á»©ng pháº¥n hoa', '030885209082');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -36, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Minh Trinh', N'Ná»¯', 20, 'BN_ADD_853', N'KhÃ´ng', '030145282241');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -27, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»¯u DÅ©ng', N'Nam', 64, 'BN_ADD_854', N'KhÃ¡ng sinh Aspirin', '030735417791');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -7, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thá»‹ TÃº', N'Ná»¯', 17, 'BN_ADD_855', N'Dá»‹ á»©ng pháº¥n hoa', '030685486801');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -15, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Anh An', N'Nam', 42, 'BN_ADD_856', N'KhÃ´ng', '030975773730');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -45, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Tuáº¥n', N'Nam', 60, 'BN_ADD_857', N'Dá»‹ á»©ng pháº¥n hoa', '030305795911');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -22, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m ChÃ¢u', N'Ná»¯', 57, 'BN_ADD_858', N'KhÃ´ng', '030445953038');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -3, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Tuáº¥n CÆ°á»ng', N'Nam', 45, 'BN_ADD_859', N'KhÃ´ng', '030815735081');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -16, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Há»“ng Quá»³nh', N'Ná»¯', 46, 'BN_ADD_860', N'KhÃ¡ng sinh Penicillin', '030585182883');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan ThÃ nh Quang', N'Nam', 27, 'BN_ADD_861', N'KhÃ´ng', '030325664173');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -39, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Minh Quang', N'Nam', 55, 'BN_ADD_862', N'KhÃ´ng', '030145595545');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -30, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»“ng Hoa', N'Ná»¯', 51, 'BN_ADD_863', N'KhÃ´ng', '030165954628');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -20, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thu HÃ ', N'Ná»¯', 53, 'BN_ADD_864', N'Dá»‹ á»©ng háº£i sáº£n', '030375963902');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -2, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh PhÆ°Æ¡ng Yáº¿n', N'Ná»¯', 62, 'BN_ADD_865', N'KhÃ¡ng sinh Penicillin', '030465413258');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -30, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Kim Hoa', N'Ná»¯', 64, 'BN_ADD_866', N'Dá»‹ á»©ng pháº¥n hoa', '030905179707');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -3, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Quang Nam', N'Nam', 38, 'BN_ADD_867', N'KhÃ´ng', '030905730467');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -7, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng KhÃ¡nh Oanh', N'Ná»¯', 53, 'BN_ADD_868', N'KhÃ´ng', '030475825871');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -24, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»³nh Lan', N'Ná»¯', 51, 'BN_ADD_869', N'Dá»‹ á»©ng háº£i sáº£n', '030595159939');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -46, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thanh KhÃ¡nh', N'Nam', 82, 'BN_ADD_870', N'KhÃ´ng', '030265536089');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ VÄƒn KhÃ¡nh', N'Nam', 26, 'BN_ADD_871', N'Dá»‹ á»©ng pháº¥n hoa', '030485985176');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -40, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Quá»‘c SÆ¡n', N'Nam', 63, 'BN_ADD_872', N'KhÃ¡ng sinh Penicillin', '030165639983');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -3, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Háº¡nh', N'Ná»¯', 78, 'BN_ADD_873', N'KhÃ´ng', '030525466057');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -36, GETDATE()), 0, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i ThÃ nh Háº£i', N'Nam', 28, 'BN_ADD_874', N'Dá»‹ á»©ng háº£i sáº£n', '030545904034');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -5, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh Trang', N'Ná»¯', 42, 'BN_ADD_875', N'KhÃ´ng', '030145878287');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -8, GETDATE()), 4, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Há»¯u Háº£i', N'Nam', 15, 'BN_ADD_876', N'KhÃ´ng', '030205271653');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -3, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thá»‹ PhÆ°Æ¡ng', N'Ná»¯', 50, 'BN_ADD_877', N'KhÃ´ng', '030845880947');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -37, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Ngá»c PhÆ°Æ¡ng', N'Ná»¯', 16, 'BN_ADD_878', N'KhÃ¡ng sinh Penicillin', '030425435451');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -6, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Tuáº¥n QuÃ¢n', N'Nam', 8, 'BN_ADD_879', N'KhÃ´ng', '030955458906');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -15, GETDATE()), 1, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Thá»‹ Linh', N'Ná»¯', 51, 'BN_ADD_880', N'KhÃ´ng', '030955436219');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -41, GETDATE()), 2, 24);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng ThÃ nh SÆ¡n', N'Nam', 55, 'BN_ADD_881', N'KhÃ´ng', '030585325021');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -15, GETDATE()), 4, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Tuáº¥n LÃ¢m', N'Nam', 35, 'BN_ADD_882', N'KhÃ´ng', '030465689513');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -2, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Minh HÆ°Æ¡ng', N'Ná»¯', 34, 'BN_ADD_883', N'Dá»‹ á»©ng háº£i sáº£n', '030545498138');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -9, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh Phong', N'Nam', 51, 'BN_ADD_884', N'KhÃ´ng', '030135668962');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -9, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c ÄÃ´ng', N'Nam', 11, 'BN_ADD_885', N'KhÃ´ng', '030895208512');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -36, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Ngá»c Quá»³nh', N'Ná»¯', 50, 'BN_ADD_886', N'KhÃ´ng', '030365440870');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -36, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Máº¡nh SÆ¡n', N'Nam', 69, 'BN_ADD_887', N'KhÃ´ng', '030405604619');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -20, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh Nga', N'Ná»¯', 38, 'BN_ADD_888', N'Dá»‹ á»©ng pháº¥n hoa', '030195770095');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -35, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Thá»‹ Chi', N'Ná»¯', 41, 'BN_ADD_889', N'KhÃ¡ng sinh Penicillin', '030615986467');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -7, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ ThÃ nh Long', N'Nam', 73, 'BN_ADD_890', N'KhÃ´ng', '030135121192');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -30, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Anh Äáº¡t', N'Nam', 8, 'BN_ADD_891', N'KhÃ´ng', '030885771784');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -43, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tiáº¿n QuÃ¢n', N'Nam', 47, 'BN_ADD_892', N'KhÃ´ng', '030795792836');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -45, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Háº£i Quang', N'Nam', 14, 'BN_ADD_893', N'Dá»‹ á»©ng pháº¥n hoa', '030305768929');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -11, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng VÄƒn ÄÃ´ng', N'Nam', 37, 'BN_ADD_894', N'KhÃ¡ng sinh Aspirin', '030655434772');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -7, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Háº£i QuÃ¢n', N'Nam', 55, 'BN_ADD_895', N'Dá»‹ á»©ng háº£i sáº£n', '030805832259');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -10, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© KhÃ¡nh Tháº£o', N'Ná»¯', 73, 'BN_ADD_896', N'KhÃ´ng', '030735149318');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -33, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»‘c Äáº¡t', N'Nam', 6, 'BN_ADD_897', N'KhÃ´ng', '030295201733');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -14, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»¯u ÄÃ´ng', N'Nam', 33, 'BN_ADD_898', N'KhÃ´ng', '030295769526');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -38, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh HÃ¹ng', N'Nam', 81, 'BN_ADD_899', N'KhÃ´ng', '030515894463');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -43, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Há»“ng PhÆ°Æ¡ng', N'Ná»¯', 8, 'BN_ADD_900', N'KhÃ´ng', '030755827679');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -10, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Tiáº¿n SÆ¡n', N'Nam', 57, 'BN_ADD_901', N'KhÃ´ng', '030435210564');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -33, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thu PhÆ°Æ¡ng', N'Ná»¯', 80, 'BN_ADD_902', N'KhÃ´ng', '030565309973');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -27, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Ngá»c Trang', N'Ná»¯', 56, 'BN_ADD_903', N'KhÃ´ng', '030555534938');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -39, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Ngá»c Quá»³nh', N'Ná»¯', 57, 'BN_ADD_904', N'KhÃ´ng', '030395943382');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -2, GETDATE()), 4, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Má»¹ PhÆ°Æ¡ng', N'Ná»¯', 78, 'BN_ADD_905', N'KhÃ¡ng sinh Penicillin', '030235547250');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -29, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng VÄƒn Huy', N'Nam', 33, 'BN_ADD_906', N'KhÃ¡ng sinh Penicillin', '030125104782');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -32, GETDATE()), 4, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Anh CÆ°á»ng', N'Nam', 32, 'BN_ADD_907', N'KhÃ´ng', '030675203950');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -18, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tiáº¿n An', N'Nam', 43, 'BN_ADD_908', N'KhÃ´ng', '030565634721');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -1, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Há»“ng VÃ¢n', N'Ná»¯', 23, 'BN_ADD_909', N'KhÃ¡ng sinh Aspirin', '030595836741');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -36, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Cáº©m Yáº¿n', N'Ná»¯', 32, 'BN_ADD_910', N'KhÃ´ng', '030665898752');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -7, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Minh Diá»‡p', N'Ná»¯', 14, 'BN_ADD_911', N'KhÃ¡ng sinh Aspirin', '030845497369');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -38, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Cáº©m Dung', N'Ná»¯', 31, 'BN_ADD_912', N'KhÃ¡ng sinh Aspirin', '030465909860');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -37, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Cáº©m Trang', N'Ná»¯', 84, 'BN_ADD_913', N'KhÃ´ng', '030935625603');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -1, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Anh BÃ¬nh', N'Nam', 73, 'BN_ADD_914', N'Dá»‹ á»©ng pháº¥n hoa', '030375745333');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -38, GETDATE()), 0, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Quá»‘c BÃ¬nh', N'Nam', 46, 'BN_ADD_915', N'Dá»‹ á»©ng pháº¥n hoa', '030155398647');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -22, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thá»‹ Tháº£o', N'Ná»¯', 54, 'BN_ADD_916', N'Dá»‹ á»©ng háº£i sáº£n', '030735121218');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -18, GETDATE()), 4, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Minh ÄÃ´ng', N'Nam', 69, 'BN_ADD_917', N'KhÃ´ng', '030485701192');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -13, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Anh ÄÃ´ng', N'Nam', 83, 'BN_ADD_918', N'Dá»‹ á»©ng háº£i sáº£n', '030565500314');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -30, GETDATE()), 2, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Thá»‹ Oanh', N'Ná»¯', 66, 'BN_ADD_919', N'KhÃ´ng', '030235893738');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -12, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thanh Trinh', N'Ná»¯', 21, 'BN_ADD_920', N'Dá»‹ á»©ng háº£i sáº£n', '030475193325');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -25, GETDATE()), 1, 25);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Quá»³nh HÃ ', N'Ná»¯', 12, 'BN_ADD_921', N'KhÃ´ng', '030875967065');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -5, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Thá»‹ Linh', N'Ná»¯', 56, 'BN_ADD_922', N'KhÃ´ng', '030845495263');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -26, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quá»‘c LÃ¢m', N'Nam', 16, 'BN_ADD_923', N'KhÃ´ng', '030795321199');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -34, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ KhÃ¡nh TÃº', N'Ná»¯', 71, 'BN_ADD_924', N'KhÃ´ng', '030725659762');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -33, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Minh VÃ¢n', N'Ná»¯', 27, 'BN_ADD_925', N'Dá»‹ á»©ng háº£i sáº£n', '030735961127');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -34, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng KhÃ¡nh Yáº¿n', N'Ná»¯', 27, 'BN_ADD_926', N'Dá»‹ á»©ng pháº¥n hoa', '030345962484');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -32, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Tiáº¿n PhÃºc', N'Nam', 54, 'BN_ADD_927', N'KhÃ´ng', '030925549410');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -10, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Má»¹ Dung', N'Ná»¯', 28, 'BN_ADD_928', N'KhÃ´ng', '030555332027');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -46, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ PhÆ°Æ¡ng Diá»‡p', N'Ná»¯', 31, 'BN_ADD_929', N'KhÃ¡ng sinh Aspirin', '030745994326');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -35, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Kim ChÃ¢u', N'Ná»¯', 24, 'BN_ADD_930', N'KhÃ´ng', '030975804367');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -4, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Äá»©c Vinh', N'Nam', 16, 'BN_ADD_931', N'Dá»‹ á»©ng pháº¥n hoa', '030355762209');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -40, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Máº¡nh HÃ¹ng', N'Nam', 52, 'BN_ADD_932', N'KhÃ´ng', '030695101654');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -29, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Ngá»c Trinh', N'Ná»¯', 56, 'BN_ADD_933', N'KhÃ´ng', '030865289769');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -25, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thanh Linh', N'Ná»¯', 59, 'BN_ADD_934', N'Dá»‹ á»©ng háº£i sáº£n', '030315376975');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -21, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Há»¯u Vinh', N'Nam', 39, 'BN_ADD_935', N'Dá»‹ á»©ng háº£i sáº£n', '030575212725');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -2, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Thá»‹ Yáº¿n', N'Ná»¯', 52, 'BN_ADD_936', N'Dá»‹ á»©ng háº£i sáº£n', '030705457613');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -24, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Cáº©m Nga', N'Ná»¯', 76, 'BN_ADD_937', N'KhÃ¡ng sinh Penicillin', '030415513034');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Minh DÅ©ng', N'Nam', 6, 'BN_ADD_938', N'KhÃ´ng', '030245624955');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -43, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Thanh Anh', N'Ná»¯', 82, 'BN_ADD_939', N'KhÃ´ng', '030625197376');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -6, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Há»“ng Yáº¿n', N'Ná»¯', 66, 'BN_ADD_940', N'KhÃ´ng', '030505889067');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -17, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quá»³nh HÃ ', N'Ná»¯', 76, 'BN_ADD_941', N'KhÃ´ng', '030355338831');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -39, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ VÄƒn Phong', N'Nam', 42, 'BN_ADD_942', N'KhÃ´ng', '030175166699');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -26, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thanh HÆ°Æ¡ng', N'Ná»¯', 50, 'BN_ADD_943', N'KhÃ´ng', '030605619274');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -9, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Quang KhÃ¡nh', N'Nam', 34, 'BN_ADD_944', N'KhÃ´ng', '030965705103');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -39, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Tuáº¥n Long', N'Nam', 52, 'BN_ADD_945', N'KhÃ¡ng sinh Penicillin', '030495804001');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -27, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m PhÆ°Æ¡ng Quá»³nh', N'Ná»¯', 52, 'BN_ADD_946', N'Dá»‹ á»©ng háº£i sáº£n', '030585959525');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -42, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i ThÃ nh LÃ¢m', N'Nam', 27, 'BN_ADD_947', N'KhÃ´ng', '030285534181');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -21, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Cáº©m Tháº£o', N'Ná»¯', 75, 'BN_ADD_948', N'KhÃ´ng', '030895480107');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -24, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thá»‹ Anh', N'Ná»¯', 56, 'BN_ADD_949', N'Dá»‹ á»©ng háº£i sáº£n', '030895138066');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -35, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n TÃ i', N'Nam', 37, 'BN_ADD_950', N'KhÃ´ng', '030425827937');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -7, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Pháº¡m Quang Quang', N'Nam', 44, 'BN_ADD_951', N'KhÃ´ng', '030155388177');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -33, GETDATE()), 4, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Máº¡nh TÃ i', N'Nam', 67, 'BN_ADD_952', N'Dá»‹ á»©ng pháº¥n hoa', '030385821422');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -8, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Ngá»c Tháº£o', N'Ná»¯', 62, 'BN_ADD_953', N'KhÃ´ng', '030355518910');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -40, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Thu Yáº¿n', N'Ná»¯', 11, 'BN_ADD_954', N'KhÃ´ng', '030705871008');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -16, GETDATE()), 2, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Tuáº¥n Äáº¡t', N'Nam', 25, 'BN_ADD_955', N'KhÃ´ng', '030565498762');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -45, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— KhÃ¡nh Quá»³nh', N'Ná»¯', 18, 'BN_ADD_956', N'KhÃ¡ng sinh Aspirin', '030535279965');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -26, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Cáº©m Háº¡nh', N'Ná»¯', 56, 'BN_ADD_957', N'KhÃ´ng', '030685954756');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -17, GETDATE()), 4, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Cáº©m VÃ¢n', N'Ná»¯', 20, 'BN_ADD_958', N'KhÃ´ng', '030365765881');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -15, GETDATE()), 0, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Äá»©c SÆ¡n', N'Nam', 79, 'BN_ADD_959', N'KhÃ´ng', '030745690929');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -44, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Thanh Oanh', N'Ná»¯', 67, 'BN_ADD_960', N'KhÃ¡ng sinh Aspirin', '030455467986');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -41, GETDATE()), 1, 34);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quá»³nh Nga', N'Ná»¯', 31, 'BN_ADD_961', N'KhÃ´ng', '030345747762');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -1, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Äá»©c Minh', N'Nam', 45, 'BN_ADD_962', N'Dá»‹ á»©ng háº£i sáº£n', '030675835302');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -12, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Thá»‹ Lan', N'Ná»¯', 63, 'BN_ADD_963', N'KhÃ´ng', '030175245469');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -28, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Quang PhÃºc', N'Nam', 69, 'BN_ADD_964', N'KhÃ´ng', '030715979836');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -10, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Äá»©c ÄÃ´ng', N'Nam', 32, 'BN_ADD_965', N'KhÃ´ng', '030245234969');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau há»ng khÃ³ nuá»‘t', DATEADD(hour, -14, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Há»¯u TÃ i', N'Nam', 42, 'BN_ADD_966', N'Dá»‹ á»©ng háº£i sáº£n', '030865443349');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -22, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Quang KhÃ¡nh', N'Nam', 41, 'BN_ADD_967', N'KhÃ´ng', '030695676937');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -35, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Háº£i DÅ©ng', N'Nam', 49, 'BN_ADD_968', N'KhÃ´ng', '030855761807');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -32, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Tiáº¿n Phong', N'Nam', 50, 'BN_ADD_969', N'Dá»‹ á»©ng háº£i sáº£n', '030455380469');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -38, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Ngá»c ChÃ¢u', N'Ná»¯', 68, 'BN_ADD_970', N'KhÃ´ng', '030155321487');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -17, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'NgÃ´ Minh SÆ¡n', N'Nam', 66, 'BN_ADD_971', N'KhÃ´ng', '030435560121');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -5, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ PhÆ°Æ¡ng HÃ ', N'Ná»¯', 32, 'BN_ADD_972', N'Dá»‹ á»©ng háº£i sáº£n', '030105604080');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -35, GETDATE()), 0, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Quá»‘c TÃ i', N'Nam', 25, 'BN_ADD_973', N'KhÃ´ng', '030655152509');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -39, GETDATE()), 4, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ Máº¡nh An', N'Nam', 30, 'BN_ADD_974', N'KhÃ´ng', '030855245172');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -2, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÅ© Minh HÃ¹ng', N'Nam', 44, 'BN_ADD_975', N'Dá»‹ á»©ng háº£i sáº£n', '030595153483');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -40, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Tráº§n Má»¹ Quá»³nh', N'Ná»¯', 23, 'BN_ADD_976', N'Dá»‹ á»©ng pháº¥n hoa', '030955446553');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -7, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thu Hoa', N'Ná»¯', 8, 'BN_ADD_977', N'KhÃ´ng', '030485495435');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -26, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Phan Ngá»c Yáº¿n', N'Ná»¯', 53, 'BN_ADD_978', N'KhÃ´ng', '030225587827');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -12, GETDATE()), 4, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Cáº©m Nga', N'Ná»¯', 37, 'BN_ADD_979', N'KhÃ¡ng sinh Aspirin', '030365945780');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra huyáº¿t Ã¡p', DATEADD(hour, -8, GETDATE()), 0, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ ThÃ nh QuÃ¢n', N'Nam', 62, 'BN_ADD_980', N'KhÃ´ng', '030185650139');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -10, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i PhÆ°Æ¡ng HÃ ', N'Ná»¯', 11, 'BN_ADD_981', N'Dá»‹ á»©ng pháº¥n hoa', '030425110637');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -29, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Má»¹ Mai', N'Ná»¯', 23, 'BN_ADD_982', N'KhÃ´ng', '030365298477');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -20, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— VÄƒn Huy', N'Nam', 43, 'BN_ADD_983', N'KhÃ´ng', '030315553258');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -12, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Há»“ VÄƒn Long', N'Nam', 29, 'BN_ADD_984', N'KhÃ´ng', '030875607246');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -20, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Thanh Minh', N'Nam', 56, 'BN_ADD_985', N'Dá»‹ á»©ng háº£i sáº£n', '030905438787');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -9, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Thu VÃ¢n', N'Ná»¯', 28, 'BN_ADD_986', N'KhÃ¡ng sinh Penicillin', '030465158157');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -4, GETDATE()), 0, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äáº·ng Tuáº¥n TÃ i', N'Nam', 75, 'BN_ADD_987', N'KhÃ¡ng sinh Aspirin', '030155901041');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -13, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'HoÃ ng Thanh CÆ°á»ng', N'Nam', 55, 'BN_ADD_988', N'KhÃ´ng', '030875390734');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -3, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ Tiáº¿n PhÃºc', N'Nam', 11, 'BN_ADD_989', N'KhÃ¡ng sinh Aspirin', '030325891655');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Kiá»ƒm tra tim máº¡ch', DATEADD(hour, -47, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Cáº©m Oanh', N'Ná»¯', 10, 'BN_ADD_990', N'KhÃ´ng', '030915515420');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m tai mÅ©i há»ng', DATEADD(hour, -14, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Huá»³nh Quá»‘c Nam', N'Nam', 11, 'BN_ADD_991', N'KhÃ´ng', '030195308345');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -15, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Quá»³nh Chi', N'Ná»¯', 66, 'BN_ADD_992', N'Dá»‹ á»©ng pháº¥n hoa', '030175617418');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -24, GETDATE()), 0, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃª Thu Diá»‡p', N'Ná»¯', 54, 'BN_ADD_993', N'KhÃ¡ng sinh Aspirin', '030155161251');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'KhÃ¡m sá»©c khá»e Ä‘á»‹nh ká»³', DATEADD(hour, -10, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Äá»— Tuáº¥n ÄÃ´ng', N'Nam', 56, 'BN_ADD_994', N'KhÃ´ng', '030125631302');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau bá»¥ng Ã¢m á»‰', DATEADD(hour, -36, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'DÆ°Æ¡ng Tuáº¥n Äáº¡t', N'Nam', 56, 'BN_ADD_995', N'KhÃ¡ng sinh Penicillin', '030255365823');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Má»‡t má»i suy nhÆ°á»£c', DATEADD(hour, -13, GETDATE()), 4, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'LÃ½ Quang CÆ°á»ng', N'Nam', 80, 'BN_ADD_996', N'KhÃ´ng', '030855743965');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -34, GETDATE()), 2, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'BÃ¹i Anh Phong', N'Nam', 61, 'BN_ADD_997', N'KhÃ¡ng sinh Aspirin', '030155833221');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -34, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Tiáº¿n Long', N'Nam', 26, 'BN_ADD_998', N'KhÃ´ng', '030155171341');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Ho sá»‘t nháº¹', DATEADD(hour, -38, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'Nguyá»…n Thá»‹ Dung', N'Ná»¯', 31, 'BN_ADD_999', N'KhÃ´ng', '030555808915');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau nhá»©c khá»›p gá»‘i', DATEADD(hour, -31, GETDATE()), 1, 1828);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies, CCCD) VALUES (N'VÃµ KhÃ¡nh Nhung', N'Ná»¯', 38, 'BN_ADD_1000', N'Dá»‹ á»©ng háº£i sáº£n', '030325204951');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status, DoctorId) VALUES (SCOPE_IDENTITY(), N'Äau Ä‘áº§u kÃ©o dÃ i', DATEADD(hour, -37, GETDATE()), 1, 1828);
+
+
+COMMIT TRANSACTION;
+PRINT 'Successfully inserted 1000 patients and distributed appointments!'
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION;
+PRINT 'Error occurred during transaction!';
+THROW;
+END CATCH;
+
+
+
+-- =============================================
+-- GENERATE MEDICAL RECORDS FOR ALL UNASSIGNED APPOINTMENTS
+-- =============================================
+
+USE QuanLyBenhVienDb;
+GO
+
+BEGIN TRANSACTION;
+BEGIN TRY
+
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked)
+SELECT 
+    a.Id, 
+    a.Reason, 
+    CASE 
+        WHEN a.Reason LIKE N'%Đau đầu%' THEN N'Thiếu máu não cục bộ / Căng thẳng kéo dài'
+        WHEN a.Reason LIKE N'%Đau bụng%' THEN N'Viêm dạ dày tá tràng cấp tính'
+        WHEN a.Reason LIKE N'%Ho%' THEN N'Viêm phế quản cấp'
+        WHEN a.Reason LIKE N'%huyết áp%' THEN N'Cao huyết áp độ I'
+        WHEN a.Reason LIKE N'%khớp%' THEN N'Thoái hóa khớp gối nhẹ'
+        WHEN a.Reason LIKE N'%sức khỏe%' THEN N'Khám sức khỏe tổng quát - Bình thường'
+        WHEN a.Reason LIKE N'%tim mạch%' THEN N'Rối loạn nhịp tim nhẹ'
+        WHEN a.Reason LIKE N'%họng%' THEN N'Viêm họng cấp'
+        WHEN a.Reason LIKE N'%Mệt mỏi%' THEN N'Suy nhược cơ thể'
+        WHEN a.Reason LIKE N'%tai mui%' OR a.Reason LIKE N'%tai mũi%' THEN N'Viêm xoang cấp'
+        ELSE N'Theo dõi sức khỏe định kỳ'
+    END,
+    CASE 
+        WHEN a.Reason LIKE N'%Đau đầu%' THEN N'Uống thuốc giảm đau, tăng cường tuần hoàn não, nghỉ ngơi hợp lý'
+        WHEN a.Reason LIKE N'%Đau bụng%' THEN N'Sử dụng thuốc kháng acid, hạn chế đồ cay nóng và stress'
+        WHEN a.Reason LIKE N'%Ho%' THEN N'Uống siro ho, giữ ấm cổ họng, bổ sung vitamin C'
+        WHEN a.Reason LIKE N'%huyết áp%' THEN N'Dùng thuốc hạ áp hằng ngày, giảm ăn muối, tập thể dục nhẹ'
+        WHEN a.Reason LIKE N'%khớp%' THEN N'Sử dụng thuốc bổ khớp, tránh mang vác nặng, vật lý trị liệu'
+        WHEN a.Reason LIKE N'%sức khỏe%' THEN N'Duy trì chế độ ăn uống và sinh hoạt lành mạnh'
+        WHEN a.Reason LIKE N'%tim mạch%' THEN N'Tránh chất kích thích, ngủ đủ giấc, kiểm tra định kỳ'
+        WHEN a.Reason LIKE N'%họng%' THEN N'Súc họng nước muối, uống nhiều nước ấm, hạn chế nước đá'
+        WHEN a.Reason LIKE N'%Mệt mỏi%' THEN N'Bổ sung dinh dưỡng, truyền dịch nếu cần, nghỉ ngơi tĩnh dưỡng'
+        WHEN a.Reason LIKE N'%tai mui%' OR a.Reason LIKE N'%tai mũi%' THEN N'Rửa mũi xoang hằng ngày, dùng kháng sinh nếu có chỉ định'
+        ELSE N'Theo dõi và tái khám định kỳ'
+    END,
+    a.AppointmentTime,
+    0
+FROM Appointments a
+WHERE a.Id NOT IN (SELECT AppointmentId FROM MedicalRecords);
+
+COMMIT TRANSACTION;
+PRINT 'Successfully created medical records for all appointments!';
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION;
+PRINT 'Error occurred during transaction!';
+THROW;
+END CATCH;
+
+
+
+
+
+-- =============================================
+-- ADDED JULY 2026 WORK SCHEDULES
+-- =============================================
+
+USE QuanLyBenhVienDb;
+GO
+
+BEGIN TRANSACTION;
+BEGIN TRY
+
+DELETE FROM WorkSchedules WHERE MonthNumber = 7 AND YearNumber = 2026;
+
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-01', DATEPART(week, '2026-07-01'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-02', DATEPART(week, '2026-07-02'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-03', DATEPART(week, '2026-07-03'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-04', DATEPART(week, '2026-07-04'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-05', DATEPART(week, '2026-07-05'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-06', DATEPART(week, '2026-07-06'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-07', DATEPART(week, '2026-07-07'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-08', DATEPART(week, '2026-07-08'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-09', DATEPART(week, '2026-07-09'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-10', DATEPART(week, '2026-07-10'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-11', DATEPART(week, '2026-07-11'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-12', DATEPART(week, '2026-07-12'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-13', DATEPART(week, '2026-07-13'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-14', DATEPART(week, '2026-07-14'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-15', DATEPART(week, '2026-07-15'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-16', DATEPART(week, '2026-07-16'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-17', DATEPART(week, '2026-07-17'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-18', DATEPART(week, '2026-07-18'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-19', DATEPART(week, '2026-07-19'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-20', DATEPART(week, '2026-07-20'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-21', DATEPART(week, '2026-07-21'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-22', DATEPART(week, '2026-07-22'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-23', DATEPART(week, '2026-07-23'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-24', DATEPART(week, '2026-07-24'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-25', DATEPART(week, '2026-07-25'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-26', DATEPART(week, '2026-07-26'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-27', DATEPART(week, '2026-07-27'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-28', DATEPART(week, '2026-07-28'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (18, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (19, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (20, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (21, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (22, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-29', DATEPART(week, '2026-07-29'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (23, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (24, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (25, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (34, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (1828, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (2, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (3, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (4, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (5, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (6, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (8, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-30', DATEPART(week, '2026-07-30'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (9, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (10, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (11, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (12, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (13, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (14, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (15, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (16, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber) VALUES (17, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-07-31', DATEPART(week, '2026-07-31'), 7, 2026);
+
+
+COMMIT TRANSACTION;
+PRINT 'Successfully inserted full July shifts!'
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION;
+PRINT 'Error occurred during transaction!';
+THROW;
+END CATCH;
+
+
+INSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'R53', N'Mệt mỏi không đặc hiệu', N'Nghỉ ngơi đầy đủ, bù nước điện giải, theo dõi triệu chứng và tái khám nếu tình trạng không cải thiện hoặc xuất hiện thêm triệu chứng mới.', N'Tổng phân tích máu, Đường huyết', N'Vitamin Tổng Hợp, Oresol');

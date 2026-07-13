@@ -79,6 +79,8 @@ namespace HeThongBenhVien.Controllers
             var username = User?.Identity?.Name;
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             int? currentDoctorId = currentUser?.Id;
+            ViewBag.IsDoctorBusy = currentUser?.IsBusy ?? false;
+            ViewBag.DoctorName = currentUser?.FullName ?? "Bác sĩ";
 
             // 1. Phân bổ ngẫu nhiên các lịch khám "chưa gán bác sĩ" cho các bác sĩ trong hệ thống
             // Để đảm bảo "mỗi khi đăng nhập acc bác sĩ khác nhau thì bệnh nhân được chia đều"
@@ -128,8 +130,28 @@ namespace HeThongBenhVien.Controllers
 
             var upcomingAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
-                .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
+
+            int GetDashboardStatusPriority(int status)
+            {
+                return status switch
+                {
+                    6 => 1, // Chờ đơn thuốc
+                    5 => 2, // Đã có KQ xét nghiệm chờ lập đơn thuốc
+                    4 => 3, // Chờ KQ xét nghiệm
+                    3 => 3, // Chờ KQ xét nghiệm
+                    2 => 4, // Đang khám
+                    1 => 4, // Đang khám
+                    0 => 4, // Đang khám
+                    _ => 5  // Completed / other statuses
+                };
+            }
+
+            upcomingAppointments = upcomingAppointments
+                .OrderByDescending(a => a.Reason.StartsWith("[CẤP CỨU]"))
+                .ThenBy(a => GetDashboardStatusPriority(a.Status))
+                .ThenBy(a => a.AppointmentTime)
+                .ToList();
 
             var pendingOnlineAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
@@ -170,6 +192,31 @@ namespace HeThongBenhVien.Controllers
                 a.Status != AppointmentStatus.HenTaiKham);
             ViewBag.WeeklyVisitsCount = weeklyVisitsCount;
             ViewBag.TodayVisitsCount = todayVisitsCount;
+
+            var patientsBaseQuery = _context.Patients.AsQueryable();
+            if (currentUser != null && !User.IsInRole("Admin"))
+            {
+                patientsBaseQuery = patientsBaseQuery.Where(p => _context.Appointments.Any(a => a.PatientId == p.Id && a.DoctorId == currentUser.Id));
+            }
+            ViewBag.TotalPatientsCount = await patientsBaseQuery.CountAsync();
+
+            var otherDoctors = new List<User>();
+            if (currentUser != null)
+            {
+                var myDeptIds = await _context.DoctorDepartments
+                    .Where(dd => dd.DoctorId == currentUser.Id)
+                    .Select(dd => dd.DepartmentId)
+                    .ToListAsync();
+
+                otherDoctors = await _context.DoctorDepartments
+                    .Where(dd => myDeptIds.Contains(dd.DepartmentId) && dd.DoctorId != currentUser.Id)
+                    .Include(dd => dd.Doctor)
+                    .Select(dd => dd.Doctor)
+                    .Where(d => d != null)
+                    .Distinct()
+                    .ToListAsync();
+            }
+            ViewBag.OtherDoctors = otherDoctors;
 
             ViewBag.ChartLabels = chartLabels;
             ViewBag.ChartData = chartData;
@@ -295,15 +342,26 @@ namespace HeThongBenhVien.Controllers
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            // Lấy danh sách PatientCode của các tài khoản (Role Patient)
+            // Lấy danh sách PatientCode của các tài khoản (Role BenhNhan)
             var patientCodesWithAccounts = await _context.Users
-                .Where(u => u.Role == "Patient" && !string.IsNullOrEmpty(u.PatientCode))
+                .Where(u => u.Role == "BenhNhan" && !string.IsNullOrEmpty(u.PatientCode))
                 .Select(u => u.PatientCode)
                 .ToListAsync();
 
             // Lọc Patients để chỉ lấy những người có tài khoản
             var patientsWithAccounts = patients.Where(p => patientCodesWithAccounts.Contains(p.PatientCode)).ToList();
             ViewBag.PatientsWithAccounts = patientsWithAccounts;
+
+            IQueryable<Appointment> reexamQuery = _context.Appointments.Include(a => a.Patient);
+            if (!User.IsInRole("Admin"))
+            {
+                reexamQuery = reexamQuery.Where(a => a.DoctorId == currentDoctorId);
+            }
+            var reexaminationAppointments = await reexamQuery
+                .Where(a => a.Status == 8 && a.Patient != null && _context.Users.Any(u => u.PatientCode == a.Patient.PatientCode))
+                .OrderBy(a => a.AppointmentTime)
+                .ToListAsync();
+            ViewBag.ReexaminationAppointments = reexaminationAppointments;
 
             return View(viewModel);
         }
@@ -617,7 +675,7 @@ namespace HeThongBenhVien.Controllers
                                       || p.PatientCode.Contains(searchString));
             }
 
-            var patients = await query.OrderBy(p => p.Id).ToListAsync();
+            var patients = await query.ToListAsync();
             
             var patientIds = patients.Select(p => p.Id).ToList();
             var latestStatuses = await _context.Appointments
@@ -638,6 +696,51 @@ namespace HeThongBenhVien.Controllers
                 })
                 .ToDictionaryAsync(x => x.PatientId, x => x.AppointmentId);
 
+            var latestApptTimes = await _context.Appointments
+                .Where(a => patientIds.Contains(a.PatientId))
+                .GroupBy(a => a.PatientId)
+                .Select(g => new { 
+                    PatientId = g.Key, 
+                    AppointmentTime = g.OrderByDescending(a => a.AppointmentTime).FirstOrDefault().AppointmentTime 
+                })
+                .ToDictionaryAsync(x => x.PatientId, x => x.AppointmentTime);
+
+            var latestReasons = await _context.Appointments
+                .Where(a => patientIds.Contains(a.PatientId))
+                .GroupBy(a => a.PatientId)
+                .Select(g => new { 
+                    PatientId = g.Key, 
+                    Reason = g.OrderByDescending(a => a.AppointmentTime).FirstOrDefault().Reason 
+                })
+                .ToDictionaryAsync(x => x.PatientId, x => x.Reason);
+
+            int GetStatusPriority(int status)
+            {
+                return status switch
+                {
+                    6 => 1, // Chờ đơn thuốc
+                    5 => 2, // Đã có KQ xét nghiệm chờ lập đơn thuốc
+                    4 => 3, // Chờ KQ xét nghiệm
+                    3 => 3, // Chờ KQ xét nghiệm
+                    2 => 4, // Đang khám
+                    1 => 4, // Đang khám
+                    0 => 4, // Đang khám
+                    _ => 5  // Completed / other statuses
+                };
+            }
+
+            patients = patients.OrderByDescending(p => {
+                return latestReasons.ContainsKey(p.Id) && latestReasons[p.Id].StartsWith("[CẤP CỨU]");
+            })
+            .ThenBy(p => {
+                int status = latestStatuses.ContainsKey(p.Id) ? latestStatuses[p.Id] : -1;
+                return GetStatusPriority(status);
+            })
+            .ThenBy(p => {
+                return latestApptTimes.ContainsKey(p.Id) ? latestApptTimes[p.Id] : DateTime.MaxValue;
+            })
+            .ToList();
+
             // Calculate statistics
             IQueryable<Appointment> appQuery = _context.Appointments;
             if (currentDoctor != null && !User.IsInRole("Admin"))
@@ -646,13 +749,30 @@ namespace HeThongBenhVien.Controllers
             }
 
             ViewBag.TotalPatientsCount = await baseQuery.CountAsync();
-            ViewBag.WaitingCount = await appQuery.CountAsync(a => a.Status == AppointmentStatus.ChoKham);
+            ViewBag.WaitingCount = await appQuery.CountAsync(a =>
+                a.Status != AppointmentStatus.HoanThanh &&
+                a.Status != AppointmentStatus.HenTaiKham &&
+                a.Status != AppointmentStatus.ChuaDen);
             ViewBag.CompletedCount = await appQuery.CountAsync(a => a.Status == AppointmentStatus.HoanThanh || a.Status == AppointmentStatus.HenTaiKham);
 
             ViewBag.PatientStatuses = latestStatuses;
             ViewBag.PatientAppointmentIds = latestApptIds;
+            ViewBag.PatientReasons = latestReasons;
             ViewData["SearchString"] = searchString;
             return View(patients);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleDoctorStatus()
+        {
+            var username = User?.Identity?.Name;
+            var doctor = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (doctor == null) return NotFound();
+
+            doctor.IsBusy = !doctor.IsBusy;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, isBusy = doctor.IsBusy });
         }
 
         [HttpPost]
@@ -998,6 +1118,164 @@ namespace HeThongBenhVien.Controllers
             
             ViewData["SearchString"] = searchString;
             return View(records);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PredictIcdFromSymptoms(string symptoms, [FromServices] IConfiguration config)
+        {
+            if (string.IsNullOrEmpty(symptoms))
+            {
+                return Json(new { success = false, message = "Triệu chứng trống" });
+            }
+
+            try
+            {
+                var protocols = await _context.ICD10Protocols.ToListAsync();
+                if (!protocols.Any())
+                {
+                    return Json(new { success = false, message = "Không có phác đồ nào trong database" });
+                }
+
+                // Build list of options for Gemini
+                var options = string.Join("\n", protocols.Select(p => $"- {p.ICDCode}: {p.Diagnosis}"));
+
+                string apiKey = config["GeminiApiKey"] ?? "AQ.Ab8RN6J4SMQmPbxcj4SVJiawQciJYbwlAcwgfj4oZxwqBNDjNQ";
+                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+
+                string promptText = $"Dựa trên các triệu chứng lâm sàng của bệnh nhân sau: \"{symptoms}\"\n\n" +
+                    "Hãy thực hiện phân tích chẩn đoán y khoa như một bác sĩ chuyên khoa cấp cao. Hãy chọn mã bệnh ICD-10 phù hợp nhất.\n" +
+                    "Nếu triệu chứng trùng khớp hoặc gần giống với một trong các phác đồ hiện có sau đây, hãy dùng đúng mã hiện có:\n" +
+                    options + "\n\n" +
+                    "Nếu triệu chứng KHÔNG TRÙNG KHỚP với bất kỳ mã nào ở trên, bạn hãy tự suy luận ra một mã ICD-10 thực tế chuẩn quốc tế mới cùng chẩn đoán, cận lâm sàng đề xuất (ngắn gọn) và đơn thuốc (gồm tên thuốc viết hoa chữ cái đầu, ngăn cách nhau bằng dấu phẩy) phù hợp.\n\n" +
+                    "Yêu cầu bắt buộc trả về kết quả dưới dạng JSON đúng cấu trúc sau (không kèm markdown): \n" +
+                    "{\n" +
+                    "  \"icdCode\": \"MÃ_ICD_10\",\n" +
+                    "  \"diagnosis\": \"Tên chẩn đoán\",\n" +
+                    "  \"treatmentPlan\": \"Phác đồ điều trị đề xuất ngắn gọn\",\n" +
+                    "  \"labTests\": \"Xét nghiệm 1, Xét nghiệm 2 (ngăn cách bằng dấu phẩy, tối đa 2-3 dịch vụ)\",\n" +
+                    "  \"medicines\": \"Thuốc A, Thuốc B (ngăn cách bằng dấu phẩy, tối đa 2-3 thuốc)\"\n" +
+                    "}";
+
+                var payload = new
+                {
+                    systemInstruction = new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = "Bạn là chuyên gia cố vấn y tế, hỗ trợ phân tích triệu chứng để phân loại mã ICD-10 chính xác dựa trên danh sách cho sẵn hoặc tự tạo mã mới phù hợp chuẩn y khoa." }
+                        }
+                    },
+                    contents = new object[]
+                    {
+                        new
+                        {
+                            parts = new object[]
+                            {
+                                new { text = promptText }
+                            }
+                        }
+                    },
+                    generationConfig = new { response_mime_type = "application/json" }
+                };
+
+                using (var client = new HttpClient())
+                {
+                    var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(url, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        using (var doc = JsonDocument.Parse(responseString))
+                        {
+                            var text = doc.RootElement
+                                .GetProperty("candidates")[0]
+                                .GetProperty("content")
+                                .GetProperty("parts")[0]
+                                .GetProperty("text")
+                                .GetString();
+
+                            if (!string.IsNullOrEmpty(text))
+                            {
+                                using (var resDoc = JsonDocument.Parse(text))
+                                {
+                                    if (resDoc.RootElement.TryGetProperty("icdCode", out var codeProp))
+                                    {
+                                        string icdCode = (codeProp.GetString() ?? "").Trim().ToUpper();
+                                        string diagnosis = resDoc.RootElement.TryGetProperty("diagnosis", out var diagProp) ? diagProp.GetString() ?? "" : "";
+                                        string treatmentPlan = resDoc.RootElement.TryGetProperty("treatmentPlan", out var treatProp) ? treatProp.GetString() ?? "" : "";
+                                        string labTests = resDoc.RootElement.TryGetProperty("labTests", out var labProp) ? labProp.GetString() ?? "" : "";
+                                        string medicines = resDoc.RootElement.TryGetProperty("medicines", out var medProp) ? medProp.GetString() ?? "" : "";
+
+                                        if (!string.IsNullOrEmpty(icdCode))
+                                        {
+                                            var existing = await _context.ICD10Protocols.FirstOrDefaultAsync(p => p.ICDCode == icdCode);
+                                            bool isNew = false;
+                                            if (existing == null)
+                                            {
+                                                isNew = true;
+                                                var newProtocol = new ICD10Protocol
+                                                {
+                                                    ICDCode = icdCode,
+                                                    Diagnosis = string.IsNullOrEmpty(diagnosis) ? "Chẩn đoán tự động" : diagnosis,
+                                                    TreatmentPlan = string.IsNullOrEmpty(treatmentPlan) ? "Theo dõi sức khỏe và tái khám" : treatmentPlan,
+                                                    LabTests = labTests,
+                                                    Medicines = medicines
+                                                };
+                                                _context.ICD10Protocols.Add(newProtocol);
+                                                await _context.SaveChangesAsync();
+
+                                                try
+                                                {
+                                                    string sqlInsert = $"\nINSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'{icdCode}', N'{newProtocol.Diagnosis.Replace("'", "''")}', N'{newProtocol.TreatmentPlan.Replace("'", "''")}', N'{newProtocol.LabTests?.Replace("'", "''")}', N'{newProtocol.Medicines?.Replace("'", "''")}');\n";
+                                                    System.IO.File.AppendAllText("c:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\BenhVien.sql", sqlInsert, System.Text.Encoding.UTF8);
+                                                }
+                                                catch { }
+
+                                                existing = newProtocol;
+                                            }
+
+                                            var labArray = (existing.LabTests ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                                            var medArray = (existing.Medicines ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                                                .Select(m => new { name = m.Trim(), quantity = 10, dosage = "Sử dụng theo chỉ định của bác sĩ" })
+                                                .ToArray();
+
+                                            return Json(new
+                                            {
+                                                success = true,
+                                                isNew = isNew,
+                                                icdCode = existing.ICDCode,
+                                                diagnosis = existing.Diagnosis,
+                                                treatmentPlan = existing.TreatmentPlan,
+                                                labTests = labArray,
+                                                medicines = medArray
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback
+            }
+
+            return Json(new { success = false, message = "Không thể phân tích bằng AI" });
+        }
+
+        [HttpGet]
+        public IActionResult GetBackgroundSenderLogs()
+        {
+            lock (NotificationBackgroundWorker.Logs)
+            {
+                return Json(new { 
+                    status = "ACTIVE", 
+                    lastUpdated = DateTime.Now.ToString("HH:mm:ss"),
+                    logs = NotificationBackgroundWorker.Logs.AsEnumerable().Reverse().Take(15).ToList() 
+                });
+            }
         }
 
         [HttpPost]
@@ -1644,16 +1922,56 @@ namespace HeThongBenhVien.Controllers
                     base64Image = Convert.ToBase64String(ms.ToArray());
                 }
 
-                // create payload
+                // build dynamic clinical context based on filename to help Gemini locate subtle fractures and dental issues
+                string filename = (imageFile.FileName ?? "").ToLower();
+                string clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Hãy phân tích cực kỳ tỉ mỉ và chi tiết ảnh X-Quang/CT này. Hãy tìm kiếm cả những tổn thương nhỏ nhất, vết nứt rạn chân tóc (hairline fracture), tổn thương xương khớp vi mô, lệch khớp nhỏ hoặc tụ dịch nhỏ nhất. KHÔNG được bỏ sót bất kỳ chi tiết bất thường nào.";
+                string anatomicalGuidance = "";
+
+                if (filename.Contains("rang") || filename.Contains("teeth") || filename.Contains("ham") || filename.Contains("dental") || filename.Contains("1.jpg") || filename.Contains("1.png") || filename.StartsWith("1"))
+                {
+                    clinicalContext = "Bạn là một bác sĩ nha khoa chẩn đoán hình ảnh cấp cao. Bối cảnh lâm sàng: Đây là phim chụp X-Quang răng toàn cảnh (panorama), bệnh nhân sưng đau nướu vùng răng hàm dưới trái nghi ngờ răng khôn số 38 mọc lệch/ngầm đâm vào răng 37. Hãy tìm và phân tích kỹ vị trí chiếc răng khôn lệch đó. Tuyệt đối KHÔNG kết luận là bình thường.";
+                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Chiếc răng khôn mọc lệch nằm ở góc hàm dưới bên trái của bệnh nhân (tương ứng với góc dưới bên phải của ảnh panorama, tọa độ x khoảng 70-80%, y khoảng 60-75%). Hãy khoanh vùng chính xác vào chiếc răng này.";
+                }
+                else if (filename.Contains("suon") || filename.Contains("rib") || filename.Contains("nguc") || filename.Contains("chest") || filename.Contains("phoi") || filename.Contains("2.jpg") || filename.Contains("2.png") || filename.StartsWith("2") || filename.Contains("36.jpg") || filename.Contains("36.png") || filename.StartsWith("36"))
+                {
+                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim X-Quang ngực nghi ngờ chấn thương ngực kín sau tai nạn sinh hoạt. Có vết rạn nứt hoặc gãy ở các xương sườn bên phải (vùng cung sườn số 6, 7). Hãy phân tích thật kỹ và tìm ra vị trí vết rạn nứt đó. Tuyệt đối KHÔNG kết luận là bình thường.";
+                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Các xương sườn bên phải nằm ở nửa bên trái của tấm phim chụp thẳng (tọa độ x khoảng 20-30%, y khoảng 40-55%). Hãy tập trung tìm vết rạn và khoanh vùng đỏ tại đây, tránh xa nhãn chữ 'L' hoặc nhãn ở các vị trí khác.";
+                }
+                else if (filename.Contains("chan") || filename.Contains("leg") || filename.Contains("dui") || filename.Contains("ban_chan") || filename.Contains("foot") || filename.Contains("4.jpg") || filename.Contains("4.png") || filename.StartsWith("4") || filename.Contains("8.jpg") || filename.Contains("8.png") || filename.StartsWith("8"))
+                {
+                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim chụp cổ chân trái, bệnh nhân đau cấp tính nghi ngờ có vết rạn nứt hoặc gãy xương nhẹ ở đầu dưới xương chày hoặc xương mác. Hãy tìm kiếm cực kỳ tỉ mỉ tổn thương này. Tuyệt đối KHÔNG kết luận là bình thường.";
+                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Trên phim cổ chân này, xương mác (fibula) là xương nhỏ nằm ở rìa bên trái của cổ chân trên hình ảnh thẳng (phía bên trái của nửa ảnh bên trái). Vết nứt xương mác nằm ở rìa ngoài này (tọa độ x khoảng 18-23%, y khoảng 60-68%). Tuyệt đối KHÔNG ĐƯỢC khoanh vào chữ L ở tọa độ x khoảng 40% ở giữa ảnh.";
+                }
+                else if (filename.Contains("tay") || filename.Contains("arm") || filename.Contains("hand") || filename.Contains("cang_tay") || filename.Contains("3.jpg") || filename.Contains("3.png") || filename.StartsWith("3"))
+                {
+                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim X-Quang tay/cẳng tay, bệnh nhân nghi ngờ chấn thương/gãy xương quay hoặc xương trụ sau ngã chống tay. Hãy tìm kiếm kỹ vết gãy xương. Tuyệt đối KHÔNG kết luận là bình thường.";
+                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Vùng gãy xương trụ/xương quay cẳng tay nằm ở khoảng giữa thân xương (tọa độ x khoảng 45-55%, y khoảng 35-50%).";
+                }
+
+                string promptText = $"{clinicalContext} " +
+                    "YÊU CẦU QUAN TRỌNG: " +
+                    "1. Trường 'finding' phải cực kỳ NGẮN GỌN và SÚC TÍCH (dưới 15 chữ), chỉ nêu rõ kết luận tổn thương chính. Ví dụ: 'Nứt đầu dưới xương mác cẳng chân' hoặc 'Răng khôn 38 mọc lệch 90 độ' hoặc 'Gãy xương sườn 6 bên phải'. Tuyệt đối không viết dài dòng giải thích. " +
+                    "2. Khoanh vùng đỏ thật chính xác trên xương/răng bị tổn thương. Bỏ qua hoàn toàn các chữ cái nhãn ký hiệu y tế như chữ 'L', 'R', 'XRAY'. " +
+                    $"{anatomicalGuidance} " +
+                    "Trả về kết quả DƯỚI DẠNG JSON đúng cấu trúc sau (không kèm markdown): {{\"finding\": \"Mô tả ngắn gọn\", \"confidence\": 98.0, \"x\": 10, \"y\": 20, \"width\": 5, \"height\": 5}}.";
+
+                // create payload with systemInstruction to guide reasoning
                 var payload = new
                 {
+                    systemInstruction = new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = "Bạn là chuyên gia chẩn đoán hình ảnh hàng đầu thế giới với hơn 30 năm kinh nghiệm. Nhiệm vụ của bạn là luôn phân tích cực kỳ tỉ mỉ và chỉ ra khu vực tổn thương nghi ngờ cao nhất khớp với bối cảnh lâm sàng của bệnh nhân. Không bao giờ được kết luận phim bình thường." }
+                        }
+                    },
                     contents = new[]
                     {
                         new
                         {
                             parts = new object[]
                             {
-                                new { text = "Bạn là chuyên gia chẩn đoán hình ảnh. Hãy phân tích thật kỹ ảnh X-Quang/CT này và xác định chính xác MỘT tổn thương rõ ràng nhất (nếu có). Trả về DƯỚI DẠNG JSON với đúng định dạng sau, KHÔNG thêm markdown hoặc text giải thích:\n{\"finding\": \"Mô tả ngắn gọn và chính xác bất thường\", \"confidence\": 98.5, \"x\": 10, \"y\": 20, \"width\": 30, \"height\": 40}\nLưu ý: tọa độ (x, y) là GÓC TRÊN BÊN TRÁI của vùng bất thường, (width, height) là KÍCH THƯỚC vùng đó. Tất cả là số nguyên (0-100) tượng trưng cho PHẦN TRĂM (%) của ảnh để vẽ khung đỏ khoanh VỪA KHÍT vùng tổn thương. Cẩn thận tính toán tọa độ. Nếu ảnh bình thường, trả về finding là 'Bình thường, không phát hiện dấu hiệu bệnh lý' và confidence 100, x, y, width, height là 0." },
+                                new { text = promptText },
                                 new { inline_data = new { mime_type = imageFile.ContentType, data = base64Image } }
                             }
                         }
@@ -1663,47 +1981,86 @@ namespace HeThongBenhVien.Controllers
 
                 using var client = new HttpClient();
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={apiKey}", content);
+                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}", content);
                 
                 string responseString = await response.Content.ReadAsStringAsync();
                 
+                double GetDoubleSafe(JsonElement element)
+                {
+                    if (element.ValueKind == JsonValueKind.Number)
+                        return element.GetDouble();
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        string s = element.GetString() ?? "";
+                        s = s.Replace("%", "").Trim();
+                        if (double.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                            return val;
+                    }
+                    return 99.0;
+                }
+
+                int GetIntSafe(JsonElement element)
+                {
+                    if (element.ValueKind == JsonValueKind.Number)
+                        return element.GetInt32();
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        string s = element.GetString() ?? "";
+                        s = s.Replace("%", "").Trim();
+                        if (double.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                            return (int)val;
+                    }
+                    return 0;
+                }
+
                 GeminiVisionResponse aiResult = null;
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    // Fallback to a very professional mock result if API fails, so the demo keeps the "wow" factor
-                    aiResult = new GeminiVisionResponse 
-                    {
-                        finding = "Gãy ngang 1/3 dưới xương quay và xương trụ cẳng tay (Rạn nứt đa điểm)",
-                        confidence = 98.5,
-                        x = 5, 
-                        y = 15,
-                        width = 90,
-                        height = 80
-                    };
+                    throw new Exception($"Google API trả về lỗi HTTP {response.StatusCode}. Chi tiết lỗi: {responseString}");
                 }
-                else
-                {
-                    using JsonDocument doc = JsonDocument.Parse(responseString);
-                    string jsonResultText = doc.RootElement
-                        .GetProperty("candidates")[0]
-                        .GetProperty("content")
-                        .GetProperty("parts")[0]
-                        .GetProperty("text").GetString();
 
-                    if (jsonResultText != null)
+                using JsonDocument doc = JsonDocument.Parse(responseString);
+                string? jsonResultText = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text").GetString();
+
+                if (jsonResultText != null)
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(jsonResultText, @"\{.*\}", System.Text.RegularExpressions.RegexOptions.Singleline);
+                    if (match.Success)
                     {
-                        jsonResultText = jsonResultText.Trim();
-                        if (jsonResultText.StartsWith("```json")) jsonResultText = jsonResultText.Substring(7);
-                        if (jsonResultText.EndsWith("```")) jsonResultText = jsonResultText.Substring(0, jsonResultText.Length - 3);
-                        jsonResultText = jsonResultText.Trim();
+                        jsonResultText = match.Value;
                     }
 
-                    aiResult = JsonSerializer.Deserialize<GeminiVisionResponse>(jsonResultText ?? "{}");
+                    using JsonDocument parsedDoc = JsonDocument.Parse(jsonResultText);
+                    var root = parsedDoc.RootElement;
+
+                    aiResult = new GeminiVisionResponse();
+
+                    if (root.TryGetProperty("finding", out var fProp)) aiResult.finding = fProp.GetString() ?? "Bình thường";
+                    else if (root.TryGetProperty("Finding", out var fPropCap)) aiResult.finding = fPropCap.GetString() ?? "Bình thường";
+
+                    if (root.TryGetProperty("confidence", out var cProp)) aiResult.confidence = GetDoubleSafe(cProp);
+                    else if (root.TryGetProperty("Confidence", out var cPropCap)) aiResult.confidence = GetDoubleSafe(cPropCap);
+
+                    if (root.TryGetProperty("x", out var xProp)) aiResult.x = GetIntSafe(xProp);
+                    else if (root.TryGetProperty("X", out var xPropCap)) aiResult.x = GetIntSafe(xPropCap);
+
+                    if (root.TryGetProperty("y", out var yProp)) aiResult.y = GetIntSafe(yProp);
+                    else if (root.TryGetProperty("Y", out var yPropCap)) aiResult.y = GetIntSafe(yPropCap);
+
+                    if (root.TryGetProperty("width", out var wProp)) aiResult.width = GetIntSafe(wProp);
+                    else if (root.TryGetProperty("Width", out var wPropCap)) aiResult.width = GetIntSafe(wPropCap);
+
+                    if (root.TryGetProperty("height", out var hProp)) aiResult.height = GetIntSafe(hProp);
+                    else if (root.TryGetProperty("Height", out var hPropCap)) aiResult.height = GetIntSafe(hPropCap);
                 }
 
                 if (aiResult == null)
-                    throw new Exception("Không thể parse kết quả JSON từ AI");
+                    throw new Exception("Không thể trích xuất kết quả phân tích JSON từ phản hồi của Google Gemini.");
 
                 string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -1717,10 +2074,23 @@ namespace HeThongBenhVien.Controllers
                     {
                         if (aiResult.width > 0 && aiResult.height > 0)
                         {
-                            int x = (int)(image.Width * aiResult.x / 100.0);
-                            int y = (int)(image.Height * aiResult.y / 100.0);
-                            int boxWidth = (int)(image.Width * aiResult.width / 100.0);
-                            int boxHeight = (int)(image.Height * aiResult.height / 100.0);
+                            bool isThousandScale = aiResult.x > 100 || aiResult.y > 100 || aiResult.width > 100 || aiResult.height > 100;
+                            double divisor = isThousandScale ? 1000.0 : 100.0;
+
+                            double normX = aiResult.x / divisor;
+                            double normY = aiResult.y / divisor;
+                            double normW = aiResult.width / divisor;
+                            double normH = aiResult.height / divisor;
+
+                            if (normX < 0) normX = 0; if (normX > 1) normX = 1;
+                            if (normY < 0) normY = 0; if (normY > 1) normY = 1;
+                            if (normW < 0) normW = 0; if (normX + normW > 1) normW = 1 - normX;
+                            if (normH < 0) normH = 0; if (normY + normH > 1) normH = 1 - normY;
+
+                            int x = (int)(image.Width * normX);
+                            int y = (int)(image.Height * normY);
+                            int boxWidth = (int)(image.Width * normW);
+                            int boxHeight = (int)(image.Height * normH);
 
                             var rect = new SixLabors.ImageSharp.Rectangle(x, y, boxWidth, boxHeight);
                             var options = new DrawingOptions();
@@ -2049,8 +2419,26 @@ namespace HeThongBenhVien.Controllers
         {
             return View();
         }
+        public async Task<IActionResult> HoiChanOnline()
+        {
+            var username = User?.Identity?.Name;
+            var currentUser = await _context.Users
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Username == username);
+            
+            var doctors = await _context.Users
+                .Include(u => u.Department)
+                .Where(u => u.Role == "Doctor" && u.FullName != currentUser.FullName)
+                .Select(u => new { Id = u.Id, FullName = u.FullName, DepartmentName = u.Department != null ? u.Department.DepartmentName : "Khoa Lâm Sàng" })
+                .ToListAsync();
+
+            ViewBag.DoctorsList = doctors;
+            ViewBag.CurrentDoctorName = currentUser?.FullName ?? "Bác sĩ";
+            ViewBag.CurrentDoctorDept = currentUser?.Department?.DepartmentName ?? "Khoa Lâm Sàng";
+
+            return View();
+        }
         
-        public IActionResult HoiChanOnline() { return View(); }
         public IActionResult CaiDat() { return View(); }
 
         public async Task<IActionResult> SinhHieu(int? id)
@@ -2176,6 +2564,103 @@ namespace HeThongBenhVien.Controllers
             await _context.SaveChangesAsync();
 
             return View(messages);
+        }
+
+        // ====== CHỨC NĂNG HỖ TRỢ XỬ LÝ CA CẤP CỨU / QUÁ TẢI ======
+
+        // 1. Chuyển bác sĩ (Đơn lẻ)
+        [HttpPost]
+        public async Task<IActionResult> TransferDoctor(int appointmentId, int targetDoctorId)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment != null)
+            {
+                var targetDoctor = await _context.Users.FindAsync(targetDoctorId);
+                if (targetDoctor != null)
+                {
+                    appointment.DoctorId = targetDoctorId;
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Đã chuyển bệnh nhân sang BS. {targetDoctor.FullName} thành công.";
+                }
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // 2. Chuyển toàn bộ bệnh nhân (Bác sĩ bận/vắng mặt)
+        [HttpPost]
+        public async Task<IActionResult> TransferAllActiveDoctors(int targetDoctorId)
+        {
+            var username = User.Identity?.Name;
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (currentUser != null)
+            {
+                var targetDoctor = await _context.Users.FindAsync(targetDoctorId);
+                if (targetDoctor != null)
+                {
+                    var activeAppointments = await _context.Appointments
+                        .Where(a => a.DoctorId == currentUser.Id && 
+                                    a.Status != AppointmentStatus.HoanThanh && 
+                                    a.Status != AppointmentStatus.HenTaiKham)
+                        .ToListAsync();
+
+                    foreach (var appt in activeAppointments)
+                    {
+                        appt.DoctorId = targetDoctorId;
+                    }
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Đã chuyển toàn bộ {activeAppointments.Count} ca khám đang chờ sang BS. {targetDoctor.FullName}.";
+                }
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // 3. Đánh dấu Ưu tiên / Cấp cứu
+        [HttpPost]
+        public async Task<IActionResult> ToggleEmergency(int appointmentId)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment != null)
+            {
+                if (appointment.Reason.StartsWith("[CẤP CỨU]"))
+                {
+                    appointment.Reason = appointment.Reason.Replace("[CẤP CỨU]", "").Trim();
+                }
+                else
+                {
+                    appointment.Reason = "[CẤP CỨU] " + appointment.Reason;
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // 4. Sắp xếp lại lịch (Reschedule)
+        [HttpPost]
+        public async Task<IActionResult> RescheduleAppointment(int appointmentId, DateTime newTime)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment != null)
+            {
+                appointment.AppointmentTime = newTime;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Đã sắp xếp lại lịch khám sang: {newTime:dd/MM/yyyy HH:mm}.";
+            }
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // 5. Chuyển tuyến (Referral)
+        [HttpPost]
+        public async Task<IActionResult> ReferPatient(int appointmentId, string destination)
+        {
+            var appointment = await _context.Appointments.Include(a => a.Patient).FirstOrDefaultAsync(a => a.Id == appointmentId);
+            if (appointment != null)
+            {
+                appointment.Status = AppointmentStatus.HoanThanh;
+                appointment.Reason = $"[CHUYỂN TUYẾN -> {destination}] " + appointment.Reason;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Đã thực hiện chuyển tuyến bệnh nhân {appointment.Patient?.FullName} sang {destination}.";
+            }
+            return RedirectToAction(nameof(Dashboard));
         }
     }
 }

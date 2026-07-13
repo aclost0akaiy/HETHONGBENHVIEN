@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HeThongBenhVien.Models.Appointment>
+@model IEnumerable<HeThongBenhVien.Models.Appointment>
 @using HeThongBenhVien.Models
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
@@ -74,8 +74,8 @@
 <div class="container-fluid p-0">
     <!-- Header -->
     <div class="mb-4">
-        <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Danh Sách Bệnh Nhân Hẹn Tái Khám</h2>
-        <p class="text-muted mb-0">Theo dõi ngày bệnh nhân cần quay lại kiểm tra định kỳ hoặc sau phẫu thuật.</p>
+        <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Gửi Thông Báo Thông Minh (AI Smart Auto-Notification)</h2>
+        <p class="text-muted mb-0">Hệ thống quét lịch hẹn tái khám của bệnh nhân để tự động gửi thông báo SMS trước ngày hẹn 1 ngày.</p>
     </div>
 
     <!-- Stats Bar Card -->
@@ -131,7 +131,7 @@
     <!-- Layout Split -->
     <div class="row">
         <!-- Main Table Column -->
-        <div class="col-md-9 mb-4">
+        <div class="col-md-8 mb-4">
             <!-- Notification Alerts -->
             @if (TempData["DoctorNotificationSuccess"] != null)
             {
@@ -155,11 +155,11 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead style="background-color: #ffffff;">
                         <tr style="border-bottom: 1px solid #f1f5f9 !important;">
-                            <th class="ps-4 py-3 text-uppercase fw-bold text-secondary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Mã BN</th>
-                            <th class="py-3 text-uppercase fw-bold text-secondary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Họ và Tên</th>
+                            <th class="ps-4 py-3 text-uppercase fw-bold text-secondary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Bệnh Nhân</th>
+                            <th class="py-3 text-uppercase fw-bold text-secondary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Thời Gian Hẹn Gần Nhất</th>
                             <th class="py-3 text-uppercase fw-bold text-secondary text-center" style="font-size: 0.75rem; letter-spacing: 0.5px;">Tình Trạng</th>
                             <th class="py-3 text-uppercase fw-bold text-secondary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Lý Do Khám Cũ</th>
-                            <th class="py-3 text-uppercase fw-bold text-secondary text-center" style="font-size: 0.75rem; letter-spacing: 0.5px;">Thông Báo</th>
+                            <th class="py-3 text-uppercase fw-bold text-secondary text-center" style="font-size: 0.75rem; letter-spacing: 0.5px;">SMS Nhắc Hẹn</th>
                             <th class="pe-4 py-3 text-uppercase fw-bold text-secondary text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Hành Động</th>
                         </tr>
                     </thead>
@@ -179,10 +179,15 @@
                                 data-overdue="@(isOverdue ? "true" : "false")"
                                 data-today="@(isToday ? "true" : "false")">
                                 
-                                <td class="ps-4 fw-bold">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fw-bold" style="border: 1px solid #bfdbfe !important; font-size: 0.75rem !important; border-radius: 6px;">@item.Patient?.PatientCode</span>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark" style="font-size: 0.95rem;">@item.Patient?.FullName</div>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 fw-bold" style="border: 1px solid #bfdbfe !important; font-size: 0.7rem !important; border-radius: 4px;">@item.Patient?.PatientCode</span>
                                 </td>
-                                <td><div class="fw-bold text-dark" style="font-size: 0.9rem;">@item.Patient?.FullName</div></td>
+                                <td>
+                                    <span class="fw-bold text-primary" style="font-size: 0.9rem;">
+                                        <i class="fa-regular fa-clock me-1 text-primary"></i> @item.AppointmentTime.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                </td>
                                 <td class="text-center">
                                     @if(isOverdue) {
                                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill fw-bold" style="font-size: 0.75rem !important; letter-spacing: 0.5px; padding: 6px 12px !important;">QUÁ HẠN</span>
@@ -239,7 +244,46 @@
         </div>
 
         <!-- Sidebar Filter Column -->
-        <div class="col-md-3 mb-4">
+        <div class="col-md-4 mb-4">
+            <!-- AI AUTO-SENDER SYSTEM STATUS CARD -->
+            <div class="glass-card p-4 mb-4 bg-white shadow-sm" style="border: 1px solid var(--border-color) !important; border-radius: 12px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold m-0 text-dark d-flex align-items-center gap-2" style="font-size: 0.9rem; letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-robot text-primary"></i> HỆ THỐNG GỬI TỰ ĐỘNG (AI)
+                    </h6>
+                    <div class="d-flex align-items-center gap-1.5">
+                        <span class="position-relative d-inline-flex" style="width: 10px; height: 10px;">
+                            <span class="animate-ping position-absolute inline-flex h-full w-full rounded-circle bg-success opacity-75" style="animation: pulse 1.5s infinite; position: absolute; width: 10px; height: 10px; border-radius: 50%; background-color: #22c55e;"></span>
+                            <span class="relative inline-flex rounded-circle h-3 w-3 bg-success" style="width: 10px; height: 10px; background-color: #22c55e; border-radius: 50%;"></span>
+                        </span>
+                        <span class="small fw-bold text-success" style="font-size: 0.75rem;">ONLINE</span>
+                    </div>
+                </div>
+
+                <style>
+                    @@keyframes pulse {
+                        0% { transform: scale(0.95); opacity: 0.5; }
+                        50% { transform: scale(1.3); opacity: 0; }
+                        100% { transform: scale(0.95); opacity: 0; }
+                    }
+                </style>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1" style="font-size: 0.8rem; font-weight: 500;">
+                        Quét nền tự động: <strong class="text-success">Đang hoạt động liên tục</strong>
+                    </div>
+                    <div class="small text-muted" style="font-size: 0.8rem; font-weight: 500;">
+                        Cập nhật cuối: <strong class="text-primary" id="bg-worker-last-updated">--:--:--</strong>
+                    </div>
+                </div>
+
+                <label class="form-label fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Nhật ký hệ thống (Live Logs)</label>
+                <div id="bg-worker-logs" class="p-2.5 bg-dark text-success rounded font-monospace" style="font-size: 0.75rem; height: 160px; overflow-y: auto; border: 1px solid #1e293b; line-height: 1.4; background-color: #0f172a !important; color: #38bdf8 !important;">
+                    <div class="text-secondary">[Đang tải nhật ký từ máy chủ...]</div>
+                </div>
+            </div>
+
+            <!-- FILTERS CARD -->
             <div class="glass-card p-4 bg-white" style="border: 1px solid var(--border-color) !important; border-radius: 12px; position: sticky; top: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold m-0 text-dark" style="font-size: 0.9rem; letter-spacing: 0.5px;">BỘ LỌC DỮ LIỆU</h6>
@@ -498,5 +542,27 @@
     // Initialize table filters on load
     document.addEventListener("DOMContentLoaded", () => {
         applyFilters();
+
+        // Poll background worker logs
+        function fetchBackgroundLogs() {
+            $.get('/Doctor/GetBackgroundSenderLogs', function(res) {
+                if (res && res.logs) {
+                    $('#bg-worker-last-updated').text(res.lastUpdated);
+                    let logHtml = '';
+                    res.logs.forEach(log => {
+                        let colorClass = 'text-info';
+                        if (log.includes('[ERROR]')) colorClass = 'text-danger';
+                        else if (log.includes('[AUTO-SMS]')) colorClass = 'text-success fw-bold';
+                        else if (log.includes('[SYSTEM]')) colorClass = 'text-info';
+                        
+                        logHtml += `<div class="${colorClass}" style="margin-bottom: 4px; word-break: break-all;">${log}</div>`;
+                    });
+                    $('#bg-worker-logs').html(logHtml);
+                }
+            });
+        }
+        
+        fetchBackgroundLogs();
+        setInterval(fetchBackgroundLogs, 3000); // refresh every 3 seconds
     });
 </script>

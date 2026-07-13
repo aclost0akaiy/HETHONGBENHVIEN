@@ -1,82 +1,615 @@
 @{
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewData["Title"] = "Hội Chẩn Online";
+    var doctorsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.DoctorsList);
 }
 
-<div class="container-fluid p-0 h-100">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;"><i class="fa-solid fa-video text-success me-2 blink"></i>Phòng Hội Chẩn Trực Tuyến</h2>
-            <p class="text-muted mb-0">Kết nối liên viện - Ca lâm sàng: Khối u gan phức tạp.</p>
-        </div>
-        <button class="btn btn-danger px-4 rounded-pill fw-bold"><i class="fa-solid fa-phone-slash me-2"></i> Kết Thúc Cuộc Gọi</button>
-    </div>
+<!-- Import Vue 2 and dynamic styling -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
 
-    <div class="row g-3">
-        <div class="col-md-8">
-            <div class="glass-card p-2 bg-dark position-relative rounded-4 overflow-hidden" style="min-height: 500px; display: flex; align-items: center; justify-content: center;">
-                <div class="text-white text-center">
-                    <i class="fa-solid fa-user-doctor fs-1 mb-3 text-secondary"></i>
-                    <h4 class="fw-bold">Camera GS.TS Lê Văn X - Viện K Trung Ương</h4>
-                    <p class="text-muted">Đang trình bày kết quả sinh thiết...</p>
+<div class="container-fluid p-4 h-100" id="hoichan-app">
+    
+    <!-- LOBBY SCREEN (SẢNH CHỜ) -->
+    <div v-if="!isInCall" class="fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">
+                    <i class="fa-solid fa-house-laptop text-primary me-2"></i>Sảnh Hội Chẩn Trực Tuyến
+                </h2>
+                <p class="text-muted mb-0">Hệ thống Telemedicine kết nối âm thanh và hình ảnh chất lượng cao.</p>
+            </div>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-3 py-2 rounded-pill fw-bold">
+                <i class="fa-solid fa-server me-1"></i> MÁY CHỦ TELEMEDICINE: ONLINE
+            </span>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Card 1: Tạo phòng hội chẩn -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-start bg-white">
+                    <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" 
+                         style="width: 54px; height: 54px; background-color: rgba(11, 87, 208, 0.08); color: #0b57d0; font-size: 1.4rem;">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-weight: 750 !important;">Tạo Phòng Hội Chẩn Mới</h5>
+                    <p class="text-secondary small mb-4" style="line-height: 1.6;">Khởi tạo phòng gọi hội chẩn trực tuyến tức thì và mời các chuyên gia hàng đầu tham gia thảo luận.</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Chủ đề hội chẩn / Ca lâm sàng</label>
+                        <input type="text" class="form-control rounded-3" v-model="newRoomTitle" placeholder="Ví dụ: Ca lâm sàng: Khối u gan phức tạp" />
+                    </div>
+
+                    <button class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold border-0 shadow-xs" 
+                            style="background-color: #0b57d0; transition: all 0.2s;"
+                            v-on:click="createRoom"
+                            :disabled="!newRoomTitle.trim()">
+                        <i class="fa-solid fa-video me-2"></i> Tạo Phòng & Bắt Đầu Gọi
+                    </button>
                 </div>
-                
-                <!-- PIP Camera -->
-                <div class="position-absolute bottom-0 end-0 m-3 bg-secondary rounded-3 border border-2 border-white overflow-hidden shadow-lg" style="width: 200px; height: 150px; display: flex; align-items: center; justify-content: center;">
-                     <div class="text-white text-center">
-                        <i class="fa-regular fa-user fs-3 mb-1"></i>
-                        <div style="font-size: 12px;">Bạn (BS. Nguyễn Văn A)</div>
-                     </div>
-                </div>
-                
-                <!-- Controls overlay -->
-                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-3">
-                    <button class="btn btn-light rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-microphone"></i></button>
-                    <button class="btn btn-light rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-video"></i></button>
-                    <button class="btn btn-primary rounded-circle" style="width: 50px; height: 50px;"><i class="fa-solid fa-display"></i></button>
+            </div>
+
+            <!-- Card 2: Tham gia bằng mã phòng -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-start bg-white">
+                    <div class="icon-box rounded-3 d-flex align-items-center justify-content-center mb-4" 
+                         style="width: 54px; height: 54px; background-color: rgba(239, 68, 68, 0.08); color: #ef4444; font-size: 1.4rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-weight: 750 !important;">Tham Gia Bằng Mã Phòng</h5>
+                    <p class="text-secondary small mb-4" style="line-height: 1.6;">Nhập mã phòng được cung cấp bởi điều phối viên hoặc bác sĩ chủ tọa để tham gia phòng hội chẩn đang có.</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Mã phòng hội chẩn (Room ID)</label>
+                        <input type="text" class="form-control rounded-3 text-uppercase fw-bold text-center" v-model="joinRoomId" placeholder="Mã định dạng: HC-XXXX-XXXX" />
+                    </div>
+
+                    <button class="btn btn-danger w-100 py-2.5 rounded-3 fw-bold border-0 shadow-xs" 
+                            style="background-color: #ef4444; transition: all 0.2s;"
+                            v-on:click="joinRoom"
+                            :disabled="!joinRoomId.trim()">
+                        <i class="fa-solid fa-phone me-2"></i> Tham Gia Phòng Gọi
+                    </button>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="glass-card h-100 d-flex flex-column">
-                <div class="p-3 border-bottom d-flex justify-content-between">
-                    <h6 class="fw-bold m-0"><i class="fa-solid fa-users me-2"></i>Thành Viên (4)</h6>
-                    <span class="badge bg-success rounded-pill">01:25:40</span>
-                </div>
-                <div class="p-3 flex-grow-1 overflow-auto">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">GS</div>
-                        <div>
-                            <div class="fw-bold">GS.TS Lê Văn X <span class="badge bg-secondary ms-1" style="font-size: 10px;">Chủ tọa</span></div>
-                            <small class="text-muted">Viện K Trung Ương</small>
+
+        <!-- Section: Danh sách bác sĩ đang Online -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-start bg-white">
+            <h5 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2" style="font-weight: 750 !important;">
+                <i class="fa-solid fa-user-doctor text-success"></i> Danh Sách Bác Sĩ Đang Online (Sẵn Sàng)
+            </h5>
+            
+            <div class="row g-3">
+                <div class="col-md-4" v-for="doc in availableDoctors" :key="doc.Id">
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-4 border bg-light bg-opacity-25 shadow-xs">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-sm d-flex align-items-center justify-content-center text-white rounded-circle fw-bold" 
+                                 style="width: 44px; height: 44px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                {{ getInitials(doc.FullName) }}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0.5" style="font-size: 0.95rem;">{{ doc.FullName }}</h6>
+                                <span class="small text-secondary">{{ doc.DepartmentName }}</span>
+                            </div>
                         </div>
-                        <i class="fa-solid fa-microphone text-success ms-auto"></i>
-                    </div>
-                     <div class="d-flex align-items-center mb-3">
-                        <div class="bg-info text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">NA</div>
-                        <div>
-                            <div class="fw-bold">Bạn (BS. Nguyễn Văn A)</div>
-                            <small class="text-muted">Khoa Nội - Bệnh viện Tỉnh</small>
-                        </div>
-                        <i class="fa-solid fa-microphone-slash text-danger ms-auto"></i>
-                    </div>
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">BS</div>
-                        <div>
-                            <div class="fw-bold">BS.CKII Trần B</div>
-                            <small class="text-muted">Khoa Chẩn đoán hình ảnh</small>
-                        </div>
-                        <i class="fa-solid fa-microphone-slash text-danger ms-auto"></i>
+                        <button class="btn btn-sm btn-success rounded-circle d-flex align-items-center justify-content-center" 
+                                style="width: 38px; height: 38px; transition: all 0.2s;"
+                                v-on:click="callDoctorDirectly(doc)"
+                                title="Gọi hội chẩn ngay">
+                            <i class="fa-solid fa-phone"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="p-3 border-top">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Nhập tin nhắn...">
-                        <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CALL SCREEN (PHÒNG HỘI CHẨN CHÍNH) -->
+    <div v-else class="fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="text-start">
+                <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">
+                    <i class="fa-solid fa-video text-danger me-2 blink"></i>{{ currentRoomTitle }}
+                </h2>
+                <div class="d-flex align-items-center gap-3 mt-1 text-secondary">
+                    <span class="small"><i class="fa-solid fa-hashtag me-1"></i> Mã Phòng: <strong>{{ activeRoomId }}</strong></span>
+                    <button class="btn btn-xs btn-outline-primary rounded-pill py-0.5 px-2.5 small" v-on:click="copyRoomId">
+                        <i class="fa-regular fa-copy me-1"></i> Sao chép
+                    </button>
+                </div>
+            </div>
+            <button class="btn btn-danger px-4 rounded-pill fw-bold border-0 shadow-sm" v-on:click="endCall">
+                <i class="fa-solid fa-phone-slash me-2"></i> Kết Thúc Cuộc Gọi
+            </button>
+        </div>
+
+        <div class="row g-3">
+            <!-- Left Column: Video Feeds -->
+            <div class="col-lg-8">
+                <div class="p-2 bg-dark position-relative rounded-4 overflow-hidden shadow-lg d-flex align-items-center justify-content-center" 
+                     style="height: 60vh; background-color: #0f172a !important;">
+                    
+                    <!-- Main Video View (Simulated Screen share or Caller stream) -->
+                    <div class="text-white text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center" v-if="!isScreenSharing">
+                        <div class="avatar-lg bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ getInitials(activeSpeaker) }}
+                        </div>
+                        <h4 class="fw-bold">{{ activeSpeaker }}</h4>
+                        <p class="text-secondary small">{{ activeSpeakerRole }}</p>
+                        <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 rounded-pill px-3 py-1.5 mt-2">
+                            <span class="animate-ping rounded-circle bg-danger d-inline-block me-1.5" style="width: 6px; height: 6px;"></span> Đang kết nối camera liên viện...
+                        </span>
+                    </div>
+                    
+                    <!-- Screen Share Video Feed -->
+                    <video id="mainVideoFeed" autoplay playsinline class="w-100 h-100 position-absolute top-0 start-0" style="object-fit: contain; background-color: black; z-index: 1;" v-show="isScreenSharing"></video>
+
+                    <!-- PIP Local Camera Video -->
+                    <div class="position-absolute bottom-0 end-0 m-3 bg-secondary rounded-3 border border-2 border-white overflow-hidden shadow-lg text-start" 
+                         style="width: 220px; height: 160px; z-index: 2;">
+                        <!-- Local Video Stream -->
+                        <video id="localVideoFeed" autoplay muted playsinline class="w-100 h-100" style="object-fit: cover;" v-show="isCameraOn"></video>
+                        <!-- Avatar placeholder if local camera is off -->
+                        <div class="w-100 h-100 bg-secondary d-flex flex-column align-items-center justify-content-center text-white p-2" v-show="!isCameraOn">
+                            <i class="fa-regular fa-user-circle fs-2 mb-1"></i>
+                            <div class="small fw-semibold text-center text-truncate w-100">Bạn ({{ currentDoctorName }})</div>
+                            <span class="small text-white-50" style="font-size: 10px;">Camera Tắt</span>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50 text-white small" style="font-size: 10px; font-weight: 600;" v-if="isCameraOn">
+                            Bạn ({{ currentDoctorName }})
+                        </div>
+                    </div>
+                    
+                    <!-- Controls overlay -->
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-3" style="z-index: 3;">
+                        <!-- Mic Button -->
+                        <button :class="['btn rounded-circle d-flex align-items-center justify-content-center', isMuted ? 'btn-danger' : 'btn-light']" 
+                                style="width: 50px; height: 50px; transition: all 0.2s;"
+                                v-on:click="toggleMic">
+                            <i :class="['fa-solid', isMuted ? 'fa-microphone-slash' : 'fa-microphone']"></i>
+                        </button>
+                        <!-- Camera Button -->
+                        <button :class="['btn rounded-circle d-flex align-items-center justify-content-center', !isCameraOn ? 'btn-danger' : 'btn-light']" 
+                                style="width: 50px; height: 50px; transition: all 0.2s;"
+                                v-on:click="toggleCamera">
+                            <i :class="['fa-solid', !isCameraOn ? 'fa-video-slash' : 'fa-video']"></i>
+                        </button>
+                        <!-- Share Screen Button -->
+                        <button :class="['btn rounded-circle d-flex align-items-center justify-content-center', isScreenSharing ? 'btn-success' : 'btn-primary']" 
+                                style="width: 50px; height: 50px; transition: all 0.2s;"
+                                v-on:click="toggleScreenShare">
+                            <i class="fa-solid fa-display"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Members & Live Chat -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white text-start d-flex flex-column" style="height: 60vh;">
+                    <!-- Tabs Header -->
+                    <ul class="nav nav-tabs border-bottom px-3 pt-2 bg-light bg-opacity-50">
+                        <li class="nav-item">
+                            <button :class="['nav-link border-0 fw-bold px-3 py-2 small', activeTab === 'members' ? 'active text-primary bg-white' : 'text-secondary bg-transparent']" v-on:click="activeTab = 'members'">
+                                <i class="fa-solid fa-users me-1.5"></i> Thành Viên ({{ callMembers.length }})
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button :class="['nav-link border-0 fw-bold px-3 py-2 small', activeTab === 'chat' ? 'active text-primary bg-white' : 'text-secondary bg-transparent']" v-on:click="activeTab = 'chat'">
+                                <i class="fa-solid fa-comments me-1.5"></i> Trò Chuyện
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Contents -->
+                    <div class="card-body p-0 flex-grow-1 d-flex flex-column overflow-hidden">
+                        
+                        <!-- TAB 1: MEMBERS LIST -->
+                        <div class="p-3 overflow-auto flex-grow-1" v-if="activeTab === 'members'">
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                                <span class="small text-secondary fw-semibold">Danh sách tham gia hội chẩn</span>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1 fw-bold" style="font-size: 11px;">
+                                    <i class="fa-regular fa-clock me-1"></i> {{ formattedTime }}
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light" v-for="m in callMembers" :key="m.name">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold" 
+                                     style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;">
+                                    {{ getInitials(m.name) }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark text-truncate" style="font-size: 0.92rem; max-width: 180px;">
+                                        {{ m.name }}
+                                        <span class="badge bg-secondary ms-1 small" style="font-size: 9px;" v-if="m.isHost">Chủ tọa</span>
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 ms-1 small" style="font-size: 9px;" v-if="m.isLocal">Bạn</span>
+                                    </div>
+                                    <small class="text-secondary" style="font-size: 11px;">{{ m.dept }}</small>
+                                </div>
+                                <i :class="['fa-solid ms-auto', m.isMuted ? 'fa-microphone-slash text-danger' : 'fa-microphone text-success']"></i>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: LIVE CHAT -->
+                        <div class="d-flex flex-column h-100 flex-grow-1 overflow-hidden" v-if="activeTab === 'chat'">
+                            <!-- Message logs -->
+                            <div class="p-3 flex-grow-1 overflow-auto bg-light bg-opacity-25" id="chat-messages-container" style="max-height: 42vh;">
+                                <div v-for="c in chatMessages" :key="c.id" class="mb-3 text-start">
+                                    <div class="d-flex align-items-baseline gap-2 mb-0.5">
+                                        <span class="small fw-bold text-dark" style="font-size: 0.88rem;">{{ c.sender }}</span>
+                                        <span class="text-muted" style="font-size: 9px;">{{ c.time }}</span>
+                                    </div>
+                                    <div class="p-2.5 rounded-3 bg-white border inline-block max-width-100 shadow-xs" 
+                                         style="font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; display: inline-block;">
+                                        {{ c.text }}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Message Input bar -->
+                            <div class="p-3 border-top bg-white">
+                                <form v-on:submit.prevent="sendChatMessage" class="input-group">
+                                    <input type="text" class="form-control" v-model="chatInputText" placeholder="Nhập tin nhắn..." style="border: 1.5px solid #cbd5e1; font-size: 0.9rem;" />
+                                    <button type="submit" class="btn btn-primary" :disabled="!chatInputText.trim()"><i class="fa-solid fa-paper-plane"></i></button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .glass-card {
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .hover-bg-light:hover {
+        background-color: #f1f5f9;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-ping {
+        animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @@keyframes ping {
+        75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+
+    .blink {
+        animation: blinkAnimation 1.5s infinite;
+    }
+
+    @@keyframes blinkAnimation {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        new Vue({
+            el: '#hoichan-app',
+            data: {
+                isInCall: false,
+                activeTab: 'members',
+                newRoomTitle: 'Ca lâm sàng: Khối u gan phức tạp',
+                joinRoomId: '',
+                activeRoomId: '',
+                currentRoomTitle: '',
+                
+                // Doctor and Available Doctors
+                currentDoctorName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.CurrentDoctorName)),
+                currentDoctorDept: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.CurrentDoctorDept)),
+                availableDoctors: @Html.Raw(doctorsJson),
+
+                // Controls state
+                isMuted: false,
+                isCameraOn: false,
+                isScreenSharing: false,
+                localStream: null,
+                screenStream: null,
+                
+                // Active Call Speakers & Members
+                activeSpeaker: 'GS.TS Lê Văn X',
+                activeSpeakerRole: 'Viện K Trung Ương - Chủ tọa hội chẩn',
+                callMembers: [],
+                
+                // Chat
+                chatInputText: '',
+                chatMessages: [],
+
+                // Time tracking
+                callDurationSeconds: 0,
+                timerInterval: null
+            },
+            computed: {
+                formattedTime: function() {
+                    var hrs = Math.floor(this.callDurationSeconds / 3600);
+                    var mins = Math.floor((this.callDurationSeconds % 3600) / 60);
+                    var secs = this.callDurationSeconds % 60;
+                    
+                    var fHrs = hrs < 10 ? '0' + hrs : hrs;
+                    var fMins = mins < 10 ? '0' + mins : mins;
+                    var fSecs = secs < 10 ? '0' + secs : secs;
+                    
+                    return fHrs + ':' + fMins + ':' + fSecs;
+                }
+            },
+            methods: {
+                getInitials: function(name) {
+                    if (!name) return 'BS';
+                    var parts = name.trim().split(' ');
+                    if (parts.length >= 2) {
+                        return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
+                    }
+                    return name.substring(0, 2).toUpperCase();
+                },
+                
+                createRoom: function() {
+                    var code = 'HC-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000);
+                    this.startCall(this.newRoomTitle, code);
+                },
+
+                joinRoom: function() {
+                    if (!this.joinRoomId.trim()) return;
+                    var roomTitle = 'Ca lâm sàng liên viện';
+                    this.startCall(roomTitle, this.joinRoomId.trim().toUpperCase());
+                },
+
+                callDoctorDirectly: function(doctor) {
+                    var title = 'Hội chẩn khẩn cấp cùng ' + doctor.FullName;
+                    var code = 'HC-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000);
+                    
+                    this.startCall(title, code);
+
+                    // Add the invited doctor to the call
+                    this.callMembers.push({
+                        name: doctor.FullName,
+                        dept: doctor.DepartmentName,
+                        isHost: false,
+                        isLocal: false,
+                        isMuted: false
+                    });
+
+                    // Add simulated welcome message from that doctor
+                    var self = this;
+                    setTimeout(function() {
+                        self.receiveSimulatedMessage(
+                            doctor.FullName,
+                            "Chào bác sĩ " + self.currentDoctorName + ", tôi đã nhận được thông báo yêu cầu hội chẩn và tham gia ngay đây!"
+                        );
+                    }, 2000);
+                },
+
+                startCall: function(title, roomId) {
+                    this.isInCall = true;
+                    this.currentRoomTitle = title;
+                    this.activeRoomId = roomId;
+                    this.callDurationSeconds = 0;
+                    this.chatMessages = [];
+                    
+                    // Setup initial members
+                    this.callMembers = [
+                        {
+                            name: this.currentDoctorName,
+                            dept: this.currentDoctorDept,
+                            isHost: true,
+                            isLocal: true,
+                            isMuted: false
+                        }
+                    ];
+
+                    // If not direct call, add a couple of default simulated consultation members
+                    if (this.callMembers.length === 1) {
+                        this.callMembers.push({
+                            name: 'GS.TS Lê Văn X',
+                            dept: 'Viện K Trung Ương',
+                            isHost: false,
+                            isLocal: false,
+                            isMuted: false
+                        });
+                        this.callMembers.push({
+                            name: 'BS.CKII Trần B',
+                            dept: 'Khoa Chẩn đoán hình ảnh',
+                            isHost: false,
+                            isLocal: false,
+                            isMuted: true
+                        });
+                    }
+
+                    // Start call timer
+                    var self = this;
+                    this.timerInterval = setInterval(function() {
+                        self.callDurationSeconds++;
+                    }, 1000);
+
+                    // Automatically start camera stream if available
+                    this.initLocalCamera();
+
+                    // Trigger simulated panel doctor chats
+                    this.triggerSimulatedConversations();
+                },
+
+                initLocalCamera: function() {
+                    var self = this;
+                    this.isCameraOn = true;
+                    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                        .then(function(stream) {
+                            self.localStream = stream;
+                            var video = document.getElementById('localVideoFeed');
+                            if (video) {
+                                video.srcObject = stream;
+                            }
+                        })
+                        .catch(function(err) {
+                            console.warn("Webcam not accessible, using avatar placeholder.", err);
+                            self.isCameraOn = false;
+                        });
+                },
+
+                toggleMic: function() {
+                    this.isMuted = !this.isMuted;
+                    if (this.localStream) {
+                        this.localStream.getAudioTracks().forEach(track => {
+                            track.enabled = !this.isMuted;
+                        });
+                    }
+                    // Update in members list
+                    var me = this.callMembers.find(m => m.isLocal);
+                    if (me) me.isMuted = this.isMuted;
+                },
+
+                toggleCamera: function() {
+                    this.isCameraOn = !this.isCameraOn;
+                    if (this.localStream) {
+                        this.localStream.getVideoTracks().forEach(track => {
+                            track.enabled = this.isCameraOn;
+                        });
+                    } else if (this.isCameraOn) {
+                        this.initLocalCamera();
+                    }
+                },
+
+                toggleScreenShare: function() {
+                    var self = this;
+                    if (this.isScreenSharing) {
+                        this.stopScreenShare();
+                    } else {
+                        navigator.mediaDevices.getDisplayMedia({ video: true })
+                            .then(function(stream) {
+                                self.screenStream = stream;
+                                self.isScreenSharing = true;
+                                
+                                var mainVideo = document.getElementById('mainVideoFeed');
+                                if (mainVideo) {
+                                    mainVideo.srcObject = stream;
+                                }
+
+                                // Listen for screen share end by browser control bar
+                                stream.getVideoTracks()[0].onended = function () {
+                                    self.stopScreenShare();
+                                };
+                            })
+                            .catch(function(err) {
+                                console.warn("Screen share cancelled or failed: ", err);
+                            });
+                    }
+                },
+
+                stopScreenShare: function() {
+                    if (this.screenStream) {
+                        this.screenStream.getTracks().forEach(track => track.stop());
+                        this.screenStream = null;
+                    }
+                    this.isScreenSharing = false;
+                    var mainVideo = document.getElementById('mainVideoFeed');
+                    if (mainVideo) mainVideo.srcObject = null;
+                },
+
+                copyRoomId: function() {
+                    navigator.clipboard.writeText(this.activeRoomId);
+                    alert("Đã sao chép mã phòng hội chẩn: " + this.activeRoomId);
+                },
+
+                endCall: function() {
+                    var confirmEnd = confirm("Bạn có chắc muốn kết thúc và rời phòng hội chẩn?");
+                    if (!confirmEnd) return;
+
+                    // Stop all streams
+                    if (this.localStream) {
+                        this.localStream.getTracks().forEach(track => track.stop());
+                        this.localStream = null;
+                    }
+                    this.stopScreenShare();
+
+                    // Reset states
+                    if (this.timerInterval) {
+                        clearInterval(this.timerInterval);
+                        this.timerInterval = null;
+                    }
+                    
+                    this.isInCall = false;
+                    this.isMuted = false;
+                    this.isCameraOn = false;
+                },
+
+                sendChatMessage: function() {
+                    if (!this.chatInputText.trim()) return;
+                    
+                    var timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    this.chatMessages.push({
+                        id: Date.now(),
+                        sender: this.currentDoctorName,
+                        text: this.chatInputText.trim(),
+                        time: timeStr
+                    });
+                    
+                    this.chatInputText = '';
+                    this.scrollChatToBottom();
+                },
+
+                receiveSimulatedMessage: function(sender, text) {
+                    var timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    this.chatMessages.push({
+                        id: Date.now(),
+                        sender: sender,
+                        text: text,
+                        time: timeStr
+                    });
+                    this.scrollChatToBottom();
+                },
+
+                scrollChatToBottom: function() {
+                    this.$nextTick(() => {
+                        var container = document.getElementById("chat-messages-container");
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
+                },
+
+                triggerSimulatedConversations: function() {
+                    var self = this;
+                    
+                    // Message 1 from GS.TS Lê Văn X
+                    setTimeout(function() {
+                        if (!self.isInCall) return;
+                        self.receiveSimulatedMessage(
+                            'GS.TS Lê Văn X',
+                            "Chào bác sĩ " + self.currentDoctorName + ", tôi đã xem qua kết quả sinh thiết mẫu bệnh phẩm. Các chỉ số đều có diễn biến rất phức tạp."
+                        );
+                    }, 4000);
+
+                    // Message 2 from BS.CKII Trần B
+                    setTimeout(function() {
+                        if (!self.isInCall) return;
+                        self.receiveSimulatedMessage(
+                            'BS.CKII Trần B',
+                            "Chào hội đồng. Kết quả chụp MRI mạch gan cho thấy vùng tổn thương lan rộng và bám sát các phân thùy. Tôi khuyên chúng ta nên chia sẻ màn hình để xem ảnh phim chụp."
+                        );
+                        // Make B unmute
+                        var docB = self.callMembers.find(m => m.name === 'BS.CKII Trần B');
+                        if (docB) docB.isMuted = false;
+                    }, 10000);
+                }
+            }
+        });
+    });
+</script>

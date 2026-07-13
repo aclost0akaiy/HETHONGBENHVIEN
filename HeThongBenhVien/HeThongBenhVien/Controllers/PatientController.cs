@@ -506,5 +506,103 @@ namespace HeThongBenhVien.Controllers
                 return Json(new { success = false, message = "Lỗi kết nối AI: " + ex.Message });
             }
         }
+
+        [Authorize]
+        public async Task<IActionResult> ChatAI()
+        {
+            var username = User?.Identity?.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            ViewBag.PatientName = user?.FullName ?? "Bệnh nhân";
+            ViewBag.PatientCode = user?.PatientCode ?? "";
+            
+            // Get unread notification count
+            int pid = await GetCurrentPatientId();
+            ViewBag.UnreadNotificationCount = await _context.Notifications
+                .CountAsync(n => n.PatientId == pid && !n.IsRead && n.IsForPatient);
+
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendChatMessage([FromBody] ChatAiRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req?.message))
+                return Json(new { success = false, message = "Tin nhắn không được để trống." });
+
+            try
+            {
+                string apiKey = _config["GeminiApiKey"] ?? "AQ.Ab8RN6J4SMQmPbxcj4SVJiawQciJYbwlAcwgfj4oZxwqBNDjNQ";
+                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+
+                var contentsList = new List<object>();
+
+                if (req.history != null)
+                {
+                    foreach (var h in req.history)
+                    {
+                        contentsList.Add(new
+                        {
+                            role = h.role == "user" ? "user" : "model",
+                            parts = new object[] { new { text = h.content } }
+                        });
+                    }
+                }
+
+                contentsList.Add(new
+                {
+                    role = "user",
+                    parts = new object[] { new { text = req.message } }
+                });
+
+                var payload = new
+                {
+                    systemInstruction = new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = "Bạn là trợ lý AI Y tế Chuyên sâu (Medical AI Advisor) của hệ thống QL KCB. Nhiệm vụ của bạn là tư vấn sức khỏe cho bệnh nhân. Hãy trả lời cực kỳ ân cần, khoa học, chính xác bằng tiếng Việt. Gợi ý các chuyên khoa hoặc lối sống lành mạnh nếu phù hợp. Luôn nhắc nhở thân thiện rằng lời khuyên của bạn chỉ mang tính tham khảo và khuyên họ nên đặt lịch khám với bác sĩ chuyên khoa nếu triệu chứng kéo dài hoặc nghiêm trọng." }
+                        }
+                    },
+                    contents = contentsList
+                };
+
+                using var client = new HttpClient();
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    using JsonDocument doc = JsonDocument.Parse(responseString);
+                    string reply = doc.RootElement
+                        .GetProperty("candidates")[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text").GetString();
+
+                    return Json(new { success = true, reply = reply });
+                }
+
+                string errorMsg = await response.Content.ReadAsStringAsync();
+                return Json(new { success = false, message = "Hệ thống AI không phản hồi: " + errorMsg });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi kết nối AI: " + ex.Message });
+            }
+        }
+    }
+
+    public class ChatAiRequest
+    {
+        public string message { get; set; }
+        public List<ChatMessage> history { get; set; }
+    }
+
+    public class ChatMessage
+    {
+        public string role { get; set; }
+        public string content { get; set; }
     }
 }

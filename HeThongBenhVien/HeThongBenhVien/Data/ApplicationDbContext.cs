@@ -41,6 +41,7 @@ namespace HeThongBenhVien.Data
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Response> Responses { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<PatientTransferLog> PatientTransferLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

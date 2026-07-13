@@ -37,5 +37,7 @@ namespace HeThongBenhVien.Models
         
         [System.ComponentModel.DataAnnotations.Schema.ForeignKey("DepartmentId")]
         public Department? Department { get; set; }
+
+        public bool IsBusy { get; set; } = false;
     }
 }
