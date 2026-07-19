@@ -535,6 +535,8 @@ app.Run();
 
 public static class NotificationBackgroundWorker
 {
+    public static string MessageTemplate { get; set; } = "[TỰ ĐỘNG NHẮC HẸN] Xin chào {TenBenhNhan}, bạn có lịch hẹn tái khám với bác sĩ vào ngày {NgayTaiKham} lúc {GioTaiKham}. Vui lòng đến đúng giờ.";
+
     public static System.Collections.Generic.List<string> Logs { get; } = new System.Collections.Generic.List<string>
     {
         $"[{System.DateTime.Now:HH:mm:ss}] [SYSTEM] Khởi động hệ thống gửi thông báo thông minh thành công.",
@@ -574,13 +576,14 @@ public class ReexaminationNotificationService : Microsoft.Extensions.Hosting.Bac
                 {
                     var db = scope.ServiceProvider.GetRequiredService<HeThongBenhVien.Data.ApplicationDbContext>();
                     
-                    var tomorrow = System.DateTime.Today.AddDays(1);
+                    var today = System.DateTime.Today;
+                    var maxDate = today.AddDays(3);
                     var appointments = await db.Appointments
                         .Include(a => a.Patient)
-                        .Where(a => a.Status == 8 && a.Patient != null && a.AppointmentTime.Date == tomorrow)
+                        .Where(a => a.Status == 8 && a.Patient != null && a.AppointmentTime.Date >= today && a.AppointmentTime.Date <= maxDate)
                         .ToListAsync(stoppingToken);
 
-                    NotificationBackgroundWorker.AddLog($"[SYSTEM] Tiến hành quét. Tìm thấy {appointments.Count} lịch hẹn tái khám vào ngày mai ({tomorrow:dd/MM/yyyy}).");
+                    NotificationBackgroundWorker.AddLog($"[SYSTEM] Tiến hành quét. Tìm thấy {appointments.Count} lịch hẹn tái khám từ ({today:dd/MM/yyyy}) đến ({maxDate:dd/MM/yyyy}).");
 
                     int sentCount = 0;
                     foreach (var appt in appointments)
@@ -589,11 +592,26 @@ public class ReexaminationNotificationService : Microsoft.Extensions.Hosting.Bac
                             .AnyAsync(n => n.PatientId == appt.PatientId && 
                                            n.DoctorId == appt.DoctorId && 
                                            n.IsForPatient && 
-                                           n.Message.Contains("nhắc nhở tái khám"), stoppingToken);
+                                           n.Message.Contains("NHẮC HẸN"), stoppingToken);
 
                         if (!alreadySent)
                         {
-                            string message = $"[TỰ ĐỘNG NHẮC HẸN] Xin chào {appt.Patient.FullName}, bạn có lịch hẹn tái khám với bác sĩ vào ngày {appt.AppointmentTime:dd/MM/yyyy} lúc {appt.AppointmentTime:HH:mm}. Vui lòng đến đúng giờ.";
+                            string message = NotificationBackgroundWorker.MessageTemplate;
+                            
+                            // Local function to perform case-insensitive replacement
+                            string ReplaceCaseInsensitive(string inputStr, string oldValue, string newValue)
+                            {
+                                return System.Text.RegularExpressions.Regex.Replace(
+                                    inputStr, 
+                                    System.Text.RegularExpressions.Regex.Escape(oldValue), 
+                                    newValue, 
+                                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                                );
+                            }
+
+                            message = ReplaceCaseInsensitive(message, "{TenBenhNhan}", appt.Patient.FullName ?? "");
+                            message = ReplaceCaseInsensitive(message, "{NgayTaiKham}", appt.AppointmentTime.ToString("dd/MM/yyyy"));
+                            message = ReplaceCaseInsensitive(message, "{GioTaiKham}", appt.AppointmentTime.ToString("HH:mm"));
                             
                             var notification = new Notification
                             {
@@ -606,7 +624,7 @@ public class ReexaminationNotificationService : Microsoft.Extensions.Hosting.Bac
                             };
                             db.Notifications.Add(notification);
                             sentCount++;
-                            NotificationBackgroundWorker.AddLog($"[AUTO-SMS] Đã tự động gửi thông báo cho bệnh nhân {appt.Patient.FullName} (Mã: {appt.Patient.PatientCode}).");
+                            NotificationBackgroundWorker.AddLog($"[AUTO-SMS] Đã tự động gửi thông báo cho bệnh nhân {appt.Patient.FullName} (Mã: {appt.Patient.PatientCode}). Lịch hẹn: {appt.AppointmentTime:dd/MM/yyyy HH:mm}.");
                         }
                     }
                     if (sentCount > 0)

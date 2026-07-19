@@ -551,6 +551,20 @@ namespace HeThongBenhVien.Controllers
             return RedirectToAction(nameof(QuanLyGia));
         }
 
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> SuaGia(int id, string feeName, decimal price, int insuranceCoverage)
+        {
+            var fee = await _context.HospitalFees.FindAsync(id);
+            if (fee != null)
+            {
+                fee.FeeName = feeName;
+                fee.Price = price;
+                fee.InsuranceCoverage = insuranceCoverage;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(QuanLyGia));
+        }
+
         // ==========================================
         // QUẢN LÝ KHO DƯỢC
         // ==========================================
@@ -563,10 +577,16 @@ namespace HeThongBenhVien.Controllers
 
             // Advanced Pharmacy Management: Cảnh báo sắp hết hạn / sắp hết tồn kho
             var lowStockMedicines = allMedicines.Where(m => m.StockQuantity <= m.MinStock && m.IsActive).ToList();
-            var expiringMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            var expiredMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value < DateTime.Now && m.IsActive).ToList();
+            var expiring1MonthMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value >= DateTime.Now && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            var expiring3MonthsMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value > DateTime.Now.AddDays(30) && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3) && m.IsActive).ToList();
+            var nearlyOutOfStockMedicines = allMedicines.Where(m => m.StockQuantity <= 1000 && m.IsActive).ToList();
             
             ViewBag.LowStockMedicines = lowStockMedicines;
-            ViewBag.ExpiringMedicines = expiringMedicines;
+            ViewBag.ExpiredMedicines = expiredMedicines;
+            ViewBag.Expiring1MonthMedicines = expiring1MonthMedicines;
+            ViewBag.Expiring3MonthsMedicines = expiring3MonthsMedicines;
+            ViewBag.NearlyOutOfStockMedicines = nearlyOutOfStockMedicines;
 
             // Load all prescription details with patient relationships
             var allPrescriptionDetails = await _context.PrescriptionDetails

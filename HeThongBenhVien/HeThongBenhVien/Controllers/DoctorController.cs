@@ -60,6 +60,10 @@ namespace HeThongBenhVien.Controllers
         public int y { get; set; } = 0;
         public int width { get; set; } = 0;
         public int height { get; set; } = 0;
+        public string quality { get; set; } = "Đạt tiêu chuẩn";
+        public string lesion { get; set; } = "Không phát hiện";
+        public string alignment { get; set; } = "Bình thường";
+        public string softTissue { get; set; } = "Bình thường";
     }
 
     [Authorize(Roles = "Doctor,Admin")]
@@ -362,6 +366,36 @@ namespace HeThongBenhVien.Controllers
                 .OrderBy(a => a.AppointmentTime)
                 .ToListAsync();
             ViewBag.ReexaminationAppointments = reexaminationAppointments;
+
+            // Calculate dynamic notification efficiency
+            double notificationEfficiency = 100.0;
+            if (reexaminationAppointments.Any())
+            {
+                int patientsWithAccountCount = 0;
+                foreach (var appt in reexaminationAppointments)
+                {
+                    if (appt.Patient != null)
+                    {
+                        bool hasAcc = await _context.Users.AnyAsync(u => u.PatientCode == appt.Patient.PatientCode);
+                        if (hasAcc)
+                        {
+                            patientsWithAccountCount++;
+                        }
+                    }
+                }
+                notificationEfficiency = ((double)patientsWithAccountCount / reexaminationAppointments.Count) * 100.0;
+            }
+            ViewBag.NotificationEfficiency = notificationEfficiency;
+
+            // Fetch today's sent notifications
+            var todayNotificationObj = DateTime.Today;
+            var sentNotificationsToday = await _context.Notifications
+                .Include(n => n.Patient)
+                .Where(n => n.CreatedAt >= todayNotificationObj && n.IsForPatient)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+            ViewBag.SentNotificationsToday = sentNotificationsToday;
 
             return View(viewModel);
         }
@@ -1140,7 +1174,7 @@ namespace HeThongBenhVien.Controllers
                 var options = string.Join("\n", protocols.Select(p => $"- {p.ICDCode}: {p.Diagnosis}"));
 
                 string apiKey = config["GeminiApiKey"] ?? "AQ.Ab8RN6J4SMQmPbxcj4SVJiawQciJYbwlAcwgfj4oZxwqBNDjNQ";
-                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}";
 
                 string promptText = $"Dựa trên các triệu chứng lâm sàng của bệnh nhân sau: \"{symptoms}\"\n\n" +
                     "Hãy thực hiện phân tích chẩn đoán y khoa như một bác sĩ chuyên khoa cấp cao. Hãy chọn mã bệnh ICD-10 phù hợp nhất.\n" +
@@ -1430,9 +1464,15 @@ namespace HeThongBenhVien.Controllers
             ViewBag.TotalMedicines = allMedicines.Count;
 
             var lowStockMedicines = allMedicines.Where(m => m.StockQuantity <= m.MinStock && m.IsActive).ToList();
-            var expiringMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            var expiredMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value < DateTime.Now && m.IsActive).ToList();
+            var expiring1MonthMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value >= DateTime.Now && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
+            var expiring3MonthsMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value > DateTime.Now.AddDays(30) && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3) && m.IsActive).ToList();
+            var nearlyOutOfStockMedicines = allMedicines.Where(m => m.StockQuantity <= 1000 && m.IsActive).ToList();
             ViewBag.LowStockMedicines = lowStockMedicines;
-            ViewBag.ExpiringMedicines = expiringMedicines;
+            ViewBag.ExpiredMedicines = expiredMedicines;
+            ViewBag.Expiring1MonthMedicines = expiring1MonthMedicines;
+            ViewBag.Expiring3MonthsMedicines = expiring3MonthsMedicines;
+            ViewBag.NearlyOutOfStockMedicines = nearlyOutOfStockMedicines;
 
             var waitingRecords = await _context.MedicalRecords
                 .Include(m => m.Appointment)
@@ -1617,11 +1657,15 @@ namespace HeThongBenhVien.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchMedicine(string keyword)
         {
-            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
-                return Json(new List<object>());
+            var query = _context.Medicines.AsQueryable();
 
-            var medicines = await _context.Medicines
-                .Where(m => m.Name.Contains(keyword))
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(m => m.Name.Contains(keyword) || m.Category.Contains(keyword));
+            }
+
+            var medicines = await query
+                .OrderBy(m => m.Name)
                 .Select(m => new {
                     id       = m.Id,
                     name     = m.Name,
@@ -1631,10 +1675,28 @@ namespace HeThongBenhVien.Controllers
                     isActive = m.IsActive,
                     category = m.Category
                 })
-                .Take(10)
+                .Take(100)
                 .ToListAsync();
 
             return Json(medicines);
+        }
+
+        // ====== API LẤY & CẬP NHẬT MẪU TIN NHẮN TỰ ĐỘNG ======
+        [HttpGet]
+        public IActionResult GetNotificationTemplate()
+        {
+            return Json(new { template = NotificationBackgroundWorker.MessageTemplate });
+        }
+
+        [HttpPost]
+        public IActionResult UpdateNotificationTemplate(string template)
+        {
+            if (string.IsNullOrWhiteSpace(template))
+            {
+                return Json(new { success = false, message = "Nội dung mẫu không được để trống." });
+            }
+            NotificationBackgroundWorker.MessageTemplate = template;
+            return Json(new { success = true });
         }
 
         // ====== API KIỂM TRA TRẠNG THÁI THUỐC ======
@@ -1922,38 +1984,21 @@ namespace HeThongBenhVien.Controllers
                     base64Image = Convert.ToBase64String(ms.ToArray());
                 }
 
-                // build dynamic clinical context based on filename to help Gemini locate subtle fractures and dental issues
-                string filename = (imageFile.FileName ?? "").ToLower();
-                string clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Hãy phân tích cực kỳ tỉ mỉ và chi tiết ảnh X-Quang/CT này. Hãy tìm kiếm cả những tổn thương nhỏ nhất, vết nứt rạn chân tóc (hairline fracture), tổn thương xương khớp vi mô, lệch khớp nhỏ hoặc tụ dịch nhỏ nhất. KHÔNG được bỏ sót bất kỳ chi tiết bất thường nào.";
-                string anatomicalGuidance = "";
-
-                if (filename.Contains("rang") || filename.Contains("teeth") || filename.Contains("ham") || filename.Contains("dental") || filename.Contains("1.jpg") || filename.Contains("1.png") || filename.StartsWith("1"))
-                {
-                    clinicalContext = "Bạn là một bác sĩ nha khoa chẩn đoán hình ảnh cấp cao. Bối cảnh lâm sàng: Đây là phim chụp X-Quang răng toàn cảnh (panorama), bệnh nhân sưng đau nướu vùng răng hàm dưới trái nghi ngờ răng khôn số 38 mọc lệch/ngầm đâm vào răng 37. Hãy tìm và phân tích kỹ vị trí chiếc răng khôn lệch đó. Tuyệt đối KHÔNG kết luận là bình thường.";
-                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Chiếc răng khôn mọc lệch nằm ở góc hàm dưới bên trái của bệnh nhân (tương ứng với góc dưới bên phải của ảnh panorama, tọa độ x khoảng 70-80%, y khoảng 60-75%). Hãy khoanh vùng chính xác vào chiếc răng này.";
-                }
-                else if (filename.Contains("suon") || filename.Contains("rib") || filename.Contains("nguc") || filename.Contains("chest") || filename.Contains("phoi") || filename.Contains("2.jpg") || filename.Contains("2.png") || filename.StartsWith("2") || filename.Contains("36.jpg") || filename.Contains("36.png") || filename.StartsWith("36"))
-                {
-                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim X-Quang ngực nghi ngờ chấn thương ngực kín sau tai nạn sinh hoạt. Có vết rạn nứt hoặc gãy ở các xương sườn bên phải (vùng cung sườn số 6, 7). Hãy phân tích thật kỹ và tìm ra vị trí vết rạn nứt đó. Tuyệt đối KHÔNG kết luận là bình thường.";
-                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Các xương sườn bên phải nằm ở nửa bên trái của tấm phim chụp thẳng (tọa độ x khoảng 20-30%, y khoảng 40-55%). Hãy tập trung tìm vết rạn và khoanh vùng đỏ tại đây, tránh xa nhãn chữ 'L' hoặc nhãn ở các vị trí khác.";
-                }
-                else if (filename.Contains("chan") || filename.Contains("leg") || filename.Contains("dui") || filename.Contains("ban_chan") || filename.Contains("foot") || filename.Contains("4.jpg") || filename.Contains("4.png") || filename.StartsWith("4") || filename.Contains("8.jpg") || filename.Contains("8.png") || filename.StartsWith("8"))
-                {
-                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim chụp cổ chân trái, bệnh nhân đau cấp tính nghi ngờ có vết rạn nứt hoặc gãy xương nhẹ ở đầu dưới xương chày hoặc xương mác. Hãy tìm kiếm cực kỳ tỉ mỉ tổn thương này. Tuyệt đối KHÔNG kết luận là bình thường.";
-                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Trên phim cổ chân này, xương mác (fibula) là xương nhỏ nằm ở rìa bên trái của cổ chân trên hình ảnh thẳng (phía bên trái của nửa ảnh bên trái). Vết nứt xương mác nằm ở rìa ngoài này (tọa độ x khoảng 18-23%, y khoảng 60-68%). Tuyệt đối KHÔNG ĐƯỢC khoanh vào chữ L ở tọa độ x khoảng 40% ở giữa ảnh.";
-                }
-                else if (filename.Contains("tay") || filename.Contains("arm") || filename.Contains("hand") || filename.Contains("cang_tay") || filename.Contains("3.jpg") || filename.Contains("3.png") || filename.StartsWith("3"))
-                {
-                    clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Bối cảnh lâm sàng: Đây là phim X-Quang tay/cẳng tay, bệnh nhân nghi ngờ chấn thương/gãy xương quay hoặc xương trụ sau ngã chống tay. Hãy tìm kiếm kỹ vết gãy xương. Tuyệt đối KHÔNG kết luận là bình thường.";
-                    anatomicalGuidance = "LƯU Ý TỌA ĐỘ GIẢI PHẪU: Vùng gãy xương trụ/xương quay cẳng tay nằm ở khoảng giữa thân xương (tọa độ x khoảng 45-55%, y khoảng 35-50%).";
-                }
+                // Completely dynamic analysis without hardcoded filenames or coordinates
+                string clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Hãy phân tích hình ảnh cận lâm sàng này (X-Quang, CT, MRI, Siêu âm hoặc hình ảnh nha khoa) một cách hoàn toàn khách quan và chính xác. Hãy kiểm tra kỹ tất cả các vùng giải phẫu hiển thị trên hình ảnh để phát hiện bất kỳ tổn thương, bệnh lý hoặc bất thường nào (ví dụ: vết gãy, nứt rạn xương, mọc lệch răng, tụ dịch, u xơ, viêm nhiễm, v.v.).";
+                string anatomicalGuidance = "Nếu phát hiện bất kỳ tổn thương hoặc bất thường nào, hãy xác định chính xác vị trí tọa độ của vùng tổn thương đó để khoanh vùng. Nếu hình ảnh hoàn toàn bình thường và không có bệnh lý nào, hãy ghi nhận kết quả là bình thường và đặt tọa độ x, y, width, height bằng 0.";
 
                 string promptText = $"{clinicalContext} " +
                     "YÊU CẦU QUAN TRỌNG: " +
                     "1. Trường 'finding' phải cực kỳ NGẮN GỌN và SÚC TÍCH (dưới 15 chữ), chỉ nêu rõ kết luận tổn thương chính. Ví dụ: 'Nứt đầu dưới xương mác cẳng chân' hoặc 'Răng khôn 38 mọc lệch 90 độ' hoặc 'Gãy xương sườn 6 bên phải'. Tuyệt đối không viết dài dòng giải thích. " +
                     "2. Khoanh vùng đỏ thật chính xác trên xương/răng bị tổn thương. Bỏ qua hoàn toàn các chữ cái nhãn ký hiệu y tế như chữ 'L', 'R', 'XRAY'. " +
+                    "3. Đánh giá thêm các tiêu chí hình ảnh: " +
+                    "   - quality: Đánh giá chất lượng hình ảnh (ví dụ: 'Đạt tiêu chuẩn chẩn đoán', 'Mờ nhẹ',...). " +
+                    "   - lesion: Nhận diện tổn thương xương/răng (ví dụ: 'Có vết gãy/nứt', 'Mọc lệch/ngầm', 'Không phát hiện bất thường',...). " +
+                    "   - alignment: Trạng thái khớp/vị trí giải phẫu (ví dụ: 'Bình thường', 'Di lệch nhẹ', 'Mọc ngầm chèn ép',...). " +
+                    "   - softTissue: Tình trạng mô mềm xung quanh (ví dụ: 'Sưng nề nhẹ', 'Bình thường', 'Tụ dịch nhẹ',...). " +
                     $"{anatomicalGuidance} " +
-                    "Trả về kết quả DƯỚI DẠNG JSON đúng cấu trúc sau (không kèm markdown): {{\"finding\": \"Mô tả ngắn gọn\", \"confidence\": 98.0, \"x\": 10, \"y\": 20, \"width\": 5, \"height\": 5}}.";
+                    "Trả về kết quả DƯỚI DẠNG JSON đúng cấu trúc sau (không kèm markdown): {{\"finding\": \"Mô tả ngắn gọn\", \"confidence\": 98.0, \"x\": 10, \"y\": 20, \"width\": 5, \"height\": 5, \"quality\": \"Đạt tiêu chuẩn chẩn đoán\", \"lesion\": \"Có vết gãy/nứt\", \"alignment\": \"Di lệch nhẹ\", \"softTissue\": \"Sưng nề nhẹ\"}}.";
 
                 // create payload with systemInstruction to guide reasoning
                 var payload = new
@@ -1962,7 +2007,7 @@ namespace HeThongBenhVien.Controllers
                     {
                         parts = new object[]
                         {
-                            new { text = "Bạn là chuyên gia chẩn đoán hình ảnh hàng đầu thế giới với hơn 30 năm kinh nghiệm. Nhiệm vụ của bạn là luôn phân tích cực kỳ tỉ mỉ và chỉ ra khu vực tổn thương nghi ngờ cao nhất khớp với bối cảnh lâm sàng của bệnh nhân. Không bao giờ được kết luận phim bình thường." }
+                            new { text = "Bạn là chuyên gia chẩn đoán hình ảnh hàng đầu thế giới với hơn 30 năm kinh nghiệm. Nhiệm vụ của bạn là luôn phân tích hình ảnh cận lâm sàng một cách khách quan, chính xác và trung thực nhất. Chỉ ra khu vực tổn thương nghi ngờ nếu có bất thường, nếu không phát hiện bất kỳ bệnh lý nào thì kết luận hình ảnh bình thường." }
                         }
                     },
                     contents = new[]
@@ -1981,7 +2026,7 @@ namespace HeThongBenhVien.Controllers
 
                 using var client = new HttpClient();
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}", content);
+                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}", content);
                 
                 string responseString = await response.Content.ReadAsStringAsync();
                 
@@ -2057,6 +2102,18 @@ namespace HeThongBenhVien.Controllers
 
                     if (root.TryGetProperty("height", out var hProp)) aiResult.height = GetIntSafe(hProp);
                     else if (root.TryGetProperty("Height", out var hPropCap)) aiResult.height = GetIntSafe(hPropCap);
+
+                    if (root.TryGetProperty("quality", out var qProp)) aiResult.quality = qProp.GetString() ?? "Đạt tiêu chuẩn";
+                    else if (root.TryGetProperty("Quality", out var qPropCap)) aiResult.quality = qPropCap.GetString() ?? "Đạt tiêu chuẩn";
+
+                    if (root.TryGetProperty("lesion", out var lProp)) aiResult.lesion = lProp.GetString() ?? "Không phát hiện";
+                    else if (root.TryGetProperty("Lesion", out var lPropCap)) aiResult.lesion = lPropCap.GetString() ?? "Không phát hiện";
+
+                    if (root.TryGetProperty("alignment", out var aProp)) aiResult.alignment = aProp.GetString() ?? "Bình thường";
+                    else if (root.TryGetProperty("Alignment", out var aPropCap)) aiResult.alignment = aPropCap.GetString() ?? "Bình thường";
+
+                    if (root.TryGetProperty("softTissue", out var stProp)) aiResult.softTissue = stProp.GetString() ?? "Bình thường";
+                    else if (root.TryGetProperty("SoftTissue", out var stPropCap)) aiResult.softTissue = stPropCap.GetString() ?? "Bình thường";
                 }
 
                 if (aiResult == null)
@@ -2112,10 +2169,19 @@ namespace HeThongBenhVien.Controllers
                     }
                 }
 
+                string criteriaReport = $"[KẾT QUẢ PHÂN TÍCH X-QUANG AI]\n" +
+                                       $"- Kết luận: {aiResult.finding}\n" +
+                                       $"- Độ tin cậy: {aiResult.confidence}%\n" +
+                                       $"- Tiêu chí đánh giá lâm sàng:\n" +
+                                       $"  + Chất lượng hình ảnh: {aiResult.quality}\n" +
+                                       $"  + Tổn thương cấu trúc: {aiResult.lesion}\n" +
+                                       $"  + Trạng thái khớp/vị trí: {aiResult.alignment}\n" +
+                                       $"  + Tình trạng mô mềm: {aiResult.softTissue}";
+
                 return Json(new { 
                     success = true, 
                     imageUrl = "/uploads/" + uniqueFileName, 
-                    resultText = $"{aiResult.finding} - Độ tin cậy: {aiResult.confidence}%" 
+                    resultText = criteriaReport
                 });
             }
             catch (Exception ex)

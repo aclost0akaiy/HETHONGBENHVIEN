@@ -288,9 +288,6 @@
                 formData.append('imageFile', file);
 
                 try {
-                    // Fake delay to show off the scanning animation
-                    await new Promise(r => setTimeout(r, 1500));
-
                     const response = await fetch('@Url.Action("AnalyzeImageAi", "Doctor")', {
                         method: 'POST',
                         body: formData

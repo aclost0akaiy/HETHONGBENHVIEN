@@ -5,8 +5,32 @@
     var prescriptions = ViewBag.Prescriptions as List<HeThongBenhVien.Models.Prescription> ?? new List<HeThongBenhVien.Models.Prescription>();
     var medicines = ViewBag.AllMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
     var lowStockMedicines = ViewBag.LowStockMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
-    var expiringMedicines = ViewBag.ExpiringMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
+    var expiredMedicines = ViewBag.ExpiredMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
+    var expiring1MonthMedicines = ViewBag.Expiring1MonthMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
+    var expiring3MonthsMedicines = ViewBag.Expiring3MonthsMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
+    var nearlyOutOfStockMedicines = ViewBag.NearlyOutOfStockMedicines as List<HeThongBenhVien.Models.Medicine> ?? new List<HeThongBenhVien.Models.Medicine>();
 }
+<style>
+    .alert-scroll-container {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 10px;
+        margin-top: 10px;
+    }
+    .alert-scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .alert-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .alert-scroll-container::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+    }
+    .alert-scroll-container::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+</style>
 
 <div class="container-fluid p-0">
     <!-- Header -->
@@ -19,36 +43,103 @@
         </div>
     </div>
 
-    <!-- Cảnh báo Kho Dược -->
-    @if (lowStockMedicines.Any())
-    {
-        <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger mb-4" role="alert">
-            <div class="d-flex align-items-center mb-2">
-                <h5 class="fw-bold text-danger mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo: Thuốc dưới mức tồn kho tối thiểu!</h5>
+    <div class="row g-3 mb-4">
+        <!-- Cột 1: Cảnh báo Tồn Kho / Sắp Hết -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Tồn Kho Sắp Hết</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (lowStockMedicines.Any() || nearlyOutOfStockMedicines.Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in lowStockMedicines)
+                            {
+                                <li><strong class="text-danger">@m.Name</strong> - Chỉ còn: <span class="badge bg-danger">@m.StockQuantity @m.Unit</span></li>
+                            }
+                            @foreach (var m in nearlyOutOfStockMedicines)
+                            {
+                                if (lowStockMedicines.Any(l => l.Id == m.Id)) { continue; }
+                                <li><strong>@m.Name</strong> - Còn lại: <span class="badge bg-warning text-dark">@m.StockQuantity @m.Unit</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Tồn kho ổn định.</p>
+                    }
+                </div>
             </div>
-            <ul class="mb-0 ps-4">
-                @foreach (var m in lowStockMedicines)
-                {
-                    <li><strong>@m.Name</strong> - Hiện có: <span class="badge bg-danger">@m.StockQuantity @m.Unit</span> (Hạn mức tối thiểu: @m.MinStock @m.Unit)</li>
-                }
-            </ul>
         </div>
-    }
 
-    @if (expiringMedicines.Any())
-    {
-        <div class="alert alert-warning shadow-sm border-0 border-start border-4 border-warning mb-4" role="alert">
-            <div class="d-flex align-items-center mb-2">
-                <h5 class="fw-bold text-warning mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cảnh báo: Thuốc sắp hết hạn sử dụng (trong 30 ngày tới)!</h5>
+        <!-- Cột 2: Cảnh báo Hết Hạn SD -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-circle-exclamation me-2"></i>Đã Hết Hạn Sử Dụng</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (expiredMedicines.Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in expiredMedicines)
+                            {
+                                var daysAgo = (DateTime.Now - m.ExpiryDate!.Value).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-danger ms-1">Quá @daysAgo ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc hết hạn.</p>
+                    }
+                </div>
             </div>
-            <ul class="mb-0 ps-4 text-dark">
-                @foreach (var m in expiringMedicines)
-                {
-                    <li><strong>@m.Name</strong> - Hạn SD: <strong>@(m.ExpiryDate?.ToString("dd/MM/yyyy"))</strong></li>
-                }
-            </ul>
         </div>
-    }
+
+        <!-- Cột 3: Cận Hạn (1 Tháng) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-warning shadow-sm border-0 border-top border-4 border-warning h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fffbeb; border-color: #f59e0b !important;">
+                <h6 class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cận Hạn (1 Tháng)</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (expiring1MonthMedicines.Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in expiring1MonthMedicines)
+                            {
+                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-warning text-dark ms-1">Còn @daysLeft ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 1T.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 4: Cận Hạn (3 Tháng) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-info shadow-sm border-0 border-top border-4 border-info h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #f0f9ff; border-color: #0ea5e9 !important;">
+                <h6 class="fw-bold text-info-emphasis mb-2"><i class="fa-solid fa-calendar-day me-2"></i>Cận Hạn (3 Tháng)</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (expiring3MonthsMedicines.Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in expiring3MonthsMedicines)
+                            {
+                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-info text-white ms-1">Còn @daysLeft ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 3T.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Tabs Navigation -->
     <ul class="nav nav-pills mb-4 gap-2 bg-light p-2 rounded-3 d-inline-flex border" id="pills-tab" role="tablist" style="border-radius: 12px !important;">
@@ -199,14 +290,14 @@
                 </div>
                 <div class="col-md-3">
                     <div class="glass-card p-3 border-start border-4 border-danger shadow-sm" style="border-radius: 12px; background: white;">
-                        <p class="text-muted fw-bold mb-1 small">Thuốc Sắp Hết Tồn Kho</p>
-                        <h3 class="fw-bold m-0 text-danger">@lowStockMedicines.Count</h3>
+                        <p class="text-muted fw-bold mb-1 small">Sắp Hết Thuốc (Tồn ≤ 1000)</p>
+                        <h3 class="fw-bold m-0 text-danger">@medicines.Count(m => m.StockQuantity <= 1000)</h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="glass-card p-3 border-start border-4 border-warning shadow-sm" style="border-radius: 12px; background: white;">
-                        <p class="text-muted fw-bold mb-1 small">Thuốc Sắp Hết Hạn SD</p>
-                        <h3 class="fw-bold m-0 text-warning">@expiringMedicines.Count</h3>
+                        <p class="text-muted fw-bold mb-1 small">Thuốc Sắp Hết Hạn / 3 Tháng</p>
+                        <h3 class="fw-bold m-0 text-warning">@medicines.Count(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3))</h3>
                     </div>
                 </div>
             </div>

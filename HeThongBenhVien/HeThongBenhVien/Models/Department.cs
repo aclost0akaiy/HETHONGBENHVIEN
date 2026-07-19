@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema; // 1. THÊM DÒNG NÀY Ở ĐẦU FILE
 
 namespace HeThongBenhVien.Models

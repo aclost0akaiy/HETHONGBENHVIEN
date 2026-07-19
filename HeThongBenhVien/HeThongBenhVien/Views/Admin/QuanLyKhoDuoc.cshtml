@@ -4,6 +4,41 @@
     ViewData["Title"] = "Quản Lý Kho Dược"; 
 }
 
+<style>
+    .alert-scroll-container {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 10px;
+        margin-top: 10px;
+    }
+    .alert-scroll-container::-webkit-scrollbar,
+    .table-scroll-container::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .alert-scroll-container::-webkit-scrollbar-track,
+    .table-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .alert-scroll-container::-webkit-scrollbar-thumb,
+    .table-scroll-container::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+    }
+    .alert-scroll-container::-webkit-scrollbar-thumb:hover,
+    .table-scroll-container::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    #medicineTable thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fafc !important;
+        z-index: 2;
+        box-shadow: inset 0 -2px 0 #e2e8f0;
+    }
+</style>
+
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,31 +50,113 @@
         </button>
     </div>
 
-    @if (ViewBag.LowStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any())
-    {
-        <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger mb-4" role="alert">
-            <h5 class="fw-bold text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh báo: Thuốc dưới mức tồn kho tối thiểu!</h5>
-            <ul class="mb-0 mt-2 ps-4">
-                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines)
-                {
-                    <li><strong>@m.Name</strong> - Hiện có: <span class="badge bg-danger">@m.StockQuantity</span> (Tối thiểu: @m.MinStock)</li>
-                }
-            </ul>
+    <div class="row g-3 mb-4">
+        <!-- Cột 1: Cảnh báo Tồn Kho / Sắp Hết -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Tồn Kho Sắp Hết</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @{
+                        var hasNearlyOut = ViewBag.NearlyOutOfStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.NearlyOutOfStockMedicines).Any();
+                        var hasLowStock = ViewBag.LowStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any();
+                    }
+                    @if (hasNearlyOut || hasLowStock)
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @if (hasLowStock)
+                            {
+                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines)
+                                {
+                                    <li><strong class="text-danger">@m.Name</strong> - Chỉ còn: <span class="badge bg-danger">@m.StockQuantity</span> (Tối thiểu: @m.MinStock)</li>
+                                }
+                            }
+                            @if (hasNearlyOut)
+                            {
+                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.NearlyOutOfStockMedicines)
+                                {
+                                    if (hasLowStock && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any(l => l.Id == m.Id)) { continue; }
+                                    <li><strong>@m.Name</strong> - Còn lại: <span class="badge bg-warning text-dark">@m.StockQuantity</span></li>
+                                }
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Tồn kho ổn định.</p>
+                    }
+                </div>
+            </div>
         </div>
-    }
 
-    @if (ViewBag.ExpiringMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiringMedicines).Any())
-    {
-        <div class="alert alert-warning shadow-sm border-0 border-start border-4 border-warning mb-4" role="alert">
-            <h5 class="fw-bold text-warning-emphasis"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cảnh báo: Thuốc sắp hết hạn sử dụng (trong 30 ngày tới)!</h5>
-            <ul class="mb-0 mt-2 ps-4 text-dark">
-                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiringMedicines)
-                {
-                    <li><strong>@m.Name</strong> - Hạn SD: <strong>@(m.ExpiryDate?.ToString("dd/MM/yyyy"))</strong></li>
-                }
-            </ul>
+        <!-- Cột 2: Cảnh báo Hết Hạn SD -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-circle-exclamation me-2"></i>Đã Hết Hạn Sử Dụng</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (ViewBag.ExpiredMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines).Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines)
+                            {
+                                var daysAgo = (DateTime.Now - m.ExpiryDate!.Value).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-danger ms-1">Quá @daysAgo ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc hết hạn.</p>
+                    }
+                </div>
+            </div>
         </div>
-    }
+
+        <!-- Cột 3: Cận Hạn (1 Tháng) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-warning shadow-sm border-0 border-top border-4 border-warning h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fffbeb; border-color: #f59e0b !important;">
+                <h6 class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cận Hạn (1 Tháng)</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (ViewBag.Expiring1MonthMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines).Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines)
+                            {
+                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-warning text-dark ms-1">Còn @daysLeft ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 1T.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 4: Cận Hạn (3 Tháng) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="alert alert-info shadow-sm border-0 border-top border-4 border-info h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #f0f9ff; border-color: #0ea5e9 !important;">
+                <h6 class="fw-bold text-info-emphasis mb-2"><i class="fa-solid fa-calendar-day me-2"></i>Cận Hạn (3 Tháng)</h6>
+                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
+                    @if (ViewBag.Expiring3MonthsMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines).Any())
+                    {
+                        <ul class="mb-0 ps-3 small text-dark">
+                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines)
+                            {
+                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                <li><strong>@m.Name</strong> <span class="badge bg-info text-white ms-1">Còn @daysLeft ngày</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 3T.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -56,13 +173,13 @@
         </div>
         <div class="col-md-3">
             <div class="glass-card p-3 border-start border-4 border-danger">
-                <p class="text-muted fw-bold mb-1 small">Sắp Hết</p>
-                <h3 class="fw-bold m-0 text-danger">@(Model != null ? Model.Count(m => m.StockQuantity <= m.MinStock) : 0)</h3>
+                <p class="text-muted fw-bold mb-1 small">Sắp Hết Thuốc (Tồn ≤ 1000)</p>
+                <h3 class="fw-bold m-0 text-danger">@(Model != null ? Model.Count(m => m.StockQuantity <= 1000) : 0)</h3>
             </div>
         </div>
         <div class="col-md-3">
             <div class="glass-card p-3 border-start border-4 border-warning">
-                <p class="text-muted fw-bold mb-1 small">Sắp Hết Hạn</p>
+                <p class="text-muted fw-bold mb-1 small">Thuốc Sắp Hết Hạn / 3 Tháng</p>
                 <h3 class="fw-bold m-0 text-warning">@(Model != null ? Model.Count(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3)) : 0)</h3>
             </div>
         </div>
@@ -70,9 +187,34 @@
 
     <!-- Danh sách tất cả loại thuốc -->
     <div class="glass-card p-4 mb-4">
-        <h5 class="fw-bold text-dark mb-3">Danh Sách Tất Cả Loại Thuốc Trong Hệ Thống</h5>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <h5 class="fw-bold text-dark mb-0">Danh Sách Tất Cả Loại Thuốc Trong Hệ Thống</h5>
+            
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <!-- Dropdown chọn hiện dòng -->
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small text-muted text-nowrap">Hiển thị</span>
+                    <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto; min-width: 85px; border-radius: 6px;">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                    <span class="small text-muted text-nowrap">dòng</span>
+                </div>
+                
+                <!-- Thanh tìm kiếm -->
+                <div class="position-relative">
+                    <input type="text" id="tableSearchInput" class="form-control form-control-sm ps-5" placeholder="Tìm kiếm thuốc..." style="width: 250px; border-radius: 6px;">
+                    <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%);"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thanh cuộn lên xuống container -->
+        <div class="table-scroll-container border rounded" style="max-height: 480px; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0" id="medicineTable">
                 <thead class="table-light">
                     <tr>
                         <th>Tên Thuốc</th>
@@ -96,7 +238,28 @@
                         @if(item.StockQuantity <= item.MinStock){<span class="badge bg-danger">@item.StockQuantity ⚠️</span>}
                         else{<span class="badge bg-success">@item.StockQuantity</span>}
                     </td>
-                    <td>@(item.ExpiryDate.HasValue ? item.ExpiryDate.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                    <td>
+                        @if (item.ExpiryDate.HasValue)
+                        {
+                            <span>@item.ExpiryDate.Value.ToString("dd/MM/yyyy")</span>
+                            if (item.ExpiryDate.Value < DateTime.Now)
+                            {
+                                <span class="badge bg-danger ms-1" style="font-size: 10px;">Hết hạn</span>
+                            }
+                            else if (item.ExpiryDate.Value <= DateTime.Now.AddDays(30))
+                            {
+                                <span class="badge bg-warning text-dark ms-1" style="font-size: 10px;">Cận hạn (1T)</span>
+                            }
+                            else if (item.ExpiryDate.Value <= DateTime.Now.AddMonths(3))
+                            {
+                                <span class="badge bg-info text-white ms-1" style="font-size: 10px;">Cận hạn (3T)</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </td>
                     <td class="small text-muted">@item.Manufacturer</td>
                     <td class="text-center">
                         <form asp-action="XoaThuoc" method="post" class="d-inline">
@@ -113,6 +276,14 @@
                 }
                 </tbody>
             </table>
+        </div>
+
+        <!-- Pagination controls and info -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
+            <div id="paginationInfo" class="small text-muted fw-semibold"></div>
+            <nav>
+                <ul id="paginationContainer" class="pagination pagination-sm mb-0 gap-1"></ul>
+            </nav>
         </div>
     </div>
 
@@ -228,6 +399,136 @@
 
 @section Scripts {
     <script>
-        // Các cảnh báo hiện đã được xử lý hiển thị trực tiếp trên giao diện UI (Alert Dashboard).
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("medicineTable");
+            if (!table) return;
+            
+            const tbody = table.querySelector("tbody");
+            const originalRows = Array.from(tbody.querySelectorAll("tr"));
+            let filteredRows = [...originalRows];
+            
+            const searchInput = document.getElementById("tableSearchInput");
+            const pageSizeSelect = document.getElementById("pageSizeSelect");
+            const paginationInfo = document.getElementById("paginationInfo");
+            const paginationContainer = document.getElementById("paginationContainer");
+            
+            let currentPage = 1;
+            let pageSize = parseInt(pageSizeSelect.value) || 25;
+            
+            function updateTable() {
+                const query = searchInput.value.toLowerCase().trim();
+                
+                // Filter rows
+                if (query === "") {
+                    filteredRows = [...originalRows];
+                } else {
+                    filteredRows = originalRows.filter(row => {
+                        const name = row.cells[0]?.textContent.toLowerCase() || "";
+                        const category = row.cells[1]?.textContent.toLowerCase() || "";
+                        const manufacturer = row.cells[6]?.textContent.toLowerCase() || "";
+                        return name.includes(query) || category.includes(query) || manufacturer.includes(query);
+                    });
+                }
+                
+                // Handle pagination size
+                const val = pageSizeSelect.value;
+                if (val === "all") {
+                    pageSize = filteredRows.length;
+                } else {
+                    pageSize = parseInt(val) || 25;
+                }
+                
+                const totalRows = filteredRows.length;
+                const totalPages = Math.ceil(totalRows / pageSize) || 1;
+                
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                }
+                if (currentPage < 1) {
+                    currentPage = 1;
+                }
+                
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = Math.min(startIndex + pageSize, totalRows);
+                
+                // Show/hide rows
+                originalRows.forEach(row => {
+                    row.style.display = "none";
+                });
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    if (filteredRows[i]) {
+                        filteredRows[i].style.display = "";
+                    }
+                }
+                
+                // Update pagination info
+                if (totalRows === 0) {
+                    paginationInfo.textContent = "Hiển thị 0 đến 0 trong số 0 sản phẩm";
+                } else {
+                    paginationInfo.textContent = `Hiển thị ${startIndex + 1} đến ${endIndex} trong số ${totalRows} thuốc`;
+                }
+                
+                // Build pagination buttons
+                paginationContainer.innerHTML = "";
+                
+                // Prev button
+                const prevLi = document.createElement("li");
+                prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+                prevLi.innerHTML = `<button class="page-link" type="button"><i class="fas fa-chevron-left"></i></button>`;
+                if (currentPage > 1) {
+                    prevLi.addEventListener("click", () => {
+                        currentPage--;
+                        updateTable();
+                    });
+                }
+                paginationContainer.appendChild(prevLi);
+                
+                // Page numbers
+                // We show max 5 page buttons around the current page
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
+                for (let p = startPage; p <= endPage; p++) {
+                    const pageLi = document.createElement("li");
+                    pageLi.className = `page-item ${currentPage === p ? "active" : ""}`;
+                    pageLi.innerHTML = `<button class="page-link" type="button">${p}</button>`;
+                    pageLi.addEventListener("click", () => {
+                        currentPage = p;
+                        updateTable();
+                    });
+                    paginationContainer.appendChild(pageLi);
+                }
+                
+                // Next button
+                const nextLi = document.createElement("li");
+                nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+                nextLi.innerHTML = `<button class="page-link" type="button"><i class="fas fa-chevron-right"></i></button>`;
+                if (currentPage < totalPages) {
+                    nextLi.addEventListener("click", () => {
+                        currentPage++;
+                        updateTable();
+                    });
+                }
+                paginationContainer.appendChild(nextLi);
+            }
+            
+            // Event listeners
+            searchInput.addEventListener("input", () => {
+                currentPage = 1;
+                updateTable();
+            });
+            
+            pageSizeSelect.addEventListener("change", () => {
+                currentPage = 1;
+                updateTable();
+            });
+            
+            // Initial call
+            updateTable();
+        });
     </script>
 }

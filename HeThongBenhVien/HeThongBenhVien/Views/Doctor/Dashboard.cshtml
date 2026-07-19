@@ -10,7 +10,7 @@
     <!-- Header Section -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: #1e293b;">Chào buổi sáng, BS. @(ViewBag.DoctorName ?? "Nguyễn Văn A")!</h2>
+            <h2 class="h3 mb-1 text-gray-800" style="font-weight: 700; color: var(--text-dark);">Chào buổi sáng, BS. @(ViewBag.DoctorName ?? "Nguyễn Văn A")!</h2>
             <p class="text-muted mb-0">Dưới đây là tổng quan lịch trình và công việc của bạn trong ngày hôm nay.</p>
         </div>
                 <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto mt-3 mt-md-0">
@@ -41,7 +41,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.8rem;">Tổng bệnh nhân chưa khám</div>
-                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.TodayPatientsCount</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: var(--text-dark); font-weight: 700;">@Model.TodayPatientsCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(14, 165, 233, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0ea5e9; font-size: 20px;">
                         <i class="fa-solid fa-users"></i>
@@ -58,7 +58,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1" style="font-size: 0.8rem;">Đã khám xong</div>
-                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.CompletedPatientsCount</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: var(--text-dark); font-weight: 700;">@Model.CompletedPatientsCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px;">
                         <i class="fa-solid fa-check-double"></i>
@@ -75,7 +75,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái chờ khám</div>
-                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.WaitingResultsCount</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: var(--text-dark); font-weight: 700;">@Model.WaitingResultsCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 20px;">
                         <i class="fa-solid fa-flask-vial"></i>
@@ -92,14 +92,14 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <div class="text-xs font-weight-bold text-danger text-uppercase mb-1" style="font-size: 0.8rem;">Trạng thái ưu tiên</div>
-                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: #0f172a; font-weight: 700;">@Model.EmergencyCount</div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800" style="color: var(--text-dark); font-weight: 700;">@Model.EmergencyCount</div>
                     </div>
                     <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 20px;">
                         <i class="fa-solid fa-truck-medical"></i>
                     </div>
                 </div>
                 <div class="mt-3 text-sm text-danger font-weight-bold">
-                    <i class="fa-solid fa-circle-exclamation blink"></i> Yêu cầu xử lý ngay
+                    <i class="fa-solid fa-circle-exclamation"></i> Yêu cầu xử lý ngay
                 </div>
             </div>
         </div>
@@ -769,20 +769,53 @@
                             </div>
                         </div>
 
-                        <!-- Notification Efficiency Card -->
-                        <div class="glass-card p-3 bg-white d-flex align-items-center justify-content-between shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: #eff6ff; color: #2563eb;">
-                                    <i class="fa-solid fa-envelope-open-text fs-4"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">Hiệu suất thông báo</div>
-                                    <div class="text-muted small mt-1" style="font-size: 0.78rem;">Thống kê tỷ lệ tin nhắn được gửi thành công hôm nay.</div>
-                                </div>
+                        <!-- Mẫu Tin Nhắn Tự Động (Có thể sửa) -->
+                        <div class="glass-card p-3 bg-white mb-3 shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold text-uppercase text-muted mb-0" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-gears text-primary me-1"></i>Cấu hình nội dung tin nhắn tự động
+                                </label>
+                                <span class="badge bg-success bg-opacity-10 text-success small border border-success border-opacity-25 px-2 py-0.5 rounded-pill" style="font-size: 0.65rem;">CÓ THỂ SỬA</span>
                             </div>
-                            <div class="text-end">
-                                <div class="fw-bold text-primary" style="font-size: 1.6rem; color: #2563eb !important; line-height: 1;">98.2%</div>
-                                <div class="text-success fw-bold small mt-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">TĂNG 2% SO VỚI HÔM QUA</div>
+                            <div class="input-group">
+                                <textarea id="autoSenderTemplateInput" class="form-control form-control-sm" rows="2" style="font-size: 0.82rem; border-radius: 6px; resize: none;" placeholder="Đang tải mẫu tin nhắn..."></textarea>
+                                <button class="btn btn-primary btn-sm ms-2 px-3 fw-bold d-flex align-items-center justify-content-center" type="button" onclick="saveTemplate()" style="border-radius: 6px; min-width: 60px;">Lưu</button>
+                            </div>
+                            <div class="small text-muted mt-2" style="font-size: 0.7rem;">
+                                Hỗ trợ các thẻ: <strong class="text-primary">{TenBenhNhan}</strong>, <strong class="text-primary">{NgayTaiKham}</strong>, <strong class="text-primary">{GioTaiKham}</strong>.
+                            </div>
+                        </div>
+
+                        <!-- Đã gửi thành công hôm nay -->
+                        <div class="glass-card p-3 bg-white mb-3 shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold text-uppercase text-muted mb-0" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-circle-check text-success me-1"></i>Đã gửi thành công hôm nay
+                                </label>
+                                <span class="badge bg-success bg-opacity-10 text-success small border border-success border-opacity-25 px-2 py-0.5 rounded-pill" style="font-size: 0.65rem;">HOẠT ĐỘNG</span>
+                            </div>
+                            <div style="max-height: 120px; overflow-y: auto; padding-right: 4px;">
+                                @if (ViewBag.SentNotificationsToday != null && ((List<HeThongBenhVien.Models.Notification>)ViewBag.SentNotificationsToday).Any())
+                                {
+                                    <div class="d-flex flex-column gap-2">
+                                        @foreach (var notif in (List<HeThongBenhVien.Models.Notification>)ViewBag.SentNotificationsToday)
+                                        {
+                                            <div class="p-2 rounded bg-light border-start border-3 border-success d-flex justify-content-between align-items-start" style="font-size: 0.78rem;">
+                                                <div style="flex: 1; padding-right: 8px;">
+                                                    <span class="fw-bold text-dark">@(notif.Patient?.FullName ?? "Bệnh nhân")</span>
+                                                    <span class="text-muted d-block mt-0.5">@notif.Message</span>
+                                                </div>
+                                                <span class="text-muted font-monospace" style="font-size: 0.65rem;">@notif.CreatedAt.ToString("HH:mm")</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-3 text-muted" style="font-size: 0.8rem;">
+                                        <i class="fa-solid fa-bell-slash me-1 opacity-50"></i> Chưa có thông báo nào được gửi đi hôm nay.
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -800,7 +833,7 @@
                                     <div class="text-secondary">[Đang tải nhật ký từ máy chủ...]</div>
                                 </div>
                             </div>
-
+ 
                             <!-- Manual message sender -->
                             <div class="glass-card overflow-hidden bg-white shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
                                 <div class="p-3 text-white" style="background-color: #eff6ff; border-bottom: 1px solid #bfdbfe;">
@@ -814,7 +847,7 @@
                                         </div>
                                         <p class="text-secondary small mb-0">Chưa có bệnh nhân nào được chọn từ danh sách.</p>
                                     </div>
-
+ 
                                     <!-- Active Form State (Hidden when no patient selected) -->
                                     <div id="selectedPatientActiveState" class="d-none">
                                         <div id="selectedPatientInfo" class="mb-3 p-3 rounded bg-light border border-light" style="font-size: 0.85rem;">
@@ -835,11 +868,33 @@
                                     </div>
                                 </div>
                             </div>
-
+ 
                             <!-- Trợ giúp AI Blue Banner -->
                             <div class="card border-0 p-3 text-white" style="background-color: #1d4ed8; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-image: linear-gradient(135deg, #1d4ed8, #2563eb);">
                                 <div class="small fw-bold text-uppercase opacity-75" style="font-size: 0.65rem; letter-spacing: 0.5px;">TRỢ GIÚP AI</div>
                                 <h5 class="fw-bold mb-0 mt-1" style="font-size: 1.05rem; line-height: 1.3;">Tự động soạn tin nhắn<br>với AI Clinical</h5>
+                            </div>
+
+                            <!-- Notification Efficiency Card -->
+                            <div class="glass-card p-3 bg-white d-flex align-items-center justify-content-between shadow-sm" style="border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary" style="width: 48px; height: 48px; background-color: #eff6ff; color: #2563eb;">
+                                        <i class="fa-solid fa-envelope-open-text fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">Hiệu suất thông báo</div>
+                                        <div class="text-muted small mt-1" style="font-size: 0.78rem;">Thống kê tỷ lệ tin nhắn được gửi thành công hôm nay.</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    @{
+                                        double efficiency = ViewBag.NotificationEfficiency ?? 98.2;
+                                        string colorClass = efficiency >= 90 ? "text-primary" : "text-danger";
+                                        string signText = efficiency >= 90 ? "TĂNG 1.5% SO VỚI HÔM QUA" : "CẦN TỐI ƯU THÊM";
+                                    }
+                                    <div class="fw-bold @colorClass" style="font-size: 1.6rem; color: #2563eb !important; line-height: 1;">@string.Format("{0:F1}", efficiency)%</div>
+                                    <div class="@(efficiency >= 90 ? "text-success" : "text-danger") fw-bold small mt-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">@signText</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1389,14 +1444,18 @@
             if (document.getElementById('appointment-pane')?.classList.contains('active')) {
                 initWaitingListPagination();
             }
-            setInterval(function() {
-                $('.blink').fadeTo(750, 0).fadeTo(750, 1);
-            }, 1500);
 
-            // Chart JS Implementation
+            // Chart JS Implementation with dynamic theme support
+            let patientsChartInstance = null;
+            let departmentsChartInstance = null;
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
             const ctx1 = document.getElementById('patientsChart');
             if (ctx1) {
-                new Chart(ctx1, {
+                patientsChartInstance = new Chart(ctx1, {
                     type: 'line',
                     data: {
                         labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
@@ -1410,13 +1469,31 @@
                             backgroundColor: 'rgba(14, 165, 233, 0.1)'
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: textColor }
+                            }
+                        }
+                    }
                 });
             }
 
             const ctx2 = document.getElementById('departmentsChart');
             if (ctx2) {
-                new Chart(ctx2, {
+                departmentsChartInstance = new Chart(ctx2, {
                     type: 'doughnut',
                     data: {
                         labels: ['Nội Tổng Hợp', 'Ngoại Khoa', 'Sản Khoa', 'Nhi Khoa'],
@@ -1430,11 +1507,34 @@
                         responsive: true, 
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom' }
+                            legend: { 
+                                position: 'bottom',
+                                labels: { color: textColor }
+                            }
                         }
                     }
                 });
             }
+
+            window.addEventListener('theme-changed', function() {
+                const currentDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const newGridColor = currentDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                const newTextColor = currentDark ? '#94a3b8' : '#64748b';
+                
+                if (patientsChartInstance) {
+                    patientsChartInstance.options.scales.x.grid.color = newGridColor;
+                    patientsChartInstance.options.scales.x.ticks.color = newTextColor;
+                    patientsChartInstance.options.scales.y.grid.color = newGridColor;
+                    patientsChartInstance.options.scales.y.ticks.color = newTextColor;
+                    patientsChartInstance.options.plugins.legend.labels.color = newTextColor;
+                    patientsChartInstance.update();
+                }
+                
+                if (departmentsChartInstance) {
+                    departmentsChartInstance.options.plugins.legend.labels.color = newTextColor;
+                    departmentsChartInstance.update();
+                }
+            });
         });
 
         let currentStream = null;
@@ -1806,7 +1906,31 @@
                 });
         }
 
+        function saveTemplate() {
+            const val = document.getElementById("autoSenderTemplateInput").value;
+            if (!val.trim()) {
+                showToast("Nội dung mẫu không được để trống.", "warning");
+                return;
+            }
+            $.post('/Doctor/UpdateNotificationTemplate', { template: val }, function(res) {
+                if (res && res.success) {
+                    showToast("Cập nhật mẫu tin nhắn tự động thành công!", "success");
+                } else {
+                    showToast(res.message || "Không thể cập nhật mẫu tin nhắn.", "danger");
+                }
+            });
+        }
+        
+        function loadTemplate() {
+            $.get('/Doctor/GetNotificationTemplate', function(res) {
+                if (res && res.template) {
+                    document.getElementById("autoSenderTemplateInput").value = res.template;
+                }
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            loadTemplate();
             function fetchBackgroundLogsDash() {
                 $.get('/Doctor/GetBackgroundSenderLogs', function(res) {
                     if (res && res.logs) {

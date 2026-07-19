@@ -358,27 +358,28 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Autocomplete search medicine
-            $('#medicineSearch').on('input', function() {
-                var query = $(this).val();
-                $('#medicineNameHidden').val(query); // Sync typed name to hidden field
-                if (query.length < 2) {
-                    $('#medicineDropdown').addClass('d-none');
-                    return;
-                }
-
+            // Helper to search medicines and update dropdown
+            function loadMedicines(query) {
                 $.get('/Doctor/SearchMedicine', { keyword: query }, function(data) {
                     var dropdown = $('#medicineDropdown');
                     dropdown.empty();
                     if (data && data.length > 0) {
                         data.forEach(function(item) {
-                            dropdown.append(`<li class="list-group-item" data-id="${item.id}" data-name="${item.name}">${item.name} (${item.category ?? 'Thuốc'}) <span class="badge bg-secondary float-end">Còn ${item.stock}</span></li>`);
+                            var badgeClass = item.stock <= 0 ? 'bg-danger' : 'bg-secondary';
+                            dropdown.append(`<li class="list-group-item" data-id="${item.id}" data-name="${item.name}">${item.name} (${item.category ?? 'Thuốc'}) <span class="badge ${badgeClass} float-end">Còn ${item.stock}</span></li>`);
                         });
                         dropdown.removeClass('d-none');
                     } else {
                         dropdown.addClass('d-none');
                     }
                 });
+            }
+
+            // Autocomplete search medicine
+            $('#medicineSearch').on('focus click input', function() {
+                var query = $(this).val();
+                $('#medicineNameHidden').val(query); // Sync typed name to hidden field
+                loadMedicines(query);
             });
 
             // Click item from autocomplete
@@ -406,8 +407,12 @@
                             alertDiv.html(`<div class="alert alert-success py-2 px-3 small mb-0"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng (Còn ${res.stock} ${res.unit})</div>`);
                         }
 
-                        // Auto fill unit
+                        // Auto fill unit dynamically
                         if (res.unit) {
+                            // If the unit option does not exist in the dropdown, append it dynamically
+                            if ($('#unitSelect option[value="' + res.unit + '"]').length === 0) {
+                                $('#unitSelect').append(new Option(res.unit, res.unit));
+                            }
                             $('#unitSelect').val(res.unit).trigger('change');
                         }
                     }

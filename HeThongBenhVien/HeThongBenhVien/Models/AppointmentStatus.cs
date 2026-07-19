@@ -1,4 +1,4 @@
-namespace HeThongBenhVien.Models
+﻿namespace HeThongBenhVien.Models
 {
     /// <summary>
     /// Định nghĩa tập trung tất cả trạng thái của Appointment.Status

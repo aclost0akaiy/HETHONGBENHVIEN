@@ -17,12 +17,17 @@
     <!-- Vue 2 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <style>
-        body, html {
-            height: 100%;
+        html {
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
             margin: 0;
+            display: flex;
+            flex-direction: column;
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #ffffff 100%);
-            overflow: hidden;
         }
 
         .navbar-custom {
@@ -84,14 +89,14 @@
         }
 
         .login-wrapper {
-            height: calc(100vh - 140px);
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             z-index: 5;
-            padding-bottom: 40px;
+            padding: 40px 20px;
         }
 
         .login-card {
@@ -267,11 +272,6 @@
 
         /* Footer Sticky */
         .footer-sticky {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
             background-color: #ffffff;
             border-top: 1px solid #e2e8f0;
             padding: 15px 40px;
@@ -329,8 +329,6 @@
                 padding: 30px 20px;
             }
             .footer-sticky {
-                position: relative;
-                height: auto;
                 flex-direction: column;
                 padding: 20px;
                 gap: 15px;

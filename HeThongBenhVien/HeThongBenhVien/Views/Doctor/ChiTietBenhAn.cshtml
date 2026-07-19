@@ -551,7 +551,7 @@
                                     <i class="fa-solid fa-calendar-check"></i> Hẹn tái khám
                                 </button>
                                 <!-- Lock & Sign button -->
-                                <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 d-inline-block" onsubmit="return confirm('⚠️ Chú ý: Xác nhận hoàn thành sẽ KHÓA HỒ SƠ & KÝ SỐ ĐIỆN TỬ. Bạn sẽ không thể sửa đổi sau khi khóa. Bạn chắc chắn chứ?');">
+                                <form action="@Url.Action("XacNhanHoSo", "Doctor")" method="post" class="m-0 ms-auto d-inline-block" onsubmit="return confirm('⚠️ Chú ý: Xác nhận hoàn thành sẽ KHÓA HỒ SƠ & KÝ SỐ ĐIỆN TỬ. Bạn sẽ không thể sửa đổi sau khi khóa. Bạn chắc chắn chứ?');">
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <button type="submit" class="btn text-white fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px; font-size: 13px; padding: 8px 16px; background-color: #0f3057; border-color: #0f3057;">
                                         <i class="fa-solid fa-file-signature"></i> Khóa &amp; Ký Số

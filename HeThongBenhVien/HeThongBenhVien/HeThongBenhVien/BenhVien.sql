@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'QuanLyBenhVienDb')
@@ -10,7 +10,7 @@ GO
 USE QuanLyBenhVienDb;
 GO
 
--- Xóa bảng nếu đã tồn tại để tránh lỗi khi chạy lại script
+-- XÃ³a báº£ng náº¿u Ä‘Ã£ tá»“n táº¡i Ä‘á»ƒ trÃ¡nh lá»—i khi cháº¡y láº¡i script
 IF OBJECT_ID('VitalSigns', 'U') IS NOT NULL DROP TABLE VitalSigns;
 IF OBJECT_ID('LabTests', 'U') IS NOT NULL DROP TABLE LabTests;
 IF OBJECT_ID('PrescriptionDetails', 'U') IS NOT NULL DROP TABLE PrescriptionDetails;
@@ -21,7 +21,7 @@ IF OBJECT_ID('Patients', 'U') IS NOT NULL DROP TABLE Patients;
 IF OBJECT_ID('Users', 'U') IS NOT NULL DROP TABLE Users;
 GO
 
--- 1. Tạo bảng Bệnh Nhân
+-- 1. Táº¡o báº£ng Bá»‡nh NhÃ¢n
 CREATE TABLE Patients (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     FullName NVARCHAR(100) NOT NULL,
@@ -39,7 +39,7 @@ ADD CCCD NVARCHAR(20) NULL,
     FaceData NVARCHAR(MAX) NULL;
 GO
 
--- 1.5 Tạo bảng Người dùng (Tài khoản)
+-- 1.5 Táº¡o báº£ng NgÆ°á»i dÃ¹ng (TÃ i khoáº£n)
 CREATE TABLE Users (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     Username NVARCHAR(50) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE Users (
 );
 GO
 
--- 1.6 Tạo bảng Khoa Phòng
+-- 1.6 Táº¡o báº£ng Khoa PhÃ²ng
 CREATE TABLE Departments (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     DepartmentCode NVARCHAR(50) NOT NULL,
@@ -63,18 +63,18 @@ CREATE TABLE Departments (
 );
 GO
 
--- 2. Tạo bảng Lịch Khám (Appointments)
+-- 2. Táº¡o báº£ng Lá»‹ch KhÃ¡m (Appointments)
 CREATE TABLE Appointments (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     PatientId INT NOT NULL,
     Reason NVARCHAR(200) NOT NULL,
     AppointmentTime DATETIME2 NOT NULL,
-    Status INT NOT NULL, -- 0 - Chưa đến, 1 - Đang chờ, 2 - Đang khám, 3 - Có KQ XN, 4 - Đã khám xong
+    Status INT NOT NULL, -- 0 - ChÆ°a Ä‘áº¿n, 1 - Äang chá», 2 - Äang khÃ¡m, 3 - CÃ³ KQ XN, 4 - ÄÃ£ khÃ¡m xong
     CONSTRAINT FK_Appointments_Patients FOREIGN KEY (PatientId) REFERENCES Patients(Id) ON DELETE CASCADE
 );
 GO
 
--- 3. Tạo bảng Hồ sơ bệnh án (MedicalRecords)
+-- 3. Táº¡o báº£ng Há»“ sÆ¡ bá»‡nh Ã¡n (MedicalRecords)
 CREATE TABLE MedicalRecords (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     AppointmentId INT NOT NULL,
@@ -97,21 +97,21 @@ CREATE TABLE MedicalRecords (
 );
 GO
 
--- Thêm dữ liệu mẫu cho Departments
+-- ThÃªm dá»¯ liá»‡u máº«u cho Departments
 INSERT INTO Departments (DepartmentCode, DepartmentName, Description, HeadDoctor, TotalBeds, Phone) VALUES 
-(N'KNT', N'Khoa Nội Tổng Hợp', N'Chuyên điều trị các bệnh nội khoa', N'BS. Nguyễn Văn A', 50, '0901234567'),
-(N'KNG', N'Khoa Ngoại', N'Chuyên phẫu thuật điều trị', N'BS. Trần Thị B', 50, '0902345678'),
-(N'KSN', N'Khoa Sản', N'Chăm sóc sức khỏe phụ sản', N'BS. Lê Văn C', 50, '0903456789'),
-(N'KNH', N'Khoa Nhi', N'Chăm sóc sức khỏe trẻ em', N'BS. Phạm Văn D', 50, '0904567890'),
-(N'KCC', N'Khoa Cấp Cứu', N'Xử lý các trường hợp khẩn cấp', N'BS. Hoàng Văn E', 50, '0805678901');
+(N'KNT', N'Khoa Ná»™i Tá»•ng Há»£p', N'ChuyÃªn Ä‘iá»u trá»‹ cÃ¡c bá»‡nh ná»™i khoa', N'BS. Nguyá»…n VÄƒn A', 50, '0901234567'),
+(N'KNG', N'Khoa Ngoáº¡i', N'ChuyÃªn pháº«u thuáº­t Ä‘iá»u trá»‹', N'BS. Tráº§n Thá»‹ B', 50, '0902345678'),
+(N'KSN', N'Khoa Sáº£n', N'ChÄƒm sÃ³c sá»©c khá»e phá»¥ sáº£n', N'BS. LÃª VÄƒn C', 50, '0903456789'),
+(N'KNH', N'Khoa Nhi', N'ChÄƒm sÃ³c sá»©c khá»e tráº» em', N'BS. Pháº¡m VÄƒn D', 50, '0904567890'),
+(N'KCC', N'Khoa Cáº¥p Cá»©u', N'Xá»­ lÃ½ cÃ¡c trÆ°á»ng há»£p kháº©n cáº¥p', N'BS. HoÃ ng VÄƒn E', 50, '0805678901');
 GO
 
--- 3.1. Tạo bảng Đơn thuốc (Prescriptions)
+-- 3.1. Táº¡o báº£ng ÄÆ¡n thuá»‘c (Prescriptions)
 CREATE TABLE Prescriptions (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     MedicalRecordId INT NOT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    Status NVARCHAR(50) NOT NULL DEFAULT N'Đã kê đơn',
+    Status NVARCHAR(50) NOT NULL DEFAULT N'ÄÃ£ kÃª Ä‘Æ¡n',
     CONSTRAINT FK_Prescriptions_MedicalRecords FOREIGN KEY (MedicalRecordId) REFERENCES MedicalRecords(Id) ON DELETE CASCADE
 );
 GO
@@ -128,7 +128,7 @@ CREATE TABLE PrescriptionDetails (
 );
 GO
 
--- 3.1.5 Tạo bảng Đơn vị thuốc (MedicineUnits)
+-- 3.1.5 Táº¡o báº£ng ÄÆ¡n vá»‹ thuá»‘c (MedicineUnits)
 CREATE TABLE MedicineUnits (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     UnitName NVARCHAR(50) NOT NULL,
@@ -137,17 +137,17 @@ CREATE TABLE MedicineUnits (
 GO
 
 INSERT INTO MedicineUnits (UnitName, DefaultPrice) VALUES 
-(N'Viên', 5000), (N'Vỉ', 8000), (N'Lọ', 20000), 
-(N'Hộp', 60000), (N'Ống', 10000), (N'Cái', 20000), 
-(N'Tuýp', 15000), (N'Gói', 25000), (N'Chai', 15000);
+(N'ViÃªn', 5000), (N'Vá»‰', 8000), (N'Lá»', 20000), 
+(N'Há»™p', 60000), (N'á»ng', 10000), (N'CÃ¡i', 20000), 
+(N'TuÃ½p', 15000), (N'GÃ³i', 25000), (N'Chai', 15000);
 GO
 
--- 3.2. Tạo bảng Xét nghiệm (LabTests)
+-- 3.2. Táº¡o báº£ng XÃ©t nghiá»‡m (LabTests)
 CREATE TABLE LabTests (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     MedicalRecordId INT NOT NULL,
     TestName NVARCHAR(200) NOT NULL,
-    Status NVARCHAR(50) NOT NULL DEFAULT N'Chờ xét nghiệm',
+    Status NVARCHAR(50) NOT NULL DEFAULT N'Chá» xÃ©t nghiá»‡m',
     Result NVARCHAR(MAX) NULL,
     ImageUrl NVARCHAR(MAX) NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
@@ -156,7 +156,7 @@ CREATE TABLE LabTests (
 );
 GO
 
--- 3.3. Tạo bảng Sinh hiệu (VitalSigns)
+-- 3.3. Táº¡o báº£ng Sinh hiá»‡u (VitalSigns)
 CREATE TABLE VitalSigns (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     AppointmentId INT NOT NULL,
@@ -170,40 +170,40 @@ CREATE TABLE VitalSigns (
 );
 GO
 
--- 3. Thêm Dữ Liệu Mẫu (Seed Data) cho Patients
+-- 3. ThÃªm Dá»¯ Liá»‡u Máº«u (Seed Data) cho Patients
 SET IDENTITY_INSERT Patients ON;
 INSERT INTO Patients (Id, FullName, Gender, Age, PatientCode, CCCD, FaceData)
 VALUES 
-(1, N'Trần Văn Lâm', N'Nam', 45, N'BN1293', '001080000001', NULL),
-(2, N'Hoàng Thị Mai', N'Nữ', 32, N'BN1294', '001080000002', NULL),
-(3, N'Phạm Quốc Quân', N'Nam', 58, N'BN1295', '001080000003', NULL),
-(4, N'Nguyễn Văn A', N'Nam', 30, N'BN1296', '001080000004', 'FACE_NGUYENVANA');
+(1, N'Tráº§n VÄƒn LÃ¢m', N'Nam', 45, N'BN1293', '001080000001', NULL),
+(2, N'HoÃ ng Thá»‹ Mai', N'Ná»¯', 32, N'BN1294', '001080000002', NULL),
+(3, N'Pháº¡m Quá»‘c QuÃ¢n', N'Nam', 58, N'BN1295', '001080000003', NULL),
+(4, N'Nguyá»…n VÄƒn A', N'Nam', 30, N'BN1296', '001080000004', 'FACE_NGUYENVANA');
 SET IDENTITY_INSERT Patients OFF;
 GO
--- Reset dữ liệu bảng Patients
+-- Reset dá»¯ liá»‡u báº£ng Patients
 DELETE FROM Patients;
 DBCC CHECKIDENT ('Patients', RESEED, 0);
 GO
--- 4. Thêm Dữ Liệu Mẫu (Seed Data) cho Appointments
+-- 4. ThÃªm Dá»¯ Liá»‡u Máº«u (Seed Data) cho Appointments
 SET IDENTITY_INSERT Appointments ON;
 
 DECLARE @Today DATE = GETDATE();
 
 INSERT INTO Appointments (Id, PatientId, Reason, AppointmentTime, Status)
 VALUES 
-(1, 1, N'Đau thắt ngực, khó thở', DATEADD(MINUTE, 30, DATEADD(HOUR, 8, CAST(@Today AS DATETIME2))), 1),
-(2, 2, N'Tái khám huyết áp', DATEADD(HOUR, 9, CAST(@Today AS DATETIME2)), 3),
-(3, 3, N'Đánh trống ngực liên tục', DATEADD(MINUTE, 30, DATEADD(HOUR, 9, CAST(@Today AS DATETIME2))), 0);
+(1, 1, N'Äau tháº¯t ngá»±c, khÃ³ thá»Ÿ', DATEADD(MINUTE, 30, DATEADD(HOUR, 8, CAST(@Today AS DATETIME2))), 1),
+(2, 2, N'TÃ¡i khÃ¡m huyáº¿t Ã¡p', DATEADD(HOUR, 9, CAST(@Today AS DATETIME2)), 3),
+(3, 3, N'ÄÃ¡nh trá»‘ng ngá»±c liÃªn tá»¥c', DATEADD(MINUTE, 30, DATEADD(HOUR, 9, CAST(@Today AS DATETIME2))), 0);
 
 SET IDENTITY_INSERT Appointments OFF;
 GO
 
--- 5. Thêm Dữ Liệu Mẫu (Seed Data) cho Users
+-- 5. ThÃªm Dá»¯ Liá»‡u Máº«u (Seed Data) cho Users
 SET IDENTITY_INSERT Users ON;
 INSERT INTO Users (Id, Username, Password, Role, FullName)
 VALUES 
-(1, N'admin', N'123', N'Admin', N'Quản trị viên hệ thống'),
-(2, N'doctor', N'123', N'Doctor', N'BS. Nguyễn Văn A');
+(1, N'admin', N'123', N'Admin', N'Quáº£n trá»‹ viÃªn há»‡ thá»‘ng'),
+(2, N'doctor', N'123', N'Doctor', N'BS. Nguyá»…n VÄƒn A');
 SET IDENTITY_INSERT Users OFF;
 GO
 
@@ -211,14 +211,14 @@ ALTER TABLE [QuanLyBenhVienDb].[dbo].[Users]
 ADD 
     [Email] NVARCHAR(100),
     [SDT] VARCHAR(20);
--- Cập nhật thông tin cho Quản trị viên (Id = 1)
+-- Cáº­p nháº­t thÃ´ng tin cho Quáº£n trá»‹ viÃªn (Id = 1)
 UPDATE [QuanLyBenhVienDb].[dbo].[Users]
 SET 
     [Email] = 'admin@benhvien.com',
     [SDT] = '0901111222'
 WHERE [Id] = 1;
 
--- Cập nhật thông tin cho Bác sĩ Nguyễn Văn A (Id = 2)
+-- Cáº­p nháº­t thÃ´ng tin cho BÃ¡c sÄ© Nguyá»…n VÄƒn A (Id = 2)
 UPDATE [QuanLyBenhVienDb].[dbo].[Users]
 SET 
     [Email] = 'nguyenvana.bs@gmail.com',
@@ -227,43 +227,43 @@ WHERE [Id] = 2;
 
 IF OBJECT_ID('WorkSchedules', 'U') IS NOT NULL DROP TABLE WorkSchedules;
 -- =============================================
--- Tạo bảng Lịch Làm Việc (WorkSchedules)
+-- Táº¡o báº£ng Lá»‹ch LÃ m Viá»‡c (WorkSchedules)
 -- =============================================
 
 
--- 1. Thêm 5 nhân sự mẫu vào bảng Users
+-- 1. ThÃªm 5 nhÃ¢n sá»± máº«u vÃ o báº£ng Users
 INSERT INTO Users (Username, Password, FullName, Role, Email, SDT)
 VALUES 
-('bs_a', '123456', N'BS. Nguyễn Văn A', 'Doctor', 'bs.a@benhvien.com', '0901234567'),
-('bs_b', '123456', N'BS. Trần Thị B', 'Doctor', 'bs.b@benhvien.com', '0902345678'),
-('bs_c', '123456', N'BS. Lê Văn C', 'Doctor', 'bs.c@benhvien.com', '0903456789'),
-('bs_d', '123456', N'BS. Phạm Văn D', 'Doctor', 'bs.d@benhvien.com', '0904567890'),
-('admin_e', '123456', N'Quản trị viên E', 'Admin', 'admin.e@benhvien.com', '0905678901');
+('bs_a', '123456', N'BS. Nguyá»…n VÄƒn A', 'Doctor', 'bs.a@benhvien.com', '0901234567'),
+('bs_b', '123456', N'BS. Tráº§n Thá»‹ B', 'Doctor', 'bs.b@benhvien.com', '0902345678'),
+('bs_c', '123456', N'BS. LÃª VÄƒn C', 'Doctor', 'bs.c@benhvien.com', '0903456789'),
+('bs_d', '123456', N'BS. Pháº¡m VÄƒn D', 'Doctor', 'bs.d@benhvien.com', '0904567890'),
+('admin_e', '123456', N'Quáº£n trá»‹ viÃªn E', 'Admin', 'admin.e@benhvien.com', '0905678901');
 GO
 
--- Sau khi chạy xong đoạn này, hãy bôi đen chạy lại đoạn INSERT bảng WorkSchedules của tin nhắn trước!
+-- Sau khi cháº¡y xong Ä‘oáº¡n nÃ y, hÃ£y bÃ´i Ä‘en cháº¡y láº¡i Ä‘oáº¡n INSERT báº£ng WorkSchedules cá»§a tin nháº¯n trÆ°á»›c!
 
 SELECT Id, FullName FROM Users;
 
 USE QuanLyBenhVienDb;
 GO
 
--- Lệnh này sẽ xóa sạch dữ liệu và reset lại ID về 1
+-- Lá»‡nh nÃ y sáº½ xÃ³a sáº¡ch dá»¯ liá»‡u vÃ  reset láº¡i ID vá» 1
 TRUNCATE TABLE WorkSchedules;
 GO
 
 CREATE TABLE WorkSchedules (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,                -- Thay cho "Tên": Liên kết với ID của nhân sự trong bảng Users
-    WorkTime NVARCHAR(50) NOT NULL,     -- Thời gian (VD: '07:00 - 15:00')
-    ShiftName NVARCHAR(50) NOT NULL,    -- Ca (VD: N'Ca Sáng', N'Ca Chiều')
-    WorkDate DATE NOT NULL,             -- Ngày (VD: '2026-05-12')
-    WeekNumber INT NOT NULL,            -- Tuần (VD: 20)
-    MonthNumber INT NOT NULL,           -- Tháng (VD: 5)
-    YearNumber INT NOT NULL,            -- Năm (VD: 2026)
+    UserId INT NOT NULL,                -- Thay cho "TÃªn": LiÃªn káº¿t vá»›i ID cá»§a nhÃ¢n sá»± trong báº£ng Users
+    WorkTime NVARCHAR(50) NOT NULL,     -- Thá»i gian (VD: '07:00 - 15:00')
+    ShiftName NVARCHAR(50) NOT NULL,    -- Ca (VD: N'Ca SÃ¡ng', N'Ca Chiá»u')
+    WorkDate DATE NOT NULL,             -- NgÃ y (VD: '2026-05-12')
+    WeekNumber INT NOT NULL,            -- Tuáº§n (VD: 20)
+    MonthNumber INT NOT NULL,           -- ThÃ¡ng (VD: 5)
+    YearNumber INT NOT NULL,            -- NÄƒm (VD: 2026)
 
-    -- Khai báo khóa ngoại liên kết với bảng Users
-    -- Khi xóa một User, bạn có thể thiết lập báo lỗi hoặc tự động xóa lịch (ở đây mình để mặc định)
+    -- Khai bÃ¡o khÃ³a ngoáº¡i liÃªn káº¿t vá»›i báº£ng Users
+    -- Khi xÃ³a má»™t User, báº¡n cÃ³ thá»ƒ thiáº¿t láº­p bÃ¡o lá»—i hoáº·c tá»± Ä‘á»™ng xÃ³a lá»‹ch (á»Ÿ Ä‘Ã¢y mÃ¬nh Ä‘á»ƒ máº·c Ä‘á»‹nh)
     CONSTRAINT FK_WorkSchedules_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
 );
 GO
@@ -271,45 +271,45 @@ GO
 USE QuanLyBenhVienDb;
 GO
 
--- Xóa dữ liệu cũ nếu có để tránh trùng lặp khi chạy lại (tuỳ chọn)
+-- XÃ³a dá»¯ liá»‡u cÅ© náº¿u cÃ³ Ä‘á»ƒ trÃ¡nh trÃ¹ng láº·p khi cháº¡y láº¡i (tuá»³ chá»n)
 -- TRUNCATE TABLE WorkSchedules;
 USE QuanLyBenhVienDb;
 GO
 
--- 1. Xóa sạch dữ liệu cũ không khớp form
+-- 1. XÃ³a sáº¡ch dá»¯ liá»‡u cÅ© khÃ´ng khá»›p form
 TRUNCATE TABLE WorkSchedules;
 GO
 
--- 2. Thêm dữ liệu mới với ShiftName chuẩn "Ca 1", "Ca 2"... để khớp với code lưới
+-- 2. ThÃªm dá»¯ liá»‡u má»›i vá»›i ShiftName chuáº©n "Ca 1", "Ca 2"... Ä‘á»ƒ khá»›p vá»›i code lÆ°á»›i
 INSERT INTO WorkSchedules (UserId, WorkTime, ShiftName, WorkDate, WeekNumber, MonthNumber, YearNumber)
 VALUES
--- Ngày 12/05/2026 (Thứ 3)
+-- NgÃ y 12/05/2026 (Thá»© 3)
 (1, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-12', 20, 5, 2026),
 (2, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-12', 20, 5, 2026),
 (3, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-12', 20, 5, 2026),
 (4, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-12', 20, 5, 2026),
 
--- Ngày 13/05/2026 (Thứ 4)
+-- NgÃ y 13/05/2026 (Thá»© 4)
 (5, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-13', 20, 5, 2026),
 (1, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-13', 20, 5, 2026),
 (2, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-05-13', 20, 5, 2026),
 
--- Ngày 14/05/2026 (Thứ 5)
+-- NgÃ y 14/05/2026 (Thá»© 5)
 (3, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-14', 20, 5, 2026),
 (4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-05-14', 20, 5, 2026),
 (5, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-05-14', 20, 5, 2026),
 
--- Ngày 15/05/2026 (Thứ 6)
+-- NgÃ y 15/05/2026 (Thá»© 6)
 (1, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-15', 20, 5, 2026),
 (2, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-15', 20, 5, 2026),
 (3, '18:00 - 21:00', N'Ca 5 (18:00 - 21:00)', '2026-05-15', 20, 5, 2026),
 
--- Ngày 16/05/2026 (Thứ 7)
+-- NgÃ y 16/05/2026 (Thá»© 7)
 (4, '06:00 - 09:00', N'Ca 1 (06:00 - 09:00)', '2026-05-16', 20, 5, 2026),
 (5, '09:00 - 12:00', N'Ca 2 (09:00 - 12:00)', '2026-05-16', 20, 5, 2026),
 (1, '00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-05-16', 20, 5, 2026),
 
--- Ngày 17/05/2026 (Chủ Nhật)
+-- NgÃ y 17/05/2026 (Chá»§ Nháº­t)
 (2, '12:00 - 15:00', N'Ca 3 (12:00 - 15:00)', '2026-05-17', 20, 5, 2026),
 (3, '15:00 - 18:00', N'Ca 4 (15:00 - 18:00)', '2026-05-17', 20, 5, 2026),
 (4, '21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-05-17', 20, 5, 2026);
@@ -2521,54 +2521,54 @@ VALUES
   (5, N'21:00 - 24:00', N'Ca 6 (21:00 - 24:00)', '2026-12-31', 53, 12, 2026),
   (3, N'00:00 - 06:00', N'Ca 7 (00:00 - 06:00)', '2026-12-31', 53, 12, 2026);
 
-  -- Xóa sạch dữ liệu và reset ID bảng WorkSchedules
+  -- XÃ³a sáº¡ch dá»¯ liá»‡u vÃ  reset ID báº£ng WorkSchedules
 TRUNCATE TABLE [QuanLyBenhVienDb].[dbo].[WorkSchedules];
 
--- Xóa toàn bộ dữ liệu bảng Users
+-- XÃ³a toÃ n bá»™ dá»¯ liá»‡u báº£ng Users
 DELETE FROM [QuanLyBenhVienDb].[dbo].[Users];
 
--- Reset lại cột Id để người tiếp theo thêm vào sẽ bắt đầu từ số 1
+-- Reset láº¡i cá»™t Id Ä‘á»ƒ ngÆ°á»i tiáº¿p theo thÃªm vÃ o sáº½ báº¯t Ä‘áº§u tá»« sá»‘ 1
 DBCC CHECKIDENT ('[QuanLyBenhVienDb].[dbo].[Users]', RESEED, 0);
 
--- Thêm danh sách nhân sự với tên thật vào bảng Users
+-- ThÃªm danh sÃ¡ch nhÃ¢n sá»± vá»›i tÃªn tháº­t vÃ o báº£ng Users
 INSERT INTO [QuanLyBenhVienDb].[dbo].[Users] 
        ([Username], [Password], [Role], [FullName], [Email], [SDT])
 VALUES 
-       ('admin_hethong', '123456', 'Admin', N'Nguyễn Hoàng An', 'an.nguyen@benhvien.com', '0901112222'),
-       ('bs_bao', '123456', 'Doctor', N'Trần Quốc Bảo', 'bao.tran@benhvien.com', '0987654321'),
-       ('bs_chi', '123456', 'Doctor', N'Lê Kim Chi', 'chi.le@benhvien.com', '0901234567'),
-       ('bs_dung', '123456', 'Doctor', N'Phạm Tiến Dũng', 'dung.pham@benhvien.com', '0902345678'),
-       ('bs_ha', '123456', 'Doctor', N'Vũ Thu Hà', 'ha.vu@benhvien.com', '0903456789'),
-       ('bs_long', '123456', 'Doctor', N'Đinh Văn Long', 'long.dinh@benhvien.com', '0904567890'),
-       ('admin_phongkham', '123456', 'Admin', N'Hoàng Thúy Quyên', 'quyen.hoang@benhvien.com', '0905678901');
+       ('admin_hethong', '123456', 'Admin', N'Nguyá»…n HoÃ ng An', 'an.nguyen@benhvien.com', '0901112222'),
+       ('bs_bao', '123456', 'Doctor', N'Tráº§n Quá»‘c Báº£o', 'bao.tran@benhvien.com', '0987654321'),
+       ('bs_chi', '123456', 'Doctor', N'LÃª Kim Chi', 'chi.le@benhvien.com', '0901234567'),
+       ('bs_dung', '123456', 'Doctor', N'Pháº¡m Tiáº¿n DÅ©ng', 'dung.pham@benhvien.com', '0902345678'),
+       ('bs_ha', '123456', 'Doctor', N'VÅ© Thu HÃ ', 'ha.vu@benhvien.com', '0903456789'),
+       ('bs_long', '123456', 'Doctor', N'Äinh VÄƒn Long', 'long.dinh@benhvien.com', '0904567890'),
+       ('admin_phongkham', '123456', 'Admin', N'HoÃ ng ThÃºy QuyÃªn', 'quyen.hoang@benhvien.com', '0905678901');
 
        INSERT INTO [QuanLyBenhVienDb].[dbo].[Users] 
        ([Username], [Password], [Role], [FullName], [Email], [SDT])
 VALUES 
-       ('bs_tuan', '123456', 'Doctor', N'Nguyễn Văn Tuấn', 'tuan.nguyen@benhvien.com', '0981112233'),
-       ('bs_mai', '123456', 'Doctor', N'Trần Thị Mai', 'mai.tran@benhvien.com', '0981112234'),
-       ('bs_hung', '123456', 'Doctor', N'Lê Mạnh Hùng', 'hung.le@benhvien.com', '0912223344'),
-       ('bs_lan', '123456', 'Doctor', N'Phạm Ngọc Lan', 'lan.pham@benhvien.com', '0912223345'),
-       ('bs_phong', '123456', 'Doctor', N'Hoàng Đình Phong', 'phong.hoang@benhvien.com', '0933334455'),
-       ('bs_thao', '123456', 'Doctor', N'Vũ Phương Thảo', 'thao.vu@benhvien.com', '0933334456'),
-       ('bs_kiet', '123456', 'Doctor', N'Đặng Anh Kiệt', 'kiet.dang@benhvien.com', '0944445566'),
-       ('bs_tram', '123456', 'Doctor', N'Bùi Ngọc Trâm', 'tram.bui@benhvien.com', '0944445567'),
-       ('bs_minh', '123456', 'Doctor', N'Trịnh Quang Minh', 'minh.trinh@benhvien.com', '0905556677'),
-       ('bs_nga', '123456', 'Doctor', N'Đỗ Thanh Nga', 'nga.do@benhvien.com', '0905556678'),
-       ('bs_dat', '123456', 'Doctor', N'Hồ Tiến Đạt', 'dat.ho@benhvien.com', '0976667788'),
-       ('bs_thu', '123456', 'Doctor', N'Dương Minh Thu', 'thu.duong@benhvien.com', '0976667789'),
-       ('bs_khanh', '123456', 'Doctor', N'Ngô Nam Khánh', 'khanh.ngo@benhvien.com', '0967778899'),
-       ('bs_yen', '123456', 'Doctor', N'Lý Hải Yến', 'yen.ly@benhvien.com', '0967778800'),
-       ('bs_son', '123456', 'Doctor', N'Tạ Hoàng Sơn', 'son.ta@benhvien.com', '0888889900'),
-       ('bs_linh', '123456', 'Doctor', N'Châu Khánh Linh', 'linh.chau@benhvien.com', '0888889901'),
-       ('bs_cuong', '123456', 'Doctor', N'Nguyễn Phú Cường', 'cuong.nguyen@benhvien.com', '0899990011'),
-       ('bs_trang', '123456', 'Doctor', N'Trần Thu Trang', 'trang.tran@benhvien.com', '0899990012'),
-       ('admin_khoa', '123456', 'Admin', N'Lê Anh Khoa', 'khoa.le@benhvien.com', '0901239876'),
-       ('admin_thuy', '123456', 'Admin', N'Phạm Bích Thủy', 'thuy.pham@benhvien.com', '0901239877');
+       ('bs_tuan', '123456', 'Doctor', N'Nguyá»…n VÄƒn Tuáº¥n', 'tuan.nguyen@benhvien.com', '0981112233'),
+       ('bs_mai', '123456', 'Doctor', N'Tráº§n Thá»‹ Mai', 'mai.tran@benhvien.com', '0981112234'),
+       ('bs_hung', '123456', 'Doctor', N'LÃª Máº¡nh HÃ¹ng', 'hung.le@benhvien.com', '0912223344'),
+       ('bs_lan', '123456', 'Doctor', N'Pháº¡m Ngá»c Lan', 'lan.pham@benhvien.com', '0912223345'),
+       ('bs_phong', '123456', 'Doctor', N'HoÃ ng ÄÃ¬nh Phong', 'phong.hoang@benhvien.com', '0933334455'),
+       ('bs_thao', '123456', 'Doctor', N'VÅ© PhÆ°Æ¡ng Tháº£o', 'thao.vu@benhvien.com', '0933334456'),
+       ('bs_kiet', '123456', 'Doctor', N'Äáº·ng Anh Kiá»‡t', 'kiet.dang@benhvien.com', '0944445566'),
+       ('bs_tram', '123456', 'Doctor', N'BÃ¹i Ngá»c TrÃ¢m', 'tram.bui@benhvien.com', '0944445567'),
+       ('bs_minh', '123456', 'Doctor', N'Trá»‹nh Quang Minh', 'minh.trinh@benhvien.com', '0905556677'),
+       ('bs_nga', '123456', 'Doctor', N'Äá»— Thanh Nga', 'nga.do@benhvien.com', '0905556678'),
+       ('bs_dat', '123456', 'Doctor', N'Há»“ Tiáº¿n Äáº¡t', 'dat.ho@benhvien.com', '0976667788'),
+       ('bs_thu', '123456', 'Doctor', N'DÆ°Æ¡ng Minh Thu', 'thu.duong@benhvien.com', '0976667789'),
+       ('bs_khanh', '123456', 'Doctor', N'NgÃ´ Nam KhÃ¡nh', 'khanh.ngo@benhvien.com', '0967778899'),
+       ('bs_yen', '123456', 'Doctor', N'LÃ½ Háº£i Yáº¿n', 'yen.ly@benhvien.com', '0967778800'),
+       ('bs_son', '123456', 'Doctor', N'Táº¡ HoÃ ng SÆ¡n', 'son.ta@benhvien.com', '0888889900'),
+       ('bs_linh', '123456', 'Doctor', N'ChÃ¢u KhÃ¡nh Linh', 'linh.chau@benhvien.com', '0888889901'),
+       ('bs_cuong', '123456', 'Doctor', N'Nguyá»…n PhÃº CÆ°á»ng', 'cuong.nguyen@benhvien.com', '0899990011'),
+       ('bs_trang', '123456', 'Doctor', N'Tráº§n Thu Trang', 'trang.tran@benhvien.com', '0899990012'),
+       ('admin_khoa', '123456', 'Admin', N'LÃª Anh Khoa', 'khoa.le@benhvien.com', '0901239876'),
+       ('admin_thuy', '123456', 'Admin', N'Pháº¡m BÃ­ch Thá»§y', 'thuy.pham@benhvien.com', '0901239877');
 GO
 
 -- =============================================
--- Bảng Thuốc / Dược phẩm (Medicines)
+-- Báº£ng Thuá»‘c / DÆ°á»£c pháº©m (Medicines)
 -- =============================================
 IF OBJECT_ID('Medicines', 'U') IS NOT NULL DROP TABLE Medicines;
 GO
@@ -2587,18 +2587,1014 @@ CREATE TABLE Medicines (
 );
 GO
 
--- Thêm dữ liệu mẫu cho Kho Dược
-INSERT INTO Medicines (Name, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-VALUES 
-(N'Paracetamol 500mg', 50000, N'Hộp', N'Giảm đau, hạ sốt', 100, 20, N'Dược Hậu Giang', '2025-12-31', 1),
+-- ThÃªm dá»¯ liá»‡u máº«u cho Kho DÆ°á»£c (100 loáº¡i thuá»‘c)
+-- ThÃªm dá»¯ liá»‡u máº«u cho Kho DÆ°á»£c (1000 loáº¡i thuá»‘c)
+-- Thêm dữ liệu mẫu cho Kho Dược (1000 loại thuốc)
+INSERT INTO Medicines (Name, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive) VALUES 
+(N'Paracetamol 500mg', 50000, N'Hộp', N'Giảm đau, hạ sốt', 110, 20, N'Dược Hậu Giang', '2025-12-31', 1),
 (N'Amoxicillin 500mg', 120000, N'Hộp', N'Kháng sinh', 50, 10, N'Domesco', '2026-06-30', 1),
 (N'Vitamin C 1000mg', 85000, N'Lọ', N'Vitamin & Khoáng chất', 200, 30, N'Traphaco', '2027-01-15', 1),
 (N'Omeprazole 20mg', 150000, N'Hộp', N'Tiêu hóa', 80, 15, N'Hasan', '2025-10-20', 1),
-(N'Ibuprofen 400mg', 75000, N'Hộp', N'Giảm đau, kháng viêm', 120, 25, N'Stella', '2026-03-10', 1);
+(N'Ibuprofen 400mg', 75000, N'Hộp', N'Giảm đau, kháng viêm', 120, 25, N'Stella', '2026-03-10', 1),
+(N'Cefuroxime 500mg', 150000, N'Hộp', N'Kháng sinh', 90, 20, N'Dược Hậu Giang', '2026-08-05', 1),
+(N'Azithromycin 500mg', 185000, N'Hộp', N'Kháng sinh', 150, 20, N'Stella', '2026-09-20', 1),
+(N'Metformin 850mg', 95000, N'Hộp', N'Tiểu đường', 1200, 50, N'Boston', '2027-05-18', 1),
+(N'Amlodipine 5mg', 60000, N'Hộp', N'Tim mạch', 1500, 40, N'Hasan', '2026-08-10', 1),
+(N'Atorvastatin 10mg', 130000, N'Hộp', N'Mỡ máu', 850, 30, N'Stella', '2027-11-12', 1),
+(N'Loratadine 10mg', 45000, N'Hộp', N'Dị ứng', 60, 15, N'Traphaco', '2026-02-15', 1),
+(N'Cetirizine 10mg', 48000, N'Hộp', N'Dị ứng', 95, 15, N'Hasan', '2026-08-15', 1),
+(N'Salbutamol 2mg', 55000, N'Hộp', N'Hô hấp', 180, 20, N'Dược Hậu Giang', '2026-10-10', 1),
+(N'Metoprolol 50mg', 115000, N'Hộp', N'Tim mạch', 1100, 30, N'Boston', '2027-02-28', 1),
+(N'Esomeprazole 40mg', 220000, N'Hộp', N'Tiêu hóa', 130, 25, N'Stella', '2026-09-05', 1),
+(N'Gliclazide 60mg', 140000, N'Hộp', N'Tiểu đường', 950, 30, N'Hasan', '2027-08-25', 1),
+(N'Losartan 50mg', 125000, N'Hộp', N'Tim mạch', 720, 25, N'Dược Hậu Giang', '2026-08-22', 1),
+(N'Prednisolone 5mg', 50000, N'Hộp', N'Kháng viêm', 40, 10, N'Stella', '2026-04-20', 1),
+(N'Methylprednisolone 16mg', 160000, N'Hộp', N'Kháng viêm', 1050, 40, N'Boston', '2027-03-15', 1),
+(N'Clopidogrel 75mg', 210000, N'Hộp', N'Tim mạch', 140, 20, N'Hasan', '2026-09-12', 1),
+(N'Pantoprazole 40mg', 180000, N'Hộp', N'Tiêu hóa', 250, 30, N'Dược Hậu Giang', '2027-04-30', 1),
+(N'Singulair 10mg', 350000, N'Hộp', N'Hô hấp', 80, 15, N'MSD', '2026-07-28', 1),
+(N'Telfast 180mg', 190000, N'Hộp', N'Dị ứng', 120, 20, N'Sanofi', '2027-06-15', 1),
+(N'Panadol Extra', 85000, N'Hộp', N'Giảm đau, hạ sốt', 2500, 100, N'GSK', '2028-02-28', 1),
+(N'Decolgen Forte', 42000, N'Hộp', N'Trị cảm cúm', 1800, 50, N'United Pharma', '2026-09-08', 1),
+(N'Alaxan', 98000, N'Hộp', N'Giảm đau, kháng viêm', 70, 20, N'United Pharma', '2025-11-30', 1),
+(N'Strepsils Orange', 35000, N'Hộp', N'Trị đau họng', 350, 30, N'Reckitt', '2027-09-15', 1),
+(N'Maalox', 65000, N'Hộp', N'Tiêu hóa', 400, 25, N'Sanofi', '2026-08-01', 1),
+(N'Smecta', 110000, N'Hộp', N'Tiêu hóa', 500, 30, N'Ipsen', '2027-12-10', 1),
+(N'Enterogermina', 280000, N'Hộp', N'Men tiêu hóa', 300, 20, N'Sanofi', '2026-09-30', 1),
+(N'Bisolvon 8mg', 72000, N'Hộp', N'Hô hấp', 150, 15, N'Boehringer Ingelheim', '2026-03-25', 1),
+(N'Eugica Green', 55000, N'Hộp', N'Hô hấp', 600, 40, N'Mega We Care', '2026-10-05', 1),
+(N'Ameflu', 45000, N'Hộp', N'Trị cảm cúm', 1200, 50, N'OPV', '2027-10-20', 1),
+(N'Hapacol 250', 38000, N'Hộp', N'Hạ sốt trẻ em', 85, 20, N'Dược Hậu Giang', '2026-05-15', 1),
+(N'Efferalgan 500mg', 70000, N'Hộp', N'Giảm đau, hạ sốt', 2200, 100, N'Bristol-Myers Squibb', '2028-05-12', 1),
+(N'Gaviscon Dual Action', 160000, N'Hộp', N'Tiêu hóa', 450, 30, N'Reckitt', '2026-08-25', 1),
+(N'Loperamide 2mg', 30000, N'Hộp', N'Tiêu hóa', 90, 15, N'Stella', '2025-09-12', 1),
+(N'Smectago', 135000, N'Hộp', N'Tiêu hóa', 210, 20, N'Ipsen', '2026-10-15', 1),
+(N'Berberin 50mg', 15000, N'Lọ', N'Tiêu hóa', 3000, 100, N'OPC', '2027-12-30', 1),
+(N'Duo-Plavin 75mg/100mg', 650000, N'Hộp', N'Tim mạch', 50, 10, N'Sanofi', '2026-09-02', 1),
+(N'Co-Diovan 80/12.5mg', 380000, N'Hộp', N'Tim mạch', 110, 15, N'Novartis', '2026-08-08', 1),
+(N'Concor 5mg', 145000, N'Hộp', N'Tim mạch', 880, 30, N'Merck', '2027-04-15', 1),
+(N'Vastarel MR 35mg', 185000, N'Hộp', N'Tim mạch', 1020, 40, N'Servier', '2027-08-20', 1),
+(N'Diamicron MR 60mg', 250000, N'Hộp', N'Tiểu đường', 940, 30, N'Servier', '2026-10-25', 1),
+(N'Glucophage 500mg', 80000, N'Hộp', N'Tiểu đường', 1300, 50, N'Merck', '2027-02-10', 1),
+(N'Jardiance 10mg', 850000, N'Hộp', N'Tiểu đường', 40, 10, N'Boehringer Ingelheim', '2026-08-18', 1),
+(N'Lipitor 20mg', 490000, N'Hộp', N'Mỡ máu', 120, 15, N'Pfizer', '2026-09-15', 1),
+(N'Crestor 10mg', 420000, N'Hộp', N'Mỡ máu', 180, 20, N'AstraZeneca', '2026-08-30', 1),
+(N'Fenofibrate 160mg', 110000, N'Hộp', N'Mỡ máu', 700, 30, N'Hasan', '2027-01-20', 1),
+(N'Zyloric 300mg', 160000, N'Hộp', N'Trị Gút', 65, 10, N'Aspen', '2026-01-10', 1),
+(N'Colchicine 1mg', 120000, N'Hộp', N'Trị Gút', 150, 15, N'Stella', '2026-10-12', 1),
+(N'Voltaren 75mg', 35000, N'Ống', N'Giảm đau, kháng viêm', 500, 50, N'Novartis', '2026-08-04', 1),
+(N'Mobic 15mg', 260000, N'Hộp', N'Giảm đau, kháng viêm', 80, 15, N'Boehringer Ingelheim', '2026-04-10', 1),
+(N'Celebrex 200mg', 390000, N'Hộp', N'Giảm đau, kháng viêm', 350, 20, N'Pfizer', '2027-05-15', 1),
+(N'Arcoxia 90mg', 290000, N'Hộp', N'Giảm đau, kháng viêm', 220, 20, N'MSD', '2026-09-18', 1),
+(N'Nurofen Kids', 125000, N'Chai', N'Giảm đau hạ sốt', 110, 15, N'Reckitt', '2026-08-12', 1),
+(N'Hapacol 650', 65000, N'Hộp', N'Giảm đau, hạ sốt', 1600, 50, N'DHG', '2027-11-30', 1),
+(N'Klamentin 875/125', 190000, N'Hộp', N'Kháng sinh', 190, 20, N'DHG', '2026-10-20', 1),
+(N'Zinnat 500mg', 290000, N'Hộp', N'Kháng sinh', 280, 20, N'GSK', '2026-08-28', 1),
+(N'Clarithromycin 500mg', 175000, N'Hộp', N'Kháng sinh', 140, 15, N'Stella', '2027-03-20', 1),
+(N'Ciprofloxacin 500mg', 95000, N'Hộp', N'Kháng sinh', 85, 15, N'Boston', '2025-12-15', 1),
+(N'Augmentin 1g', 350000, N'Hộp', N'Kháng sinh', 320, 25, N'GSK', '2027-09-08', 1),
+(N'Bactrim', 80000, N'Hộp', N'Kháng sinh', 130, 15, N'Roche', '2026-09-09', 1),
+(N'Salbubronch', 85000, N'Chai', N'Hô hấp', 90, 15, N'Stella', '2026-02-28', 1),
+(N'Symbicort Turbuhaler', 620000, N'Lọ', N'Hô hấp', 60, 10, N'AstraZeneca', '2026-08-14', 1),
+(N'Seretide Evohaler', 420000, N'Lọ', N'Hô hấp', 75, 10, N'GSK', '2026-10-02', 1),
+(N'Aerius 5mg', 125000, N'Hộp', N'Dị ứng', 420, 30, N'MSD', '2027-04-18', 1),
+(N'Claritin 10mg', 115000, N'Hộp', N'Dị ứng', 310, 25, N'Bayer', '2026-09-22', 1),
+(N'Xyzal 5mg', 140000, N'Hộp', N'Dị ứng', 55, 10, N'UCB', '2026-03-30', 1),
+(N'Otrivin 0.1%', 55000, N'Lọ', N'Nhỏ mũi', 800, 30, N'Novartis', '2026-08-09', 1),
+(N'Naphazolin 0.05%', 8000, N'Lọ', N'Nhỏ mũi', 1500, 50, N'DHG', '2027-08-10', 1),
+(N'Systane Ultra', 95000, N'Lọ', N'Nhỏ mắt', 1100, 40, N'Alcon', '2027-02-15', 1),
+(N'Viroto', 45000, N'Lọ', N'Nhỏ mắt', 900, 30, N'Rohto', '2026-09-10', 1),
+(N'Tobrex 0.3%', 68000, N'Lọ', N'Nhỏ mắt', 400, 20, N'Alcon', '2026-08-20', 1),
+(N'Bepanthen', 85000, N'Tuýp', N'Da liễu', 650, 30, N'Bayer', '2027-05-20', 1),
+(N'Skinoren Cream', 320000, N'Tuýp', N'Da liễu', 120, 15, N'Leo Pharma', '2026-09-25', 1),
+(N'Gentinic', 25000, N'Tuýp', N'Da liễu', 80, 15, N'Shinpoong', '2025-10-15', 1),
+(N'Dermovate', 95000, N'Tuýp', N'Da liễu', 350, 20, N'GSK', '2026-08-03', 1),
+(N'Calamine', 65000, N'Chai', N'Da liễu', 240, 20, N'Stella', '2027-03-12', 1),
+(N'Eumovate', 75000, N'Tuýp', N'Da liễu', 410, 25, N'GSK', '2027-08-15', 1),
+(N'Neurobion', 110000, N'Hộp', N'Thần kinh', 1050, 40, N'Merck', '2027-06-30', 1),
+(N'Tanakan 40mg', 280000, N'Hộp', N'Tuần hoàn não', 95, 15, N'Ipsen', '2026-03-15', 1),
+(N'Ginkgo Biloba', 150000, N'Hộp', N'Tuần hoàn não', 1800, 50, N'Mason', '2027-12-18', 1),
+(N'Nootropil 800mg', 210000, N'Hộp', N'Thần kinh', 140, 15, N'UCB', '2026-09-14', 1),
+(N'Magne B6', 95000, N'Hộp', N'Vitamin & Khoáng chất', 2200, 100, N'Sanofi', '2027-10-15', 1),
+(N'Calcium Carbonate', 160000, N'Hộp', N'Vitamin & Khoáng chất', 1400, 50, N'Sanofi', '2027-04-20', 1),
+(N'Enervon', 72000, N'Hộp', N'Vitamin & Khoáng chất', 900, 45, N'United Pharma', '2026-08-07', 1),
+(N'Obimin', 195000, N'Hộp', N'Vitamin & Khoáng chất', 500, 25, N'United Pharma', '2026-10-22', 1),
+(N'Decumar', 75000, N'Tuýp', N'Da liễu', 380, 20, N'CVI', '2027-09-30', 1),
+(N'Gliclada 30mg', 115000, N'Hộp', N'Tiểu đường', 720, 25, N'Krka', '2026-09-11', 1),
+(N'Galvus Met', 450000, N'Hộp', N'Tiểu đường', 110, 15, N'Novartis', '2026-08-21', 1),
+(N'Glucovance', 210000, N'Hộp', N'Tiểu đường', 350, 20, N'Merck', '2027-03-25', 1),
+(N'Mixtard 30', 185000, N'Lọ', N'Tiểu đường', 90, 10, N'Novo Nordisk', '2026-02-10', 1),
+(N'Lantus Solostar', 420000, N'Lọ', N'Tiểu đường', 120, 15, N'Sanofi', '2026-08-30', 1),
+(N'Plavix 75mg', 550000, N'Hộp', N'Tim mạch', 150, 15, N'Sanofi', '2027-01-30', 1),
+(N'Cardilopin 5mg', 95000, N'Hộp', N'Tim mạch', 80, 10, N'Egis', '2026-01-20', 1),
+(N'Micardis 40mg', 310000, N'Hộp', N'Tim mạch', 240, 15, N'Boehringer Ingelheim', '2026-09-08', 1),
+(N'Coveram 5mg/5mg', 360000, N'Hộp', N'Tim mạch', 310, 20, N'Servier', '2027-05-15', 1),
+(N'Imdur 60mg', 260000, N'Hộp', N'Tim mạch', 150, 15, N'AstraZeneca', '2026-08-11', 1),
+(N'Dorithricin', 85000, N'Hộp', N'Trị viêm họng', 600, 30, N'Medice', '2026-10-18', 1),
+(N'Erythromycin 5mg', 590000, N'Hộp', N'Kháng sinh', 1490, 12, N'Abbott', '2026-07-25', 1),
+(N'Cefadroxil 15mg', 690000, N'Hộp', N'Kháng sinh', 2290, 90, N'Domesco', '2029-01-21', 1),
+(N'Chlorpheniramine 5mg', 90000, N'Hộp', N'Dị ứng', 1920, 15, N'OPC', '2026-01-03', 1),
+(N'Theophylline 30mg', 300000, N'Hộp', N'Hô hấp', 1830, 22, N'Dược Hậu Giang', '2026-10-04', 1),
+(N'Erythromycin 850mg', 690000, N'Hộp', N'Kháng sinh', 2180, 64, N'Bayer', '2028-05-28', 1),
+(N'Spironolactone 500mg', 730000, N'Hộp', N'Tim mạch', 720, 47, N'AstraZeneca', '2028-09-22', 1),
+(N'Etoricoxib 40mg', 140000, N'Viên', N'Giảm đau, kháng viêm', 1880, 20, N'Boston', '2028-11-17', 1),
+(N'Betamethasone 5mg', 750000, N'Tuýp', N'Da liễu', 1940, 57, N'Sanofi', '2026-06-12', 1),
+(N'Vitamin E 5mg', 590000, N'Lọ', N'Vitamin & Khoáng chất', 2440, 28, N'MSD', '2026-09-30', 1),
+(N'Moxifloxacin 120mg', 200000, N'Hộp', N'Kháng sinh', 620, 56, N'MSD', '2026-08-26', 1),
+(N'Fluconazole 200mg', 550000, N'Hộp', N'Da liễu', 2120, 92, N'AstraZeneca', '2029-01-31', 1),
+(N'Codeine 10mg', 700000, N'Viên', N'Giảm đau, hạ sốt', 1350, 95, N'Domesco', '2027-09-16', 1),
+(N'Vildagliptin 500mg', 330000, N'Hộp', N'Tiểu đường', 960, 81, N'Boston', '2027-12-01', 1),
+(N'Celecoxib 75mg', 440000, N'Viên', N'Giảm đau, kháng viêm', 1440, 18, N'GSK', '2026-08-28', 1),
+(N'Vitamin B6 500mg', 660000, N'Lọ', N'Vitamin & Khoáng chất', 2180, 80, N'Hasan', '2026-07-29', 1),
+(N'Simethicone 500mg', 710000, N'Hộp', N'Tiêu hóa', 370, 96, N'Roche', '2027-09-28', 1),
+(N'Levocetirizine 10mg', 360000, N'Hộp', N'Dị ứng', 1760, 50, N'Abbott', '2028-08-22', 1),
+(N'Erythromycin 80mg', 650000, N'Hộp', N'Kháng sinh', 1350, 10, N'Traphaco', '2028-05-21', 1),
+(N'Vitamin B1 250mg', 550000, N'Lọ', N'Vitamin & Khoáng chất', 420, 36, N'Domesco', '2028-08-02', 1),
+(N'Theophylline 2.5mg', 790000, N'Hộp', N'Hô hấp', 2400, 49, N'OPV', '2026-09-04', 1),
+(N'Chlorpheniramine 75mg', 770000, N'Hộp', N'Dị ứng', 2430, 26, N'GSK', '2029-04-04', 1),
+(N'Irbesartan 15mg', 550000, N'Hộp', N'Tim mạch', 860, 45, N'Pfizer', '2027-12-18', 1),
+(N'Etoricoxib 75mg', 250000, N'Viên', N'Giảm đau, kháng viêm', 700, 16, N'Pfizer', '2028-06-03', 1),
+(N'Linagliptin 500mg', 80000, N'Hộp', N'Tiểu đường', 1100, 88, N'OPV', '2026-08-12', 1),
+(N'Levofloxacin 100mg', 720000, N'Hộp', N'Kháng sinh', 1520, 24, N'MSD', '2026-09-04', 1),
+(N'Betamethasone 250mg', 530000, N'Tuýp', N'Da liễu', 350, 47, N'Boehringer Ingelheim', '2026-10-15', 1),
+(N'Montelukast 300mg', 730000, N'Hộp', N'Hô hấp', 180, 17, N'Dược Hậu Giang', '2026-10-14', 1),
+(N'Gemfibrozil 80mg', 170000, N'Hộp', N'Mỡ máu', 960, 55, N'Boston', '2026-07-23', 1),
+(N'Betamethasone 500mg', 130000, N'Tuýp', N'Da liễu', 2200, 77, N'Roche', '2026-05-06', 1),
+(N'Aspirin 1g', 230000, N'Viên', N'Giảm đau, hạ sốt', 1040, 99, N'Novartis', '2025-11-17', 1),
+(N'Glimepiride 10mg', 380000, N'Hộp', N'Tiểu đường', 480, 77, N'Hasan', '2026-10-11', 1),
+(N'Diclofenac 250mg', 530000, N'Viên', N'Giảm đau, kháng viêm', 2350, 80, N'Novartis', '2028-06-21', 1),
+(N'Mefenamic Acid 150mg', 710000, N'Viên', N'Giảm đau, hạ sốt', 890, 30, N'Bayer', '2028-10-01', 1),
+(N'Aciclovir 10mg', 610000, N'Tuýp', N'Da liễu', 2070, 99, N'Abbott', '2028-03-05', 1),
+(N'Glimepiride 80mg', 460000, N'Hộp', N'Tiểu đường', 2480, 69, N'MSD', '2025-10-19', 1),
+(N'Simvastatin 500mg', 610000, N'Hộp', N'Mỡ máu', 970, 61, N'Traphaco', '2026-09-19', 1),
+(N'Dapagliflozin 80mg', 500000, N'Hộp', N'Tiểu đường', 1310, 93, N'Boston', '2028-12-15', 1),
+(N'Lisinopril 300mg', 210000, N'Hộp', N'Tim mạch', 1670, 50, N'Sanofi', '2027-10-11', 1),
+(N'Erythromycin 50mg', 160000, N'Hộp', N'Kháng sinh', 1480, 88, N'Boston', '2029-03-30', 1),
+(N'Glibenclamide 75mg', 180000, N'Hộp', N'Tiểu đường', 860, 20, N'Roche', '2027-11-24', 1),
+(N'Diclofenac 120mg', 250000, N'Viên', N'Giảm đau, kháng viêm', 2170, 49, N'Sanofi', '2028-11-01', 1),
+(N'Spironolactone 850mg', 500000, N'Hộp', N'Tim mạch', 1120, 50, N'Domesco', '2028-08-14', 1),
+(N'Meloxicam 40mg', 770000, N'Viên', N'Giảm đau, kháng viêm', 2170, 45, N'Stella', '2028-02-06', 1),
+(N'Diclofenac 850mg', 450000, N'Viên', N'Giảm đau, kháng viêm', 1140, 67, N'Traphaco', '2028-04-30', 1),
+(N'Pioglitazone 30mg', 400000, N'Hộp', N'Tiểu đường', 1050, 87, N'Sanofi', '2028-11-02', 1),
+(N'Glimepiride 75mg', 60000, N'Hộp', N'Tiểu đường', 2400, 70, N'Domesco', '2028-08-30', 1),
+(N'Telmisartan 120mg', 260000, N'Hộp', N'Tim mạch', 2100, 82, N'Dược Hậu Giang', '2028-11-12', 1),
+(N'Ketoconazole 850mg', 690000, N'Tuýp', N'Da liễu', 1280, 92, N'Hasan', '2026-08-01', 1),
+(N'Cefotaxime 15mg', 540000, N'Ống', N'Kháng sinh', 580, 67, N'AstraZeneca', '2028-07-02', 1),
+(N'Lisinopril 20mg', 140000, N'Hộp', N'Tim mạch', 2470, 29, N'Pfizer', '2029-03-04', 1),
+(N'Felodipine 625mg', 750000, N'Hộp', N'Tim mạch', 290, 84, N'MSD', '2028-11-01', 1),
+(N'Enalapril 250mg', 380000, N'Hộp', N'Tim mạch', 2290, 65, N'OPV', '2028-07-15', 1),
+(N'Lansoprazole 150mg', 560000, N'Hộp', N'Tiêu hóa', 1340, 47, N'Boston', '2025-09-24', 1),
+(N'Linagliptin 300mg', 340000, N'Hộp', N'Tiểu đường', 1510, 90, N'MSD', '2028-02-05', 1),
+(N'Pantoprazole 850mg', 100000, N'Hộp', N'Tiêu hóa', 150, 30, N'Dược Hậu Giang', '2028-05-09', 1),
+(N'Bisoprolol 850mg', 610000, N'Hộp', N'Tim mạch', 2320, 14, N'Abbott', '2027-09-13', 1),
+(N'Phosphalugel 120mg', 560000, N'Hộp', N'Tiêu hóa', 1600, 94, N'Traphaco', '2027-09-24', 1),
+(N'Zinc Sulfate 850mg', 250000, N'Hộp', N'Vitamin & Khoáng chất', 300, 46, N'Dược Hậu Giang', '2028-08-20', 1),
+(N'Cefdinir 10mg', 500000, N'Hộp', N'Kháng sinh', 1770, 35, N'MSD', '2028-01-11', 1),
+(N'Hydrocortisone 20mg', 50000, N'Tuýp', N'Da liễu', 1280, 60, N'Domesco', '2029-03-24', 1),
+(N'Dapagliflozin 40mg', 190000, N'Hộp', N'Tiểu đường', 920, 21, N'Bayer', '2027-11-11', 1),
+(N'Phosphalugel 1g', 140000, N'Hộp', N'Tiêu hóa', 800, 77, N'AstraZeneca', '2026-02-26', 1),
+(N'Naproxen 10mg', 610000, N'Viên', N'Giảm đau, kháng viêm', 2300, 30, N'Stella', '2028-07-26', 1),
+(N'Moxifloxacin 75mg', 530000, N'Hộp', N'Kháng sinh', 1810, 20, N'Dược Hậu Giang', '2028-12-13', 1),
+(N'Betamethasone 40mg', 250000, N'Tuýp', N'Da liễu', 350, 87, N'Sanofi', '2027-12-29', 1),
+(N'Glibenclamide 80mg', 270000, N'Hộp', N'Tiểu đường', 860, 70, N'Dược Hậu Giang', '2028-05-06', 1),
+(N'Cefdinir 120mg', 360000, N'Hộp', N'Kháng sinh', 1120, 39, N'Dược Hậu Giang', '2028-07-19', 1),
+(N'Telmisartan 150mg', 140000, N'Hộp', N'Tim mạch', 1830, 33, N'Novartis', '2026-03-25', 1),
+(N'Nifedipine 40mg', 270000, N'Hộp', N'Tim mạch', 1150, 32, N'Boehringer Ingelheim', '2028-07-18', 1),
+(N'Theophylline 100mg', 170000, N'Hộp', N'Hô hấp', 2010, 94, N'Sanofi', '2027-11-05', 1),
+(N'Vitamin E 15mg', 450000, N'Lọ', N'Vitamin & Khoáng chất', 1460, 64, N'Traphaco', '2029-03-26', 1),
+(N'Rosuvastatin 250mg', 500000, N'Hộp', N'Mỡ máu', 690, 43, N'Roche', '2027-09-11', 1),
+(N'Metoclopramide 850mg', 720000, N'Viên', N'Tiêu hóa', 930, 77, N'Domesco', '2026-08-31', 1),
+(N'Ketoconazole 500mg', 640000, N'Tuýp', N'Da liễu', 2080, 87, N'Bayer', '2027-07-22', 1),
+(N'Bromhexine 1g', 680000, N'Hộp', N'Hô hấp', 290, 21, N'Sanofi', '2028-01-23', 1),
+(N'Vitamin B1 40mg', 700000, N'Lọ', N'Vitamin & Khoáng chất', 1420, 40, N'OPV', '2026-10-07', 1),
+(N'Bisoprolol 5mg', 370000, N'Hộp', N'Tim mạch', 100, 63, N'GSK', '2028-11-28', 1),
+(N'Hydrocortisone 40mg', 520000, N'Tuýp', N'Da liễu', 1920, 39, N'Pfizer', '2026-08-06', 1),
+(N'Ketoprofen 150mg', 460000, N'Viên', N'Giảm đau, kháng viêm', 1090, 93, N'Bayer', '2029-01-21', 1),
+(N'Cefdinir 150mg', 430000, N'Hộp', N'Kháng sinh', 1100, 29, N'Pfizer', '2028-07-24', 1),
+(N'Theophylline 850mg', 280000, N'Hộp', N'Hô hấp', 1960, 55, N'Pfizer', '2027-10-09', 1),
+(N'Propranolol 5mg', 120000, N'Hộp', N'Tim mạch', 2010, 88, N'Boehringer Ingelheim', '2027-11-09', 1),
+(N'Levofloxacin 30mg', 420000, N'Hộp', N'Kháng sinh', 1850, 82, N'MSD', '2028-07-30', 1),
+(N'Mefenamic Acid 120mg', 670000, N'Viên', N'Giảm đau, hạ sốt', 2460, 14, N'Dược Hậu Giang', '2028-02-04', 1),
+(N'Lisinopril 2.5mg', 130000, N'Hộp', N'Tim mạch', 1040, 40, N'OPV', '2026-07-31', 1),
+(N'Erythromycin 75mg', 710000, N'Hộp', N'Kháng sinh', 2170, 82, N'Traphaco', '2026-05-20', 1),
+(N'Theophylline 50mg', 200000, N'Hộp', N'Hô hấp', 2440, 24, N'Traphaco', '2029-01-11', 1),
+(N'Betamethasone 300mg', 540000, N'Tuýp', N'Da liễu', 2370, 83, N'OPC', '2026-02-10', 1),
+(N'Telmisartan 400mg', 310000, N'Hộp', N'Tim mạch', 2070, 89, N'GSK', '2029-01-23', 1),
+(N'Cefadroxil 5mg', 450000, N'Hộp', N'Kháng sinh', 1020, 91, N'Domesco', '2029-03-15', 1),
+(N'Rosuvastatin 200mg', 310000, N'Hộp', N'Mỡ máu', 1820, 82, N'GSK', '2026-07-28', 1),
+(N'Clindamycin 30mg', 340000, N'Hộp', N'Kháng sinh', 1580, 71, N'Traphaco', '2028-11-15', 1),
+(N'Domperidone 50mg', 320000, N'Viên', N'Tiêu hóa', 140, 82, N'Hasan', '2026-08-22', 1),
+(N'Telmisartan 40mg', 680000, N'Hộp', N'Tim mạch', 280, 64, N'OPC', '2029-02-28', 1),
+(N'Ketoconazole 250mg', 340000, N'Tuýp', N'Da liễu', 470, 16, N'OPV', '2029-02-17', 1),
+(N'Theophylline 5mg', 460000, N'Hộp', N'Hô hấp', 1570, 26, N'Hasan', '2026-08-16', 1),
+(N'Irbesartan 400mg', 70000, N'Hộp', N'Tim mạch', 1360, 73, N'Roche', '2026-07-30', 1),
+(N'Metoclopramide 40mg', 210000, N'Viên', N'Tiêu hóa', 1240, 76, N'Domesco', '2029-01-22', 1),
+(N'Pantoprazole 80mg', 560000, N'Hộp', N'Tiêu hóa', 2440, 80, N'Sanofi', '2029-04-06', 1),
+(N'Fluticasone 80mg', 330000, N'Lọ', N'Hô hấp', 1880, 65, N'Novartis', '2028-01-11', 1),
+(N'Cefadroxil 625mg', 490000, N'Hộp', N'Kháng sinh', 2090, 41, N'OPC', '2026-08-28', 1),
+(N'Rosuvastatin 2.5mg', 640000, N'Hộp', N'Mỡ máu', 1960, 22, N'Stella', '2026-08-04', 1),
+(N'Simethicone 250mg', 270000, N'Hộp', N'Tiêu hóa', 1830, 58, N'Hasan', '2026-07-21', 1),
+(N'Tramadol 5mg', 690000, N'Viên', N'Giảm đau, hạ sốt', 700, 44, N'OPC', '2028-09-25', 1),
+(N'Felodipine 850mg', 300000, N'Hộp', N'Tim mạch', 2160, 53, N'Abbott', '2029-01-31', 1),
+(N'Metronidazole 100mg', 360000, N'Hộp', N'Kháng sinh', 1950, 68, N'Bayer', '2028-04-16', 1),
+(N'Ceftriaxone 500mg', 320000, N'Ống', N'Kháng sinh', 2330, 43, N'Traphaco', '2029-02-23', 1),
+(N'Bromhexine 120mg', 600000, N'Hộp', N'Hô hấp', 820, 60, N'Boehringer Ingelheim', '2027-10-26', 1),
+(N'Doxycycline 10mg', 300000, N'Hộp', N'Kháng sinh', 550, 90, N'Boston', '2026-02-07', 1),
+(N'Cefdinir 75mg', 410000, N'Hộp', N'Kháng sinh', 160, 81, N'OPC', '2027-11-04', 1),
+(N'Itraconazole 120mg', 70000, N'Hộp', N'Da liễu', 2090, 37, N'Boston', '2026-09-12', 1),
+(N'Cefdinir 850mg', 130000, N'Hộp', N'Kháng sinh', 610, 39, N'Stella', '2028-01-01', 1),
+(N'Propranolol 120mg', 470000, N'Hộp', N'Tim mạch', 1690, 58, N'Boehringer Ingelheim', '2029-01-02', 1),
+(N'Pioglitazone 1g', 540000, N'Hộp', N'Tiểu đường', 1810, 21, N'Boston', '2026-08-05', 1),
+(N'Aspirin 10mg', 50000, N'Viên', N'Giảm đau, hạ sốt', 620, 20, N'OPC', '2027-08-27', 1),
+(N'Hydrocortisone 100mg', 150000, N'Tuýp', N'Da liễu', 460, 47, N'Boehringer Ingelheim', '2026-05-05', 1),
+(N'Lansoprazole 120mg', 710000, N'Hộp', N'Tiêu hóa', 2100, 64, N'AstraZeneca', '2029-04-13', 1),
+(N'Dapagliflozin 20mg', 100000, N'Hộp', N'Tiểu đường', 940, 66, N'Sanofi', '2026-10-09', 1),
+(N'Glibenclamide 120mg', 130000, N'Hộp', N'Tiểu đường', 590, 33, N'AstraZeneca', '2026-07-23', 1),
+(N'Glibenclamide 100mg', 550000, N'Hộp', N'Tiểu đường', 230, 84, N'GSK', '2028-12-10', 1),
+(N'Vitamin B12 80mg', 360000, N'Ống', N'Vitamin & Khoáng chất', 1510, 45, N'OPV', '2028-07-13', 1),
+(N'Moxifloxacin 2.5mg', 350000, N'Hộp', N'Kháng sinh', 2310, 41, N'Sanofi', '2028-05-26', 1),
+(N'Clarithromycin 30mg', 350000, N'Hộp', N'Kháng sinh', 2220, 86, N'Abbott', '2028-11-27', 1),
+(N'Phosphalugel 400mg', 110000, N'Hộp', N'Tiêu hóa', 320, 87, N'Abbott', '2026-07-26', 1),
+(N'Sitagliptin 30mg', 410000, N'Hộp', N'Tiểu đường', 560, 16, N'Novartis', '2028-03-31', 1),
+(N'Rosuvastatin 120mg', 790000, N'Hộp', N'Mỡ máu', 710, 19, N'Hasan', '2028-01-25', 1),
+(N'Naproxen 15mg', 700000, N'Viên', N'Giảm đau, kháng viêm', 1490, 27, N'AstraZeneca', '2029-04-05', 1),
+(N'Captopril 200mg', 190000, N'Hộp', N'Tim mạch', 1580, 33, N'Abbott', '2028-03-13', 1),
+(N'Vitamin B1 20mg', 160000, N'Lọ', N'Vitamin & Khoáng chất', 290, 97, N'Stella', '2028-05-21', 1),
+(N'Glibenclamide 2.5mg', 290000, N'Hộp', N'Tiểu đường', 820, 90, N'Novartis', '2027-11-05', 1),
+(N'Diclofenac 400mg', 60000, N'Viên', N'Giảm đau, kháng viêm', 1700, 97, N'GSK', '2026-05-02', 1),
+(N'Pantoprazole 100mg', 590000, N'Hộp', N'Tiêu hóa', 1140, 55, N'Abbott', '2026-08-07', 1),
+(N'Vitamin A 150mg', 360000, N'Lọ', N'Vitamin & Khoáng chất', 2280, 16, N'Novartis', '2028-12-25', 1),
+(N'Pioglitazone 75mg', 670000, N'Hộp', N'Tiểu đường', 550, 29, N'Pfizer', '2025-12-02', 1),
+(N'Fluconazole 2.5mg', 510000, N'Hộp', N'Da liễu', 1230, 87, N'Dược Hậu Giang', '2027-12-23', 1),
+(N'Sitagliptin 80mg', 430000, N'Hộp', N'Tiểu đường', 2450, 97, N'Abbott', '2028-09-02', 1),
+(N'Captopril 30mg', 270000, N'Hộp', N'Tim mạch', 1940, 19, N'Boston', '2027-11-19', 1),
+(N'Ferrous Sulfate 150mg', 610000, N'Hộp', N'Vitamin & Khoáng chất', 2100, 12, N'Pfizer', '2029-03-25', 1),
+(N'Irbesartan 100mg', 240000, N'Hộp', N'Tim mạch', 1720, 83, N'MSD', '2026-08-28', 1),
+(N'Glimepiride 15mg', 730000, N'Hộp', N'Tiểu đường', 2160, 37, N'MSD', '2029-03-17', 1),
+(N'Esomeprazole 120mg', 190000, N'Hộp', N'Tiêu hóa', 2030, 51, N'Hasan', '2028-01-25', 1),
+(N'Meloxicam 200mg', 150000, N'Viên', N'Giảm đau, kháng viêm', 2060, 54, N'Boston', '2027-10-06', 1),
+(N'Naproxen 120mg', 420000, N'Viên', N'Giảm đau, kháng viêm', 1280, 64, N'Hasan', '2028-09-21', 1),
+(N'Meloxicam 850mg', 340000, N'Viên', N'Giảm đau, kháng viêm', 1520, 89, N'Traphaco', '2026-08-11', 1),
+(N'Telmisartan 80mg', 390000, N'Hộp', N'Tim mạch', 1520, 55, N'Boston', '2029-03-22', 1),
+(N'Budesonide 15mg', 530000, N'Lọ', N'Hô hấp', 1030, 71, N'OPC', '2026-10-03', 1),
+(N'Vildagliptin 300mg', 260000, N'Hộp', N'Tiểu đường', 2290, 41, N'Traphaco', '2028-06-07', 1),
+(N'Dextromethorphan 50mg', 170000, N'Hộp', N'Hô hấp', 2440, 91, N'OPC', '2027-08-07', 1),
+(N'Theophylline 250mg', 670000, N'Hộp', N'Hô hấp', 1120, 70, N'Sanofi', '2026-05-12', 1),
+(N'Aciclovir 200mg', 440000, N'Tuýp', N'Da liễu', 1710, 12, N'Novartis', '2028-08-08', 1),
+(N'Montelukast 150mg', 650000, N'Hộp', N'Hô hấp', 400, 84, N'Stella', '2028-02-20', 1),
+(N'Dextromethorphan 850mg', 690000, N'Hộp', N'Hô hấp', 500, 22, N'GSK', '2026-05-04', 1),
+(N'Simethicone 150mg', 610000, N'Hộp', N'Tiêu hóa', 2470, 62, N'Abbott', '2026-07-28', 1),
+(N'Acetylcysteine 5mg', 780000, N'Hộp', N'Hô hấp', 1790, 67, N'Domesco', '2027-08-18', 1),
+(N'Zinc Sulfate 120mg', 270000, N'Hộp', N'Vitamin & Khoáng chất', 800, 65, N'Pfizer', '2026-09-10', 1),
+(N'Ambroxol 300mg', 500000, N'Hộp', N'Hô hấp', 2190, 15, N'OPV', '2028-01-20', 1),
+(N'Lansoprazole 75mg', 750000, N'Hộp', N'Tiêu hóa', 1190, 12, N'Abbott', '2028-05-28', 1),
+(N'Nifedipine 300mg', 250000, N'Hộp', N'Tim mạch', 1880, 73, N'Pfizer', '2028-12-17', 1),
+(N'Cefotaxime 150mg', 250000, N'Ống', N'Kháng sinh', 1940, 65, N'Novartis', '2028-03-05', 1),
+(N'Glibenclamide 5mg', 150000, N'Hộp', N'Tiểu đường', 1060, 72, N'Abbott', '2026-01-07', 1),
+(N'Cefadroxil 50mg', 620000, N'Hộp', N'Kháng sinh', 250, 20, N'OPC', '2028-05-12', 1),
+(N'Linagliptin 10mg', 230000, N'Hộp', N'Tiểu đường', 1230, 19, N'Sanofi', '2027-08-13', 1),
+(N'Clindamycin 400mg', 490000, N'Hộp', N'Kháng sinh', 1240, 16, N'MSD', '2028-07-18', 1),
+(N'Diclofenac 150mg', 570000, N'Viên', N'Giảm đau, kháng viêm', 2340, 72, N'Domesco', '2028-07-08', 1),
+(N'Acetylcysteine 200mg', 510000, N'Hộp', N'Hô hấp', 960, 90, N'OPC', '2029-01-02', 1),
+(N'Ketoprofen 500mg', 770000, N'Viên', N'Giảm đau, kháng viêm', 1270, 52, N'Bayer', '2026-09-02', 1),
+(N'Pantoprazole 10mg', 150000, N'Hộp', N'Tiêu hóa', 2260, 32, N'AstraZeneca', '2028-02-06', 1),
+(N'Fluticasone 15mg', 90000, N'Lọ', N'Hô hấp', 1390, 76, N'GSK', '2028-10-17', 1),
+(N'Rabeprazole 250mg', 620000, N'Hộp', N'Tiêu hóa', 1210, 89, N'OPC', '2026-08-12', 1),
+(N'Codeine 300mg', 360000, N'Viên', N'Giảm đau, hạ sốt', 720, 85, N'Hasan', '2026-07-22', 1),
+(N'Rabeprazole 80mg', 520000, N'Hộp', N'Tiêu hóa', 1540, 94, N'Bayer', '2027-10-29', 1),
+(N'Tramadol 40mg', 570000, N'Viên', N'Giảm đau, hạ sốt', 1800, 40, N'Traphaco', '2026-08-02', 1),
+(N'Celecoxib 30mg', 170000, N'Viên', N'Giảm đau, kháng viêm', 1990, 25, N'MSD', '2029-01-28', 1),
+(N'Fluconazole 40mg', 650000, N'Hộp', N'Da liễu', 1290, 21, N'Boston', '2028-05-16', 1),
+(N'Tramadol 1g', 210000, N'Viên', N'Giảm đau, hạ sốt', 800, 96, N'Hasan', '2028-04-17', 1),
+(N'Trimebutine 150mg', 590000, N'Hộp', N'Tiêu hóa', 1130, 55, N'Bayer', '2029-03-11', 1),
+(N'Moxifloxacin 150mg', 60000, N'Hộp', N'Kháng sinh', 840, 91, N'AstraZeneca', '2025-12-04', 1),
+(N'Budesonide 200mg', 110000, N'Lọ', N'Hô hấp', 2030, 12, N'MSD', '2027-12-06', 1),
+(N'Terbutaline 50mg', 750000, N'Hộp', N'Hô hấp', 2040, 56, N'Abbott', '2028-10-27', 1),
+(N'Nifedipine 120mg', 350000, N'Hộp', N'Tim mạch', 1990, 23, N'AstraZeneca', '2029-01-24', 1),
+(N'Vitamin B6 15mg', 100000, N'Lọ', N'Vitamin & Khoáng chất', 2200, 50, N'Roche', '2025-12-22', 1),
+(N'Moxifloxacin 20mg', 440000, N'Hộp', N'Kháng sinh', 390, 40, N'GSK', '2028-07-30', 1),
+(N'Pioglitazone 100mg', 650000, N'Hộp', N'Tiểu đường', 450, 99, N'Abbott', '2028-03-04', 1),
+(N'Mefenamic Acid 40mg', 720000, N'Viên', N'Giảm đau, hạ sốt', 910, 20, N'Stella', '2027-10-04', 1),
+(N'Vitamin B12 20mg', 760000, N'Ống', N'Vitamin & Khoáng chất', 2130, 74, N'Bayer', '2029-01-06', 1),
+(N'Ceftriaxone 30mg', 480000, N'Ống', N'Kháng sinh', 830, 40, N'OPV', '2029-01-02', 1),
+(N'Vitamin E 2.5mg', 610000, N'Lọ', N'Vitamin & Khoáng chất', 1800, 77, N'Traphaco', '2028-10-30', 1),
+(N'Rosuvastatin 1g', 500000, N'Hộp', N'Mỡ máu', 1070, 32, N'Traphaco', '2028-10-19', 1),
+(N'Vitamin E 500mg', 600000, N'Lọ', N'Vitamin & Khoáng chất', 2400, 87, N'Roche', '2026-08-26', 1),
+(N'Celecoxib 400mg', 720000, N'Viên', N'Giảm đau, kháng viêm', 240, 40, N'Boston', '2026-10-13', 1),
+(N'Phosphalugel 30mg', 290000, N'Hộp', N'Tiêu hóa', 2370, 18, N'Boehringer Ingelheim', '2026-08-05', 1),
+(N'Bromhexine 200mg', 560000, N'Hộp', N'Hô hấp', 2330, 18, N'Stella', '2026-09-03', 1),
+(N'Aciclovir 20mg', 730000, N'Tuýp', N'Da liễu', 1910, 79, N'Traphaco', '2028-08-15', 1),
+(N'Cefotaxime 500mg', 340000, N'Ống', N'Kháng sinh', 720, 73, N'Pfizer', '2026-07-06', 1),
+(N'Linagliptin 200mg', 510000, N'Hộp', N'Tiểu đường', 2220, 67, N'Traphaco', '2028-02-05', 1),
+(N'Etoricoxib 200mg', 370000, N'Viên', N'Giảm đau, kháng viêm', 320, 71, N'Pfizer', '2027-08-30', 1),
+(N'Simethicone 5mg', 80000, N'Hộp', N'Tiêu hóa', 1650, 52, N'Hasan', '2026-08-02', 1),
+(N'Pantoprazole 20mg', 290000, N'Hộp', N'Tiêu hóa', 460, 23, N'OPC', '2027-08-07', 1),
+(N'Aciclovir 5mg', 390000, N'Tuýp', N'Da liễu', 1440, 68, N'Dược Hậu Giang', '2028-11-18', 1),
+(N'Pioglitazone 80mg', 120000, N'Hộp', N'Tiểu đường', 390, 26, N'GSK', '2026-09-25', 1),
+(N'Zinc Sulfate 200mg', 510000, N'Hộp', N'Vitamin & Khoáng chất', 950, 58, N'Pfizer', '2027-10-18', 1),
+(N'Simvastatin 75mg', 650000, N'Hộp', N'Mỡ máu', 2100, 25, N'Pfizer', '2028-04-02', 1),
+(N'Cefdinir 30mg', 360000, N'Hộp', N'Kháng sinh', 880, 53, N'Stella', '2027-08-02', 1),
+(N'Lansoprazole 300mg', 740000, N'Hộp', N'Tiêu hóa', 1750, 25, N'MSD', '2028-01-08', 1),
+(N'Nifedipine 150mg', 450000, N'Hộp', N'Tim mạch', 2120, 18, N'AstraZeneca', '2027-10-18', 1),
+(N'Fluconazole 850mg', 250000, N'Hộp', N'Da liễu', 1240, 47, N'Roche', '2028-09-23', 1),
+(N'Valsartan 250mg', 730000, N'Hộp', N'Tim mạch', 1440, 24, N'OPV', '2028-06-10', 1),
+(N'Carvedilol 75mg', 680000, N'Hộp', N'Tim mạch', 2140, 53, N'Traphaco', '2028-02-28', 1),
+(N'Tramadol 80mg', 790000, N'Viên', N'Giảm đau, hạ sốt', 1520, 15, N'Boston', '2026-08-14', 1),
+(N'Vitamin B6 50mg', 280000, N'Lọ', N'Vitamin & Khoáng chất', 2370, 76, N'GSK', '2028-06-14', 1),
+(N'Lansoprazole 30mg', 210000, N'Hộp', N'Tiêu hóa', 1200, 91, N'Boehringer Ingelheim', '2026-07-21', 1),
+(N'Codeine 2.5mg', 270000, N'Viên', N'Giảm đau, hạ sốt', 1760, 69, N'Pfizer', '2028-12-31', 1),
+(N'Cefotaxime 850mg', 340000, N'Ống', N'Kháng sinh', 2470, 80, N'Abbott', '2027-10-20', 1),
+(N'Propranolol 2.5mg', 580000, N'Hộp', N'Tim mạch', 2060, 13, N'AstraZeneca', '2029-03-05', 1),
+(N'Glimepiride 40mg', 460000, N'Hộp', N'Tiểu đường', 660, 91, N'Hasan', '2027-09-28', 1),
+(N'Rabeprazole 850mg', 410000, N'Hộp', N'Tiêu hóa', 170, 11, N'Sanofi', '2026-09-01', 1),
+(N'Bromhexine 100mg', 560000, N'Hộp', N'Hô hấp', 2060, 29, N'Pfizer', '2028-05-06', 1),
+(N'Terbutaline 5mg', 740000, N'Hộp', N'Hô hấp', 2250, 33, N'Boston', '2026-01-24', 1),
+(N'Clindamycin 50mg', 760000, N'Hộp', N'Kháng sinh', 900, 16, N'OPC', '2027-08-26', 1),
+(N'Valsartan 30mg', 550000, N'Hộp', N'Tim mạch', 2110, 40, N'GSK', '2026-07-21', 1),
+(N'Cefadroxil 120mg', 680000, N'Hộp', N'Kháng sinh', 2390, 75, N'Domesco', '2027-09-16', 1),
+(N'Levocetirizine 500mg', 250000, N'Hộp', N'Dị ứng', 1430, 86, N'Dược Hậu Giang', '2029-02-21', 1),
+(N'Sitagliptin 200mg', 450000, N'Hộp', N'Tiểu đường', 2280, 23, N'Stella', '2028-08-16', 1),
+(N'Domperidone 850mg', 790000, N'Viên', N'Tiêu hóa', 2260, 20, N'Dược Hậu Giang', '2029-01-28', 1),
+(N'Cefadroxil 400mg', 160000, N'Hộp', N'Kháng sinh', 1220, 75, N'Boston', '2029-01-17', 1),
+(N'Glibenclamide 1g', 660000, N'Hộp', N'Tiểu đường', 340, 80, N'Bayer', '2028-08-26', 1),
+(N'Aciclovir 75mg', 650000, N'Tuýp', N'Da liễu', 1220, 55, N'Abbott', '2029-01-18', 1),
+(N'Meloxicam 20mg', 510000, N'Viên', N'Giảm đau, kháng viêm', 1970, 18, N'Novartis', '2028-07-08', 1),
+(N'Zinc Sulfate 75mg', 360000, N'Hộp', N'Vitamin & Khoáng chất', 270, 88, N'OPC', '2026-08-02', 1),
+(N'Meloxicam 250mg', 160000, N'Viên', N'Giảm đau, kháng viêm', 520, 49, N'OPC', '2028-04-11', 1),
+(N'Bisoprolol 50mg', 770000, N'Hộp', N'Tim mạch', 1770, 30, N'Sanofi', '2028-01-18', 1),
+(N'Enalapril 40mg', 390000, N'Hộp', N'Tim mạch', 1300, 71, N'Abbott', '2027-09-05', 1),
+(N'Diclofenac 30mg', 200000, N'Viên', N'Giảm đau, kháng viêm', 1020, 55, N'OPV', '2028-05-26', 1),
+(N'Metronidazole 50mg', 390000, N'Hộp', N'Kháng sinh', 2110, 72, N'Traphaco', '2028-07-15', 1),
+(N'Trimebutine 20mg', 240000, N'Hộp', N'Tiêu hóa', 1870, 73, N'Stella', '2028-04-07', 1),
+(N'Meloxicam 10mg', 520000, N'Viên', N'Giảm đau, kháng viêm', 1490, 98, N'Novartis', '2027-10-24', 1),
+(N'Ferrous Sulfate 5mg', 180000, N'Hộp', N'Vitamin & Khoáng chất', 530, 30, N'Sanofi', '2027-10-30', 1),
+(N'Gemfibrozil 100mg', 400000, N'Hộp', N'Mỡ máu', 2240, 11, N'AstraZeneca', '2028-01-19', 1),
+(N'Vitamin B12 625mg', 130000, N'Ống', N'Vitamin & Khoáng chất', 1280, 63, N'Dược Hậu Giang', '2028-10-21', 1),
+(N'Aciclovir 400mg', 320000, N'Tuýp', N'Da liễu', 990, 75, N'Hasan', '2028-06-26', 1),
+(N'Spironolactone 40mg', 750000, N'Hộp', N'Tim mạch', 1570, 97, N'Stella', '2029-03-05', 1),
+(N'Cefotaxime 10mg', 160000, N'Ống', N'Kháng sinh', 650, 82, N'OPC', '2028-05-26', 1),
+(N'Carvedilol 50mg', 580000, N'Hộp', N'Tim mạch', 330, 61, N'Boston', '2029-01-24', 1),
+(N'Acetylcysteine 80mg', 230000, N'Hộp', N'Hô hấp', 1150, 17, N'AstraZeneca', '2028-03-31', 1),
+(N'Itraconazole 850mg', 300000, N'Hộp', N'Da liễu', 1820, 63, N'Boehringer Ingelheim', '2028-08-22', 1),
+(N'Spironolactone 15mg', 210000, N'Hộp', N'Tim mạch', 1280, 89, N'Traphaco', '2028-05-28', 1),
+(N'Phosphalugel 625mg', 670000, N'Hộp', N'Tiêu hóa', 1030, 52, N'OPC', '2027-12-27', 1),
+(N'Glimepiride 5mg', 720000, N'Hộp', N'Tiểu đường', 1360, 99, N'Bayer', '2028-10-21', 1),
+(N'Fluticasone 300mg', 240000, N'Lọ', N'Hô hấp', 2210, 18, N'Novartis', '2028-07-04', 1),
+(N'Meloxicam 5mg', 460000, N'Viên', N'Giảm đau, kháng viêm', 1040, 16, N'Domesco', '2028-07-21', 1),
+(N'Carvedilol 300mg', 70000, N'Hộp', N'Tim mạch', 620, 73, N'Dược Hậu Giang', '2028-07-04', 1),
+(N'Fluconazole 5mg', 780000, N'Hộp', N'Da liễu', 1390, 17, N'MSD', '2028-09-03', 1),
+(N'Esomeprazole 100mg', 660000, N'Hộp', N'Tiêu hóa', 410, 88, N'Dược Hậu Giang', '2028-10-22', 1),
+(N'Hydrocortisone 30mg', 320000, N'Tuýp', N'Da liễu', 1050, 88, N'GSK', '2026-08-07', 1),
+(N'Ketoprofen 40mg', 790000, N'Viên', N'Giảm đau, kháng viêm', 660, 87, N'Pfizer', '2026-01-11', 1),
+(N'Dapagliflozin 250mg', 740000, N'Hộp', N'Tiểu đường', 100, 72, N'OPV', '2027-12-15', 1),
+(N'Lisinopril 625mg', 90000, N'Hộp', N'Tim mạch', 1480, 31, N'Abbott', '2028-06-02', 1),
+(N'Domperidone 40mg', 230000, N'Viên', N'Tiêu hóa', 1110, 71, N'AstraZeneca', '2028-03-21', 1),
+(N'Ferrous Sulfate 40mg', 400000, N'Hộp', N'Vitamin & Khoáng chất', 1920, 81, N'OPC', '2028-10-05', 1),
+(N'Valsartan 20mg', 280000, N'Hộp', N'Tim mạch', 470, 20, N'OPC', '2026-01-09', 1),
+(N'Fluconazole 1g', 420000, N'Hộp', N'Da liễu', 1550, 48, N'Hasan', '2028-05-22', 1),
+(N'Vitamin E 120mg', 340000, N'Lọ', N'Vitamin & Khoáng chất', 1520, 94, N'Boston', '2026-02-05', 1),
+(N'Codeine 75mg', 700000, N'Viên', N'Giảm đau, hạ sốt', 1810, 49, N'Dược Hậu Giang', '2026-07-30', 1),
+(N'Spironolactone 120mg', 340000, N'Hộp', N'Tim mạch', 2370, 34, N'Pfizer', '2028-07-04', 1),
+(N'Rosuvastatin 300mg', 710000, N'Hộp', N'Mỡ máu', 810, 88, N'Boston', '2026-07-28', 1),
+(N'Propranolol 20mg', 280000, N'Hộp', N'Tim mạch', 2220, 34, N'Dược Hậu Giang', '2026-08-05', 1),
+(N'Pantoprazole 200mg', 610000, N'Hộp', N'Tiêu hóa', 320, 72, N'Bayer', '2027-10-15', 1),
+(N'Bisoprolol 75mg', 530000, N'Hộp', N'Tim mạch', 220, 18, N'Bayer', '2026-10-02', 1),
+(N'Hydrocortisone 75mg', 590000, N'Tuýp', N'Da liễu', 840, 68, N'MSD', '2028-07-30', 1),
+(N'Rosuvastatin 10mg', 430000, N'Hộp', N'Mỡ máu', 2200, 14, N'Hasan', '2028-06-15', 1),
+(N'Felodipine 500mg', 530000, N'Hộp', N'Tim mạch', 1610, 87, N'AstraZeneca', '2028-08-25', 1),
+(N'Vitamin B6 300mg', 640000, N'Lọ', N'Vitamin & Khoáng chất', 1250, 66, N'Domesco', '2026-09-22', 1),
+(N'Fluconazole 120mg', 730000, N'Hộp', N'Da liễu', 2220, 37, N'MSD', '2028-06-05', 1),
+(N'Felodipine 1g', 110000, N'Hộp', N'Tim mạch', 820, 65, N'Traphaco', '2028-01-14', 1),
+(N'Ceftriaxone 200mg', 730000, N'Ống', N'Kháng sinh', 1190, 56, N'Domesco', '2029-02-14', 1),
+(N'Diclofenac 2.5mg', 770000, N'Viên', N'Giảm đau, kháng viêm', 1210, 91, N'Bayer', '2028-06-11', 1),
+(N'Lansoprazole 625mg', 210000, N'Hộp', N'Tiêu hóa', 1550, 89, N'Traphaco', '2028-10-09', 1),
+(N'Levofloxacin 625mg', 540000, N'Hộp', N'Kháng sinh', 1260, 87, N'AstraZeneca', '2029-03-03', 1),
+(N'Lansoprazole 40mg', 520000, N'Hộp', N'Tiêu hóa', 1180, 42, N'Hasan', '2027-07-31', 1),
+(N'Telmisartan 10mg', 190000, N'Hộp', N'Tim mạch', 250, 69, N'AstraZeneca', '2026-01-26', 1),
+(N'Diclofenac 300mg', 720000, N'Viên', N'Giảm đau, kháng viêm', 130, 45, N'Traphaco', '2026-07-25', 1),
+(N'Captopril 20mg', 700000, N'Hộp', N'Tim mạch', 1470, 32, N'AstraZeneca', '2026-08-01', 1),
+(N'Hydrocortisone 1g', 510000, N'Tuýp', N'Da liễu', 1530, 89, N'Abbott', '2027-07-23', 1),
+(N'Metronidazole 625mg', 520000, N'Hộp', N'Kháng sinh', 1040, 56, N'Bayer', '2028-10-11', 1),
+(N'Linagliptin 5mg', 410000, N'Hộp', N'Tiểu đường', 400, 63, N'Sanofi', '2027-10-20', 1),
+(N'Betamethasone 10mg', 300000, N'Tuýp', N'Da liễu', 2010, 79, N'Boehringer Ingelheim', '2028-10-23', 1),
+(N'Tramadol 250mg', 710000, N'Viên', N'Giảm đau, hạ sốt', 1230, 71, N'Traphaco', '2026-10-10', 1),
+(N'Sitagliptin 120mg', 430000, N'Hộp', N'Tiểu đường', 1890, 72, N'AstraZeneca', '2027-10-31', 1),
+(N'Pioglitazone 15mg', 80000, N'Hộp', N'Tiểu đường', 200, 87, N'AstraZeneca', '2028-05-15', 1),
+(N'Felodipine 80mg', 690000, N'Hộp', N'Tim mạch', 1040, 70, N'OPC', '2025-12-28', 1),
+(N'Captopril 400mg', 680000, N'Hộp', N'Tim mạch', 2350, 84, N'OPV', '2028-02-15', 1),
+(N'Folic Acid 250mg', 560000, N'Hộp', N'Vitamin & Khoáng chất', 100, 67, N'OPC', '2028-05-06', 1),
+(N'Propranolol 15mg', 70000, N'Hộp', N'Tim mạch', 1560, 93, N'Bayer', '2028-07-09', 1),
+(N'Clindamycin 75mg', 80000, N'Hộp', N'Kháng sinh', 620, 36, N'MSD', '2026-09-07', 1),
+(N'Lisinopril 500mg', 260000, N'Hộp', N'Tim mạch', 2270, 71, N'Pfizer', '2028-04-17', 1),
+(N'Glibenclamide 250mg', 140000, N'Hộp', N'Tiểu đường', 490, 84, N'OPC', '2029-04-11', 1),
+(N'Dextromethorphan 75mg', 690000, N'Hộp', N'Hô hấp', 1270, 47, N'Sanofi', '2028-07-12', 1),
+(N'Folic Acid 40mg', 560000, N'Hộp', N'Vitamin & Khoáng chất', 1110, 35, N'Hasan', '2026-06-10', 1),
+(N'Valsartan 50mg', 470000, N'Hộp', N'Tim mạch', 1990, 22, N'MSD', '2029-01-20', 1),
+(N'Vitamin B1 150mg', 690000, N'Lọ', N'Vitamin & Khoáng chất', 630, 79, N'Novartis', '2028-12-21', 1),
+(N'Rosuvastatin 5mg', 410000, N'Hộp', N'Mỡ máu', 2250, 95, N'Roche', '2029-03-17', 1),
+(N'Aspirin 300mg', 780000, N'Viên', N'Giảm đau, hạ sốt', 1040, 98, N'Bayer', '2026-08-04', 1),
+(N'Montelukast 2.5mg', 560000, N'Hộp', N'Hô hấp', 1240, 88, N'Dược Hậu Giang', '2029-02-07', 1),
+(N'Chlorpheniramine 1g', 530000, N'Hộp', N'Dị ứng', 2050, 66, N'AstraZeneca', '2027-12-08', 1),
+(N'Spironolactone 625mg', 690000, N'Hộp', N'Tim mạch', 660, 73, N'Traphaco', '2026-08-09', 1),
+(N'Felodipine 150mg', 560000, N'Hộp', N'Tim mạch', 1090, 86, N'OPV', '2029-02-25', 1),
+(N'Spironolactone 300mg', 50000, N'Hộp', N'Tim mạch', 710, 95, N'AstraZeneca', '2026-08-05', 1),
+(N'Ceftriaxone 1g', 110000, N'Ống', N'Kháng sinh', 360, 39, N'GSK', '2028-11-10', 1),
+(N'Vitamin B1 10mg', 90000, N'Lọ', N'Vitamin & Khoáng chất', 2280, 87, N'AstraZeneca', '2029-03-18', 1),
+(N'Etoricoxib 30mg', 320000, N'Viên', N'Giảm đau, kháng viêm', 1160, 14, N'Stella', '2026-08-09', 1),
+(N'Itraconazole 2.5mg', 210000, N'Hộp', N'Da liễu', 810, 92, N'OPV', '2026-06-09', 1),
+(N'Vitamin B6 20mg', 530000, N'Lọ', N'Vitamin & Khoáng chất', 870, 34, N'Domesco', '2027-09-15', 1),
+(N'Carvedilol 400mg', 690000, N'Hộp', N'Tim mạch', 1400, 49, N'Dược Hậu Giang', '2027-08-18', 1),
+(N'Levofloxacin 250mg', 150000, N'Hộp', N'Kháng sinh', 1890, 59, N'Dược Hậu Giang', '2028-03-04', 1),
+(N'Terbutaline 625mg', 450000, N'Hộp', N'Hô hấp', 1400, 28, N'Novartis', '2028-11-07', 1),
+(N'Montelukast 250mg', 280000, N'Hộp', N'Hô hấp', 1830, 99, N'Boston', '2029-03-16', 1),
+(N'Bromhexine 50mg', 690000, N'Hộp', N'Hô hấp', 2050, 89, N'Boehringer Ingelheim', '2026-07-24', 1),
+(N'Tramadol 20mg', 190000, N'Viên', N'Giảm đau, hạ sốt', 810, 60, N'MSD', '2028-01-16', 1),
+(N'Simvastatin 30mg', 390000, N'Hộp', N'Mỡ máu', 1550, 59, N'Boehringer Ingelheim', '2027-10-17', 1),
+(N'Domperidone 20mg', 600000, N'Viên', N'Tiêu hóa', 1270, 71, N'Abbott', '2028-07-28', 1),
+(N'Domperidone 100mg', 420000, N'Viên', N'Tiêu hóa', 2340, 21, N'Novartis', '2028-03-09', 1),
+(N'Captopril 1g', 440000, N'Hộp', N'Tim mạch', 1460, 27, N'Abbott', '2027-08-04', 1),
+(N'Cefpodoxime 300mg', 660000, N'Hộp', N'Kháng sinh', 940, 46, N'Novartis', '2028-10-17', 1),
+(N'Levocetirizine 1g', 370000, N'Hộp', N'Dị ứng', 1530, 59, N'OPV', '2029-03-24', 1),
+(N'Captopril 500mg', 630000, N'Hộp', N'Tim mạch', 1630, 21, N'MSD', '2027-11-12', 1),
+(N'Carvedilol 150mg', 510000, N'Hộp', N'Tim mạch', 360, 54, N'Sanofi', '2028-10-12', 1),
+(N'Esomeprazole 850mg', 70000, N'Hộp', N'Tiêu hóa', 1140, 27, N'Pfizer', '2028-11-26', 1),
+(N'Linagliptin 850mg', 110000, N'Hộp', N'Tiểu đường', 1860, 94, N'Abbott', '2027-11-14', 1),
+(N'Ketoprofen 20mg', 340000, N'Viên', N'Giảm đau, kháng viêm', 1340, 31, N'AstraZeneca', '2027-08-13', 1),
+(N'Enalapril 20mg', 160000, N'Hộp', N'Tim mạch', 570, 18, N'Dược Hậu Giang', '2027-09-25', 1),
+(N'Mefenamic Acid 300mg', 240000, N'Viên', N'Giảm đau, hạ sốt', 1550, 37, N'Domesco', '2028-12-12', 1),
+(N'Tramadol 2.5mg', 670000, N'Viên', N'Giảm đau, hạ sốt', 550, 73, N'Traphaco', '2026-09-27', 1),
+(N'Cefpodoxime 80mg', 80000, N'Hộp', N'Kháng sinh', 750, 18, N'OPV', '2028-12-22', 1),
+(N'Esomeprazole 1g', 780000, N'Hộp', N'Tiêu hóa', 2430, 55, N'AstraZeneca', '2028-11-22', 1),
+(N'Doxycycline 1g', 510000, N'Hộp', N'Kháng sinh', 610, 64, N'MSD', '2029-04-05', 1),
+(N'Enalapril 150mg', 370000, N'Hộp', N'Tim mạch', 660, 70, N'OPC', '2028-01-21', 1),
+(N'Itraconazole 100mg', 80000, N'Hộp', N'Da liễu', 1700, 97, N'OPC', '2025-11-24', 1),
+(N'Doxycycline 80mg', 240000, N'Hộp', N'Kháng sinh', 820, 18, N'MSD', '2028-06-30', 1),
+(N'Rabeprazole 5mg', 750000, N'Hộp', N'Tiêu hóa', 1840, 58, N'Dược Hậu Giang', '2026-04-03', 1),
+(N'Spironolactone 5mg', 660000, N'Hộp', N'Tim mạch', 1330, 90, N'Stella', '2026-08-14', 1),
+(N'Fluticasone 250mg', 50000, N'Lọ', N'Hô hấp', 140, 54, N'Dược Hậu Giang', '2028-12-25', 1),
+(N'Itraconazole 500mg', 770000, N'Hộp', N'Da liễu', 490, 60, N'GSK', '2028-08-30', 1),
+(N'Cefotaxime 625mg', 730000, N'Ống', N'Kháng sinh', 1560, 52, N'Pfizer', '2029-03-05', 1),
+(N'Nifedipine 250mg', 140000, N'Hộp', N'Tim mạch', 2280, 63, N'Sanofi', '2027-07-31', 1),
+(N'Lansoprazole 50mg', 530000, N'Hộp', N'Tiêu hóa', 1070, 82, N'Boston', '2026-04-11', 1),
+(N'Clindamycin 10mg', 620000, N'Hộp', N'Kháng sinh', 1800, 16, N'Bayer', '2029-03-20', 1),
+(N'Cefdinir 15mg', 220000, N'Hộp', N'Kháng sinh', 130, 38, N'AstraZeneca', '2027-08-17', 1),
+(N'Chlorpheniramine 400mg', 720000, N'Hộp', N'Dị ứng', 2230, 30, N'Sanofi', '2029-03-07', 1),
+(N'Ketoconazole 100mg', 670000, N'Tuýp', N'Da liễu', 2470, 85, N'GSK', '2028-03-04', 1),
+(N'Vitamin B6 2.5mg', 690000, N'Lọ', N'Vitamin & Khoáng chất', 1290, 93, N'Traphaco', '2028-04-07', 1),
+(N'Clindamycin 625mg', 570000, N'Hộp', N'Kháng sinh', 1910, 90, N'GSK', '2028-10-31', 1),
+(N'Montelukast 30mg', 360000, N'Hộp', N'Hô hấp', 980, 89, N'Boston', '2027-10-09', 1),
+(N'Etoricoxib 120mg', 60000, N'Viên', N'Giảm đau, kháng viêm', 1740, 40, N'Stella', '2026-08-08', 1),
+(N'Clarithromycin 5mg', 190000, N'Hộp', N'Kháng sinh', 2240, 27, N'Traphaco', '2028-10-27', 1),
+(N'Cefaclor 500mg', 210000, N'Hộp', N'Kháng sinh', 270, 31, N'Traphaco', '2028-02-21', 1),
+(N'Pantoprazole 150mg', 190000, N'Hộp', N'Tiêu hóa', 2440, 53, N'GSK', '2026-09-30', 1),
+(N'Captopril 50mg', 150000, N'Hộp', N'Tim mạch', 230, 16, N'Dược Hậu Giang', '2029-04-06', 1),
+(N'Rosuvastatin 400mg', 350000, N'Hộp', N'Mỡ máu', 1480, 58, N'GSK', '2028-09-21', 1),
+(N'Moxifloxacin 5mg', 100000, N'Hộp', N'Kháng sinh', 1750, 90, N'Bayer', '2026-09-27', 1),
+(N'Fluticasone 30mg', 740000, N'Lọ', N'Hô hấp', 1520, 56, N'Hasan', '2028-08-20', 1),
+(N'Chlorpheniramine 80mg', 540000, N'Hộp', N'Dị ứng', 1310, 63, N'Domesco', '2027-11-24', 1),
+(N'Simethicone 30mg', 460000, N'Hộp', N'Tiêu hóa', 1360, 94, N'OPC', '2028-11-10', 1),
+(N'Erythromycin 100mg', 610000, N'Hộp', N'Kháng sinh', 1080, 54, N'GSK', '2028-06-23', 1),
+(N'Cefadroxil 80mg', 330000, N'Hộp', N'Kháng sinh', 2080, 17, N'Domesco', '2028-03-03', 1),
+(N'Clarithromycin 400mg', 760000, N'Hộp', N'Kháng sinh', 290, 91, N'Abbott', '2026-06-04', 1),
+(N'Rabeprazole 625mg', 280000, N'Hộp', N'Tiêu hóa', 1620, 43, N'Novartis', '2027-12-14', 1),
+(N'Bromhexine 15mg', 340000, N'Hộp', N'Hô hấp', 100, 50, N'Hasan', '2026-07-20', 1),
+(N'Chlorpheniramine 10mg', 330000, N'Hộp', N'Dị ứng', 430, 73, N'Bayer', '2026-07-27', 1),
+(N'Sitagliptin 15mg', 300000, N'Hộp', N'Tiểu đường', 480, 52, N'Sanofi', '2028-02-04', 1),
+(N'Lisinopril 200mg', 110000, N'Hộp', N'Tim mạch', 1580, 34, N'Hasan', '2026-07-31', 1),
+(N'Acetylcysteine 15mg', 150000, N'Hộp', N'Hô hấp', 2280, 73, N'Sanofi', '2029-04-07', 1),
+(N'Telmisartan 850mg', 350000, N'Hộp', N'Tim mạch', 1080, 77, N'Dược Hậu Giang', '2027-11-12', 1),
+(N'Glibenclamide 20mg', 280000, N'Hộp', N'Tiểu đường', 290, 61, N'MSD', '2026-08-03', 1),
+(N'Felodipine 120mg', 630000, N'Hộp', N'Tim mạch', 600, 61, N'Boston', '2026-09-08', 1),
+(N'Diclofenac 5mg', 650000, N'Viên', N'Giảm đau, kháng viêm', 1290, 30, N'Novartis', '2027-12-15', 1),
+(N'Metoclopramide 1g', 80000, N'Viên', N'Tiêu hóa', 420, 45, N'Bayer', '2028-08-16', 1),
+(N'Ferrous Sulfate 10mg', 700000, N'Hộp', N'Vitamin & Khoáng chất', 390, 25, N'Domesco', '2028-06-30', 1),
+(N'Bisoprolol 500mg', 510000, N'Hộp', N'Tim mạch', 1400, 52, N'AstraZeneca', '2027-08-01', 1),
+(N'Moxifloxacin 30mg', 250000, N'Hộp', N'Kháng sinh', 260, 62, N'OPC', '2028-06-14', 1),
+(N'Ketoprofen 1g', 720000, N'Viên', N'Giảm đau, kháng viêm', 790, 24, N'Abbott', '2029-03-12', 1),
+(N'Nifedipine 15mg', 400000, N'Hộp', N'Tim mạch', 1050, 44, N'Boehringer Ingelheim', '2026-09-03', 1),
+(N'Hydrocortisone 50mg', 80000, N'Tuýp', N'Da liễu', 880, 79, N'MSD', '2026-07-01', 1),
+(N'Domperidone 500mg', 430000, N'Viên', N'Tiêu hóa', 1150, 52, N'Pfizer', '2025-11-06', 1),
+(N'Theophylline 20mg', 560000, N'Hộp', N'Hô hấp', 1910, 93, N'AstraZeneca', '2026-08-09', 1),
+(N'Spironolactone 200mg', 670000, N'Hộp', N'Tim mạch', 750, 98, N'Dược Hậu Giang', '2026-05-08', 1),
+(N'Trimebutine 40mg', 610000, N'Hộp', N'Tiêu hóa', 660, 90, N'Abbott', '2026-10-14', 1),
+(N'Levocetirizine 150mg', 540000, N'Hộp', N'Dị ứng', 180, 93, N'Roche', '2028-04-01', 1),
+(N'Terbutaline 400mg', 560000, N'Hộp', N'Hô hấp', 810, 46, N'Stella', '2028-02-26', 1),
+(N'Irbesartan 75mg', 310000, N'Hộp', N'Tim mạch', 1110, 42, N'OPV', '2028-01-23', 1),
+(N'Ketoprofen 15mg', 720000, N'Viên', N'Giảm đau, kháng viêm', 1950, 95, N'Roche', '2025-12-15', 1),
+(N'Simvastatin 200mg', 740000, N'Hộp', N'Mỡ máu', 1380, 15, N'AstraZeneca', '2027-09-18', 1),
+(N'Esomeprazole 150mg', 330000, N'Hộp', N'Tiêu hóa', 870, 58, N'Domesco', '2028-06-02', 1),
+(N'Carvedilol 120mg', 340000, N'Hộp', N'Tim mạch', 2010, 65, N'Roche', '2027-12-22', 1),
+(N'Vitamin B1 50mg', 780000, N'Lọ', N'Vitamin & Khoáng chất', 1960, 85, N'Traphaco', '2029-01-09', 1),
+(N'Acetylcysteine 300mg', 290000, N'Hộp', N'Hô hấp', 480, 35, N'Boehringer Ingelheim', '2027-12-31', 1),
+(N'Tramadol 400mg', 770000, N'Viên', N'Giảm đau, hạ sốt', 1100, 78, N'Boehringer Ingelheim', '2026-09-10', 1),
+(N'Metronidazole 75mg', 330000, N'Hộp', N'Kháng sinh', 590, 18, N'MSD', '2028-09-19', 1),
+(N'Bromhexine 250mg', 440000, N'Hộp', N'Hô hấp', 2400, 33, N'Hasan', '2026-08-03', 1),
+(N'Simethicone 15mg', 180000, N'Hộp', N'Tiêu hóa', 1010, 33, N'OPC', '2026-07-29', 1),
+(N'Fluticasone 10mg', 250000, N'Lọ', N'Hô hấp', 1110, 64, N'Dược Hậu Giang', '2028-04-24', 1),
+(N'Valsartan 120mg', 700000, N'Hộp', N'Tim mạch', 2250, 99, N'Pfizer', '2028-07-30', 1),
+(N'Betamethasone 850mg', 540000, N'Tuýp', N'Da liễu', 1140, 86, N'Hasan', '2027-08-18', 1),
+(N'Moxifloxacin 500mg', 150000, N'Hộp', N'Kháng sinh', 2390, 17, N'Roche', '2026-08-06', 1),
+(N'Tramadol 100mg', 350000, N'Viên', N'Giảm đau, hạ sốt', 2060, 31, N'Domesco', '2026-07-04', 1),
+(N'Bromhexine 80mg', 180000, N'Hộp', N'Hô hấp', 1350, 92, N'Pfizer', '2028-03-29', 1),
+(N'Metoclopramide 300mg', 400000, N'Viên', N'Tiêu hóa', 2120, 61, N'OPC', '2028-06-01', 1),
+(N'Folic Acid 100mg', 390000, N'Hộp', N'Vitamin & Khoáng chất', 420, 77, N'OPV', '2026-08-30', 1),
+(N'Pantoprazole 15mg', 560000, N'Hộp', N'Tiêu hóa', 1510, 43, N'MSD', '2027-10-09', 1),
+(N'Vitamin B12 250mg', 740000, N'Ống', N'Vitamin & Khoáng chất', 1220, 97, N'Novartis', '2028-03-29', 1),
+(N'Cefaclor 120mg', 570000, N'Hộp', N'Kháng sinh', 1710, 18, N'Bayer', '2027-10-22', 1),
+(N'Acetylcysteine 400mg', 240000, N'Hộp', N'Hô hấp', 1820, 24, N'Domesco', '2026-05-19', 1),
+(N'Naproxen 625mg', 390000, N'Viên', N'Giảm đau, kháng viêm', 1870, 92, N'Boston', '2028-06-17', 1),
+(N'Glibenclamide 50mg', 220000, N'Hộp', N'Tiểu đường', 1790, 54, N'Abbott', '2028-03-28', 1),
+(N'Gemfibrozil 120mg', 380000, N'Hộp', N'Mỡ máu', 2100, 34, N'Bayer', '2027-09-02', 1),
+(N'Gemfibrozil 20mg', 290000, N'Hộp', N'Mỡ máu', 710, 17, N'Boehringer Ingelheim', '2028-12-11', 1),
+(N'Ceftriaxone 5mg', 790000, N'Ống', N'Kháng sinh', 1750, 99, N'MSD', '2028-03-12', 1),
+(N'Moxifloxacin 40mg', 220000, N'Hộp', N'Kháng sinh', 1760, 63, N'AstraZeneca', '2028-08-22', 1),
+(N'Codeine 850mg', 150000, N'Viên', N'Giảm đau, hạ sốt', 1610, 26, N'AstraZeneca', '2025-09-28', 1),
+(N'Chlorpheniramine 120mg', 100000, N'Hộp', N'Dị ứng', 150, 20, N'AstraZeneca', '2028-11-13', 1),
+(N'Vitamin A 100mg', 140000, N'Lọ', N'Vitamin & Khoáng chất', 180, 55, N'Abbott', '2029-04-08', 1),
+(N'Montelukast 625mg', 500000, N'Hộp', N'Hô hấp', 2000, 83, N'Sanofi', '2028-11-29', 1),
+(N'Aciclovir 300mg', 770000, N'Tuýp', N'Da liễu', 230, 59, N'OPV', '2027-12-28', 1),
+(N'Metoclopramide 150mg', 750000, N'Viên', N'Tiêu hóa', 1730, 32, N'Hasan', '2027-09-07', 1),
+(N'Vildagliptin 1g', 680000, N'Hộp', N'Tiểu đường', 2130, 14, N'Stella', '2027-10-21', 1),
+(N'Ketoconazole 30mg', 750000, N'Tuýp', N'Da liễu', 620, 24, N'Traphaco', '2026-04-17', 1),
+(N'Carvedilol 80mg', 200000, N'Hộp', N'Tim mạch', 1210, 89, N'Abbott', '2029-02-26', 1),
+(N'Aciclovir 40mg', 600000, N'Tuýp', N'Da liễu', 1230, 39, N'AstraZeneca', '2027-10-18', 1),
+(N'Fluticasone 100mg', 750000, N'Lọ', N'Hô hấp', 290, 70, N'Roche', '2026-07-31', 1),
+(N'Felodipine 40mg', 280000, N'Hộp', N'Tim mạch', 440, 48, N'MSD', '2029-03-18', 1),
+(N'Aspirin 15mg', 450000, N'Viên', N'Giảm đau, hạ sốt', 1370, 51, N'Boston', '2025-10-03', 1),
+(N'Lansoprazole 200mg', 350000, N'Hộp', N'Tiêu hóa', 1240, 95, N'OPC', '2027-07-28', 1),
+(N'Domperidone 2.5mg', 590000, N'Viên', N'Tiêu hóa', 2000, 42, N'MSD', '2026-01-29', 1),
+(N'Telmisartan 15mg', 550000, N'Hộp', N'Tim mạch', 1990, 42, N'Traphaco', '2027-12-30', 1),
+(N'Montelukast 40mg', 360000, N'Hộp', N'Hô hấp', 2450, 91, N'AstraZeneca', '2028-05-15', 1),
+(N'Simethicone 625mg', 580000, N'Hộp', N'Tiêu hóa', 1070, 34, N'Domesco', '2027-09-16', 1),
+(N'Cefdinir 200mg', 260000, N'Hộp', N'Kháng sinh', 1400, 46, N'Pfizer', '2027-10-19', 1),
+(N'Fluconazole 150mg', 130000, N'Hộp', N'Da liễu', 2020, 47, N'Hasan', '2027-11-08', 1),
+(N'Mefenamic Acid 50mg', 130000, N'Viên', N'Giảm đau, hạ sốt', 550, 40, N'Bayer', '2027-09-18', 1),
+(N'Clarithromycin 200mg', 660000, N'Hộp', N'Kháng sinh', 330, 88, N'GSK', '2026-07-27', 1),
+(N'Acetylcysteine 30mg', 120000, N'Hộp', N'Hô hấp', 170, 13, N'Abbott', '2028-01-02', 1),
+(N'Propranolol 75mg', 670000, N'Hộp', N'Tim mạch', 1470, 53, N'AstraZeneca', '2026-06-11', 1),
+(N'Betamethasone 30mg', 780000, N'Tuýp', N'Da liễu', 700, 46, N'Stella', '2027-11-17', 1),
+(N'Cefotaxime 75mg', 380000, N'Ống', N'Kháng sinh', 2130, 17, N'Hasan', '2026-04-12', 1),
+(N'Cefadroxil 30mg', 630000, N'Hộp', N'Kháng sinh', 2130, 33, N'Dược Hậu Giang', '2028-04-20', 1),
+(N'Clindamycin 150mg', 180000, N'Hộp', N'Kháng sinh', 740, 12, N'MSD', '2029-02-22', 1),
+(N'Ceftriaxone 80mg', 680000, N'Ống', N'Kháng sinh', 2060, 27, N'Abbott', '2029-01-02', 1),
+(N'Lisinopril 75mg', 70000, N'Hộp', N'Tim mạch', 420, 94, N'Boehringer Ingelheim', '2028-01-31', 1),
+(N'Valsartan 400mg', 770000, N'Hộp', N'Tim mạch', 1900, 52, N'Traphaco', '2028-03-08', 1),
+(N'Ferrous Sulfate 75mg', 740000, N'Hộp', N'Vitamin & Khoáng chất', 1890, 60, N'GSK', '2028-05-25', 1),
+(N'Linagliptin 100mg', 470000, N'Hộp', N'Tiểu đường', 1600, 39, N'Stella', '2026-07-28', 1),
+(N'Nifedipine 625mg', 790000, N'Hộp', N'Tim mạch', 660, 54, N'Boston', '2026-08-13', 1),
+(N'Linagliptin 30mg', 660000, N'Hộp', N'Tiểu đường', 2090, 50, N'Traphaco', '2028-05-18', 1),
+(N'Folic Acid 400mg', 740000, N'Hộp', N'Vitamin & Khoáng chất', 1940, 35, N'Abbott', '2028-06-30', 1),
+(N'Esomeprazole 75mg', 360000, N'Hộp', N'Tiêu hóa', 2150, 98, N'Hasan', '2028-09-19', 1),
+(N'Meloxicam 120mg', 590000, N'Viên', N'Giảm đau, kháng viêm', 410, 43, N'Novartis', '2028-09-02', 1),
+(N'Chlorpheniramine 250mg', 610000, N'Hộp', N'Dị ứng', 680, 70, N'Boehringer Ingelheim', '2026-03-12', 1),
+(N'Cefpodoxime 500mg', 300000, N'Hộp', N'Kháng sinh', 830, 42, N'Boehringer Ingelheim', '2028-06-21', 1),
+(N'Fluconazole 80mg', 720000, N'Hộp', N'Da liễu', 280, 87, N'Stella', '2028-07-20', 1),
+(N'Felodipine 50mg', 130000, N'Hộp', N'Tim mạch', 690, 90, N'Stella', '2026-08-05', 1),
+(N'Mefenamic Acid 200mg', 700000, N'Viên', N'Giảm đau, hạ sốt', 980, 41, N'Dược Hậu Giang', '2027-10-14', 1),
+(N'Vitamin E 50mg', 280000, N'Lọ', N'Vitamin & Khoáng chất', 260, 88, N'Hasan', '2026-08-14', 1),
+(N'Pioglitazone 500mg', 640000, N'Hộp', N'Tiểu đường', 910, 82, N'Hasan', '2028-06-19', 1),
+(N'Cefpodoxime 15mg', 780000, N'Hộp', N'Kháng sinh', 2060, 76, N'Domesco', '2027-09-14', 1),
+(N'Simvastatin 120mg', 600000, N'Hộp', N'Mỡ máu', 2120, 62, N'Roche', '2027-12-19', 1),
+(N'Vitamin A 300mg', 80000, N'Lọ', N'Vitamin & Khoáng chất', 670, 24, N'Hasan', '2027-09-05', 1),
+(N'Valsartan 500mg', 640000, N'Hộp', N'Tim mạch', 2350, 11, N'OPV', '2026-08-30', 1),
+(N'Celecoxib 625mg', 340000, N'Viên', N'Giảm đau, kháng viêm', 1990, 95, N'Hasan', '2026-10-04', 1),
+(N'Sitagliptin 625mg', 310000, N'Hộp', N'Tiểu đường', 670, 17, N'Boehringer Ingelheim', '2027-08-21', 1),
+(N'Ambroxol 75mg', 130000, N'Hộp', N'Hô hấp', 1870, 68, N'AstraZeneca', '2028-02-14', 1),
+(N'Cefotaxime 80mg', 260000, N'Ống', N'Kháng sinh', 650, 38, N'AstraZeneca', '2028-10-06', 1),
+(N'Captopril 40mg', 670000, N'Hộp', N'Tim mạch', 660, 98, N'AstraZeneca', '2025-12-08', 1),
+(N'Captopril 150mg', 530000, N'Hộp', N'Tim mạch', 2000, 17, N'Boston', '2026-10-07', 1),
+(N'Chlorpheniramine 30mg', 440000, N'Hộp', N'Dị ứng', 820, 63, N'Traphaco', '2028-06-29', 1),
+(N'Ambroxol 150mg', 130000, N'Hộp', N'Hô hấp', 300, 94, N'Abbott', '2026-09-09', 1),
+(N'Acetylcysteine 50mg', 300000, N'Hộp', N'Hô hấp', 280, 94, N'AstraZeneca', '2025-12-26', 1),
+(N'Captopril 120mg', 400000, N'Hộp', N'Tim mạch', 1300, 76, N'Novartis', '2026-05-12', 1),
+(N'Bromhexine 300mg', 280000, N'Hộp', N'Hô hấp', 1160, 45, N'Boehringer Ingelheim', '2025-10-25', 1),
+(N'Diclofenac 625mg', 150000, N'Viên', N'Giảm đau, kháng viêm', 2000, 34, N'AstraZeneca', '2029-04-08', 1),
+(N'Ceftriaxone 850mg', 450000, N'Ống', N'Kháng sinh', 1040, 17, N'GSK', '2027-11-25', 1),
+(N'Vitamin B1 75mg', 110000, N'Lọ', N'Vitamin & Khoáng chất', 1870, 24, N'Domesco', '2029-04-09', 1),
+(N'Montelukast 1g', 420000, N'Hộp', N'Hô hấp', 400, 25, N'Dược Hậu Giang', '2027-12-24', 1),
+(N'Bisoprolol 200mg', 320000, N'Hộp', N'Tim mạch', 2360, 46, N'Sanofi', '2028-10-18', 1),
+(N'Vitamin E 400mg', 180000, N'Lọ', N'Vitamin & Khoáng chất', 2300, 42, N'MSD', '2028-12-26', 1),
+(N'Ketoprofen 5mg', 410000, N'Viên', N'Giảm đau, kháng viêm', 360, 14, N'Bayer', '2026-07-23', 1),
+(N'Acetylcysteine 500mg', 110000, N'Hộp', N'Hô hấp', 2400, 85, N'Bayer', '2026-01-14', 1),
+(N'Moxifloxacin 625mg', 650000, N'Hộp', N'Kháng sinh', 450, 58, N'Abbott', '2028-09-20', 1),
+(N'Tramadol 10mg', 450000, N'Viên', N'Giảm đau, hạ sốt', 1460, 27, N'GSK', '2027-12-09', 1),
+(N'Chlorpheniramine 100mg', 220000, N'Hộp', N'Dị ứng', 1840, 12, N'Novartis', '2026-09-18', 1),
+(N'Ambroxol 80mg', 790000, N'Hộp', N'Hô hấp', 470, 15, N'Abbott', '2026-09-23', 1),
+(N'Vitamin A 1g', 670000, N'Lọ', N'Vitamin & Khoáng chất', 2040, 16, N'Pfizer', '2027-10-21', 1),
+(N'Propranolol 150mg', 550000, N'Hộp', N'Tim mạch', 2450, 98, N'OPV', '2026-09-16', 1),
+(N'Vitamin E 10mg', 760000, N'Lọ', N'Vitamin & Khoáng chất', 130, 26, N'Domesco', '2029-02-22', 1),
+(N'Celecoxib 200mg', 290000, N'Viên', N'Giảm đau, kháng viêm', 1490, 93, N'Traphaco', '2028-08-29', 1),
+(N'Levofloxacin 200mg', 540000, N'Hộp', N'Kháng sinh', 1120, 68, N'OPV', '2027-08-21', 1),
+(N'Vitamin E 20mg', 740000, N'Lọ', N'Vitamin & Khoáng chất', 1020, 53, N'Domesco', '2029-01-21', 1),
+(N'Nifedipine 20mg', 520000, N'Hộp', N'Tim mạch', 2050, 80, N'Roche', '2026-07-24', 1),
+(N'Chlorpheniramine 40mg', 660000, N'Hộp', N'Dị ứng', 240, 59, N'OPV', '2027-08-10', 1),
+(N'Sitagliptin 50mg', 580000, N'Hộp', N'Tiểu đường', 1960, 86, N'AstraZeneca', '2029-02-06', 1),
+(N'Cefadroxil 1g', 170000, N'Hộp', N'Kháng sinh', 810, 49, N'Boehringer Ingelheim', '2028-05-04', 1),
+(N'Cefdinir 300mg', 590000, N'Hộp', N'Kháng sinh', 1780, 11, N'OPC', '2029-03-01', 1),
+(N'Lansoprazole 100mg', 610000, N'Hộp', N'Tiêu hóa', 990, 30, N'MSD', '2028-07-03', 1),
+(N'Pantoprazole 120mg', 170000, N'Hộp', N'Tiêu hóa', 1620, 39, N'Bayer', '2028-10-26', 1),
+(N'Bromhexine 500mg', 470000, N'Hộp', N'Hô hấp', 2080, 74, N'Pfizer', '2028-03-07', 1),
+(N'Zinc Sulfate 400mg', 530000, N'Hộp', N'Vitamin & Khoáng chất', 130, 11, N'OPV', '2028-11-22', 1),
+(N'Fluticasone 40mg', 250000, N'Lọ', N'Hô hấp', 1580, 66, N'Boehringer Ingelheim', '2027-12-08', 1),
+(N'Fluconazole 30mg', 570000, N'Hộp', N'Da liễu', 170, 43, N'Sanofi', '2027-09-18', 1),
+(N'Vitamin A 625mg', 750000, N'Lọ', N'Vitamin & Khoáng chất', 2220, 91, N'Pfizer', '2029-02-23', 1),
+(N'Tramadol 75mg', 160000, N'Viên', N'Giảm đau, hạ sốt', 2430, 24, N'Novartis', '2026-03-21', 1),
+(N'Erythromycin 300mg', 50000, N'Hộp', N'Kháng sinh', 850, 16, N'OPV', '2028-12-20', 1),
+(N'Ketoprofen 300mg', 550000, N'Viên', N'Giảm đau, kháng viêm', 1160, 46, N'Dược Hậu Giang', '2028-09-05', 1),
+(N'Metronidazole 400mg', 320000, N'Hộp', N'Kháng sinh', 1030, 73, N'Boehringer Ingelheim', '2028-10-24', 1),
+(N'Cefaclor 850mg', 320000, N'Hộp', N'Kháng sinh', 1180, 69, N'Boston', '2026-09-06', 1),
+(N'Valsartan 75mg', 260000, N'Hộp', N'Tim mạch', 230, 18, N'AstraZeneca', '2028-07-15', 1),
+(N'Gemfibrozil 250mg', 230000, N'Hộp', N'Mỡ máu', 1620, 98, N'Traphaco', '2028-06-06', 1),
+(N'Felodipine 30mg', 50000, N'Hộp', N'Tim mạch', 500, 31, N'Hasan', '2026-07-27', 1),
+(N'Cefpodoxime 400mg', 440000, N'Hộp', N'Kháng sinh', 940, 97, N'Boehringer Ingelheim', '2028-06-14', 1),
+(N'Vitamin B12 150mg', 330000, N'Ống', N'Vitamin & Khoáng chất', 2220, 53, N'AstraZeneca', '2027-12-02', 1),
+(N'Vitamin B6 850mg', 280000, N'Lọ', N'Vitamin & Khoáng chất', 830, 27, N'Domesco', '2028-12-16', 1),
+(N'Domperidone 200mg', 480000, N'Viên', N'Tiêu hóa', 1540, 93, N'MSD', '2026-08-14', 1),
+(N'Fluticasone 2.5mg', 370000, N'Lọ', N'Hô hấp', 2200, 95, N'Novartis', '2026-08-31', 1),
+(N'Vitamin A 30mg', 640000, N'Lọ', N'Vitamin & Khoáng chất', 1670, 31, N'Roche', '2027-07-23', 1),
+(N'Folic Acid 150mg', 70000, N'Hộp', N'Vitamin & Khoáng chất', 1690, 81, N'Pfizer', '2028-11-04', 1),
+(N'Metoclopramide 50mg', 210000, N'Viên', N'Tiêu hóa', 740, 71, N'GSK', '2028-07-28', 1),
+(N'Vitamin B1 850mg', 630000, N'Lọ', N'Vitamin & Khoáng chất', 520, 28, N'Traphaco', '2027-09-23', 1),
+(N'Metronidazole 200mg', 60000, N'Hộp', N'Kháng sinh', 1770, 44, N'MSD', '2029-02-25', 1),
+(N'Ferrous Sulfate 120mg', 690000, N'Hộp', N'Vitamin & Khoáng chất', 2490, 29, N'MSD', '2026-08-30', 1),
+(N'Domperidone 625mg', 790000, N'Viên', N'Tiêu hóa', 160, 93, N'Stella', '2027-11-23', 1),
+(N'Linagliptin 40mg', 790000, N'Hộp', N'Tiểu đường', 1740, 82, N'Roche', '2029-02-28', 1),
+(N'Budesonide 20mg', 360000, N'Lọ', N'Hô hấp', 2450, 75, N'Novartis', '2028-04-08', 1),
+(N'Propranolol 300mg', 530000, N'Hộp', N'Tim mạch', 490, 75, N'Abbott', '2029-04-10', 1),
+(N'Folic Acid 2.5mg', 650000, N'Hộp', N'Vitamin & Khoáng chất', 2010, 20, N'Boehringer Ingelheim', '2029-03-25', 1),
+(N'Aspirin 500mg', 710000, N'Viên', N'Giảm đau, hạ sốt', 270, 82, N'Dược Hậu Giang', '2026-07-23', 1),
+(N'Fluticasone 850mg', 300000, N'Lọ', N'Hô hấp', 2490, 42, N'Stella', '2028-09-18', 1),
+(N'Zinc Sulfate 150mg', 420000, N'Hộp', N'Vitamin & Khoáng chất', 500, 65, N'OPV', '2029-03-19', 1),
+(N'Levocetirizine 2.5mg', 620000, N'Hộp', N'Dị ứng', 2020, 96, N'Domesco', '2028-09-19', 1),
+(N'Simvastatin 80mg', 700000, N'Hộp', N'Mỡ máu', 2260, 80, N'Bayer', '2028-05-16', 1),
+(N'Telmisartan 300mg', 520000, N'Hộp', N'Tim mạch', 1640, 57, N'Traphaco', '2028-06-25', 1),
+(N'Valsartan 80mg', 310000, N'Hộp', N'Tim mạch', 1850, 41, N'Bayer', '2028-12-07', 1),
+(N'Ceftriaxone 40mg', 180000, N'Ống', N'Kháng sinh', 1450, 19, N'Novartis', '2029-02-20', 1),
+(N'Phosphalugel 150mg', 710000, N'Hộp', N'Tiêu hóa', 2440, 96, N'Dược Hậu Giang', '2027-09-23', 1),
+(N'Vitamin B12 200mg', 390000, N'Ống', N'Vitamin & Khoáng chất', 2240, 43, N'Traphaco', '2026-10-06', 1),
+(N'Erythromycin 30mg', 190000, N'Hộp', N'Kháng sinh', 340, 18, N'Traphaco', '2029-01-11', 1),
+(N'Enalapril 500mg', 190000, N'Hộp', N'Tim mạch', 870, 40, N'Bayer', '2028-12-29', 1),
+(N'Lansoprazole 250mg', 230000, N'Hộp', N'Tiêu hóa', 2390, 31, N'Bayer', '2028-05-03', 1),
+(N'Vitamin B6 250mg', 400000, N'Lọ', N'Vitamin & Khoáng chất', 1470, 47, N'Traphaco', '2026-04-03', 1),
+(N'Metoclopramide 500mg', 400000, N'Viên', N'Tiêu hóa', 870, 83, N'Stella', '2026-06-29', 1),
+(N'Vitamin A 20mg', 620000, N'Lọ', N'Vitamin & Khoáng chất', 2340, 97, N'Pfizer', '2028-09-13', 1),
+(N'Vitamin B12 40mg', 500000, N'Ống', N'Vitamin & Khoáng chất', 740, 73, N'Roche', '2026-08-12', 1),
+(N'Trimebutine 625mg', 340000, N'Hộp', N'Tiêu hóa', 150, 34, N'Boehringer Ingelheim', '2029-01-16', 1),
+(N'Zinc Sulfate 2.5mg', 750000, N'Hộp', N'Vitamin & Khoáng chất', 580, 46, N'OPC', '2028-10-28', 1),
+(N'Valsartan 850mg', 590000, N'Hộp', N'Tim mạch', 2130, 97, N'Roche', '2026-09-30', 1),
+(N'Cefadroxil 300mg', 170000, N'Hộp', N'Kháng sinh', 2430, 96, N'Hasan', '2028-08-29', 1),
+(N'Glibenclamide 500mg', 740000, N'Hộp', N'Tiểu đường', 1940, 43, N'Domesco', '2026-09-24', 1),
+(N'Trimebutine 75mg', 690000, N'Hộp', N'Tiêu hóa', 750, 20, N'OPC', '2028-03-05', 1),
+(N'Ferrous Sulfate 200mg', 590000, N'Hộp', N'Vitamin & Khoáng chất', 1400, 33, N'Sanofi', '2028-08-18', 1),
+(N'Etoricoxib 400mg', 460000, N'Viên', N'Giảm đau, kháng viêm', 1930, 70, N'MSD', '2028-10-10', 1),
+(N'Gemfibrozil 50mg', 780000, N'Hộp', N'Mỡ máu', 1110, 41, N'Boston', '2026-10-07', 1),
+(N'Chlorpheniramine 300mg', 500000, N'Hộp', N'Dị ứng', 1530, 13, N'Traphaco', '2027-10-03', 1),
+(N'Telmisartan 625mg', 330000, N'Hộp', N'Tim mạch', 1630, 84, N'Abbott', '2028-08-11', 1),
+(N'Vitamin B6 10mg', 500000, N'Lọ', N'Vitamin & Khoáng chất', 830, 65, N'Pfizer', '2028-06-06', 1),
+(N'Budesonide 40mg', 190000, N'Lọ', N'Hô hấp', 2330, 30, N'Abbott', '2026-06-21', 1),
+(N'Dextromethorphan 80mg', 70000, N'Hộp', N'Hô hấp', 1410, 75, N'OPC', '2026-09-26', 1),
+(N'Doxycycline 850mg', 430000, N'Hộp', N'Kháng sinh', 390, 63, N'Roche', '2027-10-18', 1),
+(N'Doxycycline 40mg', 140000, N'Hộp', N'Kháng sinh', 2350, 81, N'AstraZeneca', '2026-07-24', 1),
+(N'Erythromycin 150mg', 550000, N'Hộp', N'Kháng sinh', 1290, 66, N'Roche', '2028-03-20', 1),
+(N'Vitamin E 75mg', 90000, N'Lọ', N'Vitamin & Khoáng chất', 230, 61, N'Hasan', '2027-10-20', 1),
+(N'Clindamycin 2.5mg', 80000, N'Hộp', N'Kháng sinh', 1380, 74, N'Sanofi', '2027-09-11', 1),
+(N'Terbutaline 250mg', 750000, N'Hộp', N'Hô hấp', 1000, 68, N'Hasan', '2026-10-08', 1),
+(N'Moxifloxacin 200mg', 790000, N'Hộp', N'Kháng sinh', 1890, 38, N'Roche', '2027-11-27', 1),
+(N'Vitamin B6 5mg', 110000, N'Lọ', N'Vitamin & Khoáng chất', 560, 76, N'Bayer', '2028-09-01', 1),
+(N'Mefenamic Acid 850mg', 90000, N'Viên', N'Giảm đau, hạ sốt', 1850, 20, N'GSK', '2029-03-08', 1),
+(N'Dapagliflozin 15mg', 600000, N'Hộp', N'Tiểu đường', 1730, 24, N'Hasan', '2028-08-12', 1),
+(N'Cefpodoxime 100mg', 560000, N'Hộp', N'Kháng sinh', 790, 95, N'AstraZeneca', '2028-03-26', 1),
+(N'Diclofenac 80mg', 760000, N'Viên', N'Giảm đau, kháng viêm', 130, 91, N'Dược Hậu Giang', '2027-09-19', 1),
+(N'Glibenclamide 15mg', 720000, N'Hộp', N'Tiểu đường', 1280, 55, N'OPC', '2028-03-11', 1),
+(N'Ketoconazole 75mg', 400000, N'Tuýp', N'Da liễu', 510, 90, N'Abbott', '2026-08-26', 1),
+(N'Irbesartan 300mg', 400000, N'Hộp', N'Tim mạch', 2090, 97, N'AstraZeneca', '2026-08-09', 1),
+(N'Betamethasone 400mg', 240000, N'Tuýp', N'Da liễu', 1850, 77, N'Domesco', '2028-12-21', 1),
+(N'Acetylcysteine 100mg', 290000, N'Hộp', N'Hô hấp', 1900, 67, N'Boston', '2028-06-23', 1),
+(N'Celecoxib 80mg', 420000, N'Viên', N'Giảm đau, kháng viêm', 380, 28, N'MSD', '2026-04-24', 1),
+(N'Bisoprolol 15mg', 510000, N'Hộp', N'Tim mạch', 2300, 25, N'OPV', '2028-11-24', 1),
+(N'Vitamin A 75mg', 330000, N'Lọ', N'Vitamin & Khoáng chất', 420, 24, N'Roche', '2028-12-31', 1),
+(N'Nifedipine 80mg', 280000, N'Hộp', N'Tim mạch', 1870, 19, N'Traphaco', '2028-04-24', 1),
+(N'Bisoprolol 250mg', 220000, N'Hộp', N'Tim mạch', 1200, 31, N'Hasan', '2029-04-12', 1),
+(N'Levofloxacin 120mg', 380000, N'Hộp', N'Kháng sinh', 1370, 68, N'OPV', '2026-08-04', 1),
+(N'Simethicone 40mg', 50000, N'Hộp', N'Tiêu hóa', 1680, 71, N'MSD', '2028-07-29', 1),
+(N'Fluconazole 400mg', 100000, N'Hộp', N'Da liễu', 1190, 49, N'Roche', '2028-09-25', 1),
+(N'Spironolactone 50mg', 190000, N'Hộp', N'Tim mạch', 600, 45, N'Traphaco', '2029-01-18', 1),
+(N'Dapagliflozin 625mg', 220000, N'Hộp', N'Tiểu đường', 740, 15, N'Stella', '2028-07-13', 1),
+(N'Sitagliptin 75mg', 610000, N'Hộp', N'Tiểu đường', 450, 14, N'OPC', '2029-04-04', 1),
+(N'Spironolactone 75mg', 50000, N'Hộp', N'Tim mạch', 1430, 12, N'Novartis', '2027-12-04', 1),
+(N'Cefotaxime 400mg', 90000, N'Ống', N'Kháng sinh', 1000, 30, N'Hasan', '2027-11-12', 1),
+(N'Moxifloxacin 15mg', 550000, N'Hộp', N'Kháng sinh', 1540, 10, N'Boehringer Ingelheim', '2028-11-16', 1),
+(N'Mefenamic Acid 5mg', 330000, N'Viên', N'Giảm đau, hạ sốt', 1080, 82, N'Abbott', '2029-03-07', 1),
+(N'Glibenclamide 30mg', 690000, N'Hộp', N'Tiểu đường', 1320, 50, N'Abbott', '2028-06-20', 1),
+(N'Lansoprazole 1g', 320000, N'Hộp', N'Tiêu hóa', 1000, 92, N'Abbott', '2028-01-27', 1),
+(N'Pioglitazone 850mg', 230000, N'Hộp', N'Tiểu đường', 2360, 47, N'Dược Hậu Giang', '2028-01-02', 1),
+(N'Clindamycin 120mg', 120000, N'Hộp', N'Kháng sinh', 1730, 79, N'Abbott', '2027-12-06', 1),
+(N'Vitamin E 40mg', 370000, N'Lọ', N'Vitamin & Khoáng chất', 1790, 39, N'Novartis', '2028-12-23', 1),
+(N'Cefaclor 100mg', 560000, N'Hộp', N'Kháng sinh', 1540, 46, N'Domesco', '2028-01-01', 1),
+(N'Budesonide 625mg', 490000, N'Lọ', N'Hô hấp', 1410, 57, N'Roche', '2026-09-22', 1),
+(N'Doxycycline 625mg', 600000, N'Hộp', N'Kháng sinh', 1960, 78, N'OPC', '2026-05-30', 1),
+(N'Irbesartan 200mg', 350000, N'Hộp', N'Tim mạch', 1930, 98, N'Dược Hậu Giang', '2026-09-12', 1),
+(N'Esomeprazole 50mg', 690000, N'Hộp', N'Tiêu hóa', 540, 31, N'Abbott', '2025-12-21', 1),
+(N'Levofloxacin 10mg', 510000, N'Hộp', N'Kháng sinh', 910, 78, N'Novartis', '2028-10-22', 1),
+(N'Tramadol 50mg', 580000, N'Viên', N'Giảm đau, hạ sốt', 660, 63, N'Stella', '2028-10-07', 1),
+(N'Codeine 150mg', 530000, N'Viên', N'Giảm đau, hạ sốt', 540, 77, N'GSK', '2029-03-01', 1),
+(N'Theophylline 625mg', 580000, N'Hộp', N'Hô hấp', 270, 31, N'Bayer', '2027-10-24', 1),
+(N'Domperidone 30mg', 480000, N'Viên', N'Tiêu hóa', 1030, 39, N'OPC', '2026-08-24', 1),
+(N'Pioglitazone 150mg', 490000, N'Hộp', N'Tiểu đường', 1380, 99, N'Hasan', '2028-08-08', 1),
+(N'Enalapril 80mg', 490000, N'Hộp', N'Tim mạch', 520, 37, N'Sanofi', '2028-04-02', 1),
+(N'Clarithromycin 15mg', 540000, N'Hộp', N'Kháng sinh', 1630, 10, N'Novartis', '2028-04-18', 1),
+(N'Telmisartan 500mg', 60000, N'Hộp', N'Tim mạch', 730, 86, N'Boston', '2028-01-22', 1),
+(N'Captopril 10mg', 730000, N'Hộp', N'Tim mạch', 1290, 52, N'Pfizer', '2027-09-07', 1),
+(N'Erythromycin 15mg', 630000, N'Hộp', N'Kháng sinh', 1500, 18, N'Domesco', '2027-11-01', 1),
+(N'Ambroxol 500mg', 580000, N'Hộp', N'Hô hấp', 1900, 62, N'Hasan', '2028-01-05', 1),
+(N'Dapagliflozin 2.5mg', 290000, N'Hộp', N'Tiểu đường', 2100, 95, N'Domesco', '2026-08-28', 1),
+(N'Cefpodoxime 50mg', 220000, N'Hộp', N'Kháng sinh', 1700, 87, N'Traphaco', '2028-08-27', 1),
+(N'Naproxen 250mg', 460000, N'Viên', N'Giảm đau, kháng viêm', 1960, 27, N'Domesco', '2028-01-22', 1),
+(N'Nifedipine 5mg', 640000, N'Hộp', N'Tim mạch', 1830, 13, N'Stella', '2028-01-24', 1),
+(N'Moxifloxacin 10mg', 700000, N'Hộp', N'Kháng sinh', 1580, 47, N'Roche', '2027-11-04', 1),
+(N'Clarithromycin 300mg', 140000, N'Hộp', N'Kháng sinh', 2220, 74, N'Dược Hậu Giang', '2027-12-26', 1),
+(N'Propranolol 200mg', 550000, N'Hộp', N'Tim mạch', 620, 43, N'OPC', '2029-03-22', 1),
+(N'Cefotaxime 50mg', 120000, N'Ống', N'Kháng sinh', 450, 65, N'Boehringer Ingelheim', '2029-02-28', 1),
+(N'Metoclopramide 80mg', 210000, N'Viên', N'Tiêu hóa', 430, 99, N'Abbott', '2028-10-13', 1),
+(N'Cefaclor 150mg', 480000, N'Hộp', N'Kháng sinh', 2110, 61, N'Boston', '2028-07-19', 1),
+(N'Mefenamic Acid 15mg', 90000, N'Viên', N'Giảm đau, hạ sốt', 1990, 70, N'OPV', '2026-03-18', 1),
+(N'Budesonide 500mg', 250000, N'Lọ', N'Hô hấp', 1670, 90, N'Dược Hậu Giang', '2028-07-12', 1),
+(N'Betamethasone 80mg', 620000, N'Tuýp', N'Da liễu', 2050, 32, N'Dược Hậu Giang', '2027-10-31', 1),
+(N'Montelukast 50mg', 110000, N'Hộp', N'Hô hấp', 870, 22, N'Stella', '2027-10-30', 1),
+(N'Glimepiride 100mg', 180000, N'Hộp', N'Tiểu đường', 2420, 59, N'MSD', '2026-07-26', 1),
+(N'Doxycycline 100mg', 740000, N'Hộp', N'Kháng sinh', 1580, 44, N'GSK', '2026-03-30', 1),
+(N'Naproxen 75mg', 600000, N'Viên', N'Giảm đau, kháng viêm', 2100, 10, N'Traphaco', '2027-09-04', 1),
+(N'Aspirin 40mg', 240000, N'Viên', N'Giảm đau, hạ sốt', 1810, 32, N'OPC', '2026-08-25', 1),
+(N'Folic Acid 75mg', 690000, N'Hộp', N'Vitamin & Khoáng chất', 2140, 11, N'Hasan', '2026-09-19', 1),
+(N'Mefenamic Acid 625mg', 630000, N'Viên', N'Giảm đau, hạ sốt', 320, 36, N'Roche', '2026-09-29', 1),
+(N'Cefpodoxime 150mg', 590000, N'Hộp', N'Kháng sinh', 350, 38, N'Pfizer', '2029-01-19', 1),
+(N'Trimebutine 30mg', 550000, N'Hộp', N'Tiêu hóa', 1770, 54, N'Hasan', '2028-06-20', 1),
+(N'Rosuvastatin 80mg', 490000, N'Hộp', N'Mỡ máu', 210, 95, N'Roche', '2026-07-20', 1),
+(N'Betamethasone 120mg', 390000, N'Tuýp', N'Da liễu', 1360, 87, N'Sanofi', '2028-02-15', 1),
+(N'Budesonide 300mg', 450000, N'Lọ', N'Hô hấp', 970, 57, N'OPC', '2027-08-09', 1),
+(N'Valsartan 150mg', 430000, N'Hộp', N'Tim mạch', 1350, 47, N'GSK', '2026-08-20', 1),
+(N'Pantoprazole 1g', 180000, N'Hộp', N'Tiêu hóa', 1740, 99, N'Novartis', '2026-08-04', 1),
+(N'Carvedilol 200mg', 700000, N'Hộp', N'Tim mạch', 1160, 16, N'Roche', '2029-02-12', 1),
+(N'Etoricoxib 300mg', 560000, N'Viên', N'Giảm đau, kháng viêm', 200, 99, N'Traphaco', '2028-07-05', 1),
+(N'Simvastatin 50mg', 230000, N'Hộp', N'Mỡ máu', 1510, 63, N'OPC', '2026-09-13', 1),
+(N'Carvedilol 10mg', 770000, N'Hộp', N'Tim mạch', 1860, 93, N'GSK', '2026-08-23', 1),
+(N'Rosuvastatin 100mg', 310000, N'Hộp', N'Mỡ máu', 720, 99, N'Dược Hậu Giang', '2028-04-21', 1),
+(N'Aspirin 400mg', 270000, N'Viên', N'Giảm đau, hạ sốt', 2390, 15, N'Sanofi', '2026-08-06', 1),
+(N'Bisoprolol 400mg', 500000, N'Hộp', N'Tim mạch', 160, 10, N'Domesco', '2026-08-08', 1),
+(N'Gemfibrozil 500mg', 370000, N'Hộp', N'Mỡ máu', 1650, 43, N'AstraZeneca', '2028-11-26', 1),
+(N'Vitamin E 30mg', 420000, N'Lọ', N'Vitamin & Khoáng chất', 2260, 88, N'MSD', '2029-01-19', 1),
+(N'Itraconazole 50mg', 210000, N'Hộp', N'Da liễu', 410, 99, N'Hasan', '2026-02-15', 1),
+(N'Metoclopramide 200mg', 70000, N'Viên', N'Tiêu hóa', 2170, 46, N'Boehringer Ingelheim', '2027-12-30', 1),
+(N'Folic Acid 50mg', 440000, N'Hộp', N'Vitamin & Khoáng chất', 330, 27, N'OPV', '2026-03-28', 1),
+(N'Rabeprazole 120mg', 660000, N'Hộp', N'Tiêu hóa', 700, 66, N'Boston', '2027-11-07', 1),
+(N'Lisinopril 50mg', 360000, N'Hộp', N'Tim mạch', 1140, 92, N'Dược Hậu Giang', '2028-06-03', 1),
+(N'Vildagliptin 200mg', 210000, N'Hộp', N'Tiểu đường', 1660, 70, N'Boehringer Ingelheim', '2027-08-03', 1),
+(N'Carvedilol 500mg', 180000, N'Hộp', N'Tim mạch', 1520, 67, N'Domesco', '2026-03-13', 1),
+(N'Codeine 40mg', 760000, N'Viên', N'Giảm đau, hạ sốt', 350, 67, N'Bayer', '2027-08-01', 1),
+(N'Etoricoxib 150mg', 720000, N'Viên', N'Giảm đau, kháng viêm', 2430, 16, N'Domesco', '2026-07-26', 1),
+(N'Bisoprolol 80mg', 70000, N'Hộp', N'Tim mạch', 1040, 81, N'Stella', '2027-08-10', 1),
+(N'Esomeprazole 80mg', 780000, N'Hộp', N'Tiêu hóa', 1000, 12, N'Abbott', '2026-07-22', 1),
+(N'Celecoxib 40mg', 180000, N'Viên', N'Giảm đau, kháng viêm', 1640, 94, N'Roche', '2026-08-07', 1),
+(N'Levocetirizine 100mg', 550000, N'Hộp', N'Dị ứng', 2360, 21, N'Novartis', '2029-04-13', 1),
+(N'Ceftriaxone 120mg', 280000, N'Ống', N'Kháng sinh', 1040, 49, N'OPC', '2028-07-22', 1),
+(N'Ketoconazole 20mg', 710000, N'Tuýp', N'Da liễu', 220, 63, N'Roche', '2028-11-21', 1),
+(N'Propranolol 40mg', 240000, N'Hộp', N'Tim mạch', 390, 67, N'Boehringer Ingelheim', '2028-03-19', 1),
+(N'Rabeprazole 40mg', 350000, N'Hộp', N'Tiêu hóa', 170, 97, N'AstraZeneca', '2027-09-01', 1),
+(N'Simethicone 200mg', 700000, N'Hộp', N'Tiêu hóa', 1870, 95, N'OPV', '2026-08-06', 1),
+(N'Gemfibrozil 200mg', 310000, N'Hộp', N'Mỡ máu', 950, 77, N'Hasan', '2026-07-21', 1),
+(N'Lansoprazole 20mg', 610000, N'Hộp', N'Tiêu hóa', 1190, 17, N'Boston', '2026-09-05', 1),
+(N'Metronidazole 120mg', 350000, N'Hộp', N'Kháng sinh', 790, 91, N'Domesco', '2027-11-02', 1),
+(N'Trimebutine 300mg', 70000, N'Hộp', N'Tiêu hóa', 2430, 60, N'Hasan', '2029-02-28', 1),
+(N'Nifedipine 500mg', 630000, N'Hộp', N'Tim mạch', 510, 89, N'OPC', '2028-09-02', 1),
+(N'Irbesartan 500mg', 170000, N'Hộp', N'Tim mạch', 640, 45, N'MSD', '2028-05-02', 1),
+(N'Lansoprazole 5mg', 140000, N'Hộp', N'Tiêu hóa', 2360, 82, N'Pfizer', '2028-06-10', 1),
+(N'Naproxen 50mg', 250000, N'Viên', N'Giảm đau, kháng viêm', 780, 76, N'Bayer', '2026-04-12', 1),
+(N'Fluconazole 75mg', 610000, N'Hộp', N'Da liễu', 660, 46, N'Sanofi', '2027-12-31', 1),
+(N'Tramadol 15mg', 300000, N'Viên', N'Giảm đau, hạ sốt', 610, 12, N'Domesco', '2028-11-13', 1),
+(N'Linagliptin 80mg', 70000, N'Hộp', N'Tiểu đường', 420, 43, N'OPV', '2028-01-30', 1),
+(N'Cefotaxime 2.5mg', 100000, N'Ống', N'Kháng sinh', 1810, 14, N'MSD', '2029-01-22', 1),
+(N'Vitamin E 80mg', 400000, N'Lọ', N'Vitamin & Khoáng chất', 630, 49, N'Bayer', '2026-06-23', 1),
+(N'Clindamycin 200mg', 60000, N'Hộp', N'Kháng sinh', 800, 55, N'Sanofi', '2028-08-13', 1),
+(N'Cefadroxil 10mg', 710000, N'Hộp', N'Kháng sinh', 690, 31, N'GSK', '2027-12-07', 1),
+(N'Cefaclor 40mg', 90000, N'Hộp', N'Kháng sinh', 280, 18, N'Bayer', '2028-07-17', 1),
+(N'Aciclovir 80mg', 270000, N'Tuýp', N'Da liễu', 860, 60, N'Sanofi', '2028-05-12', 1),
+(N'Domperidone 400mg', 530000, N'Viên', N'Tiêu hóa', 1190, 86, N'Dược Hậu Giang', '2028-07-02', 1),
+(N'Betamethasone 200mg', 210000, N'Tuýp', N'Da liễu', 2220, 46, N'Hasan', '2025-12-25', 1),
+(N'Folic Acid 850mg', 480000, N'Hộp', N'Vitamin & Khoáng chất', 2370, 27, N'GSK', '2028-11-25', 1),
+(N'Fluconazole 250mg', 130000, N'Hộp', N'Da liễu', 1750, 84, N'GSK', '2028-11-22', 1),
+(N'Etoricoxib 50mg', 700000, N'Viên', N'Giảm đau, kháng viêm', 290, 71, N'Novartis', '2027-08-17', 1),
+(N'Trimebutine 120mg', 750000, N'Hộp', N'Tiêu hóa', 2410, 41, N'Roche', '2028-10-15', 1),
+(N'Ferrous Sulfate 625mg', 420000, N'Hộp', N'Vitamin & Khoáng chất', 440, 91, N'Boehringer Ingelheim', '2028-04-14', 1),
+(N'Ketoconazole 80mg', 680000, N'Tuýp', N'Da liễu', 240, 40, N'Boehringer Ingelheim', '2027-12-09', 1),
+(N'Irbesartan 120mg', 460000, N'Hộp', N'Tim mạch', 1670, 67, N'Bayer', '2027-11-13', 1),
+(N'Itraconazole 75mg', 250000, N'Hộp', N'Da liễu', 590, 24, N'Domesco', '2028-04-23', 1),
+(N'Cefdinir 500mg', 190000, N'Hộp', N'Kháng sinh', 850, 23, N'OPC', '2028-06-07', 1),
+(N'Aciclovir 250mg', 330000, N'Tuýp', N'Da liễu', 1220, 66, N'Hasan', '2026-07-30', 1),
+(N'Mefenamic Acid 1g', 380000, N'Viên', N'Giảm đau, hạ sốt', 840, 26, N'AstraZeneca', '2028-06-14', 1),
+(N'Rosuvastatin 75mg', 790000, N'Hộp', N'Mỡ máu', 640, 79, N'Hasan', '2026-05-18', 1),
+(N'Trimebutine 15mg', 670000, N'Hộp', N'Tiêu hóa', 410, 91, N'AstraZeneca', '2026-09-04', 1),
+(N'Meloxicam 400mg', 480000, N'Viên', N'Giảm đau, kháng viêm', 2440, 97, N'AstraZeneca', '2028-05-05', 1),
+(N'Betamethasone 15mg', 330000, N'Tuýp', N'Da liễu', 2200, 21, N'Pfizer', '2028-01-22', 1),
+(N'Doxycycline 15mg', 310000, N'Hộp', N'Kháng sinh', 1350, 72, N'Traphaco', '2028-05-05', 1),
+(N'Hydrocortisone 625mg', 630000, N'Tuýp', N'Da liễu', 2470, 17, N'Bayer', '2025-10-22', 1),
+(N'Ketoconazole 40mg', 710000, N'Tuýp', N'Da liễu', 190, 10, N'AstraZeneca', '2026-09-21', 1),
+(N'Vildagliptin 15mg', 80000, N'Hộp', N'Tiểu đường', 1890, 53, N'AstraZeneca', '2028-10-27', 1),
+(N'Gemfibrozil 625mg', 130000, N'Hộp', N'Mỡ máu', 370, 84, N'Dược Hậu Giang', '2028-06-05', 1),
+(N'Aspirin 80mg', 660000, N'Viên', N'Giảm đau, hạ sốt', 650, 22, N'Roche', '2029-03-12', 1),
+(N'Cefotaxime 40mg', 430000, N'Ống', N'Kháng sinh', 500, 92, N'Traphaco', '2029-04-06', 1),
+(N'Zinc Sulfate 20mg', 350000, N'Hộp', N'Vitamin & Khoáng chất', 650, 18, N'OPV', '2028-02-04', 1),
+(N'Captopril 625mg', 420000, N'Hộp', N'Tim mạch', 1300, 85, N'Stella', '2028-02-23', 1),
+(N'Esomeprazole 500mg', 500000, N'Hộp', N'Tiêu hóa', 1800, 27, N'Bayer', '2029-01-12', 1),
+(N'Codeine 80mg', 730000, N'Viên', N'Giảm đau, hạ sốt', 1920, 71, N'AstraZeneca', '2028-06-08', 1),
+(N'Linagliptin 2.5mg', 290000, N'Hộp', N'Tiểu đường', 1720, 67, N'Boston', '2027-09-02', 1),
+(N'Celecoxib 15mg', 710000, N'Viên', N'Giảm đau, kháng viêm', 2270, 18, N'Bayer', '2028-12-13', 1),
+(N'Acetylcysteine 20mg', 350000, N'Hộp', N'Hô hấp', 1040, 39, N'Novartis', '2028-12-20', 1),
+(N'Zinc Sulfate 10mg', 610000, N'Hộp', N'Vitamin & Khoáng chất', 1730, 50, N'Dược Hậu Giang', '2026-05-09', 1),
+(N'Codeine 30mg', 320000, N'Viên', N'Giảm đau, hạ sốt', 410, 26, N'Domesco', '2028-03-27', 1),
+(N'Vitamin B12 400mg', 360000, N'Ống', N'Vitamin & Khoáng chất', 150, 85, N'Traphaco', '2026-08-13', 1),
+(N'Levocetirizine 850mg', 310000, N'Hộp', N'Dị ứng', 2290, 69, N'Abbott', '2026-08-03', 1),
+(N'Fluconazole 50mg', 570000, N'Hộp', N'Da liễu', 2130, 87, N'Abbott', '2028-03-26', 1),
+(N'Enalapril 30mg', 370000, N'Hộp', N'Tim mạch', 1620, 56, N'Dược Hậu Giang', '2028-07-16', 1),
+(N'Vitamin B6 625mg', 350000, N'Lọ', N'Vitamin & Khoáng chất', 2190, 33, N'GSK', '2028-07-23', 1),
+(N'Levocetirizine 15mg', 740000, N'Hộp', N'Dị ứng', 1160, 52, N'OPV', '2027-10-23', 1),
+(N'Enalapril 5mg', 90000, N'Hộp', N'Tim mạch', 150, 93, N'AstraZeneca', '2026-09-13', 1),
+(N'Ambroxol 625mg', 380000, N'Hộp', N'Hô hấp', 260, 18, N'GSK', '2028-11-25', 1),
+(N'Naproxen 400mg', 370000, N'Viên', N'Giảm đau, kháng viêm', 830, 34, N'OPV', '2027-09-29', 1),
+(N'Cefotaxime 200mg', 400000, N'Ống', N'Kháng sinh', 100, 79, N'Domesco', '2028-03-06', 1),
+(N'Rosuvastatin 850mg', 430000, N'Hộp', N'Mỡ máu', 2080, 95, N'Abbott', '2028-12-16', 1),
+(N'Cefaclor 30mg', 300000, N'Hộp', N'Kháng sinh', 110, 28, N'Traphaco', '2028-09-26', 1),
+(N'Bisoprolol 100mg', 240000, N'Hộp', N'Tim mạch', 1470, 97, N'Novartis', '2026-07-30', 1),
+(N'Esomeprazole 300mg', 70000, N'Hộp', N'Tiêu hóa', 170, 33, N'Stella', '2028-07-14', 1),
+(N'Budesonide 80mg', 400000, N'Lọ', N'Hô hấp', 500, 97, N'Stella', '2026-04-22', 1),
+(N'Lisinopril 40mg', 510000, N'Hộp', N'Tim mạch', 310, 24, N'Traphaco', '2028-05-11', 1),
+(N'Levocetirizine 5mg', 680000, N'Hộp', N'Dị ứng', 540, 57, N'Roche', '2028-08-12', 1),
+(N'Itraconazole 15mg', 710000, N'Hộp', N'Da liễu', 430, 86, N'OPV', '2028-04-13', 1),
+(N'Itraconazole 30mg', 370000, N'Hộp', N'Da liễu', 2480, 22, N'Pfizer', '2026-07-01', 1),
+(N'Doxycycline 120mg', 310000, N'Hộp', N'Kháng sinh', 1750, 92, N'OPC', '2028-07-13', 1),
+(N'Enalapril 100mg', 230000, N'Hộp', N'Tim mạch', 2060, 27, N'Domesco', '2028-08-08', 1),
+(N'Aspirin 100mg', 480000, N'Viên', N'Giảm đau, hạ sốt', 1880, 43, N'OPC', '2027-11-18', 1),
+(N'Moxifloxacin 80mg', 330000, N'Hộp', N'Kháng sinh', 1000, 83, N'OPV', '2028-11-19', 1),
+(N'Aciclovir 1g', 560000, N'Tuýp', N'Da liễu', 2190, 27, N'GSK', '2028-03-16', 1),
+(N'Dextromethorphan 300mg', 110000, N'Hộp', N'Hô hấp', 2140, 44, N'OPV', '2028-04-03', 1),
+(N'Clarithromycin 10mg', 510000, N'Hộp', N'Kháng sinh', 1490, 18, N'Bayer', '2027-12-28', 1),
+(N'Cefadroxil 2.5mg', 730000, N'Hộp', N'Kháng sinh', 280, 11, N'AstraZeneca', '2027-11-21', 1),
+(N'Fluticasone 5mg', 130000, N'Lọ', N'Hô hấp', 980, 16, N'Dược Hậu Giang', '2028-03-30', 1),
+(N'Cefpodoxime 40mg', 160000, N'Hộp', N'Kháng sinh', 940, 89, N'MSD', '2029-03-03', 1),
+(N'Ketoconazole 15mg', 750000, N'Tuýp', N'Da liễu', 630, 61, N'Stella', '2028-02-20', 1),
+(N'Lisinopril 120mg', 340000, N'Hộp', N'Tim mạch', 1720, 48, N'OPC', '2029-02-19', 1),
+(N'Cefaclor 625mg', 580000, N'Hộp', N'Kháng sinh', 1110, 15, N'Abbott', '2029-01-22', 1),
+(N'Bromhexine 400mg', 170000, N'Hộp', N'Hô hấp', 420, 66, N'Domesco', '2026-08-08', 1),
+(N'Metronidazole 80mg', 430000, N'Hộp', N'Kháng sinh', 2180, 68, N'Roche', '2027-12-02', 1),
+(N'Diclofenac 100mg', 700000, N'Viên', N'Giảm đau, kháng viêm', 1840, 57, N'Boehringer Ingelheim', '2027-09-20', 1),
+(N'Vildagliptin 80mg', 270000, N'Hộp', N'Tiểu đường', 1330, 19, N'Domesco', '2028-10-03', 1),
+(N'Clarithromycin 40mg', 730000, N'Hộp', N'Kháng sinh', 850, 56, N'Novartis', '2026-07-26', 1),
+(N'Montelukast 400mg', 660000, N'Hộp', N'Hô hấp', 760, 31, N'Boehringer Ingelheim', '2029-01-08', 1),
+(N'Vitamin B1 625mg', 790000, N'Lọ', N'Vitamin & Khoáng chất', 2400, 33, N'Hasan', '2028-06-22', 1),
+(N'Ceftriaxone 250mg', 360000, N'Ống', N'Kháng sinh', 1880, 53, N'Traphaco', '2028-12-22', 1),
+(N'Pantoprazole 300mg', 460000, N'Hộp', N'Tiêu hóa', 770, 37, N'Novartis', '2027-11-01', 1),
+(N'Rosuvastatin 30mg', 260000, N'Hộp', N'Mỡ máu', 1910, 34, N'AstraZeneca', '2026-09-06', 1),
+(N'Ambroxol 50mg', 70000, N'Hộp', N'Hô hấp', 2040, 36, N'OPC', '2028-06-28', 1),
+(N'Carvedilol 15mg', 710000, N'Hộp', N'Tim mạch', 2080, 45, N'Boehringer Ingelheim', '2029-01-01', 1),
+(N'Irbesartan 10mg', 100000, N'Hộp', N'Tim mạch', 650, 88, N'AstraZeneca', '2026-08-08', 1),
+(N'Simvastatin 850mg', 540000, N'Hộp', N'Mỡ máu', 470, 88, N'Traphaco', '2028-10-29', 1),
+(N'Carvedilol 30mg', 450000, N'Hộp', N'Tim mạch', 1780, 90, N'Traphaco', '2027-09-30', 1),
+(N'Mefenamic Acid 30mg', 290000, N'Viên', N'Giảm đau, hạ sốt', 580, 41, N'AstraZeneca', '2028-09-11', 1),
+(N'Hydrocortisone 150mg', 410000, N'Tuýp', N'Da liễu', 1860, 96, N'Stella', '2027-11-09', 1),
+(N'Erythromycin 1g', 440000, N'Hộp', N'Kháng sinh', 1920, 48, N'Stella', '2028-02-24', 1),
+(N'Linagliptin 75mg', 670000, N'Hộp', N'Tiểu đường', 1700, 81, N'Dược Hậu Giang', '2025-10-29', 1),
+(N'Phosphalugel 40mg', 220000, N'Hộp', N'Tiêu hóa', 220, 21, N'Domesco', '2028-03-21', 1),
+(N'Folic Acid 1g', 230000, N'Hộp', N'Vitamin & Khoáng chất', 2220, 61, N'Traphaco', '2026-02-03', 1),
+(N'Diclofenac 75mg', 50000, N'Viên', N'Giảm đau, kháng viêm', 2270, 30, N'Pfizer', '2027-10-06', 1),
+(N'Esomeprazole 30mg', 650000, N'Hộp', N'Tiêu hóa', 260, 91, N'Boston', '2028-04-23', 1),
+(N'Gemfibrozil 850mg', 460000, N'Hộp', N'Mỡ máu', 450, 84, N'OPC', '2026-07-21', 1),
+(N'Codeine 200mg', 150000, N'Viên', N'Giảm đau, hạ sốt', 1710, 45, N'Boston', '2028-04-02', 1),
+(N'Diclofenac 15mg', 530000, N'Viên', N'Giảm đau, kháng viêm', 1910, 58, N'Domesco', '2029-01-07', 1),
+(N'Sitagliptin 10mg', 460000, N'Hộp', N'Tiểu đường', 280, 98, N'Abbott', '2028-07-15', 1),
+(N'Celecoxib 250mg', 150000, N'Viên', N'Giảm đau, kháng viêm', 420, 70, N'Pfizer', '2027-08-15', 1),
+(N'Lisinopril 850mg', 630000, N'Hộp', N'Tim mạch', 2090, 46, N'Sanofi', '2029-03-29', 1),
+(N'Vitamin B6 1g', 140000, N'Lọ', N'Vitamin & Khoáng chất', 860, 37, N'MSD', '2028-04-20', 1),
+(N'Simethicone 80mg', 380000, N'Hộp', N'Tiêu hóa', 930, 16, N'Dược Hậu Giang', '2027-10-24', 1),
+(N'Zinc Sulfate 625mg', 50000, N'Hộp', N'Vitamin & Khoáng chất', 1200, 43, N'MSD', '2028-10-18', 1),
+(N'Montelukast 120mg', 360000, N'Hộp', N'Hô hấp', 1520, 48, N'Stella', '2028-08-13', 1),
+(N'Cefaclor 300mg', 690000, N'Hộp', N'Kháng sinh', 450, 11, N'OPV', '2028-12-16', 1),
+(N'Levofloxacin 2.5mg', 470000, N'Hộp', N'Kháng sinh', 890, 45, N'Domesco', '2028-04-16', 1),
+(N'Cefotaxime 1g', 540000, N'Ống', N'Kháng sinh', 1750, 72, N'GSK', '2027-08-01', 1),
+(N'Theophylline 75mg', 530000, N'Hộp', N'Hô hấp', 1950, 44, N'Stella', '2026-05-25', 1),
+(N'Vitamin A 500mg', 200000, N'Lọ', N'Vitamin & Khoáng chất', 910, 22, N'AstraZeneca', '2026-08-04', 1),
+(N'Rosuvastatin 15mg', 230000, N'Hộp', N'Mỡ máu', 990, 33, N'Dược Hậu Giang', '2028-08-14', 1),
+(N'Cefpodoxime 1g', 280000, N'Hộp', N'Kháng sinh', 1150, 60, N'Bayer', '2028-06-30', 1),
+(N'Ambroxol 120mg', 370000, N'Hộp', N'Hô hấp', 2400, 99, N'OPC', '2028-07-11', 1),
+(N'Ceftriaxone 300mg', 680000, N'Ống', N'Kháng sinh', 380, 21, N'AstraZeneca', '2028-06-26', 1),
+(N'Pioglitazone 200mg', 100000, N'Hộp', N'Tiểu đường', 160, 64, N'OPC', '2028-07-11', 1),
+(N'Bisoprolol 40mg', 80000, N'Hộp', N'Tim mạch', 1370, 85, N'Dược Hậu Giang', '2028-01-21', 1),
+(N'Propranolol 400mg', 620000, N'Hộp', N'Tim mạch', 400, 73, N'GSK', '2028-04-26', 1),
+(N'Dapagliflozin 75mg', 200000, N'Hộp', N'Tiểu đường', 770, 17, N'Abbott', '2028-09-24', 1),
+(N'Aciclovir 2.5mg', 70000, N'Tuýp', N'Da liễu', 1130, 83, N'GSK', '2027-11-16', 1),
+(N'Propranolol 1g', 550000, N'Hộp', N'Tim mạch', 860, 35, N'Domesco', '2027-08-17', 1),
+(N'Cefpodoxime 850mg', 120000, N'Hộp', N'Kháng sinh', 830, 33, N'Sanofi', '2028-02-16', 1),
+(N'Clindamycin 850mg', 60000, N'Hộp', N'Kháng sinh', 2300, 19, N'GSK', '2028-10-14', 1),
+(N'Folic Acid 30mg', 170000, N'Hộp', N'Vitamin & Khoáng chất', 1810, 70, N'Traphaco', '2026-07-24', 1),
+(N'Vildagliptin 20mg', 360000, N'Hộp', N'Tiểu đường', 1160, 41, N'Novartis', '2028-09-17', 1),
+(N'Sitagliptin 100mg', 290000, N'Hộp', N'Tiểu đường', 410, 99, N'Dược Hậu Giang', '2027-12-01', 1),
+(N'Zinc Sulfate 15mg', 190000, N'Hộp', N'Vitamin & Khoáng chất', 1730, 89, N'Boehringer Ingelheim', '2028-10-01', 1),
+(N'Betamethasone 50mg', 650000, N'Tuýp', N'Da liễu', 810, 19, N'Dược Hậu Giang', '2028-11-09', 1),
+(N'Dextromethorphan 200mg', 320000, N'Hộp', N'Hô hấp', 1470, 54, N'OPV', '2029-03-01', 1),
+(N'Simethicone 850mg', 250000, N'Hộp', N'Tiêu hóa', 1550, 13, N'Roche', '2028-03-17', 1),
+(N'Dextromethorphan 120mg', 630000, N'Hộp', N'Hô hấp', 740, 85, N'GSK', '2026-07-08', 1),
+(N'Glimepiride 1g', 530000, N'Hộp', N'Tiểu đường', 470, 92, N'Hasan', '2028-11-21', 1),
+(N'Acetylcysteine 1g', 120000, N'Hộp', N'Hô hấp', 2470, 36, N'Roche', '2027-12-23', 1),
+(N'Cefadroxil 20mg', 260000, N'Hộp', N'Kháng sinh', 1000, 66, N'OPC', '2026-05-22', 1),
+(N'Vitamin A 400mg', 730000, N'Lọ', N'Vitamin & Khoáng chất', 2490, 41, N'Stella', '2025-12-10', 1),
+(N'Telmisartan 20mg', 430000, N'Hộp', N'Tim mạch', 2440, 95, N'OPV', '2028-04-08', 1),
+(N'Vitamin B12 120mg', 570000, N'Ống', N'Vitamin & Khoáng chất', 1140, 48, N'MSD', '2028-03-06', 1),
+(N'Rabeprazole 30mg', 160000, N'Hộp', N'Tiêu hóa', 1900, 11, N'Dược Hậu Giang', '2029-03-13', 1),
+(N'Ambroxol 850mg', 600000, N'Hộp', N'Hô hấp', 970, 89, N'Traphaco', '2026-10-11', 1),
+(N'Naproxen 80mg', 470000, N'Viên', N'Giảm đau, kháng viêm', 1380, 59, N'Pfizer', '2027-12-22', 1),
+(N'Ketoprofen 400mg', 760000, N'Viên', N'Giảm đau, kháng viêm', 2270, 46, N'Bayer', '2027-10-11', 1),
+(N'Meloxicam 625mg', 270000, N'Viên', N'Giảm đau, kháng viêm', 2320, 80, N'OPV', '2028-01-03', 1),
+(N'Codeine 400mg', 420000, N'Viên', N'Giảm đau, hạ sốt', 2090, 25, N'Pfizer', '2028-08-06', 1),
+(N'Propranolol 10mg', 400000, N'Hộp', N'Tim mạch', 200, 58, N'Sanofi', '2027-09-30', 1),
+(N'Levofloxacin 50mg', 430000, N'Hộp', N'Kháng sinh', 1590, 88, N'Dược Hậu Giang', '2028-02-28', 1),
+(N'Bisoprolol 300mg', 730000, N'Hộp', N'Tim mạch', 830, 99, N'Roche', '2028-01-14', 1),
+(N'Glimepiride 300mg', 60000, N'Hộp', N'Tiểu đường', 1860, 64, N'Bayer', '2027-12-26', 1),
+(N'Ceftriaxone 20mg', 230000, N'Ống', N'Kháng sinh', 280, 50, N'Traphaco', '2027-12-12', 1),
+(N'Bromhexine 20mg', 130000, N'Hộp', N'Hô hấp', 1840, 30, N'Stella', '2027-08-15', 1),
+(N'Terbutaline 300mg', 500000, N'Hộp', N'Hô hấp', 430, 47, N'OPC', '2028-08-24', 1),
+(N'Spironolactone 20mg', 580000, N'Hộp', N'Tim mạch', 1260, 32, N'MSD', '2028-08-06', 1),
+(N'Etoricoxib 5mg', 650000, N'Viên', N'Giảm đau, kháng viêm', 360, 26, N'AstraZeneca', '2029-01-26', 1),
+(N'Linagliptin 250mg', 70000, N'Hộp', N'Tiểu đường', 410, 94, N'Boehringer Ingelheim', '2029-04-02', 1),
+(N'Montelukast 850mg', 370000, N'Hộp', N'Hô hấp', 580, 97, N'Boston', '2026-09-23', 1),
+(N'Metronidazole 300mg', 720000, N'Hộp', N'Kháng sinh', 390, 21, N'Roche', '2026-07-01', 1),
+(N'Terbutaline 30mg', 500000, N'Hộp', N'Hô hấp', 1110, 35, N'Roche', '2028-01-03', 1),
+(N'Nifedipine 400mg', 710000, N'Hộp', N'Tim mạch', 2180, 84, N'Novartis', '2029-01-05', 1),
+(N'Nifedipine 100mg', 370000, N'Hộp', N'Tim mạch', 1070, 91, N'Pfizer', '2028-12-30', 1),
+(N'Ambroxol 30mg', 520000, N'Hộp', N'Hô hấp', 1780, 36, N'Novartis', '2026-04-05', 1),
+(N'Cefotaxime 30mg', 510000, N'Ống', N'Kháng sinh', 360, 82, N'Hasan', '2028-08-16', 1),
+(N'Hydrocortisone 5mg', 180000, N'Tuýp', N'Da liễu', 2120, 58, N'Domesco', '2028-11-25', 1),
+(N'Trimebutine 850mg', 170000, N'Hộp', N'Tiêu hóa', 1470, 16, N'Roche', '2028-10-09', 1),
+(N'Vildagliptin 40mg', 780000, N'Hộp', N'Tiểu đường', 220, 21, N'Boehringer Ingelheim', '2028-11-16', 1),
+(N'Cefdinir 100mg', 600000, N'Hộp', N'Kháng sinh', 120, 75, N'Stella', '2027-11-11', 1),
+(N'Vildagliptin 100mg', 320000, N'Hộp', N'Tiểu đường', 300, 15, N'Bayer', '2028-10-18', 1),
+(N'Metoclopramide 120mg', 570000, N'Viên', N'Tiêu hóa', 2270, 66, N'Novartis', '2029-02-01', 1),
+(N'Vitamin A 250mg', 110000, N'Lọ', N'Vitamin & Khoáng chất', 410, 74, N'GSK', '2027-10-25', 1),
+(N'Pioglitazone 5mg', 600000, N'Hộp', N'Tiểu đường', 1660, 85, N'Domesco', '2026-04-10', 1),
+(N'Pantoprazole 30mg', 240000, N'Hộp', N'Tiêu hóa', 1790, 32, N'Dược Hậu Giang', '2026-07-31', 1),
+(N'Ketoprofen 10mg', 540000, N'Viên', N'Giảm đau, kháng viêm', 1200, 18, N'Abbott', '2026-07-21', 1),
+(N'Cefaclor 75mg', 390000, N'Hộp', N'Kháng sinh', 640, 12, N'Hasan', '2029-03-21', 1),
+(N'Erythromycin 20mg', 710000, N'Hộp', N'Kháng sinh', 810, 56, N'OPC', '2028-02-07', 1),
+(N'Phosphalugel 15mg', 520000, N'Hộp', N'Tiêu hóa', 390, 48, N'Dược Hậu Giang', '2028-01-31', 1),
+(N'Vitamin E 1g', 170000, N'Lọ', N'Vitamin & Khoáng chất', 1980, 85, N'Domesco', '2026-08-21', 1),
+(N'Vitamin B1 1g', 430000, N'Lọ', N'Vitamin & Khoáng chất', 850, 60, N'Novartis', '2028-02-23', 1),
+(N'Ketoprofen 850mg', 210000, N'Viên', N'Giảm đau, kháng viêm', 240, 66, N'Domesco', '2027-10-26', 1),
+(N'Carvedilol 850mg', 540000, N'Hộp', N'Tim mạch', 2270, 48, N'AstraZeneca', '2026-10-12', 1),
+(N'Irbesartan 40mg', 740000, N'Hộp', N'Tim mạch', 1480, 76, N'Traphaco', '2026-08-16', 1),
+(N'Vitamin B6 75mg', 250000, N'Lọ', N'Vitamin & Khoáng chất', 290, 30, N'Pfizer', '2028-12-16', 1),
+(N'Esomeprazole 5mg', 300000, N'Hộp', N'Tiêu hóa', 1730, 82, N'Pfizer', '2028-10-17', 1),
+(N'Glibenclamide 850mg', 270000, N'Hộp', N'Tiểu đường', 1570, 90, N'Dược Hậu Giang', '2028-04-25', 1),
+(N'Vitamin B12 300mg', 790000, N'Ống', N'Vitamin & Khoáng chất', 1650, 39, N'Sanofi', '2028-05-02', 1),
+(N'Phosphalugel 80mg', 560000, N'Hộp', N'Tiêu hóa', 160, 23, N'GSK', '2026-08-29', 1),
+(N'Levocetirizine 400mg', 430000, N'Hộp', N'Dị ứng', 860, 67, N'Dược Hậu Giang', '2028-01-05', 1),
+(N'Glimepiride 500mg', 780000, N'Hộp', N'Tiểu đường', 2090, 29, N'Sanofi', '2027-09-25', 1),
+(N'Vitamin B6 30mg', 290000, N'Lọ', N'Vitamin & Khoáng chất', 800, 31, N'Boston', '2028-01-16', 1),
+(N'Vildagliptin 30mg', 680000, N'Hộp', N'Tiểu đường', 250, 29, N'Novartis', '2026-04-12', 1),
+(N'Pioglitazone 20mg', 710000, N'Hộp', N'Tiểu đường', 2280, 73, N'GSK', '2026-08-30', 1),
+(N'Phosphalugel 2.5mg', 130000, N'Hộp', N'Tiêu hóa', 970, 13, N'Novartis', '2028-02-24', 1),
+(N'Captopril 75mg', 560000, N'Hộp', N'Tim mạch', 320, 13, N'OPC', '2028-05-04', 1),
+(N'Hydrocortisone 15mg', 250000, N'Tuýp', N'Da liễu', 2380, 19, N'Hasan', '2028-05-30', 1),
+(N'Mefenamic Acid 10mg', 250000, N'Viên', N'Giảm đau, hạ sốt', 2370, 57, N'Roche', '2026-06-30', 1),
+(N'Cefdinir 80mg', 220000, N'Hộp', N'Kháng sinh', 430, 62, N'Abbott', '2026-09-22', 1),
+(N'Chlorpheniramine 2.5mg', 500000, N'Hộp', N'Dị ứng', 980, 53, N'OPC', '2029-04-07', 1),
+(N'Simvastatin 5mg', 740000, N'Hộp', N'Mỡ máu', 1160, 94, N'Bayer', '2028-06-24', 1),
+(N'Naproxen 100mg', 700000, N'Viên', N'Giảm đau, kháng viêm', 2330, 13, N'Dược Hậu Giang', '2028-01-17', 1),
+(N'Dextromethorphan 100mg', 470000, N'Hộp', N'Hô hấp', 1870, 90, N'Roche', '2029-01-05', 1),
+(N'Codeine 120mg', 180000, N'Viên', N'Giảm đau, hạ sốt', 2440, 19, N'OPC', '2027-12-11', 1),
+(N'Dextromethorphan 250mg', 770000, N'Hộp', N'Hô hấp', 1550, 86, N'Hasan', '2026-07-26', 1),
+(N'Nifedipine 50mg', 610000, N'Hộp', N'Tim mạch', 240, 90, N'Domesco', '2027-08-28', 1),
+(N'Dapagliflozin 400mg', 270000, N'Hộp', N'Tiểu đường', 950, 64, N'Dược Hậu Giang', '2029-01-31', 1),
+(N'Ferrous Sulfate 80mg', 570000, N'Hộp', N'Vitamin & Khoáng chất', 2160, 13, N'OPC', '2028-08-01', 1),
+(N'Dextromethorphan 5mg', 690000, N'Hộp', N'Hô hấp', 2330, 13, N'Novartis', '2028-07-20', 1),
+(N'Aciclovir 850mg', 580000, N'Tuýp', N'Da liễu', 1950, 45, N'Domesco', '2028-09-29', 1),
+(N'Lisinopril 15mg', 720000, N'Hộp', N'Tim mạch', 1760, 68, N'Sanofi', '2026-07-30', 1),
+(N'Gemfibrozil 40mg', 300000, N'Hộp', N'Mỡ máu', 1900, 28, N'Abbott', '2028-07-26', 1),
+(N'Fluconazole 500mg', 470000, N'Hộp', N'Da liễu', 400, 15, N'Pfizer', '2028-02-27', 1),
+(N'Diclofenac 40mg', 570000, N'Viên', N'Giảm đau, kháng viêm', 190, 45, N'OPV', '2028-09-19', 1),
+(N'Tramadol 200mg', 280000, N'Viên', N'Giảm đau, hạ sốt', 1110, 48, N'Pfizer', '2028-06-24', 1),
+(N'Aciclovir 500mg', 270000, N'Tuýp', N'Da liễu', 2190, 96, N'Stella', '2027-12-28', 1),
+(N'Linagliptin 400mg', 200000, N'Hộp', N'Tiểu đường', 2240, 20, N'Boehringer Ingelheim', '2028-01-08', 1),
+(N'Levocetirizine 40mg', 310000, N'Hộp', N'Dị ứng', 2080, 15, N'Domesco', '2028-08-12', 1),
+(N'Itraconazole 1g', 280000, N'Hộp', N'Da liễu', 890, 58, N'Traphaco', '2028-04-10', 1),
+(N'Glibenclamide 625mg', 360000, N'Hộp', N'Tiểu đường', 450, 12, N'MSD', '2026-05-28', 1),
+(N'Vitamin B1 120mg', 700000, N'Lọ', N'Vitamin & Khoáng chất', 2410, 13, N'Traphaco', '2027-10-15', 1),
+(N'Pantoprazole 2.5mg', 660000, N'Hộp', N'Tiêu hóa', 390, 36, N'Dược Hậu Giang', '2029-01-01', 1),
+(N'Ferrous Sulfate 1g', 750000, N'Hộp', N'Vitamin & Khoáng chất', 570, 74, N'Pfizer', '2026-08-10', 1),
+(N'Cefaclor 20mg', 440000, N'Hộp', N'Kháng sinh', 470, 32, N'Roche', '2026-08-30', 1),
+(N'Levofloxacin 500mg', 480000, N'Hộp', N'Kháng sinh', 2030, 43, N'Hasan', '2026-02-18', 1),
+(N'Cefadroxil 250mg', 370000, N'Hộp', N'Kháng sinh', 1500, 20, N'OPV', '2027-09-22', 1),
+(N'Meloxicam 75mg', 510000, N'Viên', N'Giảm đau, kháng viêm', 470, 81, N'Dược Hậu Giang', '2027-09-11', 1);
 GO
 
 -- =============================================
--- Bảng Viện Phí / Bảng giá (HospitalFees)
+-- Báº£ng Viá»‡n PhÃ­ / Báº£ng giÃ¡ (HospitalFees)
 -- =============================================
 IF OBJECT_ID('HospitalFees', 'U') IS NOT NULL DROP TABLE HospitalFees;
 GO
@@ -2616,64 +3612,64 @@ CREATE TABLE HospitalFees (
 );
 GO
 
--- Thêm dữ liệu mẫu cho Bảng Giá Viện Phí
+-- ThÃªm dá»¯ liá»‡u máº«u cho Báº£ng GiÃ¡ Viá»‡n PhÃ­
 INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, Description)
 VALUES 
-('KB01', N'Khám bệnh chuyên khoa', N'Khám bệnh', 150000, 80, N'Khám bệnh ngoại trú'),
-('XN01', N'Xét nghiệm máu tổng quát', N'Xét nghiệm', 250000, 80, N'Công thức máu, đường huyết'),
-('CD01', N'Siêu âm ổ bụng', N'Chẩn đoán hình ảnh', 300000, 80, N'Siêu âm ổ bụng tổng quát'),
-('PT01', N'Phẫu thuật ruột thừa', N'Phẫu thuật', 5000000, 80, N'Phẫu thuật nội soi ruột thừa'),
-('GB01', N'Giường bệnh nội trú (Phòng thường)', N'Giường bệnh', 200000, 100, N'Giường bệnh thường (1 ngày)');
+('KB01', N'KhÃ¡m bá»‡nh chuyÃªn khoa', N'KhÃ¡m bá»‡nh', 150000, 80, N'KhÃ¡m bá»‡nh ngoáº¡i trÃº'),
+('XN01', N'XÃ©t nghiá»‡m mÃ¡u tá»•ng quÃ¡t', N'XÃ©t nghiá»‡m', 250000, 80, N'CÃ´ng thá»©c mÃ¡u, Ä‘Æ°á»ng huyáº¿t'),
+('CD01', N'SiÃªu Ã¢m á»• bá»¥ng', N'Cháº©n Ä‘oÃ¡n hÃ¬nh áº£nh', 300000, 80, N'SiÃªu Ã¢m á»• bá»¥ng tá»•ng quÃ¡t'),
+('PT01', N'Pháº«u thuáº­t ruá»™t thá»«a', N'Pháº«u thuáº­t', 5000000, 80, N'Pháº«u thuáº­t ná»™i soi ruá»™t thá»«a'),
+('GB01', N'GiÆ°á»ng bá»‡nh ná»™i trÃº (PhÃ²ng thÆ°á»ng)', N'GiÆ°á»ng bá»‡nh', 200000, 100, N'GiÆ°á»ng bá»‡nh thÆ°á»ng (1 ngÃ y)');
 GO
 
 USE QuanLyBenhVienDb;
 GO
 
--- Xóa các bản ghi cũ bị lỗi font
-DELETE FROM Users WHERE Role = 'PhauThuat' AND FullName LIKE '%Ã%';
-DELETE FROM HospitalFees WHERE Category = N'Phẫu thuật' AND FeeName LIKE '%Ã%';
+-- XÃ³a cÃ¡c báº£n ghi cÅ© bá»‹ lá»—i font
+DELETE FROM Users WHERE Role = 'PhauThuat' AND FullName LIKE '%Ãƒ%';
+DELETE FROM HospitalFees WHERE Category = N'Pháº«u thuáº­t' AND FeeName LIKE '%Ãƒ%';
 
--- Hoặc xóa tất cả những bản ghi vừa thêm
--- Nhìn vào screenshot thì thấy có vẻ bảng Users có bị trùng (1 dòng lỗi, 1 dòng đúng bên dưới??)
--- À nhìn screenshot, hình như "BS. Trần Thị B" (đúng) và "BS. TrÃ¢Ì£n..." (sai) đều tồn tại?
--- Tốt nhất xóa hết những ai có username là bs.phauthuat1 đến 5 và FeeCode từ PT001 đến PT020
+-- Hoáº·c xÃ³a táº¥t cáº£ nhá»¯ng báº£n ghi vá»«a thÃªm
+-- NhÃ¬n vÃ o screenshot thÃ¬ tháº¥y cÃ³ váº» báº£ng Users cÃ³ bá»‹ trÃ¹ng (1 dÃ²ng lá»—i, 1 dÃ²ng Ä‘Ãºng bÃªn dÆ°á»›i??)
+-- Ã€ nhÃ¬n screenshot, hÃ¬nh nhÆ° "BS. Tráº§n Thá»‹ B" (Ä‘Ãºng) vÃ  "BS. TrÃƒÂ¢ÃŒÂ£n..." (sai) Ä‘á»u tá»“n táº¡i?
+-- Tá»‘t nháº¥t xÃ³a háº¿t nhá»¯ng ai cÃ³ username lÃ  bs.phauthuat1 Ä‘áº¿n 5 vÃ  FeeCode tá»« PT001 Ä‘áº¿n PT020
 DELETE FROM Users WHERE Username IN ('bs.phauthuat1', 'bs.phauthuat2', 'bs.phauthuat3', 'bs.phauthuat4', 'bs.phauthuat5');
 DELETE FROM HospitalFees WHERE FeeCode LIKE 'PT0%';
 
--- Insert lại
+-- Insert láº¡i
 INSERT INTO Users (Username, Password, Role, FullName, Email, SDT) VALUES
-('bs.phauthuat1', '123', 'PhauThuat', N'BS. Nguyễn Văn A', 'bs.a@benhvien.com', '0901234567'),
-('bs.phauthuat2', '123', 'PhauThuat', N'BS. Trần Thị B', 'bs.b@benhvien.com', '0901234568'),
-('bs.phauthuat3', '123', 'PhauThuat', N'BS. Lê Văn C', 'bs.c@benhvien.com', '0901234569'),
-('bs.phauthuat4', '123', 'PhauThuat', N'BS. Phạm Thị D', 'bs.d@benhvien.com', '0901234570'),
-('bs.phauthuat5', '123', 'PhauThuat', N'BS. Hoàng Văn E', 'bs.e@benhvien.com', '0901234571');
+('bs.phauthuat1', '123', 'PhauThuat', N'BS. Nguyá»…n VÄƒn A', 'bs.a@benhvien.com', '0901234567'),
+('bs.phauthuat2', '123', 'PhauThuat', N'BS. Tráº§n Thá»‹ B', 'bs.b@benhvien.com', '0901234568'),
+('bs.phauthuat3', '123', 'PhauThuat', N'BS. LÃª VÄƒn C', 'bs.c@benhvien.com', '0901234569'),
+('bs.phauthuat4', '123', 'PhauThuat', N'BS. Pháº¡m Thá»‹ D', 'bs.d@benhvien.com', '0901234570'),
+('bs.phauthuat5', '123', 'PhauThuat', N'BS. HoÃ ng VÄƒn E', 'bs.e@benhvien.com', '0901234571');
 
 INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, Description, IsActive, CreatedAt) VALUES
-('PT001', N'Phẫu thuật ruột thừa nội soi', N'Phẫu thuật', 5000000, 80, N'Cắt ruột thừa bằng phương pháp nội soi', 1, GETDATE()),
-('PT002', N'Phẫu thuật nội soi túi mật', N'Phẫu thuật', 7000000, 80, N'Cắt bỏ túi mật qua nội soi', 1, GETDATE()),
-('PT003', N'Phẫu thuật thoát vị bẹn', N'Phẫu thuật', 4500000, 80, N'Phục hồi thành bụng do thoát vị bẹn', 1, GETDATE()),
-('PT004', N'Phẫu thuật trĩ Longo', N'Phẫu thuật', 8000000, 80, N'Cắt trĩ bằng phương pháp Longo', 1, GETDATE()),
-('PT005', N'Phẫu thuật cắt dạ dày', N'Phẫu thuật', 15000000, 80, N'Cắt bỏ một phần hoặc toàn bộ dạ dày', 1, GETDATE()),
-('PT006', N'Phẫu thuật thay khớp gối', N'Phẫu thuật', 12000000, 80, N'Thay thế khớp gối bị hỏng', 1, GETDATE()),
-('PT007', N'Phẫu thuật thay khớp háng', N'Phẫu thuật', 14000000, 80, N'Thay thế khớp háng bằng khớp nhân tạo', 1, GETDATE()),
-('PT008', N'Phẫu thuật kết hợp xương gãy', N'Phẫu thuật', 6000000, 80, N'Cố định xương gãy bằng đinh, nẹp vít', 1, GETDATE()),
-('PT009', N'Phẫu thuật lấy thai lần 1', N'Phẫu thuật', 5500000, 80, N'Mổ đẻ lần 1', 1, GETDATE()),
-('PT010', N'Phẫu thuật bóc u xơ tử cung', N'Phẫu thuật', 6500000, 80, N'Loại bỏ khối u xơ trong tử cung', 1, GETDATE()),
-('PT011', N'Phẫu thuật cắt tử cung', N'Phẫu thuật', 9000000, 80, N'Cắt bỏ tử cung do bệnh lý', 1, GETDATE()),
-('PT012', N'Phẫu thuật u nang buồng trứng', N'Phẫu thuật', 7500000, 80, N'Bóc tách hoặc cắt bỏ u nang buồng trứng', 1, GETDATE()),
-('PT013', N'Phẫu thuật mộng thịt', N'Phẫu thuật', 1500000, 80, N'Cắt bỏ mộng thịt ở mắt', 1, GETDATE()),
-('PT014', N'Phẫu thuật đục thủy tinh thể (Phaco)', N'Phẫu thuật', 4000000, 80, N'Thay thủy tinh thể nhân tạo', 1, GETDATE()),
-('PT015', N'Phẫu thuật cắt amidan', N'Phẫu thuật', 3500000, 80, N'Cắt bỏ amidan viêm nhiễm', 1, GETDATE()),
-('PT016', N'Phẫu thuật nội soi xoang mũi', N'Phẫu thuật', 8500000, 80, N'Điều trị viêm xoang qua nội soi', 1, GETDATE()),
-('PT017', N'Phẫu thuật nạo VA', N'Phẫu thuật', 2000000, 80, N'Nạo bỏ tổ chức VA bị viêm', 1, GETDATE()),
-('PT018', N'Phẫu thuật vá nhĩ', N'Phẫu thuật', 5000000, 80, N'Vá lại màng nhĩ bị rách', 1, GETDATE()),
-('PT019', N'Phẫu thuật u tuyến giáp', N'Phẫu thuật', 10000000, 80, N'Cắt bỏ một phần hoặc toàn bộ tuyến giáp', 1, GETDATE()),
-('PT020', N'Phẫu thuật bóc u mỡ/u bã đậu', N'Phẫu thuật', 1000000, 80, N'Tiểu phẫu bóc tách khối u lành tính', 1, GETDATE());
+('PT001', N'Pháº«u thuáº­t ruá»™t thá»«a ná»™i soi', N'Pháº«u thuáº­t', 5000000, 80, N'Cáº¯t ruá»™t thá»«a báº±ng phÆ°Æ¡ng phÃ¡p ná»™i soi', 1, GETDATE()),
+('PT002', N'Pháº«u thuáº­t ná»™i soi tÃºi máº­t', N'Pháº«u thuáº­t', 7000000, 80, N'Cáº¯t bá» tÃºi máº­t qua ná»™i soi', 1, GETDATE()),
+('PT003', N'Pháº«u thuáº­t thoÃ¡t vá»‹ báº¹n', N'Pháº«u thuáº­t', 4500000, 80, N'Phá»¥c há»“i thÃ nh bá»¥ng do thoÃ¡t vá»‹ báº¹n', 1, GETDATE()),
+('PT004', N'Pháº«u thuáº­t trÄ© Longo', N'Pháº«u thuáº­t', 8000000, 80, N'Cáº¯t trÄ© báº±ng phÆ°Æ¡ng phÃ¡p Longo', 1, GETDATE()),
+('PT005', N'Pháº«u thuáº­t cáº¯t dáº¡ dÃ y', N'Pháº«u thuáº­t', 15000000, 80, N'Cáº¯t bá» má»™t pháº§n hoáº·c toÃ n bá»™ dáº¡ dÃ y', 1, GETDATE()),
+('PT006', N'Pháº«u thuáº­t thay khá»›p gá»‘i', N'Pháº«u thuáº­t', 12000000, 80, N'Thay tháº¿ khá»›p gá»‘i bá»‹ há»ng', 1, GETDATE()),
+('PT007', N'Pháº«u thuáº­t thay khá»›p hÃ¡ng', N'Pháº«u thuáº­t', 14000000, 80, N'Thay tháº¿ khá»›p hÃ¡ng báº±ng khá»›p nhÃ¢n táº¡o', 1, GETDATE()),
+('PT008', N'Pháº«u thuáº­t káº¿t há»£p xÆ°Æ¡ng gÃ£y', N'Pháº«u thuáº­t', 6000000, 80, N'Cá»‘ Ä‘á»‹nh xÆ°Æ¡ng gÃ£y báº±ng Ä‘inh, náº¹p vÃ­t', 1, GETDATE()),
+('PT009', N'Pháº«u thuáº­t láº¥y thai láº§n 1', N'Pháº«u thuáº­t', 5500000, 80, N'Má»• Ä‘áº» láº§n 1', 1, GETDATE()),
+('PT010', N'Pháº«u thuáº­t bÃ³c u xÆ¡ tá»­ cung', N'Pháº«u thuáº­t', 6500000, 80, N'Loáº¡i bá» khá»‘i u xÆ¡ trong tá»­ cung', 1, GETDATE()),
+('PT011', N'Pháº«u thuáº­t cáº¯t tá»­ cung', N'Pháº«u thuáº­t', 9000000, 80, N'Cáº¯t bá» tá»­ cung do bá»‡nh lÃ½', 1, GETDATE()),
+('PT012', N'Pháº«u thuáº­t u nang buá»“ng trá»©ng', N'Pháº«u thuáº­t', 7500000, 80, N'BÃ³c tÃ¡ch hoáº·c cáº¯t bá» u nang buá»“ng trá»©ng', 1, GETDATE()),
+('PT013', N'Pháº«u thuáº­t má»™ng thá»‹t', N'Pháº«u thuáº­t', 1500000, 80, N'Cáº¯t bá» má»™ng thá»‹t á»Ÿ máº¯t', 1, GETDATE()),
+('PT014', N'Pháº«u thuáº­t Ä‘á»¥c thá»§y tinh thá»ƒ (Phaco)', N'Pháº«u thuáº­t', 4000000, 80, N'Thay thá»§y tinh thá»ƒ nhÃ¢n táº¡o', 1, GETDATE()),
+('PT015', N'Pháº«u thuáº­t cáº¯t amidan', N'Pháº«u thuáº­t', 3500000, 80, N'Cáº¯t bá» amidan viÃªm nhiá»…m', 1, GETDATE()),
+('PT016', N'Pháº«u thuáº­t ná»™i soi xoang mÅ©i', N'Pháº«u thuáº­t', 8500000, 80, N'Äiá»u trá»‹ viÃªm xoang qua ná»™i soi', 1, GETDATE()),
+('PT017', N'Pháº«u thuáº­t náº¡o VA', N'Pháº«u thuáº­t', 2000000, 80, N'Náº¡o bá» tá»• chá»©c VA bá»‹ viÃªm', 1, GETDATE()),
+('PT018', N'Pháº«u thuáº­t vÃ¡ nhÄ©', N'Pháº«u thuáº­t', 5000000, 80, N'VÃ¡ láº¡i mÃ ng nhÄ© bá»‹ rÃ¡ch', 1, GETDATE()),
+('PT019', N'Pháº«u thuáº­t u tuyáº¿n giÃ¡p', N'Pháº«u thuáº­t', 10000000, 80, N'Cáº¯t bá» má»™t pháº§n hoáº·c toÃ n bá»™ tuyáº¿n giÃ¡p', 1, GETDATE()),
+('PT020', N'Pháº«u thuáº­t bÃ³c u má»¡/u bÃ£ Ä‘áº­u', N'Pháº«u thuáº­t', 1000000, 80, N'Tiá»ƒu pháº«u bÃ³c tÃ¡ch khá»‘i u lÃ nh tÃ­nh', 1, GETDATE());
 GO
 
 
 
--- Bảng bổ sung từ Model
+-- Báº£ng bá»• sung tá»« Model
 CREATE TABLE [BloodBanks] (
     [Id] int NOT NULL IDENTITY,
     [BagCode] nvarchar(20) NOT NULL,
@@ -2798,386 +3794,386 @@ CREATE TABLE [Surgeries] (
 GO
 
 -- =============================================
--- THÊM TÀI KHOẢN BỆNH NHÂN ĐỂ ĐĂNG NHẬP
+-- THÃŠM TÃ€I KHOáº¢N Bá»†NH NHÃ‚N Äá»‚ ÄÄ‚NG NHáº¬P
 -- =============================================
 INSERT INTO [Users] ([Username], [Password], [Role], [FullName], [Email], [SDT], [PatientCode])
-VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Nguyễn Văn Khánh', 'bn.demo@benhvien.com', '0999888777', 'BN123456');
+VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Nguyá»…n VÄƒn KhÃ¡nh', 'bn.demo@benhvien.com', '0999888777', 'BN123456');
 GO
 
 USE QuanLyBenhVienDb;
 GO
 
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Minh Tuấn', N'Nam', 30, 'DS1', '');
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Minh Tuáº¥n', N'Nam', 30, 'DS1', '');
 DECLARE @Pid1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Văn Đức', N'Nam', 30, 'DS2', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n VÄƒn Äá»©c', N'Nam', 30, 'DS2', '');
 DECLARE @Pid2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Hoàng Phúc', N'Nam', 30, 'DS3', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª HoÃ ng PhÃºc', N'Nam', 30, 'DS3', '');
 DECLARE @Pid3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Quốc Hùng', N'Nam', 30, 'DS4', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Quá»‘c HÃ¹ng', N'Nam', 30, 'DS4', '');
 DECLARE @Pid4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Thành Long', N'Nam', 30, 'DS5', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ ThÃ nh Long', N'Nam', 30, 'DS5', '');
 DECLARE @Pid5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đinh Xuân Bình', N'Nam', 30, 'DS6', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äinh XuÃ¢n BÃ¬nh', N'Nam', 30, 'DS6', '');
 DECLARE @Pid6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Tiến Dũng', N'Nam', 30, 'DS7', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Tiáº¿n DÅ©ng', N'Nam', 30, 'DS7', '');
 DECLARE @Pid7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Thị Hương', N'Nữ', 40, 'HS1', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Thá»‹ HÆ°Æ¡ng', N'Ná»¯', 40, 'HS1', '');
 DECLARE @Pid_HS1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS1 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triệu chứng 1', N'Chẩn đoán 1', N'Điều trị 1', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Thị Lan', N'Nữ', 40, 'HS2', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triá»‡u chá»©ng 1', N'Cháº©n Ä‘oÃ¡n 1', N'Äiá»u trá»‹ 1', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Thá»‹ Lan', N'Ná»¯', 40, 'HS2', '');
 DECLARE @Pid_HS2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS2 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triệu chứng 2', N'Chẩn đoán 2', N'Điều trị 2', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Thị Thu Hà', N'Nữ', 40, 'HS3', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triá»‡u chá»©ng 2', N'Cháº©n Ä‘oÃ¡n 2', N'Äiá»u trá»‹ 2', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Thá»‹ Thu HÃ ', N'Ná»¯', 40, 'HS3', '');
 DECLARE @Pid_HS3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS3 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triệu chứng 3', N'Chẩn đoán 3', N'Điều trị 3', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Ngọc Mai', N'Nữ', 40, 'HS4', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triá»‡u chá»©ng 3', N'Cháº©n Ä‘oÃ¡n 3', N'Äiá»u trá»‹ 3', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Ngá»c Mai', N'Ná»¯', 40, 'HS4', '');
 DECLARE @Pid_HS4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS4 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triệu chứng 4', N'Chẩn đoán 4', N'Điều trị 4', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Thị Bích Ngọc', N'Nữ', 40, 'HS5', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triá»‡u chá»©ng 4', N'Cháº©n Ä‘oÃ¡n 4', N'Äiá»u trá»‹ 4', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© Thá»‹ BÃ­ch Ngá»c', N'Ná»¯', 40, 'HS5', '');
 DECLARE @Pid_HS5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS5 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triệu chứng 5', N'Chẩn đoán 5', N'Điều trị 5', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Thị Yến', N'Nữ', 40, 'HS6', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triá»‡u chá»©ng 5', N'Cháº©n Ä‘oÃ¡n 5', N'Äiá»u trá»‹ 5', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Thá»‹ Yáº¿n', N'Ná»¯', 40, 'HS6', '');
 DECLARE @Pid_HS6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS6 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triệu chứng 6', N'Chẩn đoán 6', N'Điều trị 6', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Thị Phương', N'Nữ', 40, 'HS7', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triá»‡u chá»©ng 6', N'Cháº©n Ä‘oÃ¡n 6', N'Äiá»u trá»‹ 6', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng Thá»‹ PhÆ°Æ¡ng', N'Ná»¯', 40, 'HS7', '');
 DECLARE @Pid_HS7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS7 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triệu chứng 7', N'Chẩn đoán 7', N'Điều trị 7', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Thị Thanh Vân', N'Nữ', 40, 'HS8', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triá»‡u chá»©ng 7', N'Cháº©n Ä‘oÃ¡n 7', N'Äiá»u trá»‹ 7', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ Thá»‹ Thanh VÃ¢n', N'Ná»¯', 40, 'HS8', '');
 DECLARE @Pid_HS8 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS8 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triệu chứng 8', N'Chẩn đoán 8', N'Điều trị 8', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Thị Hồng Nhung', N'Nữ', 40, 'HS9', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triá»‡u chá»©ng 8', N'Cháº©n Ä‘oÃ¡n 8', N'Äiá»u trá»‹ 8', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ Thá»‹ Há»“ng Nhung', N'Ná»¯', 40, 'HS9', '');
 DECLARE @Pid_HS9 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS9 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triệu chứng 9', N'Chẩn đoán 9', N'Điều trị 9', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Dương Thị Kim Anh', N'Nữ', 40, 'HS10', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triá»‡u chá»©ng 9', N'Cháº©n Ä‘oÃ¡n 9', N'Äiá»u trá»‹ 9', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'DÆ°Æ¡ng Thá»‹ Kim Anh', N'Ná»¯', 40, 'HS10', '');
 DECLARE @Pid_HS10 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS10 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triệu chứng 10', N'Chẩn đoán 10', N'Điều trị 10', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Thị Cẩm Tú', N'Nữ', 40, 'HS11', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triá»‡u chá»©ng 10', N'Cháº©n Ä‘oÃ¡n 10', N'Äiá»u trá»‹ 10', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Thá»‹ Cáº©m TÃº', N'Ná»¯', 40, 'HS11', '');
 DECLARE @Pid_HS11 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS11 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triệu chứng 11', N'Chẩn đoán 11', N'Điều trị 11', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Thị Diễm', N'Nữ', 40, 'HS12', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triá»‡u chá»©ng 11', N'Cháº©n Ä‘oÃ¡n 11', N'Äiá»u trá»‹ 11', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh Thá»‹ Diá»…m', N'Ná»¯', 40, 'HS12', '');
 DECLARE @Pid_HS12 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS12 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triệu chứng 12', N'Chẩn đoán 12', N'Điều trị 12', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đinh Thị Hoa', N'Nữ', 40, 'HS13', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triá»‡u chá»©ng 12', N'Cháº©n Ä‘oÃ¡n 12', N'Äiá»u trá»‹ 12', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äinh Thá»‹ Hoa', N'Ná»¯', 40, 'HS13', '');
 DECLARE @Pid_HS13 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS13 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triệu chứng 13', N'Chẩn đoán 13', N'Điều trị 13', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hồ Thị Ngọc Linh', N'Nữ', 40, 'HS14', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triá»‡u chá»©ng 13', N'Cháº©n Ä‘oÃ¡n 13', N'Äiá»u trá»‹ 13', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Há»“ Thá»‹ Ngá»c Linh', N'Ná»¯', 40, 'HS14', '');
 DECLARE @Pid_HS14 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS14 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triệu chứng 14', N'Chẩn đoán 14', N'Điều trị 14', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Thị Quỳnh', N'Nữ', 40, 'HS15', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triá»‡u chá»©ng 14', N'Cháº©n Ä‘oÃ¡n 14', N'Äiá»u trá»‹ 14', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— Thá»‹ Quá»³nh', N'Ná»¯', 40, 'HS15', '');
 DECLARE @Pid_HS15 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS15 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triệu chứng 15', N'Chẩn đoán 15', N'Điều trị 15', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thị Thùy Trang', N'Nữ', 40, 'HS16', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triá»‡u chá»©ng 15', N'Cháº©n Ä‘oÃ¡n 15', N'Äiá»u trá»‹ 15', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thá»‹ ThÃ¹y Trang', N'Ná»¯', 40, 'HS16', '');
 DECLARE @Pid_HS16 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS16 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triệu chứng 16', N'Chẩn đoán 16', N'Điều trị 16', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Thị Bảo Châu', N'Nữ', 40, 'HS17', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triá»‡u chá»©ng 16', N'Cháº©n Ä‘oÃ¡n 16', N'Äiá»u trá»‹ 16', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Thá»‹ Báº£o ChÃ¢u', N'Ná»¯', 40, 'HS17', '');
 DECLARE @Pid_HS17 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS17 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triệu chứng 17', N'Chẩn đoán 17', N'Điều trị 17', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Thị Mỹ Dung', N'Nữ', 40, 'HS18', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triá»‡u chá»©ng 17', N'Cháº©n Ä‘oÃ¡n 17', N'Äiá»u trá»‹ 17', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Thá»‹ Má»¹ Dung', N'Ná»¯', 40, 'HS18', '');
 DECLARE @Pid_HS18 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS18 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triệu chứng 18', N'Chẩn đoán 18', N'Điều trị 18', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Thị Xuân', N'Nữ', 40, 'HS19', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triá»‡u chá»©ng 18', N'Cháº©n Ä‘oÃ¡n 18', N'Äiá»u trá»‹ 18', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Thá»‹ XuÃ¢n', N'Ná»¯', 40, 'HS19', '');
 DECLARE @Pid_HS19 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS19 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triệu chứng 19', N'Chẩn đoán 19', N'Điều trị 19', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Thị Hồng Hạnh', N'Nữ', 40, 'HS20', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triá»‡u chá»©ng 19', N'Cháº©n Ä‘oÃ¡n 19', N'Äiá»u trá»‹ 19', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ Thá»‹ Há»“ng Háº¡nh', N'Ná»¯', 40, 'HS20', '');
 DECLARE @Pid_HS20 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS20 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triệu chứng 20', N'Chẩn đoán 20', N'Điều trị 20', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Văn Hải', N'Nam', 50, 'NT1', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triá»‡u chá»©ng 20', N'Cháº©n Ä‘oÃ¡n 20', N'Äiá»u trá»‹ 20', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n VÄƒn Háº£i', N'Nam', 50, 'NT1', '');
 DECLARE @Pid_NT1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT1 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 1, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Quang Vinh', N'Nam', 50, 'NT2', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 1, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Quang Vinh', N'Nam', 50, 'NT2', '');
 DECLARE @Pid_NT2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT2 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 2, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Đình Khoa', N'Nam', 50, 'NT3', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 2, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª ÄÃ¬nh Khoa', N'Nam', 50, 'NT3', '');
 DECLARE @Pid_NT3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT3 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 3, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Văn Sơn', N'Nam', 50, 'NT4', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 3, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m VÄƒn SÆ¡n', N'Nam', 50, 'NT4', '');
 DECLARE @Pid_NT4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT4 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 4, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Văn Tài', N'Nam', 50, 'NT5', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 4, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ VÄƒn TÃ i', N'Nam', 50, 'NT5', '');
 DECLARE @Pid_NT5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT5 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 5, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Văn Chiến', N'Nam', 50, 'NT6', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 5, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng VÄƒn Chiáº¿n', N'Nam', 50, 'NT6', '');
 DECLARE @Pid_NT6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT6 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 6, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Văn Lâm', N'Nam', 50, 'NT7', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 6, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— VÄƒn LÃ¢m', N'Nam', 50, 'NT7', '');
 DECLARE @Pid_NT7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT7 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 7, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Hữu Nghĩa', N'Nam', 50, 'NT8', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 7, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Há»¯u NghÄ©a', N'Nam', 50, 'NT8', '');
 DECLARE @Pid_NT8 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT8 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 8, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Trọng Nghĩa', N'Nam', 50, 'NT9', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 8, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ Trá»ng NghÄ©a', N'Nam', 50, 'NT9', '');
 DECLARE @Pid_NT9 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT9 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 9, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Văn Bắc', N'Nam', 50, 'NT10', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 9, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ VÄƒn Báº¯c', N'Nam', 50, 'NT10', '');
 DECLARE @Pid_NT10 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT10 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 10, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đinh Văn Minh', N'Nam', 50, 'NT11', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 10, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äinh VÄƒn Minh', N'Nam', 50, 'NT11', '');
 DECLARE @Pid_NT11 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT11 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 11, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hồ Văn Duy', N'Nam', 50, 'NT12', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 11, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Há»“ VÄƒn Duy', N'Nam', 50, 'NT12', '');
 DECLARE @Pid_NT12 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT12 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 12, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Dương Văn Thắng', N'Nam', 50, 'NT13', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 12, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'DÆ°Æ¡ng VÄƒn Tháº¯ng', N'Nam', 50, 'NT13', '');
 DECLARE @Pid_NT13 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT13 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 13, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Văn Quyền', N'Nam', 50, 'NT14', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 13, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i VÄƒn Quyá»n', N'Nam', 50, 'NT14', '');
 DECLARE @Pid_NT14 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT14 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 14, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Văn Hiếu', N'Nam', 50, 'NT15', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 14, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh VÄƒn Hiáº¿u', N'Nam', 50, 'NT15', '');
 DECLARE @Pid_NT15 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT15 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 15, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tạ Văn Lợi', N'Nam', 50, 'NT16', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 15, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Táº¡ VÄƒn Lá»£i', N'Nam', 50, 'NT16', '');
 DECLARE @Pid_NT16 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT16 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 16, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Châu Văn Phát', N'Nam', 50, 'NT17', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 16, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'ChÃ¢u VÄƒn PhÃ¡t', N'Nam', 50, 'NT17', '');
 DECLARE @Pid_NT17 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT17 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 17, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Hữu Toàn', N'Nam', 50, 'NT18', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 17, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Há»¯u ToÃ n', N'Nam', 50, 'NT18', '');
 DECLARE @Pid_NT18 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT18 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 18, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Bá Cường', N'Nam', 50, 'NT19', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 18, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n BÃ¡ CÆ°á»ng', N'Nam', 50, 'NT19', '');
 DECLARE @Pid_NT19 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT19 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 19, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Quang Hưng', N'Nam', 50, 'NT20', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 19, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Quang HÆ°ng', N'Nam', 50, 'NT20', '');
 DECLARE @Pid_NT20 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT20 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 20, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Thế Anh', N'Nam', 50, 'NT21', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 20, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Tháº¿ Anh', N'Nam', 50, 'NT21', '');
 DECLARE @Pid_NT21 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT21 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 21, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Đình Tân', N'Nam', 50, 'NT22', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 21, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ ÄÃ¬nh TÃ¢n', N'Nam', 50, 'NT22', '');
 DECLARE @Pid_NT22 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT22 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 22, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Đức Nam', N'Nam', 50, 'NT23', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 22, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Äá»©c Nam', N'Nam', 50, 'NT23', '');
 DECLARE @Pid_NT23 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT23 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 23, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Quốc Tuấn', N'Nam', 50, 'NT24', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 23, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng Quá»‘c Tuáº¥n', N'Nam', 50, 'NT24', '');
 DECLARE @Pid_NT24 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT24 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 24, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Văn Khải', N'Nam', 50, 'NT25', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 24, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ VÄƒn Kháº£i', N'Nam', 50, 'NT25', '');
 DECLARE @Pid_NT25 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT25 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 25, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cô Văn Khương', N'Nam', 50, 'NT26', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 25, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'CÃ´ VÄƒn KhÆ°Æ¡ng', N'Nam', 50, 'NT26', '');
 DECLARE @Pid_NT26 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT26 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 26, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Đình Lộc', N'Nam', 50, 'NT27', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 26, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n ÄÃ¬nh Lá»™c', N'Nam', 50, 'NT27', '');
 DECLARE @Pid_NT27 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT27 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 27, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Văn Phúc', N'Nam', 50, 'NT28', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 27, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n VÄƒn PhÃºc', N'Nam', 50, 'NT28', '');
 DECLARE @Pid_NT28 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT28 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 28, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Văn Tấn', N'Nam', 50, 'NT29', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 28, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª VÄƒn Táº¥n', N'Nam', 50, 'NT29', '');
 DECLARE @Pid_NT29 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT29 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 29, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Bá Thành', N'Nam', 50, 'NT30', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 29, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m BÃ¡ ThÃ nh', N'Nam', 50, 'NT30', '');
 DECLARE @Pid_NT30 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT30 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 30, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Xuân Hưng', N'Nam', 50, 'NT31', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 30, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ XuÃ¢n HÆ°ng', N'Nam', 50, 'NT31', '');
 DECLARE @Pid_NT31 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT31 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 31, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Văn Được', N'Nam', 50, 'NT32', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 31, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng VÄƒn ÄÆ°á»£c', N'Nam', 50, 'NT32', '');
 DECLARE @Pid_NT32 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT32 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 32, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Văn Sỹ', N'Nam', 50, 'NT33', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 32, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng VÄƒn Sá»¹', N'Nam', 50, 'NT33', '');
 DECLARE @Pid_NT33 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT33 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 33, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Văn Minh Tuấn', N'Nam', 50, 'NT34', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 33, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ VÄƒn Minh Tuáº¥n', N'Nam', 50, 'NT34', '');
 DECLARE @Pid_NT34 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT34 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 34, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Hữu Phúc', N'Nam', 50, 'NT35', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 34, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ Há»¯u PhÃºc', N'Nam', 50, 'NT35', '');
 DECLARE @Pid_NT35 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT35 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 35, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Dương Đình Bách', N'Nam', 50, 'NT36', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 35, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'DÆ°Æ¡ng ÄÃ¬nh BÃ¡ch', N'Nam', 50, 'NT36', '');
 DECLARE @Pid_NT36 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT36 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 36, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Hữu Trọng', N'Nam', 50, 'NT37', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 36, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Há»¯u Trá»ng', N'Nam', 50, 'NT37', '');
 DECLARE @Pid_NT37 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT37 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 37, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Đình Tuấn', N'Nam', 50, 'NT38', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 37, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh ÄÃ¬nh Tuáº¥n', N'Nam', 50, 'NT38', '');
 DECLARE @Pid_NT38 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT38 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 38, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tạ Quang Vinh', N'Nam', 50, 'NT39', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 38, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Táº¡ Quang Vinh', N'Nam', 50, 'NT39', '');
 DECLARE @Pid_NT39 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT39 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 39, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Châu Hoàng Minh', N'Nam', 50, 'NT40', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 39, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'ChÃ¢u HoÃ ng Minh', N'Nam', 50, 'NT40', '');
 DECLARE @Pid_NT40 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT40 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 40, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Thành Sơn', N'Nam', 50, 'NT41', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 40, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n ThÃ nh SÆ¡n', N'Nam', 50, 'NT41', '');
 DECLARE @Pid_NT41 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT41 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 41, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Hữu Đạt', N'Nam', 50, 'NT42', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 41, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Há»¯u Äáº¡t', N'Nam', 50, 'NT42', '');
 DECLARE @Pid_NT42 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT42 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 42, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Trích Ngần', N'Nam', 50, 'NT43', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 42, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª TrÃ­ch Ngáº§n', N'Nam', 50, 'NT43', '');
 DECLARE @Pid_NT43 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT43 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 43, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Văn An', N'Nam', 50, 'NT44', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 43, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m VÄƒn An', N'Nam', 50, 'NT44', '');
 DECLARE @Pid_NT44 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT44 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 44, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Võ Thanh Tùng', N'Nam', 50, 'NT45', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 44, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÃµ Thanh TÃ¹ng', N'Nam', 50, 'NT45', '');
 DECLARE @Pid_NT45 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT45 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 45, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Đình Cường', N'Nam', 50, 'NT46', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 45, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng ÄÃ¬nh CÆ°á»ng', N'Nam', 50, 'NT46', '');
 DECLARE @Pid_NT46 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT46 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 46, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Văn Khánh', N'Nam', 50, 'NT47', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 46, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— VÄƒn KhÃ¡nh', N'Nam', 50, 'NT47', '');
 DECLARE @Pid_NT47 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT47 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 47, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Văn Trung', N'Nam', 50, 'NT48', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 47, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan VÄƒn Trung', N'Nam', 50, 'NT48', '');
 DECLARE @Pid_NT48 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT48 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 48, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Quốc Bảo', N'Nam', 50, 'NT49', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 48, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ Quá»‘c Báº£o', N'Nam', 50, 'NT49', '');
 DECLARE @Pid_NT49 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT49 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 49, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Thanh Phước', N'Nam', 50, 'NT50', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 49, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ Thanh PhÆ°á»›c', N'Nam', 50, 'NT50', '');
 DECLARE @Pid_NT50 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT50 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 50, GETDATE(), 0);
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 50, GETDATE(), 0);
 GO
 
 
@@ -3194,57 +4190,57 @@ USE QuanLyBenhVienDb;
 GO
 
 INSERT INTO [ICD10Protocols] ([ICDCode], [Diagnosis], [TreatmentPlan], [LabTests], [Medicines]) VALUES 
-(N'J01', N'Viêm xoang cấp', N'Uống thuốc theo đơn. Vệ sinh mũi bằng nước muối sinh lý hàng ngày.', N'X-Quang Blondeau - Hirtz, Nội soi Tai Mũi Họng', N'Amoxicillin 500mg, Paracetamol 500mg, Loratadin 10mg'),
-(N'J03', N'Viêm amidan cấp', N'Uống thuốc theo đơn. Súc họng nước muối sinh lý, kiêng đồ lạnh.', N'Xét nghiệm máu cơ bản, Nội soi Tai Mũi Họng', N'Cefuroxim 500mg, Ibuprofen 400mg, Alphachymotrypsin 4,2mg'),
-(N'I10', N'Tăng huyết áp vô căn', N'Duy trì uống thuốc huyết áp hàng ngày. Kiêng ăn mặn, tập thể dục nhẹ nhàng 30p/ngày.', N'Điện tâm đồ (ECG), Sinh hóa máu', N'Amlodipine 5mg, Losartan 50mg'),
-(N'E11', N'Đái tháo đường type 2', N'Tuân thủ nghiêm ngặt chế độ ăn kiêng cho người tiểu đường. Đo đường huyết thường xuyên.', N'Đường huyết lúc đói, HbA1c, Tổng phân tích nước tiểu', N'Metformin 850mg, Gliclazide 30mg'),
-(N'K21', N'Trào ngược dạ dày thực quản (GERD)', N'Uống thuốc theo đơn. Không ăn no trước khi ngủ 3 tiếng. Kê cao gối khi nằm.', N'Nội soi dạ dày tá tràng, Test vi khuẩn HP', N'Omeprazole 20mg, Domperidon 10mg, Phosphalugel 20g'),
-(N'A09', N'Tiêu chảy nhiễm trùng', N'Bù nước và điện giải tích cực. Ăn chín uống sôi, chia nhỏ bữa ăn.', N'Xét nghiệm phân, Xét nghiệm máu cơ bản', N'Oresol, Smecta, Ciprofloxacin 500mg'),
-(N'J18', N'Viêm phổi không đặc hiệu', N'Nghỉ ngơi, uống nhiều nước. Theo dõi nhịp thở và SpO2 thường xuyên.', N'X-Quang ngực thẳng, Công thức máu toàn phần (CBC)', N'Azithromycin 500mg, Paracetamol 500mg, Acetylcysteine 200mg'),
-(N'J45', N'Hen phế quản', N'Tránh các yếu tố khởi phát (bụi, khói, dị nguyên). Sử dụng thuốc cắt cơn khi khó thở.', N'Đo chức năng hô hấp, X-Quang ngực thẳng', N'Salbutamol 100mcg (Xịt), Budesonide/Formoterol 160/4.5mcg'),
-(N'K29', N'Viêm dạ dày cấp', N'Ăn thức ăn mềm, dễ tiêu. Tránh đồ cay nóng, rượu bia. Chia nhỏ bữa ăn.', N'Nội soi dạ dày tá tràng, Test vi khuẩn HP', N'Esomeprazole 40mg, Phosphalugel 20g');
+(N'J01', N'ViÃªm xoang cáº¥p', N'Uá»‘ng thuá»‘c theo Ä‘Æ¡n. Vá»‡ sinh mÅ©i báº±ng nÆ°á»›c muá»‘i sinh lÃ½ hÃ ng ngÃ y.', N'X-Quang Blondeau - Hirtz, Ná»™i soi Tai MÅ©i Há»ng', N'Amoxicillin 500mg, Paracetamol 500mg, Loratadin 10mg'),
+(N'J03', N'ViÃªm amidan cáº¥p', N'Uá»‘ng thuá»‘c theo Ä‘Æ¡n. SÃºc há»ng nÆ°á»›c muá»‘i sinh lÃ½, kiÃªng Ä‘á»“ láº¡nh.', N'XÃ©t nghiá»‡m mÃ¡u cÆ¡ báº£n, Ná»™i soi Tai MÅ©i Há»ng', N'Cefuroxim 500mg, Ibuprofen 400mg, Alphachymotrypsin 4,2mg'),
+(N'I10', N'TÄƒng huyáº¿t Ã¡p vÃ´ cÄƒn', N'Duy trÃ¬ uá»‘ng thuá»‘c huyáº¿t Ã¡p hÃ ng ngÃ y. KiÃªng Äƒn máº·n, táº­p thá»ƒ dá»¥c nháº¹ nhÃ ng 30p/ngÃ y.', N'Äiá»‡n tÃ¢m Ä‘á»“ (ECG), Sinh hÃ³a mÃ¡u', N'Amlodipine 5mg, Losartan 50mg'),
+(N'E11', N'ÄÃ¡i thÃ¡o Ä‘Æ°á»ng type 2', N'TuÃ¢n thá»§ nghiÃªm ngáº·t cháº¿ Ä‘á»™ Äƒn kiÃªng cho ngÆ°á»i tiá»ƒu Ä‘Æ°á»ng. Äo Ä‘Æ°á»ng huyáº¿t thÆ°á»ng xuyÃªn.', N'ÄÆ°á»ng huyáº¿t lÃºc Ä‘Ã³i, HbA1c, Tá»•ng phÃ¢n tÃ­ch nÆ°á»›c tiá»ƒu', N'Metformin 850mg, Gliclazide 30mg'),
+(N'K21', N'TrÃ o ngÆ°á»£c dáº¡ dÃ y thá»±c quáº£n (GERD)', N'Uá»‘ng thuá»‘c theo Ä‘Æ¡n. KhÃ´ng Äƒn no trÆ°á»›c khi ngá»§ 3 tiáº¿ng. KÃª cao gá»‘i khi náº±m.', N'Ná»™i soi dáº¡ dÃ y tÃ¡ trÃ ng, Test vi khuáº©n HP', N'Omeprazole 20mg, Domperidon 10mg, Phosphalugel 20g'),
+(N'A09', N'TiÃªu cháº£y nhiá»…m trÃ¹ng', N'BÃ¹ nÆ°á»›c vÃ  Ä‘iá»‡n giáº£i tÃ­ch cá»±c. Ä‚n chÃ­n uá»‘ng sÃ´i, chia nhá» bá»¯a Äƒn.', N'XÃ©t nghiá»‡m phÃ¢n, XÃ©t nghiá»‡m mÃ¡u cÆ¡ báº£n', N'Oresol, Smecta, Ciprofloxacin 500mg'),
+(N'J18', N'ViÃªm phá»•i khÃ´ng Ä‘áº·c hiá»‡u', N'Nghá»‰ ngÆ¡i, uá»‘ng nhiá»u nÆ°á»›c. Theo dÃµi nhá»‹p thá»Ÿ vÃ  SpO2 thÆ°á»ng xuyÃªn.', N'X-Quang ngá»±c tháº³ng, CÃ´ng thá»©c mÃ¡u toÃ n pháº§n (CBC)', N'Azithromycin 500mg, Paracetamol 500mg, Acetylcysteine 200mg'),
+(N'J45', N'Hen pháº¿ quáº£n', N'TrÃ¡nh cÃ¡c yáº¿u tá»‘ khá»Ÿi phÃ¡t (bá»¥i, khÃ³i, dá»‹ nguyÃªn). Sá»­ dá»¥ng thuá»‘c cáº¯t cÆ¡n khi khÃ³ thá»Ÿ.', N'Äo chá»©c nÄƒng hÃ´ háº¥p, X-Quang ngá»±c tháº³ng', N'Salbutamol 100mcg (Xá»‹t), Budesonide/Formoterol 160/4.5mcg'),
+(N'K29', N'ViÃªm dáº¡ dÃ y cáº¥p', N'Ä‚n thá»©c Äƒn má»m, dá»… tiÃªu. TrÃ¡nh Ä‘á»“ cay nÃ³ng, rÆ°á»£u bia. Chia nhá» bá»¯a Äƒn.', N'Ná»™i soi dáº¡ dÃ y tÃ¡ trÃ ng, Test vi khuáº©n HP', N'Esomeprazole 40mg, Phosphalugel 20g');
 GO
 
--- Thêm tài khoản bệnh nhân demo
+-- ThÃªm tÃ i khoáº£n bá»‡nh nhÃ¢n demo
 INSERT INTO Users (Username, Password, Role, FullName, Email, SDT, PatientCode)
-VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Nguyễn Văn Khánh', 'benhnhan@demo.com', '0900000000', NULL);
+VALUES ('benhnhan_demo', '123456', 'BenhNhan', N'Nguyá»…n VÄƒn KhÃ¡nh', 'benhnhan@demo.com', '0900000000', NULL);
 
 
 
 USE QuanLyBenhVienDb;
 GO
 
--- Bác sĩ phẫu thuật
+-- BÃ¡c sÄ© pháº«u thuáº­t
 INSERT INTO Users (Username, Password, Role, FullName, Email, SDT) VALUES
-('bs.phauthuat1', '123', 'PhauThuat', N'BS. Nguyễn Văn A', 'bs.a@benhvien.com', '0901234567'),
-('bs.phauthuat2', '123', 'PhauThuat', N'BS. Trần Thị B', 'bs.b@benhvien.com', '0901234568'),
-('bs.phauthuat3', '123', 'PhauThuat', N'BS. Lê Văn C', 'bs.c@benhvien.com', '0901234569'),
-('bs.phauthuat4', '123', 'PhauThuat', N'BS. Phạm Thị D', 'bs.d@benhvien.com', '0901234570'),
-('bs.phauthuat5', '123', 'PhauThuat', N'BS. Hoàng Văn E', 'bs.e@benhvien.com', '0901234571');
+('bs.phauthuat1', '123', 'PhauThuat', N'BS. Nguyá»…n VÄƒn A', 'bs.a@benhvien.com', '0901234567'),
+('bs.phauthuat2', '123', 'PhauThuat', N'BS. Tráº§n Thá»‹ B', 'bs.b@benhvien.com', '0901234568'),
+('bs.phauthuat3', '123', 'PhauThuat', N'BS. LÃª VÄƒn C', 'bs.c@benhvien.com', '0901234569'),
+('bs.phauthuat4', '123', 'PhauThuat', N'BS. Pháº¡m Thá»‹ D', 'bs.d@benhvien.com', '0901234570'),
+('bs.phauthuat5', '123', 'PhauThuat', N'BS. HoÃ ng VÄƒn E', 'bs.e@benhvien.com', '0901234571');
 GO
 
--- 20 loại mổ
+-- 20 loáº¡i má»•
 INSERT INTO HospitalFees (FeeCode, FeeName, Category, Price, InsuranceCoverage, Description, IsActive, CreatedAt) VALUES
-('PT001', N'Phẫu thuật ruột thừa nội soi', N'Phẫu thuật', 5000000, 80, N'Cắt ruột thừa bằng phương pháp nội soi', 1, GETDATE()),
-('PT002', N'Phẫu thuật nội soi túi mật', N'Phẫu thuật', 7000000, 80, N'Cắt bỏ túi mật qua nội soi', 1, GETDATE()),
-('PT003', N'Phẫu thuật thoát vị bẹn', N'Phẫu thuật', 4500000, 80, N'Phục hồi thành bụng do thoát vị bẹn', 1, GETDATE()),
-('PT004', N'Phẫu thuật trĩ Longo', N'Phẫu thuật', 8000000, 80, N'Cắt trĩ bằng phương pháp Longo', 1, GETDATE()),
-('PT005', N'Phẫu thuật cắt dạ dày', N'Phẫu thuật', 15000000, 80, N'Cắt bỏ một phần hoặc toàn bộ dạ dày', 1, GETDATE()),
-('PT006', N'Phẫu thuật thay khớp gối', N'Phẫu thuật', 12000000, 80, N'Thay thế khớp gối bị hỏng', 1, GETDATE()),
-('PT007', N'Phẫu thuật thay khớp háng', N'Phẫu thuật', 14000000, 80, N'Thay thế khớp háng bằng khớp nhân tạo', 1, GETDATE()),
-('PT008', N'Phẫu thuật kết hợp xương gãy', N'Phẫu thuật', 6000000, 80, N'Cố định xương gãy bằng đinh, nẹp vít', 1, GETDATE()),
-('PT009', N'Phẫu thuật lấy thai lần 1', N'Phẫu thuật', 5500000, 80, N'Mổ đẻ lần 1', 1, GETDATE()),
-('PT010', N'Phẫu thuật bóc u xơ tử cung', N'Phẫu thuật', 6500000, 80, N'Loại bỏ khối u xơ trong tử cung', 1, GETDATE()),
-('PT011', N'Phẫu thuật cắt tử cung', N'Phẫu thuật', 9000000, 80, N'Cắt bỏ tử cung do bệnh lý', 1, GETDATE()),
-('PT012', N'Phẫu thuật u nang buồng trứng', N'Phẫu thuật', 7500000, 80, N'Bóc tách hoặc cắt bỏ u nang buồng trứng', 1, GETDATE()),
-('PT013', N'Phẫu thuật mộng thịt', N'Phẫu thuật', 1500000, 80, N'Cắt bỏ mộng thịt ở mắt', 1, GETDATE()),
-('PT014', N'Phẫu thuật đục thủy tinh thể (Phaco)', N'Phẫu thuật', 4000000, 80, N'Thay thủy tinh thể nhân tạo', 1, GETDATE()),
-('PT015', N'Phẫu thuật cắt amidan', N'Phẫu thuật', 3500000, 80, N'Cắt bỏ amidan viêm nhiễm', 1, GETDATE()),
-('PT016', N'Phẫu thuật nội soi xoang mũi', N'Phẫu thuật', 8500000, 80, N'Điều trị viêm xoang qua nội soi', 1, GETDATE()),
-('PT017', N'Phẫu thuật nạo VA', N'Phẫu thuật', 2000000, 80, N'Nạo bỏ tổ chức VA bị viêm', 1, GETDATE()),
-('PT018', N'Phẫu thuật vá nhĩ', N'Phẫu thuật', 5000000, 80, N'Vá lại màng nhĩ bị rách', 1, GETDATE()),
-('PT019', N'Phẫu thuật u tuyến giáp', N'Phẫu thuật', 10000000, 80, N'Cắt bỏ một phần hoặc toàn bộ tuyến giáp', 1, GETDATE()),
-('PT020', N'Phẫu thuật bóc u mỡ/u bã đậu', N'Phẫu thuật', 1000000, 80, N'Tiểu phẫu bóc tách khối u lành tính', 1, GETDATE());
+('PT001', N'Pháº«u thuáº­t ruá»™t thá»«a ná»™i soi', N'Pháº«u thuáº­t', 5000000, 80, N'Cáº¯t ruá»™t thá»«a báº±ng phÆ°Æ¡ng phÃ¡p ná»™i soi', 1, GETDATE()),
+('PT002', N'Pháº«u thuáº­t ná»™i soi tÃºi máº­t', N'Pháº«u thuáº­t', 7000000, 80, N'Cáº¯t bá» tÃºi máº­t qua ná»™i soi', 1, GETDATE()),
+('PT003', N'Pháº«u thuáº­t thoÃ¡t vá»‹ báº¹n', N'Pháº«u thuáº­t', 4500000, 80, N'Phá»¥c há»“i thÃ nh bá»¥ng do thoÃ¡t vá»‹ báº¹n', 1, GETDATE()),
+('PT004', N'Pháº«u thuáº­t trÄ© Longo', N'Pháº«u thuáº­t', 8000000, 80, N'Cáº¯t trÄ© báº±ng phÆ°Æ¡ng phÃ¡p Longo', 1, GETDATE()),
+('PT005', N'Pháº«u thuáº­t cáº¯t dáº¡ dÃ y', N'Pháº«u thuáº­t', 15000000, 80, N'Cáº¯t bá» má»™t pháº§n hoáº·c toÃ n bá»™ dáº¡ dÃ y', 1, GETDATE()),
+('PT006', N'Pháº«u thuáº­t thay khá»›p gá»‘i', N'Pháº«u thuáº­t', 12000000, 80, N'Thay tháº¿ khá»›p gá»‘i bá»‹ há»ng', 1, GETDATE()),
+('PT007', N'Pháº«u thuáº­t thay khá»›p hÃ¡ng', N'Pháº«u thuáº­t', 14000000, 80, N'Thay tháº¿ khá»›p hÃ¡ng báº±ng khá»›p nhÃ¢n táº¡o', 1, GETDATE()),
+('PT008', N'Pháº«u thuáº­t káº¿t há»£p xÆ°Æ¡ng gÃ£y', N'Pháº«u thuáº­t', 6000000, 80, N'Cá»‘ Ä‘á»‹nh xÆ°Æ¡ng gÃ£y báº±ng Ä‘inh, náº¹p vÃ­t', 1, GETDATE()),
+('PT009', N'Pháº«u thuáº­t láº¥y thai láº§n 1', N'Pháº«u thuáº­t', 5500000, 80, N'Má»• Ä‘áº» láº§n 1', 1, GETDATE()),
+('PT010', N'Pháº«u thuáº­t bÃ³c u xÆ¡ tá»­ cung', N'Pháº«u thuáº­t', 6500000, 80, N'Loáº¡i bá» khá»‘i u xÆ¡ trong tá»­ cung', 1, GETDATE()),
+('PT011', N'Pháº«u thuáº­t cáº¯t tá»­ cung', N'Pháº«u thuáº­t', 9000000, 80, N'Cáº¯t bá» tá»­ cung do bá»‡nh lÃ½', 1, GETDATE()),
+('PT012', N'Pháº«u thuáº­t u nang buá»“ng trá»©ng', N'Pháº«u thuáº­t', 7500000, 80, N'BÃ³c tÃ¡ch hoáº·c cáº¯t bá» u nang buá»“ng trá»©ng', 1, GETDATE()),
+('PT013', N'Pháº«u thuáº­t má»™ng thá»‹t', N'Pháº«u thuáº­t', 1500000, 80, N'Cáº¯t bá» má»™ng thá»‹t á»Ÿ máº¯t', 1, GETDATE()),
+('PT014', N'Pháº«u thuáº­t Ä‘á»¥c thá»§y tinh thá»ƒ (Phaco)', N'Pháº«u thuáº­t', 4000000, 80, N'Thay thá»§y tinh thá»ƒ nhÃ¢n táº¡o', 1, GETDATE()),
+('PT015', N'Pháº«u thuáº­t cáº¯t amidan', N'Pháº«u thuáº­t', 3500000, 80, N'Cáº¯t bá» amidan viÃªm nhiá»…m', 1, GETDATE()),
+('PT016', N'Pháº«u thuáº­t ná»™i soi xoang mÅ©i', N'Pháº«u thuáº­t', 8500000, 80, N'Äiá»u trá»‹ viÃªm xoang qua ná»™i soi', 1, GETDATE()),
+('PT017', N'Pháº«u thuáº­t náº¡o VA', N'Pháº«u thuáº­t', 2000000, 80, N'Náº¡o bá» tá»• chá»©c VA bá»‹ viÃªm', 1, GETDATE()),
+('PT018', N'Pháº«u thuáº­t vÃ¡ nhÄ©', N'Pháº«u thuáº­t', 5000000, 80, N'VÃ¡ láº¡i mÃ ng nhÄ© bá»‹ rÃ¡ch', 1, GETDATE()),
+('PT019', N'Pháº«u thuáº­t u tuyáº¿n giÃ¡p', N'Pháº«u thuáº­t', 10000000, 80, N'Cáº¯t bá» má»™t pháº§n hoáº·c toÃ n bá»™ tuyáº¿n giÃ¡p', 1, GETDATE()),
+('PT020', N'Pháº«u thuáº­t bÃ³c u má»¡/u bÃ£ Ä‘áº­u', N'Pháº«u thuáº­t', 1000000, 80, N'Tiá»ƒu pháº«u bÃ³c tÃ¡ch khá»‘i u lÃ nh tÃ­nh', 1, GETDATE());
 GO
 
 IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
@@ -4063,377 +5059,377 @@ GO
 
 DELETE FROM Patients;
 
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Minh Tuấn', N'Nam', 28, 'DS1', '');
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Minh Tuáº¥n', N'Nam', 28, 'DS1', '');
 DECLARE @Pid1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Thị Lan', N'Nữ', 35, 'DS2', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid1, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Thá»‹ Lan', N'Ná»¯', 35, 'DS2', '');
 DECLARE @Pid2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Văn Hùng', N'Nam', 42, 'DS3', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid2, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª VÄƒn HÃ¹ng', N'Nam', 42, 'DS3', '');
 DECLARE @Pid3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Thị Hương', N'Nữ', 29, 'DS4', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid3, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Thá»‹ HÆ°Æ¡ng', N'Ná»¯', 29, 'DS4', '');
 DECLARE @Pid4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Văn Đức', N'Nam', 55, 'DS5', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid4, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng VÄƒn Äá»©c', N'Nam', 55, 'DS5', '');
 DECLARE @Pid5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Thị Mai', N'Nữ', 33, 'DS6', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid5, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© Thá»‹ Mai', N'Ná»¯', 33, 'DS6', '');
 DECLARE @Pid6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Quốc Bảo', N'Nam', 47, 'DS7', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid6, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng Quá»‘c Báº£o', N'Nam', 47, 'DS7', '');
 DECLARE @Pid7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Đau đầu', GETDATE(), 1);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Thị Thu Hà', N'Nữ', 38, 'HS1', '');
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid7, N'Äau Ä‘áº§u', GETDATE(), 1);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Thá»‹ Thu HÃ ', N'Ná»¯', 38, 'HS1', '');
 DECLARE @Pid_HS1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS1, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS1 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triệu chứng 1', N'Chẩn đoán 1', N'Điều trị 1', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Thị Bích Ngọc', N'Nữ', 45, 'HS2', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS1, N'Triá»‡u chá»©ng 1', N'Cháº©n Ä‘oÃ¡n 1', N'Äiá»u trá»‹ 1', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Thá»‹ BÃ­ch Ngá»c', N'Ná»¯', 45, 'HS2', '');
 DECLARE @Pid_HS2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS2, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS2 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triệu chứng 2', N'Chẩn đoán 2', N'Điều trị 2', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Thị Kim Dung', N'Nữ', 52, 'HS3', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS2, N'Triá»‡u chá»©ng 2', N'Cháº©n Ä‘oÃ¡n 2', N'Äiá»u trá»‹ 2', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Thá»‹ Kim Dung', N'Ná»¯', 52, 'HS3', '');
 DECLARE @Pid_HS3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS3, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS3 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triệu chứng 3', N'Chẩn đoán 3', N'Điều trị 3', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Thị Lan Anh', N'Nữ', 31, 'HS4', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS3, N'Triá»‡u chá»©ng 3', N'Cháº©n Ä‘oÃ¡n 3', N'Äiá»u trá»‹ 3', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Thá»‹ Lan Anh', N'Ná»¯', 31, 'HS4', '');
 DECLARE @Pid_HS4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS4, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS4 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triệu chứng 4', N'Chẩn đoán 4', N'Điều trị 4', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Thị Minh Trang', N'Nữ', 27, 'HS5', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS4, N'Triá»‡u chá»©ng 4', N'Cháº©n Ä‘oÃ¡n 4', N'Äiá»u trá»‹ 4', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— Thá»‹ Minh Trang', N'Ná»¯', 27, 'HS5', '');
 DECLARE @Pid_HS5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS5, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS5 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triệu chứng 5', N'Chẩn đoán 5', N'Điều trị 5', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Thị Hồng Vân', N'Nữ', 44, 'HS6', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS5, N'Triá»‡u chá»©ng 5', N'Cháº©n Ä‘oÃ¡n 5', N'Äiá»u trá»‹ 5', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© Thá»‹ Há»“ng VÃ¢n', N'Ná»¯', 44, 'HS6', '');
 DECLARE @Pid_HS6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS6, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS6 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triệu chứng 6', N'Chẩn đoán 6', N'Điều trị 6', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Thị Phượng Linh', N'Nữ', 36, 'HS7', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS6, N'Triá»‡u chá»©ng 6', N'Cháº©n Ä‘oÃ¡n 6', N'Äiá»u trá»‹ 6', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n Thá»‹ PhÆ°á»£ng Linh', N'Ná»¯', 36, 'HS7', '');
 DECLARE @Pid_HS7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS7, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS7 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triệu chứng 7', N'Chẩn đoán 7', N'Điều trị 7', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Thị Kiều Oanh', N'Nữ', 49, 'HS8', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS7, N'Triá»‡u chá»©ng 7', N'Cháº©n Ä‘oÃ¡n 7', N'Äiá»u trá»‹ 7', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Thá»‹ Kiá»u Oanh', N'Ná»¯', 49, 'HS8', '');
 DECLARE @Pid_HS8 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS8, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS8 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triệu chứng 8', N'Chẩn đoán 8', N'Điều trị 8', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Thị Hải Yến', N'Nữ', 23, 'HS9', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS8, N'Triá»‡u chá»©ng 8', N'Cháº©n Ä‘oÃ¡n 8', N'Äiá»u trá»‹ 8', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ Thá»‹ Háº£i Yáº¿n', N'Ná»¯', 23, 'HS9', '');
 DECLARE @Pid_HS9 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS9, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS9 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triệu chứng 9', N'Chẩn đoán 9', N'Điều trị 9', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thị Diệu Linh', N'Nữ', 57, 'HS10', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS9, N'Triá»‡u chá»©ng 9', N'Cháº©n Ä‘oÃ¡n 9', N'Äiá»u trá»‹ 9', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thá»‹ Diá»‡u Linh', N'Ná»¯', 57, 'HS10', '');
 DECLARE @Pid_HS10 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS10, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS10 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triệu chứng 10', N'Chẩn đoán 10', N'Điều trị 10', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Thị Thu Hương', N'Nữ', 41, 'HS11', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS10, N'Triá»‡u chá»©ng 10', N'Cháº©n Ä‘oÃ¡n 10', N'Äiá»u trá»‹ 10', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng Thá»‹ Thu HÆ°Æ¡ng', N'Ná»¯', 41, 'HS11', '');
 DECLARE @Pid_HS11 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS11, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS11 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triệu chứng 11', N'Chẩn đoán 11', N'Điều trị 11', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao Thị Thanh Loan', N'Nữ', 34, 'HS12', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS11, N'Triá»‡u chá»©ng 11', N'Cháº©n Ä‘oÃ¡n 11', N'Äiá»u trá»‹ 11', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao Thá»‹ Thanh Loan', N'Ná»¯', 34, 'HS12', '');
 DECLARE @Pid_HS12 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS12, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS12 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triệu chứng 12', N'Chẩn đoán 12', N'Điều trị 12', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hà Thị Ngân', N'Nữ', 26, 'HS13', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS12, N'Triá»‡u chá»©ng 12', N'Cháº©n Ä‘oÃ¡n 12', N'Äiá»u trá»‹ 12', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HÃ  Thá»‹ NgÃ¢n', N'Ná»¯', 26, 'HS13', '');
 DECLARE @Pid_HS13 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS13, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS13 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triệu chứng 13', N'Chẩn đoán 13', N'Điều trị 13', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai Thị Kiều Trang', N'Nữ', 53, 'HS14', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS13, N'Triá»‡u chá»©ng 13', N'Cháº©n Ä‘oÃ¡n 13', N'Äiá»u trá»‹ 13', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai Thá»‹ Kiá»u Trang', N'Ná»¯', 53, 'HS14', '');
 DECLARE @Pid_HS14 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS14, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS14 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triệu chứng 14', N'Chẩn đoán 14', N'Điều trị 14', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lưu Thị Bách Nhạn', N'Nữ', 39, 'HS15', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS14, N'Triá»‡u chá»©ng 14', N'Cháº©n Ä‘oÃ¡n 14', N'Äiá»u trá»‹ 14', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÆ°u Thá»‹ BÃ¡ch Nháº¡n', N'Ná»¯', 39, 'HS15', '');
 DECLARE @Pid_HS15 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS15, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS15 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triệu chứng 15', N'Chẩn đoán 15', N'Điều trị 15', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Dương Thị Hạnh', N'Nữ', 48, 'HS16', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS15, N'Triá»‡u chá»©ng 15', N'Cháº©n Ä‘oÃ¡n 15', N'Äiá»u trá»‹ 15', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'DÆ°Æ¡ng Thá»‹ Háº¡nh', N'Ná»¯', 48, 'HS16', '');
 DECLARE @Pid_HS16 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS16, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS16 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triệu chứng 16', N'Chẩn đoán 16', N'Điều trị 16', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Thị Xuân Mai', N'Nữ', 30, 'HS17', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS16, N'Triá»‡u chá»©ng 16', N'Cháº©n Ä‘oÃ¡n 16', N'Äiá»u trá»‹ 16', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh Thá»‹ XuÃ¢n Mai', N'Ná»¯', 30, 'HS17', '');
 DECLARE @Pid_HS17 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS17, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS17 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triệu chứng 17', N'Chẩn đoán 17', N'Điều trị 17', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tô Thị Hồng Hạnh', N'Nữ', 56, 'HS18', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS17, N'Triá»‡u chá»©ng 17', N'Cháº©n Ä‘oÃ¡n 17', N'Äiá»u trá»‹ 17', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'TÃ´ Thá»‹ Há»“ng Háº¡nh', N'Ná»¯', 56, 'HS18', '');
 DECLARE @Pid_HS18 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS18, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS18 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triệu chứng 18', N'Chẩn đoán 18', N'Điều trị 18', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Ngô Thị Bích Phượng', N'Nữ', 43, 'HS19', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS18, N'Triá»‡u chá»©ng 18', N'Cháº©n Ä‘oÃ¡n 18', N'Äiá»u trá»‹ 18', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'NgÃ´ Thá»‹ BÃ­ch PhÆ°á»£ng', N'Ná»¯', 43, 'HS19', '');
 DECLARE @Pid_HS19 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS19, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS19 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triệu chứng 19', N'Chẩn đoán 19', N'Điều trị 19', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lại Thị Diệu Hiền', N'Nữ', 22, 'HS20', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS19, N'Triá»‡u chá»©ng 19', N'Cháº©n Ä‘oÃ¡n 19', N'Äiá»u trá»‹ 19', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Láº¡i Thá»‹ Diá»‡u Hiá»n', N'Ná»¯', 22, 'HS20', '');
 DECLARE @Pid_HS20 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'Khám định kỳ', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_HS20, N'KhÃ¡m Ä‘á»‹nh ká»³', GETDATE(), 4);
 DECLARE @Aid_HS20 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triệu chứng 20', N'Chẩn đoán 20', N'Điều trị 20', GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Văn Đức', N'Nam', 52, 'NT1', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked) VALUES (@Aid_HS20, N'Triá»‡u chá»©ng 20', N'Cháº©n Ä‘oÃ¡n 20', N'Äiá»u trá»‹ 20', GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n VÄƒn Äá»©c', N'Nam', 52, 'NT1', '');
 DECLARE @Pid_NT1 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT1, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT1 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 1, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Văn Thành', N'Nam', 61, 'NT2', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT1, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 1, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n VÄƒn ThÃ nh', N'Nam', 61, 'NT2', '');
 DECLARE @Pid_NT2 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT2, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT2 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 2, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Quốc Hùng', N'Nam', 48, 'NT3', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT2, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 2, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Quá»‘c HÃ¹ng', N'Nam', 48, 'NT3', '');
 DECLARE @Pid_NT3 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT3, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT3 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 3, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Văn Sơn', N'Nam', 55, 'NT4', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT3, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 3, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m VÄƒn SÆ¡n', N'Nam', 55, 'NT4', '');
 DECLARE @Pid_NT4 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT4, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT4 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 4, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Minh Long', N'Nam', 44, 'NT5', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT4, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 4, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Minh Long', N'Nam', 44, 'NT5', '');
 DECLARE @Pid_NT5 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT5, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT5 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 5, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Xuân Trường', N'Nam', 58, 'NT6', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT5, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 5, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© XuÃ¢n TrÆ°á»ng', N'Nam', 58, 'NT6', '');
 DECLARE @Pid_NT6 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT6, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT6 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 6, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Quang Vinh', N'Nam', 37, 'NT7', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT6, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 6, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng Quang Vinh', N'Nam', 37, 'NT7', '');
 DECLARE @Pid_NT7 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT7, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT7 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 7, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Thành Nam', N'Nam', 63, 'NT8', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT7, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 7, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i ThÃ nh Nam', N'Nam', 63, 'NT8', '');
 DECLARE @Pid_NT8 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT8, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT8 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 8, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Minh Khôi', N'Nam', 41, 'NT9', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT8, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 8, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— Minh KhÃ´i', N'Nam', 41, 'NT9', '');
 DECLARE @Pid_NT9 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT9, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT9 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 9, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Văn Khánh', N'Nam', 56, 'NT10', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT9, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 9, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ VÄƒn KhÃ¡nh', N'Nam', 56, 'NT10', '');
 DECLARE @Pid_NT10 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT10, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT10 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 10, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Xuân Hòa', N'Nam', 49, 'NT11', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT10, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 10, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan XuÃ¢n HÃ²a', N'Nam', 49, 'NT11', '');
 DECLARE @Pid_NT11 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT11, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT11 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 11, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tô Văn Phong', N'Nam', 67, 'NT12', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT11, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 11, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'TÃ´ VÄƒn Phong', N'Nam', 67, 'NT12', '');
 DECLARE @Pid_NT12 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT12, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT12 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 12, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Văn Tâm', N'Nam', 43, 'NT13', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT12, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 12, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh VÄƒn TÃ¢m', N'Nam', 43, 'NT13', '');
 DECLARE @Pid_NT13 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT13, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT13 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 13, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao Đình Bảo', N'Nam', 54, 'NT14', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT13, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 13, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao ÄÃ¬nh Báº£o', N'Nam', 54, 'NT14', '');
 DECLARE @Pid_NT14 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT14, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT14 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 14, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai Văn Quý', N'Nam', 38, 'NT15', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT14, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 14, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai VÄƒn QuÃ½', N'Nam', 38, 'NT15', '');
 DECLARE @Pid_NT15 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT15, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT15 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 15, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Thành Trung', N'Nam', 46, 'NT16', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT15, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 15, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª ThÃ nh Trung', N'Nam', 46, 'NT16', '');
 DECLARE @Pid_NT16 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT16, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT16 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 16, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Hoàng Nam', N'Nam', 59, 'NT17', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT16, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 16, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n HoÃ ng Nam', N'Nam', 59, 'NT17', '');
 DECLARE @Pid_NT17 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT17, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT17 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 17, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Tiến Dũng', N'Nam', 51, 'NT18', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT17, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 17, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m Tiáº¿n DÅ©ng', N'Nam', 51, 'NT18', '');
 DECLARE @Pid_NT18 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT18, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT18 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 18, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Văn Phúc', N'Nam', 64, 'NT19', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT18, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 18, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng VÄƒn PhÃºc', N'Nam', 64, 'NT19', '');
 DECLARE @Pid_NT19 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT19, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT19 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 19, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Văn Thịnh', N'Nam', 47, 'NT20', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT19, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 19, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© VÄƒn Thá»‹nh', N'Nam', 47, 'NT20', '');
 DECLARE @Pid_NT20 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT20, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT20 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 20, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đinh Xuân Hưng', N'Nam', 53, 'NT21', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT20, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 20, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äinh XuÃ¢n HÆ°ng', N'Nam', 53, 'NT21', '');
 DECLARE @Pid_NT21 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT21, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT21 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 21, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Quốc Tuấn', N'Nam', 39, 'NT22', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT21, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 21, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Quá»‘c Tuáº¥n', N'Nam', 39, 'NT22', '');
 DECLARE @Pid_NT22 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT22, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT22 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 22, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Hữu Khánh', N'Nam', 57, 'NT23', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT22, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 22, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— Há»¯u KhÃ¡nh', N'Nam', 57, 'NT23', '');
 DECLARE @Pid_NT23 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT23, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT23 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 23, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Văn Minh', N'Nam', 45, 'NT24', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT23, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 23, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ VÄƒn Minh', N'Nam', 45, 'NT24', '');
 DECLARE @Pid_NT24 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT24, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT24 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 24, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Văn Cường', N'Nam', 60, 'NT25', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT24, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 24, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan VÄƒn CÆ°á»ng', N'Nam', 60, 'NT25', '');
 DECLARE @Pid_NT25 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT25, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT25 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 25, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tô Đình Lắm', N'Nam', 42, 'NT26', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT25, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 25, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'TÃ´ ÄÃ¬nh Láº¯m', N'Nam', 42, 'NT26', '');
 DECLARE @Pid_NT26 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT26, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT26 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 26, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trần Như Quỳnh', N'Nam', 50, 'NT27', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT26, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 26, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Tráº§n NhÆ° Quá»³nh', N'Nam', 50, 'NT27', '');
 DECLARE @Pid_NT27 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT27, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT27 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 27, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Văn Hải', N'Nam', 35, 'NT28', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT27, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 27, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª VÄƒn Háº£i', N'Nam', 35, 'NT28', '');
 DECLARE @Pid_NT28 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT28, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT28 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 28, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Tuấn Kiệt', N'Nam', 66, 'NT29', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT28, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 28, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n Tuáº¥n Kiá»‡t', N'Nam', 66, 'NT29', '');
 DECLARE @Pid_NT29 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT29, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT29 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 29, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Hoàng Sơn', N'Nam', 48, 'NT30', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT29, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 29, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m HoÃ ng SÆ¡n', N'Nam', 48, 'NT30', '');
 DECLARE @Pid_NT30 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT30, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT30 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 30, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Đức Thắng', N'Nam', 53, 'NT31', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT30, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 30, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Äá»©c Tháº¯ng', N'Nam', 53, 'NT31', '');
 DECLARE @Pid_NT31 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT31, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT31 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 31, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Mạnh Cường', N'Nam', 44, 'NT32', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT31, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 31, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© Máº¡nh CÆ°á»ng', N'Nam', 44, 'NT32', '');
 DECLARE @Pid_NT32 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT32, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT32 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 32, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đặng Văn Bình', N'Nam', 61, 'NT33', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT32, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 32, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äáº·ng VÄƒn BÃ¬nh', N'Nam', 61, 'NT33', '');
 DECLARE @Pid_NT33 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT33, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT33 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 33, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Xuân Trung', N'Nam', 37, 'NT34', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT33, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 33, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i XuÃ¢n Trung', N'Nam', 37, 'NT34', '');
 DECLARE @Pid_NT34 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT34, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT34 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 34, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Quốc Việt', N'Nam', 55, 'NT35', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT34, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 34, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— Quá»‘c Viá»‡t', N'Nam', 55, 'NT35', '');
 DECLARE @Pid_NT35 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT35, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT35 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 35, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Như Nhật', N'Nam', 49, 'NT36', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT35, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 35, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ NhÆ° Nháº­t', N'Nam', 49, 'NT36', '');
 DECLARE @Pid_NT36 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT36, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT36 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 36, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thanh Hải', N'Nam', 40, 'NT37', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT36, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 36, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phan Thanh Háº£i', N'Nam', 40, 'NT37', '');
 DECLARE @Pid_NT37 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT37, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT37 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 37, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trịnh Đình Thắng', N'Nam', 63, 'NT38', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT37, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 37, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Trá»‹nh ÄÃ¬nh Tháº¯ng', N'Nam', 63, 'NT38', '');
 DECLARE @Pid_NT38 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT38, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT38 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 38, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao Văn Long', N'Nam', 46, 'NT39', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT38, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 38, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Cao VÄƒn Long', N'Nam', 46, 'NT39', '');
 DECLARE @Pid_NT39 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT39, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT39 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 39, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hà Minh Khôi', N'Nam', 58, 'NT40', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT39, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 39, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HÃ  Minh KhÃ´i', N'Nam', 58, 'NT40', '');
 DECLARE @Pid_NT40 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT40, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT40 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 40, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai Xuân Phú', N'Nam', 52, 'NT41', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT40, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 40, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Mai XuÃ¢n PhÃº', N'Nam', 52, 'NT41', '');
 DECLARE @Pid_NT41 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT41, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT41 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 41, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lê Tuấn Anh', N'Nam', 43, 'NT42', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT41, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 41, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃª Tuáº¥n Anh', N'Nam', 43, 'NT42', '');
 DECLARE @Pid_NT42 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT42, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT42 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 42, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyễn Văn Tùng', N'Nam', 60, 'NT43', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT42, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 42, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Nguyá»…n VÄƒn TÃ¹ng', N'Nam', 60, 'NT43', '');
 DECLARE @Pid_NT43 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT43, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT43 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 43, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Phạm Văn Kiên', N'Nam', 47, 'NT44', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT43, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 43, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Pháº¡m VÄƒn KiÃªn', N'Nam', 47, 'NT44', '');
 DECLARE @Pid_NT44 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT44, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT44 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 44, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Hoàng Tuấn Kha', N'Nam', 54, 'NT45', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT44, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 44, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'HoÃ ng Tuáº¥n Kha', N'Nam', 54, 'NT45', '');
 DECLARE @Pid_NT45 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT45, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT45 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 45, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Vũ Như Phong', N'Nam', 38, 'NT46', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT45, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 45, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'VÅ© NhÆ° Phong', N'Nam', 38, 'NT46', '');
 DECLARE @Pid_NT46 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT46, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT46 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 46, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đinh Hữu Phúc', N'Nam', 65, 'NT47', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT46, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 46, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äinh Há»¯u PhÃºc', N'Nam', 65, 'NT47', '');
 DECLARE @Pid_NT47 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT47, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT47 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 47, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Bùi Tuấn Tú', N'Nam', 41, 'NT48', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT47, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 47, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'BÃ¹i Tuáº¥n TÃº', N'Nam', 41, 'NT48', '');
 DECLARE @Pid_NT48 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT48, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT48 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 1, 48, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Đỗ Văn Thịnh', N'Nam', 56, 'NT49', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT48, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 1, 48, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Äá»— VÄƒn Thá»‹nh', N'Nam', 56, 'NT49', '');
 DECLARE @Pid_NT49 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT49, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT49 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 2, 49, GETDATE(), 0);
-INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'Lý Minh Phú', N'Nam', 50, 'NT50', '');
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT49, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 2, 49, GETDATE(), 0);
+INSERT INTO Patients (FullName, Gender, Age, PatientCode, Allergies) VALUES (N'LÃ½ Minh PhÃº', N'Nam', 50, 'NT50', '');
 DECLARE @Pid_NT50 INT = SCOPE_IDENTITY();
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cấp cứu', GETDATE(), 4);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Pid_NT50, N'Cáº¥p cá»©u', GETDATE(), 4);
 DECLARE @Aid_NT50 INT = SCOPE_IDENTITY();
-INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triệu chứng nặng', N'Nhập viện', N'Theo dõi', GETDATE(), 3, 50, GETDATE(), 0);
+INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, AdmissionDate, DepartmentId, BedNumber, CreatedAt, IsLocked) VALUES (@Aid_NT50, N'Triá»‡u chá»©ng náº·ng', N'Nháº­p viá»‡n', N'Theo dÃµi', GETDATE(), 3, 50, GETDATE(), 0);
 GO
 
 IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
@@ -4968,54 +5964,54 @@ COMMIT;
 GO
 
 
--- Thêm tài khoản bệnh nhân demo
+-- ThÃªm tÃ i khoáº£n bá»‡nh nhÃ¢n demo
 INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
 VALUES
-('benhnhan_demo', '123456', N'Nguyễn Văn Khánh', 'BenhNhan', 'bn.demo@benhvien.com', '0999888777', NULL);
+('benhnhan_demo', '123456', N'Nguyá»…n VÄƒn KhÃ¡nh', 'BenhNhan', 'bn.demo@benhvien.com', '0999888777', NULL);
 GO
 
--- Thêm 10 tài khoản bệnh nhân mẫu
+-- ThÃªm 10 tÃ i khoáº£n bá»‡nh nhÃ¢n máº«u
 INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
 VALUES
-('benhnhan_01', '123456', N'Lê Thị Hương', 'BenhNhan', 'huong.lt@gmail.com', '0912345671', 'BN1297'),
-('benhnhan_02', '123456', N'Trần Đình Trọng', 'BenhNhan', 'trong.td@gmail.com', '0912345672', 'BN1298'),
-('benhnhan_03', '123456', N'Phạm Thu Hà', 'BenhNhan', 'ha.pt@gmail.com', '0912345673', 'BN1299'),
-('benhnhan_04', '123456', N'Nguyễn Văn Toàn', 'BenhNhan', 'toan.nv@gmail.com', '0912345674', 'BN1300'),
-('benhnhan_05', '123456', N'Vũ Hoàng Long', 'BenhNhan', 'long.vh@gmail.com', '0912345675', 'BN1301'),
-('benhnhan_06', '123456', N'Đặng Phương Nam', 'BenhNhan', 'nam.dp@gmail.com', '0912345676', 'BN1302'),
-('benhnhan_07', '123456', N'Bùi Thị Xuân', 'BenhNhan', 'xuan.bt@gmail.com', '0912345677', 'BN1303'),
-('benhnhan_08', '123456', N'Hồ Quang Hiếu', 'BenhNhan', 'hieu.hq@gmail.com', '0912345678', 'BN1304'),
-('benhnhan_09', '123456', N'Ngô Thanh Vân', 'BenhNhan', 'van.nt@gmail.com', '0912345679', 'BN1305'),
-('benhnhan_10', '123456', N'Lê Minh Tuấn', 'BenhNhan', 'tuan.lm@gmail.com', '0912345680', 'BN1306');
+('benhnhan_01', '123456', N'LÃª Thá»‹ HÆ°Æ¡ng', 'BenhNhan', 'huong.lt@gmail.com', '0912345671', 'BN1297'),
+('benhnhan_02', '123456', N'Tráº§n ÄÃ¬nh Trá»ng', 'BenhNhan', 'trong.td@gmail.com', '0912345672', 'BN1298'),
+('benhnhan_03', '123456', N'Pháº¡m Thu HÃ ', 'BenhNhan', 'ha.pt@gmail.com', '0912345673', 'BN1299'),
+('benhnhan_04', '123456', N'Nguyá»…n VÄƒn ToÃ n', 'BenhNhan', 'toan.nv@gmail.com', '0912345674', 'BN1300'),
+('benhnhan_05', '123456', N'VÅ© HoÃ ng Long', 'BenhNhan', 'long.vh@gmail.com', '0912345675', 'BN1301'),
+('benhnhan_06', '123456', N'Äáº·ng PhÆ°Æ¡ng Nam', 'BenhNhan', 'nam.dp@gmail.com', '0912345676', 'BN1302'),
+('benhnhan_07', '123456', N'BÃ¹i Thá»‹ XuÃ¢n', 'BenhNhan', 'xuan.bt@gmail.com', '0912345677', 'BN1303'),
+('benhnhan_08', '123456', N'Há»“ Quang Hiáº¿u', 'BenhNhan', 'hieu.hq@gmail.com', '0912345678', 'BN1304'),
+('benhnhan_09', '123456', N'NgÃ´ Thanh VÃ¢n', 'BenhNhan', 'van.nt@gmail.com', '0912345679', 'BN1305'),
+('benhnhan_10', '123456', N'LÃª Minh Tuáº¥n', 'BenhNhan', 'tuan.lm@gmail.com', '0912345680', 'BN1306');
 GO
 
--- Thêm 20 tài khoản bệnh nhân nữa
+-- ThÃªm 20 tÃ i khoáº£n bá»‡nh nhÃ¢n ná»¯a
 INSERT INTO Users (Username, Password, FullName, Role, Email, SDT, PatientCode)
 VALUES
-('benhnhan_11', '123456', N'Nguyễn Thị Lan', 'BenhNhan', 'lan.nt@gmail.com', '0912345681', 'BN1307'),
-('benhnhan_12', '123456', N'Trần Văn Hùng', 'BenhNhan', 'hung.tv@gmail.com', '0912345682', 'BN1308'),
-('benhnhan_13', '123456', N'Lê Thị Phương', 'BenhNhan', 'phuong.lt@gmail.com', '0912345683', 'BN1309'),
-('benhnhan_14', '123456', N'Phạm Quốc Bảo', 'BenhNhan', 'bao.pq@gmail.com', '0912345684', 'BN1310'),
-('benhnhan_15', '123456', N'Hoàng Thị Thu', 'BenhNhan', 'thu.ht@gmail.com', '0912345685', 'BN1311'),
-('benhnhan_16', '123456', N'Vũ Đức Mạnh', 'BenhNhan', 'manh.vd@gmail.com', '0912345686', 'BN1312'),
-('benhnhan_17', '123456', N'Đinh Thị Ngọc', 'BenhNhan', 'ngoc.dt@gmail.com', '0912345687', 'BN1313'),
-('benhnhan_18', '123456', N'Bùi Văn Thắng', 'BenhNhan', 'thang.bv@gmail.com', '0912345688', 'BN1314'),
-('benhnhan_19', '123456', N'Đỗ Thị Mai', 'BenhNhan', 'mai.dt@gmail.com', '0912345689', 'BN1315'),
-('benhnhan_20', '123456', N'Lưu Thị Hoa', 'BenhNhan', 'hoa.lt@gmail.com', '0912345690', 'BN1316'),
-('benhnhan_21', '123456', N'Dương Văn Tùng', 'BenhNhan', 'tung.dv@gmail.com', '0912345691', 'BN1317'),
-('benhnhan_22', '123456', N'Phan Thị Linh', 'BenhNhan', 'linh.pt@gmail.com', '0912345692', 'BN1318'),
-('benhnhan_23', '123456', N'Tô Văn Khoa', 'BenhNhan', 'khoa.tv@gmail.com', '0912345693', 'BN1319'),
-('benhnhan_24', '123456', N'Lý Thị Bích', 'BenhNhan', 'bich.lt@gmail.com', '0912345694', 'BN1320'),
-('benhnhan_25', '123456', N'Trịnh Văn Nam', 'BenhNhan', 'nam.tv@gmail.com', '0912345695', 'BN1321'),
-('benhnhan_26', '123456', N'Cao Thị Thanh', 'BenhNhan', 'thanh.ct@gmail.com', '0912345696', 'BN1322'),
-('benhnhan_27', '123456', N'Hà Văn Dũng', 'BenhNhan', 'dung.hv@gmail.com', '0912345697', 'BN1323'),
-('benhnhan_28', '123456', N'Đặng Thị Quỳnh', 'BenhNhan', 'quynh.dt@gmail.com', '0912345698', 'BN1324'),
-('benhnhan_29', '123456', N'Mai Văn Phúc', 'BenhNhan', 'phuc.mv@gmail.com', '0912345699', 'BN1325'),
-('benhnhan_30', '123456', N'Lê Thị Diệu', 'BenhNhan', 'dieu.lt@gmail.com', '0912345700', 'BN1326');
+('benhnhan_11', '123456', N'Nguyá»…n Thá»‹ Lan', 'BenhNhan', 'lan.nt@gmail.com', '0912345681', 'BN1307'),
+('benhnhan_12', '123456', N'Tráº§n VÄƒn HÃ¹ng', 'BenhNhan', 'hung.tv@gmail.com', '0912345682', 'BN1308'),
+('benhnhan_13', '123456', N'LÃª Thá»‹ PhÆ°Æ¡ng', 'BenhNhan', 'phuong.lt@gmail.com', '0912345683', 'BN1309'),
+('benhnhan_14', '123456', N'Pháº¡m Quá»‘c Báº£o', 'BenhNhan', 'bao.pq@gmail.com', '0912345684', 'BN1310'),
+('benhnhan_15', '123456', N'HoÃ ng Thá»‹ Thu', 'BenhNhan', 'thu.ht@gmail.com', '0912345685', 'BN1311'),
+('benhnhan_16', '123456', N'VÅ© Äá»©c Máº¡nh', 'BenhNhan', 'manh.vd@gmail.com', '0912345686', 'BN1312'),
+('benhnhan_17', '123456', N'Äinh Thá»‹ Ngá»c', 'BenhNhan', 'ngoc.dt@gmail.com', '0912345687', 'BN1313'),
+('benhnhan_18', '123456', N'BÃ¹i VÄƒn Tháº¯ng', 'BenhNhan', 'thang.bv@gmail.com', '0912345688', 'BN1314'),
+('benhnhan_19', '123456', N'Äá»— Thá»‹ Mai', 'BenhNhan', 'mai.dt@gmail.com', '0912345689', 'BN1315'),
+('benhnhan_20', '123456', N'LÆ°u Thá»‹ Hoa', 'BenhNhan', 'hoa.lt@gmail.com', '0912345690', 'BN1316'),
+('benhnhan_21', '123456', N'DÆ°Æ¡ng VÄƒn TÃ¹ng', 'BenhNhan', 'tung.dv@gmail.com', '0912345691', 'BN1317'),
+('benhnhan_22', '123456', N'Phan Thá»‹ Linh', 'BenhNhan', 'linh.pt@gmail.com', '0912345692', 'BN1318'),
+('benhnhan_23', '123456', N'TÃ´ VÄƒn Khoa', 'BenhNhan', 'khoa.tv@gmail.com', '0912345693', 'BN1319'),
+('benhnhan_24', '123456', N'LÃ½ Thá»‹ BÃ­ch', 'BenhNhan', 'bich.lt@gmail.com', '0912345694', 'BN1320'),
+('benhnhan_25', '123456', N'Trá»‹nh VÄƒn Nam', 'BenhNhan', 'nam.tv@gmail.com', '0912345695', 'BN1321'),
+('benhnhan_26', '123456', N'Cao Thá»‹ Thanh', 'BenhNhan', 'thanh.ct@gmail.com', '0912345696', 'BN1322'),
+('benhnhan_27', '123456', N'HÃ  VÄƒn DÅ©ng', 'BenhNhan', 'dung.hv@gmail.com', '0912345697', 'BN1323'),
+('benhnhan_28', '123456', N'Äáº·ng Thá»‹ Quá»³nh', 'BenhNhan', 'quynh.dt@gmail.com', '0912345698', 'BN1324'),
+('benhnhan_29', '123456', N'Mai VÄƒn PhÃºc', 'BenhNhan', 'phuc.mv@gmail.com', '0912345699', 'BN1325'),
+('benhnhan_30', '123456', N'LÃª Thá»‹ Diá»‡u', 'BenhNhan', 'dieu.lt@gmail.com', '0912345700', 'BN1326');
 GO
 
 -- ==========================================
--- SCRIPT THÊM 20 BỆNH NHÂN TÁI KHÁM VÀ TÀI KHOẢN
+-- SCRIPT THÃŠM 20 Bá»†NH NHÃ‚N TÃI KHÃM VÃ€ TÃ€I KHOáº¢N
 -- ==========================================
 DECLARE @i INT = 1;
 DECLARE @NewPatientId INT;
@@ -5025,29 +6021,29 @@ DECLARE @FullName NVARCHAR(100);
 WHILE @i <= 20
 BEGIN
     SET @PatientCode = 'TK' + CAST(@i + 100 AS NVARCHAR(10));
-    SET @FullName = N'Bệnh nhân tái khám ' + CAST(@i AS NVARCHAR(10));
+    SET @FullName = N'Bá»‡nh nhÃ¢n tÃ¡i khÃ¡m ' + CAST(@i AS NVARCHAR(10));
     
-    -- Thêm tài khoản đăng nhập (Role = 'BenhNhan')
+    -- ThÃªm tÃ i khoáº£n Ä‘Äƒng nháº­p (Role = 'BenhNhan')
     INSERT INTO [Users] ([Username], [Password], [Role], [FullName], [Email], [SDT], [PatientCode])
     VALUES (@PatientCode, '123456', 'BenhNhan', @FullName, @PatientCode + '@benhvien.vn', '0900000' + CAST((100+@i) AS NVARCHAR(3)), @PatientCode);
     
-    -- Thêm thông tin bệnh nhân
+    -- ThÃªm thÃ´ng tin bá»‡nh nhÃ¢n
     INSERT INTO [Patients] ([FullName], [Gender], [Age], [PatientCode], [CCCD], [Allergies])
-    VALUES (@FullName, CASE WHEN @i % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 25 + @i, @PatientCode, '00109900' + CAST((100+@i) AS NVARCHAR(3)), '');
+    VALUES (@FullName, CASE WHEN @i % 2 = 0 THEN N'Ná»¯' ELSE N'Nam' END, 25 + @i, @PatientCode, '00109900' + CAST((100+@i) AS NVARCHAR(3)), '');
     
     SET @NewPatientId = SCOPE_IDENTITY();
     
-    -- Thêm lịch hẹn (Status = 8 nghĩa là Hẹn tái khám)
-    -- Ngày tái khám phân bổ quanh ngày 05/06/2026
+    -- ThÃªm lá»‹ch háº¹n (Status = 8 nghÄ©a lÃ  Háº¹n tÃ¡i khÃ¡m)
+    -- NgÃ y tÃ¡i khÃ¡m phÃ¢n bá»• quanh ngÃ y 05/06/2026
     INSERT INTO [Appointments] ([PatientId], [AppointmentTime], [Reason], [Status])
-    VALUES (@NewPatientId, DATEADD(day, (@i % 7) - 3, '2026-06-05 08:30:00'), N'Tái khám sau phẫu thuật / điều trị', 8);
+    VALUES (@NewPatientId, DATEADD(day, (@i % 7) - 3, '2026-06-05 08:30:00'), N'TÃ¡i khÃ¡m sau pháº«u thuáº­t / Ä‘iá»u trá»‹', 8);
     
     SET @i = @i + 1;
 END
 GO
 
 -- =============================================
--- Thêm dữ liệu 27 bệnh nhân khám trong tháng 6/2026
+-- ThÃªm dá»¯ liá»‡u 27 bá»‡nh nhÃ¢n khÃ¡m trong thÃ¡ng 6/2026
 -- =============================================
 USE QuanLyBenhVienDb;
 GO
@@ -5062,40 +6058,40 @@ WHILE @i <= 27
 BEGIN
     -- 1. Insert Patient
     INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-    VALUES (N'Bệnh nhân tháng 6 số ' + CAST(@i AS NVARCHAR), 
-            CASE WHEN @i % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+    VALUES (N'Bá»‡nh nhÃ¢n thÃ¡ng 6 sá»‘ ' + CAST(@i AS NVARCHAR), 
+            CASE WHEN @i % 2 = 0 THEN N'Ná»¯' ELSE N'Nam' END, 
             20 + (@i % 40), 
             N'BN062026_' + CAST(@i AS NVARCHAR), 
             '001080000' + RIGHT('000' + CAST(@i AS NVARCHAR), 3));
     
     SET @PatientId = SCOPE_IDENTITY();
 
-    -- 2. Insert Appointment (Tháng 6/2026, Status 5 = Hoàn thành)
+    -- 2. Insert Appointment (ThÃ¡ng 6/2026, Status 5 = HoÃ n thÃ nh)
     INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status)
-    VALUES (@PatientId, N'Khám sức khỏe tổng quát tháng 6', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 5);
+    VALUES (@PatientId, N'KhÃ¡m sá»©c khá»e tá»•ng quÃ¡t thÃ¡ng 6', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 5);
 
     SET @AppointmentId = SCOPE_IDENTITY();
 
     -- 3. Insert MedicalRecord
     INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, CreatedAt, IsLocked)
-    VALUES (@AppointmentId, N'Mệt mỏi, nhức đầu', 
-            CASE WHEN @i % 3 = 0 THEN N'Cảm cúm' WHEN @i % 3 = 1 THEN N'Viêm họng' ELSE N'Suy nhược cơ thể' END, 
-            N'Kê đơn thuốc, nghỉ ngơi', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 1);
+    VALUES (@AppointmentId, N'Má»‡t má»i, nhá»©c Ä‘áº§u', 
+            CASE WHEN @i % 3 = 0 THEN N'Cáº£m cÃºm' WHEN @i % 3 = 1 THEN N'ViÃªm há»ng' ELSE N'Suy nhÆ°á»£c cÆ¡ thá»ƒ' END, 
+            N'KÃª Ä‘Æ¡n thuá»‘c, nghá»‰ ngÆ¡i', DATEFROMPARTS(2026, 6, (@i % 28) + 1), 1);
             
     SET @MedicalRecordId = SCOPE_IDENTITY();
 
     -- 4. Insert Prescription
     INSERT INTO Prescriptions (MedicalRecordId, CreatedAt, Status)
-    VALUES (@MedicalRecordId, DATEFROMPARTS(2026, 6, (@i % 28) + 1), N'Đã kê đơn');
+    VALUES (@MedicalRecordId, DATEFROMPARTS(2026, 6, (@i % 28) + 1), N'ÄÃ£ kÃª Ä‘Æ¡n');
     
     SET @PrescriptionId = SCOPE_IDENTITY();
 
     -- 5. Insert PrescriptionDetails (doanh thu)
     INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price)
-    VALUES (@PrescriptionId, N'Paracetamol 500mg', 10, N'Viên', N'Ngày 2 lần', 5000);
+    VALUES (@PrescriptionId, N'Paracetamol 500mg', 10, N'ViÃªn', N'NgÃ y 2 láº§n', 5000);
     
     INSERT INTO PrescriptionDetails (PrescriptionId, MedicineName, Quantity, Unit, DosageInstruction, Price)
-    VALUES (@PrescriptionId, N'Vitamin C 500mg', 10, N'Viên', N'Ngày 2 lần', 3000);
+    VALUES (@PrescriptionId, N'Vitamin C 500mg', 10, N'ViÃªn', N'NgÃ y 2 láº§n', 3000);
 
     SET @i = @i + 1;
 END
@@ -5103,7 +6099,7 @@ GO
 
 
 -- =============================================
--- Thêm dữ liệu 23 tiếp đón mẫu cho mục Quản Lý Tiếp Đón
+-- ThÃªm dá»¯ liá»‡u 23 tiáº¿p Ä‘Ã³n máº«u cho má»¥c Quáº£n LÃ½ Tiáº¿p ÄÃ³n
 -- =============================================
 USE QuanLyBenhVienDb;
 GO
@@ -5114,34 +6110,34 @@ DECLARE @Today DATETIME = GETDATE();
 
 WHILE @r <= 23
 BEGIN
-    -- Tạo bệnh nhân mới cho tiếp đón
+    -- Táº¡o bá»‡nh nhÃ¢n má»›i cho tiáº¿p Ä‘Ã³n
     INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-    VALUES (N'Bệnh nhân tiếp đón ' + CAST(@r AS NVARCHAR), 
-            CASE WHEN @r % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+    VALUES (N'Bá»‡nh nhÃ¢n tiáº¿p Ä‘Ã³n ' + CAST(@r AS NVARCHAR), 
+            CASE WHEN @r % 2 = 0 THEN N'Ná»¯' ELSE N'Nam' END, 
             20 + (@r % 40), 
             N'TD_' + FORMAT(@Today, 'yyyyMMdd') + '_' + CAST(@r AS NVARCHAR), 
             '001080000' + RIGHT('000' + CAST(@r AS NVARCHAR), 3));
     
     SET @RPatientId = SCOPE_IDENTITY();
 
-    -- Thêm vào Receptions
+    -- ThÃªm vÃ o Receptions
     INSERT INTO Receptions (ReceptionCode, PatientId, Department, Priority, Status, QueueNumber, Reason, CheckInTime, CheckOutTime)
     VALUES (
         N'TD' + FORMAT(@Today, 'yyyyMMdd') + RIGHT('000' + CAST(@r AS NVARCHAR), 3),
         @RPatientId,
         CASE WHEN @r % 4 = 0 THEN N'Khoa Nhi' 
-             WHEN @r % 4 = 1 THEN N'Khoa Sản' 
-             WHEN @r % 4 = 2 THEN N'Khoa Cấp Cứu' 
-             ELSE N'Khoa Nội Tổng Hợp' END,
-        CASE WHEN @r % 5 = 0 THEN N'Cấp cứu' 
-             WHEN @r % 3 = 0 THEN N'Ưu tiên' 
-             ELSE N'Bình thường' END,
-        CASE WHEN @r <= 8 THEN N'Đã khám' 
-             WHEN @r <= 12 THEN N'Đang khám' 
-             ELSE N'Đang chờ' END,
+             WHEN @r % 4 = 1 THEN N'Khoa Sáº£n' 
+             WHEN @r % 4 = 2 THEN N'Khoa Cáº¥p Cá»©u' 
+             ELSE N'Khoa Ná»™i Tá»•ng Há»£p' END,
+        CASE WHEN @r % 5 = 0 THEN N'Cáº¥p cá»©u' 
+             WHEN @r % 3 = 0 THEN N'Æ¯u tiÃªn' 
+             ELSE N'BÃ¬nh thÆ°á»ng' END,
+        CASE WHEN @r <= 8 THEN N'ÄÃ£ khÃ¡m' 
+             WHEN @r <= 12 THEN N'Äang khÃ¡m' 
+             ELSE N'Äang chá»' END,
         @r,
-        CASE WHEN @r % 2 = 0 THEN N'Đau bụng, buồn nôn' ELSE N'Sốt cao, ho khan' END,
-        DATEADD(MINUTE, -(@r * 15), @Today), -- Lùi dần thời gian để có giờ đến khác nhau
+        CASE WHEN @r % 2 = 0 THEN N'Äau bá»¥ng, buá»“n nÃ´n' ELSE N'Sá»‘t cao, ho khan' END,
+        DATEADD(MINUTE, -(@r * 15), @Today), -- LÃ¹i dáº§n thá»i gian Ä‘á»ƒ cÃ³ giá» Ä‘áº¿n khÃ¡c nhau
         CASE WHEN @r <= 8 THEN DATEADD(MINUTE, -(@r * 15) + 30, @Today) ELSE NULL END
     );
 
@@ -5151,7 +6147,7 @@ GO
 
 
 -- =============================================
--- Thêm dữ liệu 26 yêu cầu Chẩn đoán hình ảnh
+-- ThÃªm dá»¯ liá»‡u 26 yÃªu cáº§u Cháº©n Ä‘oÃ¡n hÃ¬nh áº£nh
 -- =============================================
 USE QuanLyBenhVienDb;
 GO
@@ -5162,34 +6158,34 @@ DECLARE @Now DATETIME = GETDATE();
 
 WHILE @iCDHA <= 26
 BEGIN
-    -- Tạo bệnh nhân mới cho độc lập
+    -- Táº¡o bá»‡nh nhÃ¢n má»›i cho Ä‘á»™c láº­p
     INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-    VALUES (N'Bệnh nhân CĐHA ' + CAST(@iCDHA AS NVARCHAR), 
-            CASE WHEN @iCDHA % 2 = 0 THEN N'Nữ' ELSE N'Nam' END, 
+    VALUES (N'Bá»‡nh nhÃ¢n CÄHA ' + CAST(@iCDHA AS NVARCHAR), 
+            CASE WHEN @iCDHA % 2 = 0 THEN N'Ná»¯' ELSE N'Nam' END, 
             25 + (@iCDHA % 30), 
             N'CDHA_BN_' + CAST(@iCDHA AS NVARCHAR), 
             '001080000' + RIGHT('000' + CAST(@iCDHA AS NVARCHAR), 3));
     
     SET @CDHAPatientId = SCOPE_IDENTITY();
 
-    -- Thêm vào DiagnosticImages
+    -- ThÃªm vÃ o DiagnosticImages
     INSERT INTO DiagnosticImages (RequestCode, PatientId, ImageType, BodyPart, RequestedBy, Result, Conclusion, Status, RequestDate, CompletedDate)
     VALUES (
         N'CDHA' + FORMAT(@Now, 'yyyyMMdd') + RIGHT('000' + CAST(@iCDHA AS NVARCHAR), 3),
         @CDHAPatientId,
         CASE WHEN @iCDHA % 4 = 0 THEN N'X-Quang'
-             WHEN @iCDHA % 4 = 1 THEN N'Siêu âm'
+             WHEN @iCDHA % 4 = 1 THEN N'SiÃªu Ã¢m'
              WHEN @iCDHA % 4 = 2 THEN N'CT Scanner'
              ELSE N'MRI' END,
-        CASE WHEN @iCDHA % 3 = 0 THEN N'Ngực'
-             WHEN @iCDHA % 3 = 1 THEN N'Bụng'
-             ELSE N'Sọ não' END,
-        CASE WHEN @iCDHA % 2 = 0 THEN N'BS. Nguyễn Văn A' ELSE N'BS. Trần Thị B' END,
-        CASE WHEN @iCDHA <= 12 THEN N'Hình ảnh bình thường, các chỉ số trong giới hạn' ELSE N'' END,
-        CASE WHEN @iCDHA <= 12 THEN N'Không phát hiện bất thường' ELSE N'' END,
-        CASE WHEN @iCDHA <= 12 THEN N'Có kết quả'
-             WHEN @iCDHA <= 18 THEN N'Đang chụp'
-             ELSE N'Chờ chụp' END,
+        CASE WHEN @iCDHA % 3 = 0 THEN N'Ngá»±c'
+             WHEN @iCDHA % 3 = 1 THEN N'Bá»¥ng'
+             ELSE N'Sá» nÃ£o' END,
+        CASE WHEN @iCDHA % 2 = 0 THEN N'BS. Nguyá»…n VÄƒn A' ELSE N'BS. Tráº§n Thá»‹ B' END,
+        CASE WHEN @iCDHA <= 12 THEN N'HÃ¬nh áº£nh bÃ¬nh thÆ°á»ng, cÃ¡c chá»‰ sá»‘ trong giá»›i háº¡n' ELSE N'' END,
+        CASE WHEN @iCDHA <= 12 THEN N'KhÃ´ng phÃ¡t hiá»‡n báº¥t thÆ°á»ng' ELSE N'' END,
+        CASE WHEN @iCDHA <= 12 THEN N'CÃ³ káº¿t quáº£'
+             WHEN @iCDHA <= 18 THEN N'Äang chá»¥p'
+             ELSE N'Chá» chá»¥p' END,
         DATEADD(MINUTE, -(@iCDHA * 30), @Now),
         CASE WHEN @iCDHA <= 12 THEN DATEADD(MINUTE, -(@iCDHA * 30) + 45, @Now) ELSE NULL END
     );
@@ -5201,7 +6197,7 @@ GO
 
 
 -- ==========================================
--- SCRIPT THÊM DỮ LIỆU CẢNH BÁO EWS (SINH LIỆU & XÉT NGHIỆM)
+-- SCRIPT THÃŠM Dá»® LIá»†U Cáº¢NH BÃO EWS (SINH LIá»†U & XÃ‰T NGHIá»†M)
 -- ==========================================
 USE QuanLyBenhVienDb;
 GO
@@ -5211,109 +6207,109 @@ DECLARE @App1Id INT, @App2Id INT, @App3Id INT;
 DECLARE @MedRec1Id INT, @MedRec2Id INT, @MedRec3Id INT;
 DECLARE @Now DATETIME2 = GETDATE();
 
--- 1. Bệnh nhân 1: Trần Anh Tú (Code Blue)
+-- 1. Bá»‡nh nhÃ¢n 1: Tráº§n Anh TÃº (Code Blue)
 INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-VALUES (N'Trần Anh Tú', N'Nam', 65, N'EWS_001', '001099000101');
+VALUES (N'Tráº§n Anh TÃº', N'Nam', 65, N'EWS_001', '001099000101');
 SET @Patient1Id = SCOPE_IDENTITY();
 
--- 2. Bệnh nhân 2: Lê Thị Mai (Cảnh báo nhiệt độ)
+-- 2. Bá»‡nh nhÃ¢n 2: LÃª Thá»‹ Mai (Cáº£nh bÃ¡o nhiá»‡t Ä‘á»™)
 INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-VALUES (N'Lê Thị Mai', N'Nữ', 42, N'EWS_002', '001099000102');
+VALUES (N'LÃª Thá»‹ Mai', N'Ná»¯', 42, N'EWS_002', '001099000102');
 SET @Patient2Id = SCOPE_IDENTITY();
 
--- 3. Bệnh nhân 3: Nguyễn Văn Hùng (Cảnh báo xét nghiệm)
+-- 3. Bá»‡nh nhÃ¢n 3: Nguyá»…n VÄƒn HÃ¹ng (Cáº£nh bÃ¡o xÃ©t nghiá»‡m)
 INSERT INTO Patients (FullName, Gender, Age, PatientCode, CCCD)
-VALUES (N'Nguyễn Văn Hùng', N'Nam', 50, N'EWS_003', '001099000103');
+VALUES (N'Nguyá»…n VÄƒn HÃ¹ng', N'Nam', 50, N'EWS_003', '001099000103');
 SET @Patient3Id = SCOPE_IDENTITY();
 
--- Thêm Appointments
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient1Id, N'Cấp cứu suy hô hấp', @Now, 2);
+-- ThÃªm Appointments
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient1Id, N'Cáº¥p cá»©u suy hÃ´ háº¥p', @Now, 2);
 SET @App1Id = SCOPE_IDENTITY();
 
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient2Id, N'Đau bụng, sốt cao', @Now, 2);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient2Id, N'Äau bá»¥ng, sá»‘t cao', @Now, 2);
 SET @App2Id = SCOPE_IDENTITY();
 
-INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient3Id, N'Kiểm tra chức năng gan', @Now, 2);
+INSERT INTO Appointments (PatientId, Reason, AppointmentTime, Status) VALUES (@Patient3Id, N'Kiá»ƒm tra chá»©c nÄƒng gan', @Now, 2);
 SET @App3Id = SCOPE_IDENTITY();
 
--- Thêm MedicalRecords
--- Trần Anh Tú: Khoa Cấp Cứu (Id = 5), Giường 5
+-- ThÃªm MedicalRecords
+-- Tráº§n Anh TÃº: Khoa Cáº¥p Cá»©u (Id = 5), GiÆ°á»ng 5
 INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, DepartmentId, BedNumber, CreatedAt) 
-VALUES (@App1Id, N'Ngưng tim, ngưng thở', N'Suy hô hấp cấp', N'Hỗ trợ hô hấp, ép tim', 5, 5, @Now);
+VALUES (@App1Id, N'NgÆ°ng tim, ngÆ°ng thá»Ÿ', N'Suy hÃ´ háº¥p cáº¥p', N'Há»— trá»£ hÃ´ háº¥p, Ã©p tim', 5, 5, @Now);
 SET @MedRec1Id = SCOPE_IDENTITY();
 
--- Lê Thị Mai: Khoa Nội (Id = 1), Giường 12
+-- LÃª Thá»‹ Mai: Khoa Ná»™i (Id = 1), GiÆ°á»ng 12
 INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, DepartmentId, BedNumber, CreatedAt) 
-VALUES (@App2Id, N'Sốt cao, đau bụng', N'Viêm ruột', N'Truyền dịch, hạ sốt', 1, 12, @Now);
+VALUES (@App2Id, N'Sá»‘t cao, Ä‘au bá»¥ng', N'ViÃªm ruá»™t', N'Truyá»n dá»‹ch, háº¡ sá»‘t', 1, 12, @Now);
 SET @MedRec2Id = SCOPE_IDENTITY();
 
--- Nguyễn Văn Hùng: Khoa Nội (Id = 1), Không có giường
+-- Nguyá»…n VÄƒn HÃ¹ng: Khoa Ná»™i (Id = 1), KhÃ´ng cÃ³ giÆ°á»ng
 INSERT INTO MedicalRecords (AppointmentId, Symptoms, Diagnosis, TreatmentPlan, DepartmentId, BedNumber, CreatedAt) 
-VALUES (@App3Id, N'Vàng da, mệt mỏi', N'Viêm gan cấp', N'Theo dõi chức năng gan', 1, NULL, @Now);
+VALUES (@App3Id, N'VÃ ng da, má»‡t má»i', N'ViÃªm gan cáº¥p', N'Theo dÃµi chá»©c nÄƒng gan', 1, NULL, @Now);
 SET @MedRec3Id = SCOPE_IDENTITY();
 
--- Thêm VitalSigns
--- Trần Anh Tú: Mạch < 40, SpO2 < 85%
+-- ThÃªm VitalSigns
+-- Tráº§n Anh TÃº: Máº¡ch < 40, SpO2 < 85%
 INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt)
-VALUES (@App1Id, N'35', N'36.0', N'80/50', N'82', N'ĐD. Nguyễn Thị A', @Now);
+VALUES (@App1Id, N'35', N'36.0', N'80/50', N'82', N'ÄD. Nguyá»…n Thá»‹ A', @Now);
 
--- Lê Thị Mai: Nhiệt độ 39.5
+-- LÃª Thá»‹ Mai: Nhiá»‡t Ä‘á»™ 39.5
 INSERT INTO VitalSigns (AppointmentId, Pulse, Temperature, BloodPressure, SpO2, NurseName, RecordedAt)
-VALUES (@App2Id, N'100', N'39.5', N'120/80', N'96', N'ĐD. Lê Văn B', @Now);
+VALUES (@App2Id, N'100', N'39.5', N'120/80', N'96', N'ÄD. LÃª VÄƒn B', @Now);
 
--- Thêm LabTests cho Nguyễn Văn Hùng: Men gan cao
+-- ThÃªm LabTests cho Nguyá»…n VÄƒn HÃ¹ng: Men gan cao
 INSERT INTO LabTests (MedicalRecordId, TestName, Status, Result, CreatedAt)
-VALUES (@MedRec3Id, N'Xét nghiệm sinh hóa máu', N'Đã hoàn thành', N'AST: 1050 U/L, ALT: 1120 U/L (Vượt ngưỡng báo động)', @Now);
+VALUES (@MedRec3Id, N'XÃ©t nghiá»‡m sinh hÃ³a mÃ¡u', N'ÄÃ£ hoÃ n thÃ nh', N'AST: 1050 U/L, ALT: 1120 U/L (VÆ°á»£t ngÆ°á»¡ng bÃ¡o Ä‘á»™ng)', @Now);
 GO
 
 USE QuanLyBenhVienDb;
 GO
 
--- Cập nhật tên thật cho 20 bệnh nhân tái khám (TK101 - TK120)
-UPDATE Patients SET FullName = N'Nguyễn Văn An'       WHERE PatientCode = 'TK101';
-UPDATE Patients SET FullName = N'Trần Thị Bình'       WHERE PatientCode = 'TK102';
-UPDATE Patients SET FullName = N'Lê Văn Cường'        WHERE PatientCode = 'TK103';
-UPDATE Patients SET FullName = N'Phạm Thị Dung'       WHERE PatientCode = 'TK104';
-UPDATE Patients SET FullName = N'Hoàng Văn Em'        WHERE PatientCode = 'TK105';
-UPDATE Patients SET FullName = N'Đặng Thị Phương'     WHERE PatientCode = 'TK106';
-UPDATE Patients SET FullName = N'Vũ Văn Giang'        WHERE PatientCode = 'TK107';
-UPDATE Patients SET FullName = N'Bùi Thị Hoa'         WHERE PatientCode = 'TK108';
-UPDATE Patients SET FullName = N'Đinh Văn Hùng'       WHERE PatientCode = 'TK109';
-UPDATE Patients SET FullName = N'Ngô Thị Kim'         WHERE PatientCode = 'TK110';
-UPDATE Patients SET FullName = N'Trương Văn Lâm'      WHERE PatientCode = 'TK111';
-UPDATE Patients SET FullName = N'Phan Thị Mai'        WHERE PatientCode = 'TK112';
-UPDATE Patients SET FullName = N'Dương Văn Nam'       WHERE PatientCode = 'TK113';
-UPDATE Patients SET FullName = N'Lý Thị Oanh'        WHERE PatientCode = 'TK114';
-UPDATE Patients SET FullName = N'Hà Văn Phúc'        WHERE PatientCode = 'TK115';
-UPDATE Patients SET FullName = N'Mai Thị Quỳnh'      WHERE PatientCode = 'TK116';
-UPDATE Patients SET FullName = N'Tạ Văn Sơn'         WHERE PatientCode = 'TK117';
-UPDATE Patients SET FullName = N'Cao Thị Thu'        WHERE PatientCode = 'TK118';
-UPDATE Patients SET FullName = N'Lương Văn Tuấn'     WHERE PatientCode = 'TK119';
-UPDATE Patients SET FullName = N'Trịnh Thị Uyên'     WHERE PatientCode = 'TK120';
+-- Cáº­p nháº­t tÃªn tháº­t cho 20 bá»‡nh nhÃ¢n tÃ¡i khÃ¡m (TK101 - TK120)
+UPDATE Patients SET FullName = N'Nguyá»…n VÄƒn An'       WHERE PatientCode = 'TK101';
+UPDATE Patients SET FullName = N'Tráº§n Thá»‹ BÃ¬nh'       WHERE PatientCode = 'TK102';
+UPDATE Patients SET FullName = N'LÃª VÄƒn CÆ°á»ng'        WHERE PatientCode = 'TK103';
+UPDATE Patients SET FullName = N'Pháº¡m Thá»‹ Dung'       WHERE PatientCode = 'TK104';
+UPDATE Patients SET FullName = N'HoÃ ng VÄƒn Em'        WHERE PatientCode = 'TK105';
+UPDATE Patients SET FullName = N'Äáº·ng Thá»‹ PhÆ°Æ¡ng'     WHERE PatientCode = 'TK106';
+UPDATE Patients SET FullName = N'VÅ© VÄƒn Giang'        WHERE PatientCode = 'TK107';
+UPDATE Patients SET FullName = N'BÃ¹i Thá»‹ Hoa'         WHERE PatientCode = 'TK108';
+UPDATE Patients SET FullName = N'Äinh VÄƒn HÃ¹ng'       WHERE PatientCode = 'TK109';
+UPDATE Patients SET FullName = N'NgÃ´ Thá»‹ Kim'         WHERE PatientCode = 'TK110';
+UPDATE Patients SET FullName = N'TrÆ°Æ¡ng VÄƒn LÃ¢m'      WHERE PatientCode = 'TK111';
+UPDATE Patients SET FullName = N'Phan Thá»‹ Mai'        WHERE PatientCode = 'TK112';
+UPDATE Patients SET FullName = N'DÆ°Æ¡ng VÄƒn Nam'       WHERE PatientCode = 'TK113';
+UPDATE Patients SET FullName = N'LÃ½ Thá»‹ Oanh'        WHERE PatientCode = 'TK114';
+UPDATE Patients SET FullName = N'HÃ  VÄƒn PhÃºc'        WHERE PatientCode = 'TK115';
+UPDATE Patients SET FullName = N'Mai Thá»‹ Quá»³nh'      WHERE PatientCode = 'TK116';
+UPDATE Patients SET FullName = N'Táº¡ VÄƒn SÆ¡n'         WHERE PatientCode = 'TK117';
+UPDATE Patients SET FullName = N'Cao Thá»‹ Thu'        WHERE PatientCode = 'TK118';
+UPDATE Patients SET FullName = N'LÆ°Æ¡ng VÄƒn Tuáº¥n'     WHERE PatientCode = 'TK119';
+UPDATE Patients SET FullName = N'Trá»‹nh Thá»‹ UyÃªn'     WHERE PatientCode = 'TK120';
 
--- Cập nhật cả bảng Users (tài khoản đăng nhập) tương ứng
-UPDATE Users SET FullName = N'Nguyễn Văn An'       WHERE PatientCode = 'TK101';
-UPDATE Users SET FullName = N'Trần Thị Bình'       WHERE PatientCode = 'TK102';
-UPDATE Users SET FullName = N'Lê Văn Cường'        WHERE PatientCode = 'TK103';
-UPDATE Users SET FullName = N'Phạm Thị Dung'       WHERE PatientCode = 'TK104';
-UPDATE Users SET FullName = N'Hoàng Văn Em'        WHERE PatientCode = 'TK105';
-UPDATE Users SET FullName = N'Đặng Thị Phương'     WHERE PatientCode = 'TK106';
-UPDATE Users SET FullName = N'Vũ Văn Giang'        WHERE PatientCode = 'TK107';
-UPDATE Users SET FullName = N'Bùi Thị Hoa'         WHERE PatientCode = 'TK108';
-UPDATE Users SET FullName = N'Đinh Văn Hùng'       WHERE PatientCode = 'TK109';
-UPDATE Users SET FullName = N'Ngô Thị Kim'         WHERE PatientCode = 'TK110';
-UPDATE Users SET FullName = N'Trương Văn Lâm'      WHERE PatientCode = 'TK111';
-UPDATE Users SET FullName = N'Phan Thị Mai'        WHERE PatientCode = 'TK112';
-UPDATE Users SET FullName = N'Dương Văn Nam'       WHERE PatientCode = 'TK113';
-UPDATE Users SET FullName = N'Lý Thị Oanh'        WHERE PatientCode = 'TK114';
-UPDATE Users SET FullName = N'Hà Văn Phúc'        WHERE PatientCode = 'TK115';
-UPDATE Users SET FullName = N'Mai Thị Quỳnh'      WHERE PatientCode = 'TK116';
-UPDATE Users SET FullName = N'Tạ Văn Sơn'         WHERE PatientCode = 'TK117';
-UPDATE Users SET FullName = N'Cao Thị Thu'        WHERE PatientCode = 'TK118';
-UPDATE Users SET FullName = N'Lương Văn Tuấn'     WHERE PatientCode = 'TK119';
-UPDATE Users SET FullName = N'Trịnh Thị Uyên'     WHERE PatientCode = 'TK120';
+-- Cáº­p nháº­t cáº£ báº£ng Users (tÃ i khoáº£n Ä‘Äƒng nháº­p) tÆ°Æ¡ng á»©ng
+UPDATE Users SET FullName = N'Nguyá»…n VÄƒn An'       WHERE PatientCode = 'TK101';
+UPDATE Users SET FullName = N'Tráº§n Thá»‹ BÃ¬nh'       WHERE PatientCode = 'TK102';
+UPDATE Users SET FullName = N'LÃª VÄƒn CÆ°á»ng'        WHERE PatientCode = 'TK103';
+UPDATE Users SET FullName = N'Pháº¡m Thá»‹ Dung'       WHERE PatientCode = 'TK104';
+UPDATE Users SET FullName = N'HoÃ ng VÄƒn Em'        WHERE PatientCode = 'TK105';
+UPDATE Users SET FullName = N'Äáº·ng Thá»‹ PhÆ°Æ¡ng'     WHERE PatientCode = 'TK106';
+UPDATE Users SET FullName = N'VÅ© VÄƒn Giang'        WHERE PatientCode = 'TK107';
+UPDATE Users SET FullName = N'BÃ¹i Thá»‹ Hoa'         WHERE PatientCode = 'TK108';
+UPDATE Users SET FullName = N'Äinh VÄƒn HÃ¹ng'       WHERE PatientCode = 'TK109';
+UPDATE Users SET FullName = N'NgÃ´ Thá»‹ Kim'         WHERE PatientCode = 'TK110';
+UPDATE Users SET FullName = N'TrÆ°Æ¡ng VÄƒn LÃ¢m'      WHERE PatientCode = 'TK111';
+UPDATE Users SET FullName = N'Phan Thá»‹ Mai'        WHERE PatientCode = 'TK112';
+UPDATE Users SET FullName = N'DÆ°Æ¡ng VÄƒn Nam'       WHERE PatientCode = 'TK113';
+UPDATE Users SET FullName = N'LÃ½ Thá»‹ Oanh'        WHERE PatientCode = 'TK114';
+UPDATE Users SET FullName = N'HÃ  VÄƒn PhÃºc'        WHERE PatientCode = 'TK115';
+UPDATE Users SET FullName = N'Mai Thá»‹ Quá»³nh'      WHERE PatientCode = 'TK116';
+UPDATE Users SET FullName = N'Táº¡ VÄƒn SÆ¡n'         WHERE PatientCode = 'TK117';
+UPDATE Users SET FullName = N'Cao Thá»‹ Thu'        WHERE PatientCode = 'TK118';
+UPDATE Users SET FullName = N'LÆ°Æ¡ng VÄƒn Tuáº¥n'     WHERE PatientCode = 'TK119';
+UPDATE Users SET FullName = N'Trá»‹nh Thá»‹ UyÃªn'     WHERE PatientCode = 'TK120';
 
-PRINT N'Cập nhật tên thật cho 20 bệnh nhân tái khám thành công!';
+PRINT N'Cáº­p nháº­t tÃªn tháº­t cho 20 bá»‡nh nhÃ¢n tÃ¡i khÃ¡m thÃ nh cÃ´ng!';
 -- =========================================
 -- CREATE TABLE Notifications
 -- =========================================
