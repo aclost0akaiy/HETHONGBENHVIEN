@@ -1,0 +1,5 @@
+--- RAW ---
+{"finding": "Răng khôn 48 mọc lệch ngầm", "confidence": 95.0, "x": 14, "y": 53, "width": 12, "height": 21, "quality": "Đạt tiêu chuẩn", "lesion": "Mọc lệch/ngầm", "alignment": "Di lệch nhẹ", "softTissue": "Bình thường"Bình thường"}
+
+--- CLEAN ---
+{"finding": "Răng khôn 48 mọc lệch ngầm", "confidence": 95.0, "x": 14, "y": 53, "width": 12, "height": 21, "quality": "Đạt tiêu chuẩn", "lesion": "Mọc lệch/ngầm", "alignment": "Di lệch nhẹ", "softTissue": "Bình thường"Bình thường"}

@@ -1,4 +1,4 @@
-@using HeThongBenhVien.Models
+﻿@using HeThongBenhVien.Models
 @model DoctorDashboardViewModel
 
 @{
@@ -35,7 +35,7 @@
 
 
     <!-- Quick Stats Cards -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="quickStatsCards">
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="glass-card hover-card p-4 h-100 border-start border-4 border-primary">
                 <div class="d-flex justify-content-between align-items-center">
@@ -346,11 +346,11 @@
                                                 <td class="ps-4 font-weight-bold text-primary">@(stt.ToString("D2"))</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background-color: @(item.Reason.StartsWith("[CẤP CỨU]") ? "#dc2626" : "#f1f5f9"); color: @(item.Reason.StartsWith("[CẤP CỨU]") ? "#fff" : "#64748b"); font-weight: bold;">@initials</div>
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; background-color: @(item.Reason.StartsWith("[CẤP CỨU") ? "#dc2626" : "#f1f5f9"); color: @(item.Reason.StartsWith("[CẤP CỨU") ? "#fff" : "#64748b"); font-weight: bold;">@initials</div>
                                                         <div>
                                                             <div class="waiting-name d-flex align-items-center gap-1.5" style="font-weight: 600; color: #334155;">
                                                                 @item.Patient?.FullName
-                                                                @if (item.Reason.StartsWith("[CẤP CỨU]"))
+                                                                @if (item.Reason.StartsWith("[CẤP CỨU"))
                                                                 {
                                                                     <span class="badge bg-danger text-white py-0.5 px-1.5 animate-pulse" style="font-size: 0.65rem; border-radius: 4px; font-weight: 700; line-height: 1;"><i class="fa-solid fa-truck-medical"></i> CẤP CỨU</span>
                                                                 }</div>
@@ -359,9 +359,17 @@
                                                     </div>
                                                 </td>
                                                 <td class="fw-medium">
-                                                    @if (item.Reason.StartsWith("[CẤP CỨU]"))
+                                                    @if (item.Reason.StartsWith("[CẤP CỨU"))
                                                     {
-                                                        <span class="text-danger fw-bold">@item.Reason.Replace("[CẤP CỨU]", "").Trim()</span>
+                                                        var parts = item.Reason.Split(']', 2);
+                                                        var emergencyText = parts[0].Replace("[", "").Trim();
+                                                        var originalReason = parts.Length > 1 ? parts[1].Trim() : "";
+                                                        
+                                                        <span class="text-muted">@originalReason</span>
+                                                        @if (!string.IsNullOrEmpty(emergencyText))
+                                                        {
+                                                            <div class="small text-secondary mt-1"><i class="fa-solid fa-circle-info me-1"></i>@emergencyText</div>
+                                                        }
                                                     }
                                                     else
                                                     {
@@ -396,42 +404,46 @@
                                                              {
                                                                  <li><hr class="dropdown-divider"></li>
                                                                  
-                                                                 <!-- Đánh dấu Ưu tiên / Cấp cứu -->
-                                                                 <li>
-                                                                     <form asp-action="ToggleEmergency" asp-controller="Doctor" method="post" style="display:inline;">
-                                                                         <input type="hidden" name="appointmentId" value="@item.Id" />
-                                                                         <button type="submit" class="dropdown-item">
-                                                                             @if (item.Reason.StartsWith("[CẤP CỨU]"))
-                                                                             {
-                                                                                 <span class="text-secondary"><i class="fa-regular fa-bell-slash me-1.5"></i> Bỏ ưu tiên</span>
-                                                                             }
-                                                                             else
-                                                                             {
-                                                                                 <span class="text-danger fw-bold"><i class="fa-solid fa-truck-medical me-1.5"></i> Đặt Cấp Cứu</span>
-                                                                             }
-                                                                         </button>
-                                                                     </form>
-                                                                 </li>
+                                                                 <!-- ÄÃ¡nh dáº¥u Æ¯u tiÃªn / Cáº¥p cá»©u -->
+                                                                     @if (item.Reason.StartsWith("[CẤP CỨU"))
+                                                                     {
+                                                                         <li>
+                                                                             <form asp-action="ToggleEmergency" asp-controller="Doctor" method="post" style="display:inline;">
+                                                                                 <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                                                 <button type="submit" class="dropdown-item">
+                                                                                     <span class="text-secondary"><i class="fa-regular fa-bell-slash me-1.5"></i> Bỏ ưu tiên</span>
+                                                                                 </button>
+                                                                             </form>
+                                                                         </li>
+                                                                     }
+                                                                     else
+                                                                     {
+                                                                         <li>
+                                                                             <a class="dropdown-item text-danger fw-bold" href="javascript:void(0)" onclick="showEmergencyModal(@item.Id, '@item.Patient?.FullName')">
+                                                                                 <i class="fa-solid fa-truck-medical me-1.5"></i> Đặt Cấp Cứu
+                                                                             </a>
+                                                                         </li>
+                                                                     }
 
-                                                                 <!-- Chuyển Bác Sĩ -->
-                             
 
-                                                                 <!-- Đổi lịch hẹn -->
+                                                                 <!-- Äá»•i lá»‹ch háº¹n -->
                                                                  <li>
                                                                      <a class="dropdown-item" href="javascript:void(0)" onclick="showRescheduleModal(@item.Id, '@item.Patient?.FullName', '@item.AppointmentTime.ToString("yyyy-MM-ddTHH:mm")')">
-                                                                         <i class="fa-regular fa-calendar-days me-1.5 text-muted"></i> Sắp xếp lại lịch
+                                                                         <i class="fa-regular fa-calendar-days me-1.5 text-muted"></i> 
+Sắp xếp lại lịch
                                                                      </a>
                                                                  </li>
 
-                                                                 <!-- Chuyển tuyến -->
+                                                                 <!-- Chuyá»ƒn tuyáº¿n -->
                                                                  <li>
                                                                      <a class="dropdown-item text-warning" href="javascript:void(0)" onclick="showReferModal(@item.Id, '@item.Patient?.FullName')">
-                                                                         <i class="fa-solid fa-arrow-up-right-from-square me-1.5"></i> Chuyển Tuyến Viện
+                                                                         <i class="fa-solid fa-arrow-up-right-from-square me-1.5"></i> 
+Chuyển Tuyến Viện
                                                                      </a>
                                                                  </li>
                                                              }
-                                                        </ul>
-                                                    </div>
+                                                         </ul>
+                                                     </div>
                                                 </td>
 
                                             </tr>
@@ -1176,6 +1188,36 @@
         </div>
     </div>
 
+    <!-- MODAL 5: Đặt Cấp Cứu -->
+    <div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-danger bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-danger"><i class="fa-solid fa-truck-medical me-2"></i>Thiết Lập Ca CẤP CỨU</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form onsubmit="event.preventDefault(); submitEmergencyFormAjax();">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="emergencyApptId" name="appointmentId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bệnh nhân</label>
+                            <input type="text" id="emergencyPatientName" class="form-control" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Lý do cấp cứu</label>
+                            <textarea name="emergencyReason" class="form-control" placeholder="Nhập lý do cấp cứu (ví dụ: Suy hô hấp, Chấn thương não...)" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger px-4">Xác nhận cấp cứu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
 @functions {
 
     public string GetVietnameseDayOfWeek(DateTime date)
@@ -1839,6 +1881,12 @@
             $("#referPatientName").val(currentName);
             $("#referModal").modal("show");
         }
+        function showEmergencyModal(apptId, currentName) {
+            $("#emergencyApptId").val(apptId);
+            $("#emergencyPatientName").val(currentName);
+            $("#emergencyModal textarea[name='emergencyReason']").val("");
+            $("#emergencyModal").modal("show");
+        }
 
                 function showToast(message, type) {
             const toast = document.createElement('div');
@@ -1927,6 +1975,62 @@
                     document.getElementById("autoSenderTemplateInput").value = res.template;
                 }
             });
+        }
+
+        function toggleEmergencyAjax(apptId, reason) {
+            const formData = new FormData();
+            formData.append("appointmentId", apptId);
+            formData.append("emergencyReason", reason);
+
+            fetch('/Doctor/ToggleEmergency', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const newStats = doc.getElementById('quickStatsCards');
+                const currentStats = document.getElementById('quickStatsCards');
+                if (newStats && currentStats) {
+                    currentStats.innerHTML = newStats.innerHTML;
+                }
+
+                const newTable = doc.getElementById('waitingListTable');
+                const currentTable = document.getElementById('waitingListTable');
+                if (newTable && currentTable) {
+                    currentTable.innerHTML = newTable.innerHTML;
+                }
+
+                if (typeof initWaitingListPagination === 'function') {
+                    initWaitingListPagination();
+                }
+
+                const modalEl = document.getElementById('emergencyModal');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+                }
+
+                showToast("Đã cập nhật trạng thái bệnh nhân thành công!", "success");
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Có lỗi xảy ra khi cập nhật trạng thái.", "danger");
+            });
+        }
+
+        function submitEmergencyFormAjax() {
+            const apptId = document.getElementById('emergencyApptId').value;
+            const reason = document.querySelector('#emergencyModal textarea[name="emergencyReason"]').value;
+            if (!reason || reason.trim() === "") {
+                showToast("Vui lòng nhập lý do cấp cứu.", "warning");
+                return;
+            }
+            toggleEmergencyAjax(apptId, reason);
         }
 
         document.addEventListener("DOMContentLoaded", () => {

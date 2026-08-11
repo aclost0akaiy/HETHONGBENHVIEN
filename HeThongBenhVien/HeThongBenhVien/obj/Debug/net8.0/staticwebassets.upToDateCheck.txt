@@ -58,34 +58,95 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\ai_00f98376-5439-441b-a21a-b65a4882ac23_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
+wwwroot\uploads\ai_040547b9-6850-4fc3-a7aa-005b40a724a6_6.jpeg
+wwwroot\uploads\ai_0df1386a-05a1-49af-99a1-00bf6209c00f_8.jpg
 wwwroot\uploads\ai_0eebc372-bdd8-4727-bd13-c54f063458f9_u.jfif
+wwwroot\uploads\ai_0efabc73-8452-4be2-b7c9-248a0c4e880c_u.jfif
+wwwroot\uploads\ai_0f19fd3c-99b6-45ba-82f2-708136f56251_6.jpeg
+wwwroot\uploads\ai_105c57c4-49e7-4ba5-b168-7e19877decdc_4.jpg
 wwwroot\uploads\ai_227e15ed-367b-4532-8783-13c761470aeb_gãy tay .jfif
 wwwroot\uploads\ai_2686c3a7-b08f-45f1-aadb-3db7afa7897b_gãy tay .jfif
 wwwroot\uploads\ai_26a78c8a-a394-4f79-9295-ca3b11151921_8.jpg
 wwwroot\uploads\ai_26ec293a-96c4-4a70-bf27-5f8600fda1aa_gãy tay .jfif
+wwwroot\uploads\ai_27e6a788-9081-496c-a914-1c5a7453d55c_8.jpg
+wwwroot\uploads\ai_296bba28-3d33-4e47-b345-b74ac3a38dd4_36.jpg
+wwwroot\uploads\ai_2fca77d4-b400-4cea-98a5-dfa51f54710f_4.jpg
+wwwroot\uploads\ai_2fd73c9f-5a1c-439a-9342-b2333d742148_4.jpg
+wwwroot\uploads\ai_3094ab6c-8c6d-4cc2-a6df-97bcacc886f3_8.jpg
+wwwroot\uploads\ai_33464ae0-dfb6-43b2-b5c1-f1518b965bbc_6.jpeg
+wwwroot\uploads\ai_37622036-87ea-47e4-ad2c-045d4f2550aa_36.jpg
+wwwroot\uploads\ai_3c03e426-607d-445c-9a48-96c234691033_u.jfif
+wwwroot\uploads\ai_3d1aed4b-bca6-4371-ac04-d33769446166_6.jpeg
+wwwroot\uploads\ai_3fbb7e2d-3669-40e4-b2d0-ead4045e1372_4.jpg
+wwwroot\uploads\ai_41de09a6-b5f7-44d8-ade7-49f6122ba20d_8.jpg
+wwwroot\uploads\ai_4231dc9d-385f-4671-ac29-fbfc88d91f32_36.jpg
+wwwroot\uploads\ai_43a01a99-2708-48c2-900c-9a8020315eaf_36.jpg
 wwwroot\uploads\ai_462733e2-4ba4-4e9a-93e4-b882a966cdbc_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
 wwwroot\uploads\ai_466fb65e-f58d-490f-b113-4580ea23bb0a_8.jpg
 wwwroot\uploads\ai_4734e380-c985-40d4-9c35-d6d03f2af19a_gãy tay .jfif
 wwwroot\uploads\ai_48b5cca1-4322-4e85-b71d-619ea6ee7b62_8.jpg
+wwwroot\uploads\ai_4b23f842-765d-4ba2-8932-6859c020450d_36.jpg
+wwwroot\uploads\ai_4fc98c2c-8fc6-460d-8bb1-afcbc6676a75_1.jpg
 wwwroot\uploads\ai_5339a0fa-91aa-406d-b18b-5935f8069cb1_8.jpg
+wwwroot\uploads\ai_53b10bae-77a1-4bc7-afde-9ad2efe44ff9_4.jpg
 wwwroot\uploads\ai_53ddb727-1192-49bf-b207-eb786c859ba3_36.jpg
 wwwroot\uploads\ai_5b5d8dae-369d-447c-b351-1f5422dfbe41_8.jpg
 wwwroot\uploads\ai_5cc8b141-b227-47b9-a511-5c7252b08923_8.jpg
+wwwroot\uploads\ai_5f74f770-95b8-47ea-a201-f6c4f5663e76_1.jpg
 wwwroot\uploads\ai_62d8269e-0318-4bd8-92fb-702a9b72f442_8.jpg
 wwwroot\uploads\ai_652a3ab8-781c-419b-a0b5-aab111db9505_8.jpg
 wwwroot\uploads\ai_666caa84-449b-4ade-acba-18ce5846a5b8_1.jpg
+wwwroot\uploads\ai_6dcb164f-be19-41e7-8561-4a9900568bb5_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
+wwwroot\uploads\ai_71efdb60-d4b0-40c6-83a8-f24873deaa12_36.jpg
 wwwroot\uploads\ai_74a23d85-6ff5-41bd-90ba-541bfe076335_gãy tay .jfif
+wwwroot\uploads\ai_7e5f3a38-d231-4d4b-8bfd-f477c024cb48_36.jpg
+wwwroot\uploads\ai_7eb61786-52fc-4cff-a4c4-faa1b69e3cf8_36.jpg
 wwwroot\uploads\ai_84e232d1-5dbc-4f7d-b0b4-0f949dcdcea3_gãy tay .jfif
 wwwroot\uploads\ai_868b18d4-f15f-42cc-9e32-e834067bf3df_8.jpg
+wwwroot\uploads\ai_87dec215-0973-4c31-b0bf-fdc08ba08f97_4.jpg
+wwwroot\uploads\ai_8a534aee-de14-4556-bf20-3b83f544c5c8_1.jpg
+wwwroot\uploads\ai_9006058e-be10-4280-aa93-17ce11114e27_8.jpg
 wwwroot\uploads\ai_90254c27-defd-4b0b-b211-24b70e12d655_gãy tay .jfif
 wwwroot\uploads\ai_93ef0666-74f3-45ee-b903-ecee27e37d6f_gay-xuong-suon-trieu-chung-phuong-phap-dieu-tri-2.jpeg
+wwwroot\uploads\ai_9627b465-a0d1-451d-b2be-679e538d154c_8.jpg
+wwwroot\uploads\ai_97f1a48d-5527-41ae-b1be-bb390aac997d_8.jpg
+wwwroot\uploads\ai_982deba3-c4f1-44db-b268-f47ce308aabe_1.jpg
+wwwroot\uploads\ai_982e91fe-de28-48e1-a30e-eb2c6620e717_u.jfif
+wwwroot\uploads\ai_9a64b255-725b-4047-827f-dbc6ee8456fe_6.jpeg
 wwwroot\uploads\ai_9e1b2330-e091-4e5d-b702-352d802ac95d_4.jpg
+wwwroot\uploads\ai_a217a3cd-d8dc-4f3f-898c-568d016caae2_4.jpg
+wwwroot\uploads\ai_a3ab3607-928c-4018-a550-0bb8addf11a4_36.jpg
+wwwroot\uploads\ai_a72687e7-c9d6-4bfb-aa71-4d917fd30928_4.jpg
+wwwroot\uploads\ai_adab6fa1-f7ad-4375-b7c8-2f7c093f9658_8.jpg
+wwwroot\uploads\ai_af17b65d-c6b4-403d-8a70-f7077eb6ff7b_4.jpg
 wwwroot\uploads\ai_b0e4655b-28a3-429f-a091-b5145e03827b_1.jpg
+wwwroot\uploads\ai_bfee28df-6064-4c0d-b591-3de421d36b2e_8.jpg
+wwwroot\uploads\ai_c2566d0c-f036-401b-9002-c75a869ca440_4.jpg
 wwwroot\uploads\ai_c50c8ba0-48f0-488a-82f2-a5f96a7b526a_36.jpg
+wwwroot\uploads\ai_c8bb6ec6-63ad-474e-83f1-588cff1ee58c_u.jfif
+wwwroot\uploads\ai_d4476c78-9c03-4af2-a024-3f35850d60e0_6.jpeg
+wwwroot\uploads\ai_d5c022f5-d8b7-4874-9f34-2ca29eb1832a_36.jpg
+wwwroot\uploads\ai_d90c1ea0-859b-4935-96a0-93f93d979707_36.jpg
+wwwroot\uploads\ai_d93d7155-05ea-4d9b-a5fe-53456d3291f9_6.jpeg
+wwwroot\uploads\ai_dd2703b6-dc23-4ec6-99a7-053cd9be327c_6.jpeg
+wwwroot\uploads\ai_e1760305-f73f-48fd-a512-629a72bbb1f8_1.jpg
+wwwroot\uploads\ai_e3a7e663-d4b8-4068-a762-228688037cff_6.jpeg
+wwwroot\uploads\ai_e54c30ec-ee29-426b-b552-bcb5edd3b754_4.jpg
 wwwroot\uploads\ai_e78f7c13-56e6-413e-93c8-0b817febab75_6.jpeg
+wwwroot\uploads\ai_ebe9bb94-f93b-47ee-a960-bbfd222ca581_36.jpg
+wwwroot\uploads\ai_ed124008-5958-47cb-9680-3ee986c65e84_4.jpg
+wwwroot\uploads\ai_ef177406-5791-43bd-a850-db3dbb8220b8_36.jpg
+wwwroot\uploads\ai_f8c3eb13-88e3-493f-b70f-dfc37ce13032_8.jpg
+wwwroot\uploads\ai_f97b51e4-f173-4f2f-b9e1-4058d2b38b73_6.jpeg
+wwwroot\uploads\ai_fb2ab222-f5c8-4741-bea4-fc504798e231_1.jpg
+wwwroot\uploads\ai_fe824573-bd91-4f38-9775-0495b7b40042_1.jpg
+wwwroot\uploads\ai_ff90bca8-e964-49f4-9fe4-f64288c9a979_6.jpeg
 wwwroot\uploads\bd830825-6fbc-41e5-91fb-b3a231f657b8_gãy tay .jfif
 wwwroot\uploads\doctor_mai.png
+wwwroot\uploads\error.txt
 wwwroot\uploads\hospital_map_3d.png
 wwwroot\uploads\mobile_rating.png
 wwwroot\uploads\patient_avatar.png
 wwwroot\uploads\patient_hero.png
+wwwroot\uploads\raw_response.txt

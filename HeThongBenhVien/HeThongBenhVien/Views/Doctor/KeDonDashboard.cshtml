@@ -162,12 +162,12 @@
             <div class="row g-4">
                 <!-- Chờ Kê Đơn -->
                 <div class="col-lg-6">
-                    <div class="glass-card p-4 h-100 shadow-sm border border-opacity-10" style="border-radius: 16px; background: white;">
+                    <div class="glass-card p-4 h-100 shadow-sm border border-opacity-10 d-flex flex-column" style="border-radius: 16px; background: white;">
                         <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
                             <i class="fa-solid fa-spinner text-warning spin-slow"></i> Bệnh Nhân Chờ Kê Đơn
                         </h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                        <div class="table-responsive flex-grow-1">
+                            <table class="table table-hover align-middle" id="waitingRecordsTable">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Bệnh nhân</th>
@@ -210,17 +210,31 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Pagination and page size selection -->
+                        <div class="pagination-container">
+                            <div class="page-size-selector">
+                                <span>Dòng:</span>
+                                <select id="waitingPageSize" class="page-size-select">
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                            <nav>
+                                <ul id="waitingPagination" class="pagination pagination-sm mb-0"></ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Đã Kê Đơn -->
                 <div class="col-lg-6">
-                    <div class="glass-card p-4 h-100 shadow-sm border border-opacity-10" style="border-radius: 16px; background: white;">
+                    <div class="glass-card p-4 h-100 shadow-sm border border-opacity-10 d-flex flex-column" style="border-radius: 16px; background: white;">
                         <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
                             <i class="fa-solid fa-square-check text-success"></i> Đơn Thuốc Đã Duyệt Gần Đây
                         </h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                        <div class="table-responsive flex-grow-1">
+                            <table class="table table-hover align-middle" id="prescriptionsTable">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Bệnh nhân</th>
@@ -231,7 +245,7 @@
                                 <tbody>
                                     @if (prescriptions.Any())
                                     {
-                                        @foreach (var item in prescriptions.Take(10))
+                                        @foreach (var item in prescriptions)
                                         {
                                             <tr>
                                                 <td class="fw-bold">
@@ -266,6 +280,20 @@
                                     }
                                 </tbody>
                             </table>
+                        </div>
+                        <!-- Pagination and page size selection -->
+                        <div class="pagination-container">
+                            <div class="page-size-selector">
+                                <span>Dòng:</span>
+                                <select id="prescriptionsPageSize" class="page-size-select">
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                            <nav>
+                                <ul id="prescriptionsPagination" class="pagination pagination-sm mb-0"></ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -371,6 +399,21 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination and page size selection -->
+                <div class="pagination-container">
+                    <div class="page-size-selector">
+                        <span>Số dòng hiển thị:</span>
+                        <select id="inventoryPageSize" class="page-size-select">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <nav>
+                        <ul id="inventoryPagination" class="pagination pagination-sm mb-0"></ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
@@ -471,21 +514,215 @@
         background-color: #2563eb;
         color: white;
     }
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f1f5f9;
+    }
+    
+    .page-size-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 13px;
+        color: #64748b;
+    }
+    
+    .page-size-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 10px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 9999px;
+        padding: 0.25rem 1.75rem 0.25rem 0.75rem;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        min-width: 60px;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .page-size-select:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    
+    .page-size-select:focus {
+        outline: none;
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    
+    .pagination .page-item .page-link {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+        margin: 0 3px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination .page-item:hover .page-link {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2);
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        background-color: #f8fafc;
+        border-color: #f1f5f9;
+        color: #cbd5e1;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 </style>
 
 @section Scripts {
     <script>
-        document.getElementById('medSearch').addEventListener('keyup', function () {
-            var input = this.value.toLowerCase();
-            var rows = document.querySelectorAll('#inventoryTable tbody tr');
-            rows.forEach(function (row) {
-                var text = row.querySelector('td').textContent.toLowerCase();
-                if (text.includes(input)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+        $(document).ready(function () {
+            function initPagination(tableSelector, selectSelector, paginationSelector, defaultSize = 10, searchInputSelector = null) {
+                let currentPage = 1;
+                let pageSize = parseInt($(selectSelector).val()) || defaultSize;
+
+                function updateTable() {
+                    let rows = $(tableSelector + ' tbody tr');
+                    
+                    // Skip if empty placeholder is shown
+                    if (rows.length === 1 && rows.find('td').length <= 1 && 
+                        (rows.find('td').text().includes('giải quyết') || 
+                         rows.find('td').text().includes('Chưa duyệt') || 
+                         rows.find('td').text().includes('Chưa có dữ liệu'))) {
+                        $(paginationSelector).empty();
+                        return;
+                    }
+
+                    let visibleRows;
+                    if (searchInputSelector) {
+                        let query = $(searchInputSelector).val().toLowerCase();
+                        visibleRows = rows.filter(function() {
+                            let text = $(this).find('td').first().text().toLowerCase();
+                            return text.includes(query);
+                        });
+                        rows.not(visibleRows).hide();
+                    } else {
+                        visibleRows = rows;
+                    }
+
+                    let totalRows = visibleRows.length;
+                    
+                    if (totalRows === 0) {
+                        $(paginationSelector).empty();
+                        return;
+                    }
+
+                    let totalPages = Math.ceil(totalRows / pageSize);
+                    if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+                    visibleRows.hide();
+                    let start = (currentPage - 1) * pageSize;
+                    let end = start + pageSize;
+                    visibleRows.slice(start, end).show();
+
+                    let pagination = $(paginationSelector);
+                    pagination.empty();
+
+                    if (totalPages <= 1) {
+                        return;
+                    }
+
+                    // Prev Button
+                    let prevLi = $('<li class="page-item"></li>');
+                    if (currentPage === 1) prevLi.addClass('disabled');
+                    let prevLink = $('<a class="page-link shadow-none border-0 rounded-circle d-flex align-items-center justify-content-center mx-1" href="javascript:void(0)" style="width: 32px; height: 32px;"><i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i></a>');
+                    prevLink.click(function() {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            updateTable();
+                        }
+                    });
+                    prevLi.append(prevLink);
+                    pagination.append(prevLi);
+
+                    // Page numbers
+                    let maxVisiblePages = 5;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                    
+                    if (endPage - startPage + 1 < maxVisiblePages) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                        let pageLi = $('<li class="page-item"></li>');
+                        if (i === currentPage) pageLi.addClass('active');
+                        let pageLink = $(`<a class="page-link shadow-none border-0 rounded-circle d-flex align-items-center justify-content-center mx-1" href="javascript:void(0)" style="width: 32px; height: 32px; font-weight: 600;">${i}</a>`);
+                        pageLink.click(function() {
+                            currentPage = i;
+                            updateTable();
+                        });
+                        pageLi.append(pageLink);
+                        pagination.append(pageLi);
+                    }
+
+                    // Next Button
+                    let nextLi = $('<li class="page-item"></li>');
+                    if (currentPage === totalPages) nextLi.addClass('disabled');
+                    let nextLink = $('<a class="page-link shadow-none border-0 rounded-circle d-flex align-items-center justify-content-center mx-1" href="javascript:void(0)" style="width: 32px; height: 32px;"><i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></a>');
+                    nextLink.click(function() {
+                        if (currentPage < totalPages) {
+                            currentPage++;
+                            updateTable();
+                        }
+                    });
+                    nextLi.append(nextLink);
+                    pagination.append(nextLi);
                 }
-            });
+
+                $(selectSelector).change(function() {
+                    pageSize = parseInt($(this).val());
+                    currentPage = 1;
+                    updateTable();
+                });
+
+                if (searchInputSelector) {
+                    $(searchInputSelector).on('input keyup', function() {
+                        currentPage = 1;
+                        updateTable();
+                    });
+                }
+
+                updateTable();
+                return updateTable;
+            }
+
+            // Initialize pagination for three tables
+            initPagination('#waitingRecordsTable', '#waitingPageSize', '#waitingPagination', 5);
+            initPagination('#prescriptionsTable', '#prescriptionsPageSize', '#prescriptionsPagination', 5);
+            initPagination('#inventoryTable', '#inventoryPageSize', '#inventoryPagination', 10, '#medSearch');
         });
     </script>
 }

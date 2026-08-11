@@ -1,0 +1,712 @@
+@model List<HeThongBenhVien.Services.AiRequestLogEntry>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Trung Tâm AI Y Tế";
+}
+
+<style>
+    .ai-dashboard {
+        font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+    }
+    .nav-tabs-ai {
+        border-bottom: none;
+        gap: 10px;
+    }
+    .nav-tabs-ai .nav-link {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 30px;
+        color: #555;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .nav-tabs-ai .nav-link.active {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+    }
+    .metric-badge {
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .pulse-green {
+        background: rgba(40, 167, 69, 0.2);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        animation: pulse 1.5s infinite;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+    }
+    @@keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+    .test-case-row.passed {
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+    .test-case-row.failed {
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+    pre.raw-json {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container-fluid p-0 ai-dashboard">
+    <!-- Header Area -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="h3 mb-1" style="font-weight: 800;">Trung Tâm Kiểm Thử & Quản Lý AI Y Tế</h2>
+            <p class="text-muted mb-0 d-flex align-items-center gap-2">
+                <span class="pulse-green"></span> Trạng thái kết nối lõi AI: Sẵn sàng và được kiểm soát chặt chẽ
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="clearLogs()">
+                <i class="fa-solid fa-trash-can me-1"></i> Xóa Nhật Ký
+            </button>
+            <button class="btn btn-primary btn-sm rounded-pill" onclick="refreshDashboard()">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Tải Lại Trang
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Metrics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-bold small">ĐỘ TIN CẬY HỆ THỐNG</span>
+                    <i class="fa-solid fa-shield-halved text-success"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-success">@ViewBag.SuccessRate%</h3>
+                <small class="text-muted">Tỷ lệ gọi API thành công</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-bold small">ĐỘ TRỄ TRUNG BÌNH</span>
+                    <i class="fa-solid fa-gauge-high text-primary"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-primary">@ViewBag.AvgLatency ms</h3>
+                <small class="text-muted">Thời gian phản hồi bình quân</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-bold small">TỔNG YÊU CẦU</span>
+                    <i class="fa-solid fa-microchip text-info"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-info">@ViewBag.TotalRequests</h3>
+                <small class="text-muted">Số lượt phân tích (Vòng đời)</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-bold small">LỖI KIỂM ĐỊNH (JSON)</span>
+                    <i class="fa-solid fa-triangle-exclamation text-warning"></i>
+                </div>
+                <h3 class="fw-bold mb-0 text-warning">@ViewBag.ValidationErrorCount</h3>
+                <small class="text-muted">Được tự động sửa đổi & xử lý</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs nav-tabs-ai mb-4" id="aiTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                <i class="fa-solid fa-chart-pie me-2"></i>Tổng Quan & Chỉ Số
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="testsuite-tab" data-bs-toggle="tab" data-bs-target="#testsuite" type="button" role="tab" aria-controls="testsuite" aria-selected="false">
+                <i class="fa-solid fa-flask-vial me-2"></i>Bộ Kiểm Thử Lâm Sàng
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sandbox-tab" data-bs-toggle="tab" data-bs-target="#sandbox" type="button" role="tab" aria-controls="sandbox" aria-selected="false">
+                <i class="fa-solid fa-terminal me-2"></i>Hộp Cát Kiểm Thử (Sandbox)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab" aria-controls="logs" aria-selected="false">
+                <i class="fa-solid fa-list-ul me-2"></i>Lịch Sử Giao Dịch
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="aiTabContent">
+        <!-- TAB 1: OVERVIEW -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="row g-4">
+                <!-- AI Module Breakdowns -->
+                <div class="col-lg-8">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-cubes text-primary me-2"></i>Bản Đồ Phân Phối Tần Suất Sử Dụng AI</h5>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="p-3 border rounded-3 text-center">
+                                    <div class="metric-icon bg-light-primary text-primary mx-auto mb-2"><i class="fa-solid fa-stethoscope"></i></div>
+                                    <h6 class="fw-bold mb-1">Chẩn đoán ICD-10</h6>
+                                    <h4 class="fw-bold text-primary mb-0">@ViewBag.IcdRequests</h4>
+                                    <small class="text-muted">Đề xuất phác đồ & mã ICD</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 border rounded-3 text-center">
+                                    <div class="metric-icon bg-light-success text-success mx-auto mb-2"><i class="fa-solid fa-image-portrait"></i></div>
+                                    <h6 class="fw-bold mb-1">Phân tích X-Quang</h6>
+                                    <h4 class="fw-bold text-success mb-0">@ViewBag.VisionRequests</h4>
+                                    <small class="text-muted">Khoanh vùng & kết luận ảnh</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 border rounded-3 text-center">
+                                    <div class="metric-icon bg-light-info text-info mx-auto mb-2"><i class="fa-solid fa-network-wired"></i></div>
+                                    <h6 class="fw-bold mb-1">Định tuyến Chuyên khoa</h6>
+                                    <h4 class="fw-bold text-info mb-0">@ViewBag.DeptRequests</h4>
+                                    <small class="text-muted">Phân bổ phòng khám thông minh</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 border rounded-3 text-center">
+                                    <div class="metric-icon bg-light-warning text-warning mx-auto mb-2"><i class="fa-solid fa-comments"></i></div>
+                                    <h6 class="fw-bold mb-1">Trợ Lý Chat Y Tế</h6>
+                                    <h4 class="fw-bold text-warning mb-0">@ViewBag.ChatRequests</h4>
+                                    <small class="text-muted">Tư vấn sức khỏe ban đầu</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Settings -->
+                <div class="col-lg-4">
+                    <div class="glass-card p-4">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-sliders text-success me-2"></i>Cấu Hình Kiểm Soát</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Gemini API Key hiện tại</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-key text-muted"></i></span>
+                                <input type="password" class="form-control" id="geminiKey" value="••••••••••••••••••••••••••••••••••••" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('geminiKey')">
+                                    <i class="fa-solid fa-eye" id="geminiKeyEye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Được cấu hình trong appsettings.json</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">OpenAI API Key (Chuyên khoa)</label>
+                            <input type="password" class="form-control" id="openaiKey" value="••••••••••••••••••••••••••••••••••••" readonly>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3">
+                            <h6 class="fw-bold small mb-2"><i class="fa-solid fa-shield-halved text-danger me-1"></i>Kiểm soát lâm sàng nghiêm ngặt:</h6>
+                            <ul class="small ps-3 mb-0 text-muted">
+                                <li>Mọi mã ICD-10 đều được lọc bằng regex và chuẩn hóa.</li>
+                                <li>Phác đồ chẩn đoán được tự động đính kèm cảnh báo an toàn pháp lý.</li>
+                                <li>Ảnh cận lâm sàng không hợp lệ bị từ chối ở tầng đầu vào.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: CLINICAL TEST SUITE -->
+        <div class="tab-pane fade" id="testsuite" role="tabpanel" aria-labelledby="testsuite-tab">
+            <div class="glass-card p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="fa-solid fa-vials text-primary me-2"></i>Hệ Thống Đánh Giá & Kiểm Thử Độ Chính Xác AI</h5>
+                        <p class="text-muted small mb-0">Hệ thống thực hiện chẩn đoán lâm sàng tự động trên 5 ca kiểm thử chuẩn y khoa để tính toán tỷ lệ chính xác (Accuracy Rate).</p>
+                    </div>
+                    <button class="btn btn-success px-4 rounded-pill fw-bold" id="btnRunTests" onclick="runTestSuite()">
+                        <i class="fa-solid fa-play me-2"></i> Chạy Kiểm Thử Ngay
+                    </button>
+                </div>
+
+                <!-- Test results summaries (Hidden initially) -->
+                <div class="row g-3 mb-4 d-none" id="testSummaryContainer">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center bg-light">
+                            <span class="text-muted small fw-bold d-block mb-1">TỶ LỆ KHỚP CHUẨN (ACCURACY)</span>
+                            <h3 class="fw-bold text-success mb-0" id="lblTestSuiteAccuracy">0%</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center bg-light">
+                            <span class="text-muted small fw-bold d-block mb-1">CA ĐẠT / TỔNG SỐ</span>
+                            <h3 class="fw-bold text-primary mb-0" id="lblTestSuitePassed">0 / 5</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded-3 text-center bg-light">
+                            <span class="text-muted small fw-bold d-block mb-1">ĐỘ TRỄ PHẢN HỒI BÌNH QUÂN</span>
+                            <h3 class="fw-bold text-info mb-0" id="lblTestSuiteLatency">0 ms</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test results table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0" id="tblTestCases">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 15%">Ca Lâm Sàng</th>
+                                <th style="width: 35%">Triệu Chứng Đầu Vào</th>
+                                <th style="width: 10%" class="text-center">Mã Nhóm ICD</th>
+                                <th style="width: 12%" class="text-center">Mã AI Dự Đoán</th>
+                                <th style="width: 18%">Chẩn Đoán Đề Xuất</th>
+                                <th style="width: 10%" class="text-center">Độ Trễ</th>
+                                <th style="width: 10%" class="text-center">Đánh Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="test-row-placeholder">
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fa-solid fa-flask-vial fa-2x mb-2 d-block"></i>
+                                    Nhấn nút "Chạy Kiểm Thử Ngay" để đánh giá độ chính xác của AI
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SANDBOX -->
+        <div class="tab-pane fade" id="sandbox" role="tabpanel" aria-labelledby="sandbox-tab">
+            <div class="row g-4">
+                <!-- Sandbox Diagnostic -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-brain text-info me-2"></i>Thử Nghiệm Chẩn Đoán ICD-10</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nhập triệu chứng lâm sàng giả lập</label>
+                            <textarea class="form-control" id="sandboxSymptoms" rows="4" placeholder="Ví dụ: Đau tức vùng hạ sườn phải lan ra sau lưng, có sốt nhẹ và vàng da nhẹ 2 ngày..."></textarea>
+                        </div>
+                        <button class="btn btn-info text-white rounded-pill px-4 mb-4" id="btnSandboxIcd" onclick="runSandboxIcd()">
+                            <i class="fa-solid fa-magnifying-glass-chart me-1"></i> Gọi AI Phân Tích
+                        </button>
+
+                        <div class="d-none" id="sandboxIcdResult">
+                            <h6 class="fw-bold border-bottom pb-2">KẾT QUẢ AI PHÂN TÍCH</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td class="fw-bold" style="width: 35%">Mã ICD-10:</td><td><span class="badge bg-primary text-white" id="sbIcdCode"></span></td></tr>
+                                <tr><td class="fw-bold">Chẩn đoán:</td><td id="sbDiagnosis"></td></tr>
+                                <tr><td class="fw-bold">Xét nghiệm đề xuất:</td><td id="sbLabTests"></td></tr>
+                                <tr><td class="fw-bold">Đơn thuốc đề xuất:</td><td id="sbMedicines"></td></tr>
+                                <tr><td class="fw-bold">Hạn chế lâm sàng:</td><td id="sbDisclaimer" class="text-danger small italic"></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sandbox Vision -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-bone text-danger me-2"></i>Thử Nghiệm Phân Tích Hình Ảnh (X-Quang)</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tải lên tập tin ảnh cận lâm sàng</label>
+                            <input class="form-control" type="file" id="sandboxImageFile" accept="image/*">
+                        </div>
+                        <button class="btn btn-danger rounded-pill px-4 mb-4" id="btnSandboxVision" onclick="runSandboxVision()">
+                            <i class="fa-solid fa-expand me-1"></i> Phân Tích Bằng AI Vision
+                        </button>
+
+                        <div class="d-none" id="sandboxVisionResult">
+                            <h6 class="fw-bold border-bottom pb-2">KẾT QUẢ PHÂN TÍCH X-QUANG</h6>
+                            <div class="row">
+                                <div class="col-md-5 mb-3 text-center">
+                                    <img id="sbVisionImage" class="img-fluid rounded-3 border" style="max-height: 200px;" src="" alt="Chẩn đoán X-Ray">
+                                </div>
+                                <div class="col-md-7">
+                                    <table class="table table-sm table-borderless small">
+                                        <tr><td class="fw-bold" style="width: 45%">Kết luận:</td><td id="sbVisionFinding" class="fw-bold text-danger"></td></tr>
+                                        <tr><td class="fw-bold">Độ tin cậy:</td><td id="sbVisionConfidence"></td></tr>
+                                        <tr><td class="fw-bold">Chất lượng ảnh:</td><td id="sbVisionQuality"></td></tr>
+                                        <tr><td class="fw-bold">Tổn thương khớp:</td><td id="sbVisionLesion"></td></tr>
+                                        <tr><td class="fw-bold">Mô mềm:</td><td id="sbVisionSoftTissue"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: HISTORICAL LOGS -->
+        <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+            <div class="glass-card p-4">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-list-check text-info me-2"></i>Nhật Ký Yêu Cầu Giao Dịch AI</h5>
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-striped table-hover align-middle mb-0" id="tblLogs">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th style="width: 10%">ID</th>
+                                <th style="width: 15%">Thời Gian</th>
+                                <th style="width: 12%">Phân Hệ</th>
+                                <th style="width: 35%">Tham Số Vào</th>
+                                <th style="width: 10%" class="text-center">Độ Trễ</th>
+                                <th style="width: 10%" class="text-center">Trạng Thái</th>
+                                <th style="width: 8%" class="text-center">Chi Tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var l in Model)
+                                {
+                                    <tr>
+                                        <td><code>@l.Id</code></td>
+                                        <td>@l.Timestamp.ToString("HH:mm:ss dd/MM/yyyy")</td>
+                                        <td><span class="badge bg-secondary text-white">@l.Module</span></td>
+                                        <td class="text-truncate" style="max-width: 250px;">@l.Input</td>
+                                        <td class="text-center">@Math.Round(l.ExecutionTimeMs, 0) ms</td>
+                                        <td class="text-center">
+                                            @if (l.Success)
+                                            {
+                                                <span class="badge bg-success text-white">Thành Công</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger text-white">Lỗi</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-outline-primary btn-xs" onclick="viewLogDetail('@l.Id')">
+                                                <i class="fa-solid fa-magnifying-glass"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr class="logs-placeholder">
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        Không có nhật ký giao dịch nào gần đây.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết Log -->
+<div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="logModalLabel"><i class="fa-solid fa-code-merge me-2"></i>Chi Tiết Nhật Ký AI</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color:#f8f9fa;">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold">Thời Gian</label>
+                        <p class="mb-0 fw-bold" id="modalTimestamp"></p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold">Phân Hệ</label>
+                        <p class="mb-0"><span class="badge bg-secondary text-white" id="modalModule"></span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted fw-bold">Độ Trễ Phản Hồi</label>
+                        <p class="mb-0 fw-bold text-primary" id="modalLatency"></p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Tham Số Vào (Input)</label>
+                    <div class="p-3 bg-white border rounded-3 small text-break" id="modalInput"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Thông Báo Kiểm Định (Validation Errors)</label>
+                    <div class="p-3 bg-white border rounded-3 small text-danger fw-bold" id="modalValidationError"></div>
+                </div>
+
+                <div>
+                    <label class="small text-muted fw-bold">Dữ Liệu Thô AI Trả Về (Raw JSON Response)</label>
+                    <pre class="raw-json"><code class="language-json" id="modalRawResponse"></code></pre>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle passwords visibility
+    function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        const eye = document.getElementById(fieldId + 'Eye');
+        if (field.type === 'password') {
+            field.type = 'text';
+            eye.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            field.type = 'password';
+            eye.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Refresh page
+    function refreshDashboard() {
+        location.reload();
+    }
+
+    // Clear logs
+    async function clearLogs() {
+        if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử nhật ký gọi AI?')) return;
+        try {
+            const res = await fetch('@Url.Action("ClearAiLogs", "Admin")', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                alert('Đã xóa sạch log thành công.');
+                refreshDashboard();
+            }
+        } catch (e) {
+            alert('Lỗi kết nối server.');
+        }
+    }
+
+    // Run Clinical Test Suite
+    async function runTestSuite() {
+        const btn = document.getElementById('btnRunTests');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang chạy đánh giá...';
+
+        // Clear table placeholder
+        const tbody = document.querySelector('#tblTestCases tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">Hệ thống đang gửi các ca triệu chứng kiểm thử lâm sàng đến Google Gemini API...</p>
+                </td>
+            </tr>
+        `;
+
+        try {
+            const res = await fetch('@Url.Action("RunAiTestSuite", "Admin")', { method: 'POST' });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+
+            if (data.success) {
+                // Populate metrics summary
+                document.getElementById('testSummaryContainer').classList.remove('d-none');
+                document.getElementById('lblTestSuiteAccuracy').innerText = data.accuracy + '%';
+                document.getElementById('lblTestSuitePassed').innerText = data.passedCount + ' / ' + data.totalCount;
+                document.getElementById('lblTestSuiteLatency').innerText = data.avgLatency + ' ms';
+
+                // Populate table
+                tbody.innerHTML = '';
+                data.testCases.forEach((tc, index) => {
+                    const row = document.createElement('tr');
+                    row.className = `test-case-row ${tc.passed ? 'passed' : 'failed'}`;
+                    row.innerHTML = `
+                        <td class="fw-bold">${tc.caseName}</td>
+                        <td class="small text-muted">${tc.inputSymptoms}</td>
+                        <td class="text-center fw-bold"><span class="badge bg-secondary">${tc.expectedIcdGroup}</span></td>
+                        <td class="text-center fw-bold text-primary">${tc.predictedIcd || 'N/A'}</td>
+                        <td>${tc.predictedDiagnosis || 'Không phân tích được'}</td>
+                        <td class="text-center">${Math.round(tc.latencyMs)} ms</td>
+                        <td class="text-center">
+                            ${tc.passed 
+                                ? '<span class="badge bg-success text-white"><i class="fa-solid fa-circle-check"></i> Đạt</span>' 
+                                : '<span class="badge bg-danger text-white" title="' + (tc.errorDetails || '') + '"><i class="fa-solid fa-circle-xmark"></i> Sai lệch</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                alert(data.message || 'Lỗi kiểm thử.');
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            alert('Không thể kết nối đến máy chủ AI để thực hiện kiểm thử.');
+        }
+    }
+
+    // Run Sandbox Diagnostic
+    async function runSandboxIcd() {
+        const txt = document.getElementById('sandboxSymptoms').value;
+        if (!txt || txt.trim() === '') {
+            alert('Vui lòng nhập triệu chứng để chạy thử!');
+            return;
+        }
+
+        const btn = document.getElementById('btnSandboxIcd');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang xử lý...';
+
+        document.getElementById('sandboxIcdResult').classList.add('d-none');
+
+        try {
+            const res = await fetch('/Doctor/PredictIcdFromSymptoms?symptoms=' + encodeURIComponent(txt));
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+
+            if (data.success) {
+                document.getElementById('sandboxIcdResult').classList.remove('d-none');
+                document.getElementById('sbIcdCode').innerText = data.icdCode;
+                document.getElementById('sbDiagnosis').innerText = data.diagnosis;
+                document.getElementById('sbLabTests').innerText = data.labTests.join(', ');
+                document.getElementById('sbMedicines').innerText = data.medicines.map(m => m.name).join(', ');
+                document.getElementById('sbDisclaimer').innerText = data.treatmentPlan.split('\n\n').pop(); // Show the disclaimer at the end
+            } else {
+                alert(data.message || 'Lỗi khi gọi chẩn đoán.');
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            alert('Lỗi kết nối máy chủ.');
+        }
+    }
+
+    // Run Sandbox Vision
+    async function runSandboxVision() {
+        const fileInput = document.getElementById('sandboxImageFile');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Vui lòng tải lên ảnh chụp cận lâm sàng để phân tích!');
+            return;
+        }
+
+        const btn = document.getElementById('btnSandboxVision');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang quét X-Quang...';
+
+        document.getElementById('sandboxVisionResult').classList.add('d-none');
+
+        const formData = new FormData();
+        formData.append('imageFile', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/Doctor/AnalyzeImageAi', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+
+            if (data.success) {
+                document.getElementById('sandboxVisionResult').classList.remove('d-none');
+                document.getElementById('sbVisionImage').src = data.imageUrl + '?t=' + new Date().getTime();
+                
+                // Parse the metrics string to build visual items
+                const lines = data.resultText.split('\n');
+                document.getElementById('sbVisionFinding').innerText = lines.find(l => l.includes('Kết luận:'))?.split(':').pop().trim() || 'N/A';
+                document.getElementById('sbVisionConfidence').innerText = lines.find(l => l.includes('Độ tin cậy:'))?.split(':').pop().trim() || 'N/A';
+                document.getElementById('sbVisionQuality').innerText = lines.find(l => l.includes('Chất lượng hình ảnh:'))?.split(':').pop().trim() || 'N/A';
+                document.getElementById('sbVisionLesion').innerText = lines.find(l => l.includes('Tổn thương cấu trúc:'))?.split(':').pop().trim() || 'N/A';
+                document.getElementById('sbVisionSoftTissue').innerText = lines.find(l => l.includes('Tình trạng mô mềm:'))?.split(':').pop().trim() || 'N/A';
+            } else {
+                alert(data.message || 'Lỗi phân tích hình ảnh.');
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            alert('Lỗi kết nối máy chủ.');
+        }
+    }
+
+    // View Log details in modal
+    let logsCache = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? new List<HeThongBenhVien.Services.AiRequestLogEntry>()));
+    
+    // In case Model is initialized, fetch fresh logs directly from endpoint
+    async function viewLogDetail(id) {
+        try {
+            const res = await fetch('@Url.Action("GetAiLogs", "Admin")');
+            const logsList = await res.json();
+            const log = logsList.find(l => l.id === id);
+            
+            if (log) {
+                document.getElementById('modalTimestamp').innerText = log.timestamp;
+                document.getElementById('modalModule').innerText = log.module;
+                document.getElementById('modalLatency').innerText = log.executionTimeMs + ' ms';
+                document.getElementById('modalInput').innerText = log.input;
+                document.getElementById('modalValidationError').innerText = log.validationError || 'Không phát hiện sai sót kiểm định.';
+                
+                // Format Raw JSON response nicely
+                try {
+                    const parsed = JSON.parse(log.rawResponse);
+                    document.getElementById('modalRawResponse').innerText = JSON.stringify(parsed, null, 2);
+                } catch(err) {
+                    document.getElementById('modalRawResponse').innerText = log.rawResponse;
+                }
+
+                const myModal = new bootstrap.Modal(document.getElementById('logModal'));
+                myModal.show();
+            }
+        } catch(e) {
+            alert('Không thể tải dữ liệu chi tiết log.');
+        }
+    }
+</script>

@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Hướng dẫn sử dụng - Cổng Bệnh Nhân";
     var patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
 }
@@ -44,6 +44,11 @@
                         <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-map-tab" data-bs-toggle="pill" data-bs-target="#v-pills-map" type="button" role="tab" aria-controls="v-pills-map" aria-selected="false">
                             <i class="fa-solid fa-map-location-dot fs-5"></i>
                             <span>Sơ Đồ Bệnh Viện</span>
+                        </button>
+                        <!-- Tab 7: Trợ lý AI Y Tế & Vision -->
+                        <button class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3" id="v-pills-ai-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ai" type="button" role="tab" aria-controls="v-pills-ai" aria-selected="false">
+                            <i class="fa-solid fa-robot fs-5 text-teal" style="color: #0d9488;"></i>
+                            <span>Tư Vấn AI Y Tế</span>
                         </button>
                     </div>
 
@@ -503,6 +508,80 @@
                                         <div class="bg-white rounded-pill text-center py-2 text-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border" style="color: #0b57d0 !important;">
                                             <i class="fa-solid fa-phone"></i> Hotline: 1900 1234
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pane 7: Tư Vấn AI Y Tế & Vision -->
+                        <div class="tab-pane fade" id="v-pills-ai" role="tabpanel" aria-labelledby="v-pills-ai-tab">
+                            <div class="row g-4">
+                                <div class="col-lg-8">
+                                    <div class="card portal-sidebar-card p-4 h-100">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background-color: rgba(13, 148, 136, 0.05); border: 1.5px solid rgba(13, 148, 136, 0.15);">
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 text-teal" style="width: 48px; height: 48px; background-color: rgba(13, 148, 136, 0.1); color: #0d9488 !important; font-size: 1.25rem;">
+                                                <i class="fa-solid fa-robot"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h5 class="fw-bold text-dark mb-0" style="font-size: 14.5px; color: #0d9488 !important;">Chức năng: Trợ Lý AI Vision & Hỏi Đáp Y Tế</h5>
+                                                <p class="text-secondary small mb-0" style="font-size: 11px;">Giải đáp thắc mắc sức khỏe, đọc ảnh chẩn đoán X-Quang/Siêu âm 24/7</p>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-secondary mb-4 small" style="line-height: 1.7; font-size: 0.9rem;">
+                                            Trợ lý Trí Tuệ Nhân Tạo (AI) của bệnh viện được tích hợp công nghệ Google Gemini Vision hiện đại, giúp bệnh nhân hỏi đáp triệu chứng ban đầu, đọc và khoanh vùng tổn thương trên hình ảnh X-Quang, siêu âm cực kỳ nhanh chóng.
+                                        </p>
+
+                                        <!-- Timeline Steps -->
+                                        <div class="timeline-steps position-relative ps-2">
+                                            <div class="position-absolute start-0 top-0 bottom-0 ms-3" style="border-left: 2px dotted #cbd5e1; width: 0; z-index: 1; top: 16px; bottom: 16px;"></div>
+                                            
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0d9488; font-size: 13px; flex-shrink: 0;">1</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 1: Mở Trợ Lý AI</h6>
+                                                    <p class="text-secondary small mb-0">Nhấn vào biểu tượng **Trợ Lý AI** ở góc dưới bên phải màn hình hoặc chọn mục **Hỏi Đáp AI** trên menu điều hướng.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-4 mb-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0d9488; font-size: 13px; flex-shrink: 0;">2</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 2: Gõ câu hỏi hoặc Tải ảnh X-Quang / Siêu âm</h6>
+                                                    <p class="text-secondary small mb-0">Mô tả chi tiết triệu chứng của bạn (ví dụ: đau răng, đau khớp...) hoặc bấm **Chọn tệp** tải ảnh phim X-Quang/xét nghiệm để AI quét tự động.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-4 position-relative" style="z-index: 2;">
+                                                <div class="step-num rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 32px; height: 32px; background-color: #0d9488; font-size: 13px; flex-shrink: 0;">3</div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1">Bước 3: Nhận kết quả khoanh vùng & Gợi ý đặt lịch</h6>
+                                                    <p class="text-secondary small mb-0">AI sẽ tự động khoanh vùng đỏ vị trí bất thường trên ảnh (nếu có), phân tích độ tin cậy và gợi ý đúng chuyên khoa để bạn chọn bác sĩ đặt lịch khám ngay.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="card portal-sidebar-card p-4 text-start mb-4">
+                                        <div class="d-flex align-items-center gap-2 mb-3">
+                                            <i class="fa-solid fa-microchip fs-5" style="color: #0d9488;"></i>
+                                            <h6 class="fw-bold mb-0 text-dark">Công nghệ AI Vision 24/7</h6>
+                                        </div>
+                                        <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                                            AI nhận diện chính xác các tổn thương lồng ngực, xương chi, răng hàm mặt, và giải đáp thắc mắc y tế mọi lúc mọi nơi hoàn toàn miễn phí.
+                                        </p>
+                                    </div>
+
+                                    <div class="card portal-sidebar-card p-4 text-start" style="background-color: #f8fafc; border: 1px dashed #cbd5e1;">
+                                        <div class="d-flex align-items-center gap-2 mb-2 text-primary">
+                                            <i class="fa-solid fa-shield-halved fs-5"></i>
+                                            <h6 class="fw-bold mb-0">LƯU Ý KHUYẾN CÁO</h6>
+                                        </div>
+                                        <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                                            Kết quả tư vấn và đọc ảnh từ AI có giá trị hỗ trợ tham khảo ban đầu. Bệnh nhân nên đến khám trực tiếp với bác sĩ để nhận kết luận lâm sàng chính xác nhất.
+                                        </p>
                                     </div>
                                 </div>
                             </div>

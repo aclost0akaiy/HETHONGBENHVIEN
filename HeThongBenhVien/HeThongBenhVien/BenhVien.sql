@@ -9844,3 +9844,5 @@ END CATCH;
 
 
 INSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'R53', N'Mệt mỏi không đặc hiệu', N'Nghỉ ngơi đầy đủ, bù nước điện giải, theo dõi triệu chứng và tái khám nếu tình trạng không cải thiện hoặc xuất hiện thêm triệu chứng mới.', N'Tổng phân tích máu, Đường huyết', N'Vitamin Tổng Hợp, Oresol');
+
+INSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'R50.9', N'Sốt không rõ nguyên nhân', N'Hạ sốt, bù nước điện giải và theo dõi sát nhiệt độ', N'Tổng phân tích tế bào máu ngoại vi, Định lượng CRP', N'Paracetamol, Oresol');

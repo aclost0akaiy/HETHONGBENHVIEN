@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using HeThongBenhVien.Data;
@@ -23,11 +23,13 @@ namespace HeThongBenhVien.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
+        private readonly HeThongBenhVien.Services.MedicalAiService _aiService;
 
-        public PatientController(ApplicationDbContext context, IConfiguration config)
+        public PatientController(ApplicationDbContext context, IConfiguration config, HeThongBenhVien.Services.MedicalAiService aiService)
         {
             _context = context;
             _config = config;
+            _aiService = aiService;
         }
 
         private async Task<int> GetCurrentPatientId()
@@ -412,91 +414,26 @@ namespace HeThongBenhVien.Controllers
 
             try
             {
-                var departments = await _context.Departments.Select(d => new { d.Id, d.DepartmentName }).ToListAsync();
-                string deptsJson = JsonSerializer.Serialize(departments);
+                var departments = await _context.Departments
+                    .Select(d => new HeThongBenhVien.Services.DepartmentDto { Id = d.Id, DepartmentName = d.DepartmentName })
+                    .ToListAsync();
 
-                string apiKey = _config["OpenAiApiKey"];
+                int deptId = await _aiService.SuggestDepartmentAIAsync(req.symptoms, departments);
 
-                string prompt = $"Một bệnh nhân có triệu chứng sau: '{req.symptoms}'. " +
-                                $"Bệnh viện có các chuyên khoa sau (định dạng JSON): {deptsJson}. " +
-                                "Dựa vào triệu chứng, hãy chọn 1 chuyên khoa phù hợp nhất để khám. " +
-                                "CHỈ TRẢ VỀ ID (số nguyên) CỦA CHUYÊN KHOA ĐÓ, không thêm bất kỳ văn bản, giải thích hay markdown nào khác.";
-
-                if (!string.IsNullOrEmpty(apiKey))
+                if (deptId > 0)
                 {
-                    try
-                    {
-                        var payload = new
-                        {
-                            model = "gpt-4o-mini",
-                            messages = new[]
-                            {
-                                new { role = "system", content = "Bạn là một bác sĩ hỗ trợ chọn chuyên khoa." },
-                                new { role = "user", content = prompt }
-                            }
-                        };
-                        using var client = new HttpClient();
-                        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-                        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                        var response = await client.PostAsync("https://api.openai.com/v1/chat/completions", content);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            string responseString = await response.Content.ReadAsStringAsync();
-                            using JsonDocument doc = JsonDocument.Parse(responseString);
-                            string resultText = doc.RootElement
-                                .GetProperty("choices")[0]
-                                .GetProperty("message")
-                                .GetProperty("content").GetString();
-
-                            if (!string.IsNullOrEmpty(resultText))
-                            {
-                                resultText = resultText.Trim();
-                                string onlyDigits = new string(resultText.Where(char.IsDigit).ToArray());
-
-                                if (!string.IsNullOrEmpty(onlyDigits) && int.TryParse(onlyDigits, out int deptId))
-                                {
-                                    return Json(new { success = true, departmentId = deptId, isAi = true, engine = "OpenAI" });
-                                }
-                            }
-                        }
-                        // Nếu API lỗi (hết quota, sai key...) sẽ tự động rơi xuống chế độ dự phòng bên dưới
-                    }
-                    catch
-                    {
-                        // Bỏ qua lỗi, chạy tiếp xuống AI Dự Phòng
-                    }
-                }
-
-                // --- CHẾ ĐỘ DỰ PHÒNG (FALLBACK) ---
-                // Được kích hoạt nếu API Key (cả OpenAI lẫn Gemini) bị lỗi hết tiền, hết quota hoặc cấu hình sai
-                string s = req.symptoms.ToLower();
-                int fallbackDeptId = departments.FirstOrDefault()?.Id ?? 0;
-
-                if (s.Contains("mỏi tay") || s.Contains("đau tay") || s.Contains("mỏi vai") || s.Contains("vai gáy") || s.Contains("đau lưng") || s.Contains("xương") || s.Contains("khớp") || s.Contains("gãy")) {
-                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("xương") || x.DepartmentName.ToLower().Contains("khớp") || x.DepartmentName.ToLower().Contains("ngoại"));
-                    if (d != null) fallbackDeptId = d.Id;
-                }
-                else if (s.Contains("ho") || s.Contains("sổ mũi") || s.Contains("đau họng") || s.Contains("tai ") || s.Contains("mũi ")) {
-                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("tai") || x.DepartmentName.ToLower().Contains("họng") || x.DepartmentName.ToLower().Contains("nội"));
-                    if (d != null) fallbackDeptId = d.Id;
-                }
-                else if (s.Contains("răng") || s.Contains("nướu") || s.Contains("hàm")) {
-                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("răng") || x.DepartmentName.ToLower().Contains("hàm"));
-                    if (d != null) fallbackDeptId = d.Id;
-                }
-                else if (s.Contains("mắt") || s.Contains("mờ") || s.Contains("cận")) {
-                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("mắt"));
-                    if (d != null) fallbackDeptId = d.Id;
-                }
-                else if (s.Contains("đau đầu") || s.Contains("chóng mặt") || s.Contains("đau bụng") || s.Contains("buồn nôn") || s.Contains("sốt") || s.Contains("tim") || s.Contains("huyết áp")) {
-                    var d = departments.FirstOrDefault(x => x.DepartmentName.ToLower().Contains("nội") || x.DepartmentName.ToLower().Contains("tổng hợp") || x.DepartmentName.ToLower().Contains("tim"));
-                    if (d != null) fallbackDeptId = d.Id;
-                }
-
-                if (fallbackDeptId > 0)
-                {
-                    return Json(new { success = true, departmentId = fallbackDeptId, isAi = false, message = "Cảnh báo: API Key (OpenAI/Gemini) của bạn đã hết tiền/Quota. Hệ thống tự động kích hoạt AI Dự phòng để không làm gián đoạn." });
+                    var lastLog = _aiService.GetLogs().FirstOrDefault(l => l.Module == "Department" && l.Input.Contains(req.symptoms));
+                    bool isAi = lastLog != null && lastLog.Success && (lastLog.ValidationError == null || !lastLog.ValidationError.Contains("Heuristic Fallback"));
+                    
+                    string message = isAi ? "Chọn chuyên khoa tự động bằng AI thành công." : "Cảnh báo: API Key (OpenAI/Gemini) của bạn gặp sự cố. Hệ thống tự động kích hoạt AI Dự phòng để chọn chuyên khoa khám phù hợp.";
+                    
+                    return Json(new { 
+                        success = true, 
+                        departmentId = deptId, 
+                        isAi = isAi, 
+                        engine = isAi ? "Gemini/OpenAI" : "Fallback Rules",
+                        message = message
+                    });
                 }
 
                 return Json(new { success = false, message = "Hệ thống AI từ xa hết hạn mức và không thể tự phân tích." });
@@ -532,60 +469,21 @@ namespace HeThongBenhVien.Controllers
 
             try
             {
-                string apiKey = _config["GeminiApiKey"] ?? "AQ.Ab8RN6J4SMQmPbxcj4SVJiawQciJYbwlAcwgfj4oZxwqBNDjNQ";
-                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
-
-                var contentsList = new List<object>();
-
+                var historyDtos = new List<HeThongBenhVien.Services.ChatMessageDto>();
                 if (req.history != null)
                 {
                     foreach (var h in req.history)
                     {
-                        contentsList.Add(new
+                        historyDtos.Add(new HeThongBenhVien.Services.ChatMessageDto
                         {
-                            role = h.role == "user" ? "user" : "model",
-                            parts = new object[] { new { text = h.content } }
+                            Role = h.role,
+                            Content = h.content
                         });
                     }
                 }
 
-                contentsList.Add(new
-                {
-                    role = "user",
-                    parts = new object[] { new { text = req.message } }
-                });
-
-                var payload = new
-                {
-                    systemInstruction = new
-                    {
-                        parts = new object[]
-                        {
-                            new { text = "Bạn là trợ lý AI Y tế Chuyên sâu (Medical AI Advisor) của hệ thống QL KCB. Nhiệm vụ của bạn là tư vấn sức khỏe cho bệnh nhân. Hãy trả lời cực kỳ ân cần, khoa học, chính xác bằng tiếng Việt. Gợi ý các chuyên khoa hoặc lối sống lành mạnh nếu phù hợp. Luôn nhắc nhở thân thiện rằng lời khuyên của bạn chỉ mang tính tham khảo và khuyên họ nên đặt lịch khám với bác sĩ chuyên khoa nếu triệu chứng kéo dài hoặc nghiêm trọng." }
-                        }
-                    },
-                    contents = contentsList
-                };
-
-                using var client = new HttpClient();
-                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(url, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string responseString = await response.Content.ReadAsStringAsync();
-                    using JsonDocument doc = JsonDocument.Parse(responseString);
-                    string reply = doc.RootElement
-                        .GetProperty("candidates")[0]
-                        .GetProperty("content")
-                        .GetProperty("parts")[0]
-                        .GetProperty("text").GetString();
-
-                    return Json(new { success = true, reply = reply });
-                }
-
-                string errorMsg = await response.Content.ReadAsStringAsync();
-                return Json(new { success = false, message = "Hệ thống AI không phản hồi: " + errorMsg });
+                string reply = await _aiService.SendChatMessageAsync(req.message, historyDtos);
+                return Json(new { success = true, reply = reply });
             }
             catch (Exception ex)
             {

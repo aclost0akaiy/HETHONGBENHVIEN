@@ -1,0 +1,26 @@
+--- RAW ---
+{
+  "finding": "Kẹp kim loại cố định xương ức sau phẫu thuật",
+  "confidence": 95.0,
+  "x": 43.0,
+  "y": 57.0,
+  "width": 19.0,
+  "height": 13.0,
+  "quality": "Đạt tiêu chuẩn",
+  "lesion": "Kẹp kim loại cố định xương ức",
+  "alignment": "Bình thường",
+  "softTissue": "Bình thường"
+}
+--- CLEAN ---
+{
+  "finding": "Kẹp kim loại cố định xương ức sau phẫu thuật",
+  "confidence": 95.0,
+  "x": 43.0,
+  "y": 57.0,
+  "width": 19.0,
+  "height": 13.0,
+  "quality": "Đạt tiêu chuẩn",
+  "lesion": "Kẹp kim loại cố định xương ức",
+  "alignment": "Bình thường",
+  "softTissue": "Bình thường"
+}

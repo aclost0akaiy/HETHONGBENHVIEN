@@ -1,0 +1,11 @@
+System.Text.Json.JsonReaderException: ':' is invalid after a value. Expected either ',', '}', or ']'. LineNumber: 0 | BytePositionInLine: 304.
+   at System.Text.Json.ThrowHelper.ThrowJsonReaderException(Utf8JsonReader& json, ExceptionResource resource, Byte nextByte, ReadOnlySpan`1 bytes)
+   at System.Text.Json.Utf8JsonReader.ConsumeNextToken(Byte marker)
+   at System.Text.Json.Utf8JsonReader.ReadSingleSegment()
+   at System.Text.Json.Utf8JsonReader.Read()
+   at System.Text.Json.JsonDocument.Parse(ReadOnlySpan`1 utf8JsonSpan, JsonReaderOptions readerOptions, MetadataDb& database, StackRowStack& stack)
+   at System.Text.Json.JsonDocument.Parse(ReadOnlyMemory`1 utf8Json, JsonReaderOptions readerOptions, Byte[] extraRentedArrayPoolBytes, PooledByteBufferWriter extraPooledByteBufferWriter)
+   at System.Text.Json.JsonDocument.Parse(ReadOnlyMemory`1 json, JsonDocumentOptions options)
+   at System.Text.Json.JsonDocument.Parse(String json, JsonDocumentOptions options)
+   at HeThongBenhVien.Services.MedicalAiService.AnalyzeImageAiAsync(Byte[] imageBytes, String contentType, String customApiKey) in C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\Services\MedicalAiService.cs:line 453
+   at HeThongBenhVien.Controllers.DoctorController.AnalyzeImageAi(IFormFile imageFile) in C:\Users\PC\Downloads\HETHONGBENHVIEN\HeThongBenhVien\HeThongBenhVien\Controllers\DoctorController.cs:line 1908

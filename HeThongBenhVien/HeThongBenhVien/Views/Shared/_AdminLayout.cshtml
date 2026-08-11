@@ -338,13 +338,12 @@
             </li>
 
             <div class="nav-section-title">Tài chính & Dược</div>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyVienPhi" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyBHYT" ? "active" : "")">
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyVienPhi" ? "active" : "")">
                 <a href="#financeSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
                     <span><i class="fa-solid fa-money-bill-wave"></i> Viện phí & BHYT</span>
                 </a>
                 <ul class="collapse list-unstyled ps-4 mt-2" id="financeSubmenu" style="font-size: 0.9em;">
                     <li><a href="@Url.Action("QuanLyVienPhi", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Thu viện phí</a></li>
-                    <li><a href="@Url.Action("QuanLyBHYT", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-id-card me-2"></i>Bảo hiểm y tế</a></li>
                     <li><a href="@Url.Action("QuanLyGia", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-tags me-2"></i>Bảng giá dịch vụ</a></li>
                 </ul>
             </li>
@@ -367,7 +366,7 @@
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "NhatKyHeThong" ? "active" : "")">
                 <a href="@Url.Action("NhatKyHeThong", "Admin")"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký Hệ thống</a>
             </li>
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTaiKhoan" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNhanSu" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoaPhong" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyLichLamViec" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyThietBi" ? "active" : "")">
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "CauHinhHeThong" || ViewContext.RouteData.Values["Action"]?.ToString() == "AiDashboard" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyTaiKhoan" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyNhanSu" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyKhoaPhong" || ViewContext.RouteData.Values["Action"]?.ToString() == "QuanLyLichLamViec" ? "active" : "")">
                 <a href="#settingsSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
                     <span><i class="fa-solid fa-gears"></i> Cài đặt & Cấu hình</span>
                 </a>
@@ -376,8 +375,8 @@
                     <li><a href="@Url.Action("QuanLyNhanSu", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-user-doctor me-2"></i>Nhân sự</a></li>
                     <li><a href="@Url.Action("QuanLyKhoaPhong", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-hospital-user me-2"></i>Khoa phòng</a></li>
                     <li><a href="@Url.Action("QuanLyLichLamViec", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-calendar-days me-2"></i>Lịch làm việc</a></li>
-                    <li><a href="@Url.Action("QuanLyThietBi", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-toolbox me-2"></i>Thiết bị</a></li>
                     <li><a href="@Url.Action("CauHinhHeThong", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-server me-2"></i>Cấu hình lõi</a></li>
+                    <li><a href="@Url.Action("AiDashboard", "Admin")" class="text-secondary py-2 d-block"><i class="fa-solid fa-robot me-2 text-primary"></i>Trung tâm AI</a></li>
                 </ul>
             </li>
         </ul>

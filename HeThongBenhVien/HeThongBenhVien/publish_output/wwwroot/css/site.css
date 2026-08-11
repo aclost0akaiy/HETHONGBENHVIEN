@@ -20,3 +20,269 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* =============================================
+   Badge màu tùy chỉnh cho trạng thái bệnh án
+   ============================================= */
+.bg-appt-purple { background-color: #7c3aed !important; }
+.bg-appt-orange { background-color: #ea580c !important; }
+.bg-appt-teal   { background-color: #0d9488 !important; }
+
+/* Timeline - Lịch sử điều trị */
+.timeline-container { position: relative; padding-left: 40px; }
+.timeline-item { position: relative; }
+.timeline-dot {
+    position: absolute;
+    left: -28px;
+    top: 16px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0ea5e9;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px #0ea5e9;
+    z-index: 1;
+}
+.timeline-line {
+    position: absolute;
+    left: -20px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #0ea5e9, #e2e8f0);
+}
+
+/* Alert banner ưu tiên */
+.priority-alert {
+    border-radius: 12px;
+    border-left-width: 5px;
+    border-left-style: solid;
+    animation: slideDown 0.4s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Medicine autocomplete dropdown */
+.medicine-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    background: white;
+}
+.medicine-dropdown .list-group-item:hover {
+    background-color: #f0f9ff;
+    cursor: pointer;
+}
+
+/* =============================================
+   Thống nhất Phông chữ & Giao diện toàn hệ thống
+   ============================================= */
+html, body, div, p, span, th, td, h1, h2, h3, h4, h5, h6, input, select, textarea, button, a {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Custom status badges với độ tương phản cao, dễ nhìn */
+.badge {
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: 50px !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.badge-chua-den { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+.badge-cho-kham { background-color: #fef9c3 !important; color: #854d0e !important; border: 1px solid #fef08a !important; }
+.badge-dang-kham { background-color: #dbeafe !important; color: #1e40af !important; border: 1px solid #bfdbfe !important; }
+.badge-cho-xet-nghiem { background-color: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fed7aa !important; }
+.badge-cho-ket-qua { background-color: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff !important; }
+.badge-cho-toa-thuoc { background-color: #fae8ff !important; color: #86198f !important; border: 1px solid #f5d0fe !important; }
+.badge-cho-thanh-toan { background-color: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
+.badge-cho-lay-thuoc { background-color: #ccfbf1 !important; color: #115e59 !important; border: 1px solid #99f6e4 !important; }
+.badge-hen-tai-kham { background-color: #e0f2fe !important; color: #075985 !important; border: 1px solid #bae6fd !important; }
+.badge-da-xac-nhan { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+.badge-hoan-thanh { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+.badge-nhap-vien { background-color: #f8fafc !important; color: #0f172a !important; border: 1px solid #e2e8f0 !important; }
+
+/* Custom Action Buttons trong bảng */
+.btn-circle-action {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease-in-out !important;
+    border: 1px solid transparent !important;
+    text-decoration: none !important;
+}
+
+.btn-circle-action:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08) !important;
+}
+
+/* Circle warning / call button */
+.btn-circle-warning {
+    background-color: #fffbeb !important;
+    border-color: #fef08a !important;
+    color: #d97706 !important;
+}
+.btn-circle-warning:hover {
+    background-color: #fef3c7 !important;
+    border-color: #fde047 !important;
+    color: #b45309 !important;
+}
+
+/* Circle info / view button */
+.btn-circle-info {
+    background-color: #f0fdfa !important;
+    border-color: #ccfbf1 !important;
+    color: #0d9488 !important;
+}
+.btn-circle-info:hover {
+    background-color: #ccfbf1 !important;
+    border-color: #99f6e4 !important;
+    color: #0f766e !important;
+}
+
+/* Circle primary / edit button */
+.btn-circle-primary {
+    background-color: #eff6ff !important;
+    border-color: #dbeafe !important;
+    color: #2563eb !important;
+}
+.btn-circle-primary:hover {
+    background-color: #dbeafe !important;
+    border-color: #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+
+/* =============================================
+   Soft Button Styles (Professional & Soft Palette)
+   ============================================= */
+.btn-soft-primary, .btn-soft-success, .btn-soft-info, .btn-soft-warning, .btn-soft-danger, .btn-soft-secondary {
+    width: auto !important;
+    height: auto !important;
+    border-radius: 50px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 16px !important;
+    white-space: nowrap !important;
+    font-weight: 600 !important;
+}
+
+.btn-soft-primary {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-primary:hover, .btn-soft-primary.active {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border-color: #93c5fd !important;
+}
+
+.btn-soft-success {
+    background-color: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #bbf7d0 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-success:hover, .btn-soft-success.active {
+    background-color: #bbf7d0 !important;
+    color: #166534 !important;
+    border-color: #86efac !important;
+}
+
+.btn-soft-info {
+    background-color: #ecfeff !important;
+    color: #0891b2 !important;
+    border: 1px solid #cffafe !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-info:hover, .btn-soft-info.active {
+    background-color: #cffafe !important;
+    color: #0e7490 !important;
+    border-color: #67e8f9 !important;
+}
+
+.btn-soft-warning {
+    background-color: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fde047 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-warning:hover, .btn-soft-warning.active {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #facc15 !important;
+}
+
+.btn-soft-danger {
+    background-color: #fef2f2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-danger:hover, .btn-soft-danger.active {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #f87171 !important;
+}
+
+.btn-soft-secondary {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.2s ease !important;
+}
+.btn-soft-secondary:hover, .btn-soft-secondary.active {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* =============================================
+   Soft Pastel Alerts Override
+   ============================================= */
+.priority-alert.alert-danger {
+    background-color: #fef2f2 !important;
+    border: 1px solid #fee2e2 !important;
+    border-left: 5px solid #ef4444 !important;
+    color: #991b1b !important;
+}
+
+.priority-alert.alert-warning {
+    background-color: #fffbeb !important;
+    border: 1px solid #fef08a !important;
+    border-left: 5px solid #f59e0b !important;
+    color: #854d0e !important;
+}
+
+/* =============================================
+   Soft Pastel Badge Overrides globally
+   ============================================= */
+.badge.bg-secondary { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+.badge.bg-warning { background-color: #fef9c3 !important; color: #854d0e !important; border: 1px solid #fef08a !important; }
+.badge.bg-primary { background-color: #dbeafe !important; color: #1e40af !important; border: 1px solid #bfdbfe !important; }
+.badge.bg-info { background-color: #e0f2fe !important; color: #075985 !important; border: 1px solid #bae6fd !important; }
+.badge.bg-danger { background-color: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
+.badge.bg-success { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+.badge.bg-dark { background-color: #f8fafc !important; color: #0f172a !important; border: 1px solid #e2e8f0 !important; }
+.badge.bg-appt-purple { background-color: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff !important; }
+.badge.bg-appt-orange { background-color: #fae8ff !important; color: #86198f !important; border: 1px solid #f5d0fe !important; }
+.badge.bg-appt-teal { background-color: #ccfbf1 !important; color: #115e59 !important; border: 1px solid #99f6e4 !important; }

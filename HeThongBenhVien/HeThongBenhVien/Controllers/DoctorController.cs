@@ -71,11 +71,13 @@ namespace HeThongBenhVien.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly HeThongBenhVien.Services.MedicalAiService _aiService;
 
-        public DoctorController(ApplicationDbContext context, IWebHostEnvironment env)
+        public DoctorController(ApplicationDbContext context, IWebHostEnvironment env, HeThongBenhVien.Services.MedicalAiService aiService)
         {
             _context = context;
             _env = env;
+            _aiService = aiService;
         }
 
         public async Task<IActionResult> Dashboard(int? month, int? year, string? searchString)
@@ -123,14 +125,15 @@ namespace HeThongBenhVien.Controllers
 
             var unexaminedCount = await myAppointmentsQuery.CountAsync(a =>
                 a.Status != AppointmentStatus.HoanThanh &&
-                a.Status != AppointmentStatus.HenTaiKham &&
-                a.Status != AppointmentStatus.ChuaDen);
+                a.Status != AppointmentStatus.HenTaiKham);
             var completedCount = await myAppointmentsQuery.CountAsync(a =>
                 a.Status == AppointmentStatus.HoanThanh ||
                 a.Status == AppointmentStatus.HenTaiKham);
-            var waitingCount = await myAppointmentsQuery.CountAsync(a => a.Status == AppointmentStatus.ChuaDen);
-            
-            var emergencyCount = 0; 
+            var waitingCount = await myAppointmentsQuery.CountAsync(a =>
+                a.Status != AppointmentStatus.HoanThanh &&
+                a.Status != AppointmentStatus.HenTaiKham);
+            var emergencyCount = await myAppointmentsQuery.CountAsync(a =>
+                a.Status == 6 || (a.Reason != null && a.Reason.StartsWith("[CẤP CỨU"))); 
 
             var upcomingAppointments = await myAppointmentsQuery
                 .Include(a => a.Patient)
@@ -1155,7 +1158,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> PredictIcdFromSymptoms(string symptoms, [FromServices] IConfiguration config)
+        public async Task<IActionResult> PredictIcdFromSymptoms(string symptoms)
         {
             if (string.IsNullOrEmpty(symptoms))
             {
@@ -1165,138 +1168,61 @@ namespace HeThongBenhVien.Controllers
             try
             {
                 var protocols = await _context.ICD10Protocols.ToListAsync();
-                if (!protocols.Any())
+                var result = await _aiService.PredictIcdFromSymptomsAsync(symptoms, protocols);
+
+                if (!string.IsNullOrEmpty(result.IcdCode))
                 {
-                    return Json(new { success = false, message = "Không có phác đồ nào trong database" });
-                }
-
-                // Build list of options for Gemini
-                var options = string.Join("\n", protocols.Select(p => $"- {p.ICDCode}: {p.Diagnosis}"));
-
-                string apiKey = config["GeminiApiKey"] ?? "AQ.Ab8RN6J4SMQmPbxcj4SVJiawQciJYbwlAcwgfj4oZxwqBNDjNQ";
-                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}";
-
-                string promptText = $"Dựa trên các triệu chứng lâm sàng của bệnh nhân sau: \"{symptoms}\"\n\n" +
-                    "Hãy thực hiện phân tích chẩn đoán y khoa như một bác sĩ chuyên khoa cấp cao. Hãy chọn mã bệnh ICD-10 phù hợp nhất.\n" +
-                    "Nếu triệu chứng trùng khớp hoặc gần giống với một trong các phác đồ hiện có sau đây, hãy dùng đúng mã hiện có:\n" +
-                    options + "\n\n" +
-                    "Nếu triệu chứng KHÔNG TRÙNG KHỚP với bất kỳ mã nào ở trên, bạn hãy tự suy luận ra một mã ICD-10 thực tế chuẩn quốc tế mới cùng chẩn đoán, cận lâm sàng đề xuất (ngắn gọn) và đơn thuốc (gồm tên thuốc viết hoa chữ cái đầu, ngăn cách nhau bằng dấu phẩy) phù hợp.\n\n" +
-                    "Yêu cầu bắt buộc trả về kết quả dưới dạng JSON đúng cấu trúc sau (không kèm markdown): \n" +
-                    "{\n" +
-                    "  \"icdCode\": \"MÃ_ICD_10\",\n" +
-                    "  \"diagnosis\": \"Tên chẩn đoán\",\n" +
-                    "  \"treatmentPlan\": \"Phác đồ điều trị đề xuất ngắn gọn\",\n" +
-                    "  \"labTests\": \"Xét nghiệm 1, Xét nghiệm 2 (ngăn cách bằng dấu phẩy, tối đa 2-3 dịch vụ)\",\n" +
-                    "  \"medicines\": \"Thuốc A, Thuốc B (ngăn cách bằng dấu phẩy, tối đa 2-3 thuốc)\"\n" +
-                    "}";
-
-                var payload = new
-                {
-                    systemInstruction = new
+                    var existing = await _context.ICD10Protocols.FirstOrDefaultAsync(p => p.ICDCode == result.IcdCode);
+                    bool isNew = false;
+                    if (existing == null)
                     {
-                        parts = new object[]
+                        isNew = true;
+                        var newProtocol = new ICD10Protocol
                         {
-                            new { text = "Bạn là chuyên gia cố vấn y tế, hỗ trợ phân tích triệu chứng để phân loại mã ICD-10 chính xác dựa trên danh sách cho sẵn hoặc tự tạo mã mới phù hợp chuẩn y khoa." }
-                        }
-                    },
-                    contents = new object[]
-                    {
-                        new
+                            ICDCode = result.IcdCode,
+                            Diagnosis = string.IsNullOrEmpty(result.Diagnosis) ? "Chẩn đoán tự động" : result.Diagnosis,
+                            TreatmentPlan = string.IsNullOrEmpty(result.TreatmentPlan) ? "Theo dõi sức khỏe và tái khám" : result.TreatmentPlan,
+                            LabTests = result.LabTests,
+                            Medicines = result.Medicines
+                        };
+                        _context.ICD10Protocols.Add(newProtocol);
+                        await _context.SaveChangesAsync();
+
+                        try
                         {
-                            parts = new object[]
-                            {
-                                new { text = promptText }
-                            }
+                            string sqlInsert = $"\nINSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'{result.IcdCode}', N'{newProtocol.Diagnosis.Replace("'", "''")}', N'{newProtocol.TreatmentPlan.Replace("'", "''")}', N'{newProtocol.LabTests?.Replace("'", "''")}', N'{newProtocol.Medicines?.Replace("'", "''")}');\n";
+                            System.IO.File.AppendAllText("c:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\BenhVien.sql", sqlInsert, System.Text.Encoding.UTF8);
                         }
-                    },
-                    generationConfig = new { response_mime_type = "application/json" }
-                };
+                        catch { }
 
-                using (var client = new HttpClient())
-                {
-                    var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(url, content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        using (var doc = JsonDocument.Parse(responseString))
-                        {
-                            var text = doc.RootElement
-                                .GetProperty("candidates")[0]
-                                .GetProperty("content")
-                                .GetProperty("parts")[0]
-                                .GetProperty("text")
-                                .GetString();
-
-                            if (!string.IsNullOrEmpty(text))
-                            {
-                                using (var resDoc = JsonDocument.Parse(text))
-                                {
-                                    if (resDoc.RootElement.TryGetProperty("icdCode", out var codeProp))
-                                    {
-                                        string icdCode = (codeProp.GetString() ?? "").Trim().ToUpper();
-                                        string diagnosis = resDoc.RootElement.TryGetProperty("diagnosis", out var diagProp) ? diagProp.GetString() ?? "" : "";
-                                        string treatmentPlan = resDoc.RootElement.TryGetProperty("treatmentPlan", out var treatProp) ? treatProp.GetString() ?? "" : "";
-                                        string labTests = resDoc.RootElement.TryGetProperty("labTests", out var labProp) ? labProp.GetString() ?? "" : "";
-                                        string medicines = resDoc.RootElement.TryGetProperty("medicines", out var medProp) ? medProp.GetString() ?? "" : "";
-
-                                        if (!string.IsNullOrEmpty(icdCode))
-                                        {
-                                            var existing = await _context.ICD10Protocols.FirstOrDefaultAsync(p => p.ICDCode == icdCode);
-                                            bool isNew = false;
-                                            if (existing == null)
-                                            {
-                                                isNew = true;
-                                                var newProtocol = new ICD10Protocol
-                                                {
-                                                    ICDCode = icdCode,
-                                                    Diagnosis = string.IsNullOrEmpty(diagnosis) ? "Chẩn đoán tự động" : diagnosis,
-                                                    TreatmentPlan = string.IsNullOrEmpty(treatmentPlan) ? "Theo dõi sức khỏe và tái khám" : treatmentPlan,
-                                                    LabTests = labTests,
-                                                    Medicines = medicines
-                                                };
-                                                _context.ICD10Protocols.Add(newProtocol);
-                                                await _context.SaveChangesAsync();
-
-                                                try
-                                                {
-                                                    string sqlInsert = $"\nINSERT INTO ICD10Protocols (ICDCode, Diagnosis, TreatmentPlan, LabTests, Medicines) VALUES (N'{icdCode}', N'{newProtocol.Diagnosis.Replace("'", "''")}', N'{newProtocol.TreatmentPlan.Replace("'", "''")}', N'{newProtocol.LabTests?.Replace("'", "''")}', N'{newProtocol.Medicines?.Replace("'", "''")}');\n";
-                                                    System.IO.File.AppendAllText("c:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\BenhVien.sql", sqlInsert, System.Text.Encoding.UTF8);
-                                                }
-                                                catch { }
-
-                                                existing = newProtocol;
-                                            }
-
-                                            var labArray = (existing.LabTests ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
-                                            var medArray = (existing.Medicines ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries)
-                                                .Select(m => new { name = m.Trim(), quantity = 10, dosage = "Sử dụng theo chỉ định của bác sĩ" })
-                                                .ToArray();
-
-                                            return Json(new
-                                            {
-                                                success = true,
-                                                isNew = isNew,
-                                                icdCode = existing.ICDCode,
-                                                diagnosis = existing.Diagnosis,
-                                                treatmentPlan = existing.TreatmentPlan,
-                                                labTests = labArray,
-                                                medicines = medArray
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        existing = newProtocol;
                     }
+
+                    var labArray = (existing.LabTests ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                    var medArray = (existing.Medicines ?? "").Split(new[] { ",", ";", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(m => new { name = m.Trim(), quantity = 10, dosage = "Sử dụng theo chỉ định của bác sĩ" })
+                        .ToArray();
+
+                    return Json(new
+                    {
+                        success = true,
+                        isNew = isNew,
+                        icdCode = existing.ICDCode,
+                        diagnosis = existing.Diagnosis,
+                        treatmentPlan = existing.TreatmentPlan + "\n\n" + result.Disclaimer,
+                        labTests = labArray,
+                        medicines = medArray
+                    });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "AI không trả về kết quả chẩn đoán hợp lệ." });
                 }
             }
             catch (Exception ex)
             {
-                // Fallback
+                return Json(new { success = false, message = "Lỗi phân tích AI: " + ex.Message });
             }
-
-            return Json(new { success = false, message = "Không thể phân tích bằng AI" });
         }
 
         [HttpGet]
@@ -1963,7 +1889,7 @@ namespace HeThongBenhVien.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AnalyzeImageAi(IFormFile imageFile, [FromServices] IConfiguration config)
+        public async Task<IActionResult> AnalyzeImageAi(IFormFile imageFile)
         {
             if (imageFile == null || imageFile.Length == 0)
             {
@@ -1972,152 +1898,19 @@ namespace HeThongBenhVien.Controllers
 
             try
             {
-                string apiKey = config["GeminiApiKey"];
-                if (string.IsNullOrEmpty(apiKey))
-                    return Json(new { success = false, message = "Chưa cấu hình Gemini API Key" });
-
-                // convert image to base64
-                string base64Image;
+                byte[] imageBytes;
                 using (var ms = new MemoryStream())
                 {
                     await imageFile.CopyToAsync(ms);
-                    base64Image = Convert.ToBase64String(ms.ToArray());
+                    imageBytes = ms.ToArray();
                 }
 
-                // Completely dynamic analysis without hardcoded filenames or coordinates
-                string clinicalContext = "Bạn là một bác sĩ chẩn đoán hình ảnh cấp cao siêu hạng. Hãy phân tích hình ảnh cận lâm sàng này (X-Quang, CT, MRI, Siêu âm hoặc hình ảnh nha khoa) một cách hoàn toàn khách quan và chính xác. Hãy kiểm tra kỹ tất cả các vùng giải phẫu hiển thị trên hình ảnh để phát hiện bất kỳ tổn thương, bệnh lý hoặc bất thường nào (ví dụ: vết gãy, nứt rạn xương, mọc lệch răng, tụ dịch, u xơ, viêm nhiễm, v.v.).";
-                string anatomicalGuidance = "Nếu phát hiện bất kỳ tổn thương hoặc bất thường nào, hãy xác định chính xác vị trí tọa độ của vùng tổn thương đó để khoanh vùng. Nếu hình ảnh hoàn toàn bình thường và không có bệnh lý nào, hãy ghi nhận kết quả là bình thường và đặt tọa độ x, y, width, height bằng 0.";
+                var aiResult = await _aiService.AnalyzeImageAiAsync(imageBytes, imageFile.ContentType);
 
-                string promptText = $"{clinicalContext} " +
-                    "YÊU CẦU QUAN TRỌNG: " +
-                    "1. Trường 'finding' phải cực kỳ NGẮN GỌN và SÚC TÍCH (dưới 15 chữ), chỉ nêu rõ kết luận tổn thương chính. Ví dụ: 'Nứt đầu dưới xương mác cẳng chân' hoặc 'Răng khôn 38 mọc lệch 90 độ' hoặc 'Gãy xương sườn 6 bên phải'. Tuyệt đối không viết dài dòng giải thích. " +
-                    "2. Khoanh vùng đỏ thật chính xác trên xương/răng bị tổn thương. Bỏ qua hoàn toàn các chữ cái nhãn ký hiệu y tế như chữ 'L', 'R', 'XRAY'. " +
-                    "3. Đánh giá thêm các tiêu chí hình ảnh: " +
-                    "   - quality: Đánh giá chất lượng hình ảnh (ví dụ: 'Đạt tiêu chuẩn chẩn đoán', 'Mờ nhẹ',...). " +
-                    "   - lesion: Nhận diện tổn thương xương/răng (ví dụ: 'Có vết gãy/nứt', 'Mọc lệch/ngầm', 'Không phát hiện bất thường',...). " +
-                    "   - alignment: Trạng thái khớp/vị trí giải phẫu (ví dụ: 'Bình thường', 'Di lệch nhẹ', 'Mọc ngầm chèn ép',...). " +
-                    "   - softTissue: Tình trạng mô mềm xung quanh (ví dụ: 'Sưng nề nhẹ', 'Bình thường', 'Tụ dịch nhẹ',...). " +
-                    $"{anatomicalGuidance} " +
-                    "Trả về kết quả DƯỚI DẠNG JSON đúng cấu trúc sau (không kèm markdown): {{\"finding\": \"Mô tả ngắn gọn\", \"confidence\": 98.0, \"x\": 10, \"y\": 20, \"width\": 5, \"height\": 5, \"quality\": \"Đạt tiêu chuẩn chẩn đoán\", \"lesion\": \"Có vết gãy/nứt\", \"alignment\": \"Di lệch nhẹ\", \"softTissue\": \"Sưng nề nhẹ\"}}.";
-
-                // create payload with systemInstruction to guide reasoning
-                var payload = new
+                if (aiResult == null || aiResult.Finding == "Hình ảnh không phải là cận lâm sàng y tế" || aiResult.Quality == "Không hợp lệ")
                 {
-                    systemInstruction = new
-                    {
-                        parts = new object[]
-                        {
-                            new { text = "Bạn là chuyên gia chẩn đoán hình ảnh hàng đầu thế giới với hơn 30 năm kinh nghiệm. Nhiệm vụ của bạn là luôn phân tích hình ảnh cận lâm sàng một cách khách quan, chính xác và trung thực nhất. Chỉ ra khu vực tổn thương nghi ngờ nếu có bất thường, nếu không phát hiện bất kỳ bệnh lý nào thì kết luận hình ảnh bình thường." }
-                        }
-                    },
-                    contents = new[]
-                    {
-                        new
-                        {
-                            parts = new object[]
-                            {
-                                new { text = promptText },
-                                new { inline_data = new { mime_type = imageFile.ContentType, data = base64Image } }
-                            }
-                        }
-                    },
-                    generationConfig = new { response_mime_type = "application/json" }
-                };
-
-                using var client = new HttpClient();
-                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync($"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={apiKey}", content);
-                
-                string responseString = await response.Content.ReadAsStringAsync();
-                
-                double GetDoubleSafe(JsonElement element)
-                {
-                    if (element.ValueKind == JsonValueKind.Number)
-                        return element.GetDouble();
-                    if (element.ValueKind == JsonValueKind.String)
-                    {
-                        string s = element.GetString() ?? "";
-                        s = s.Replace("%", "").Trim();
-                        if (double.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
-                            return val;
-                    }
-                    return 99.0;
+                    return Json(new { success = false, message = "Ảnh không hợp lệ: Hệ thống AI nhận thấy hình ảnh này không thuộc nhóm cận lâm sàng y tế hoặc không thể phân tích." });
                 }
-
-                int GetIntSafe(JsonElement element)
-                {
-                    if (element.ValueKind == JsonValueKind.Number)
-                        return element.GetInt32();
-                    if (element.ValueKind == JsonValueKind.String)
-                    {
-                        string s = element.GetString() ?? "";
-                        s = s.Replace("%", "").Trim();
-                        if (double.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
-                            return (int)val;
-                    }
-                    return 0;
-                }
-
-                GeminiVisionResponse aiResult = null;
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Google API trả về lỗi HTTP {response.StatusCode}. Chi tiết lỗi: {responseString}");
-                }
-
-                using JsonDocument doc = JsonDocument.Parse(responseString);
-                string? jsonResultText = doc.RootElement
-                    .GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text").GetString();
-
-                if (jsonResultText != null)
-                {
-                    var match = System.Text.RegularExpressions.Regex.Match(jsonResultText, @"\{.*\}", System.Text.RegularExpressions.RegexOptions.Singleline);
-                    if (match.Success)
-                    {
-                        jsonResultText = match.Value;
-                    }
-
-                    using JsonDocument parsedDoc = JsonDocument.Parse(jsonResultText);
-                    var root = parsedDoc.RootElement;
-
-                    aiResult = new GeminiVisionResponse();
-
-                    if (root.TryGetProperty("finding", out var fProp)) aiResult.finding = fProp.GetString() ?? "Bình thường";
-                    else if (root.TryGetProperty("Finding", out var fPropCap)) aiResult.finding = fPropCap.GetString() ?? "Bình thường";
-
-                    if (root.TryGetProperty("confidence", out var cProp)) aiResult.confidence = GetDoubleSafe(cProp);
-                    else if (root.TryGetProperty("Confidence", out var cPropCap)) aiResult.confidence = GetDoubleSafe(cPropCap);
-
-                    if (root.TryGetProperty("x", out var xProp)) aiResult.x = GetIntSafe(xProp);
-                    else if (root.TryGetProperty("X", out var xPropCap)) aiResult.x = GetIntSafe(xPropCap);
-
-                    if (root.TryGetProperty("y", out var yProp)) aiResult.y = GetIntSafe(yProp);
-                    else if (root.TryGetProperty("Y", out var yPropCap)) aiResult.y = GetIntSafe(yPropCap);
-
-                    if (root.TryGetProperty("width", out var wProp)) aiResult.width = GetIntSafe(wProp);
-                    else if (root.TryGetProperty("Width", out var wPropCap)) aiResult.width = GetIntSafe(wPropCap);
-
-                    if (root.TryGetProperty("height", out var hProp)) aiResult.height = GetIntSafe(hProp);
-                    else if (root.TryGetProperty("Height", out var hPropCap)) aiResult.height = GetIntSafe(hPropCap);
-
-                    if (root.TryGetProperty("quality", out var qProp)) aiResult.quality = qProp.GetString() ?? "Đạt tiêu chuẩn";
-                    else if (root.TryGetProperty("Quality", out var qPropCap)) aiResult.quality = qPropCap.GetString() ?? "Đạt tiêu chuẩn";
-
-                    if (root.TryGetProperty("lesion", out var lProp)) aiResult.lesion = lProp.GetString() ?? "Không phát hiện";
-                    else if (root.TryGetProperty("Lesion", out var lPropCap)) aiResult.lesion = lPropCap.GetString() ?? "Không phát hiện";
-
-                    if (root.TryGetProperty("alignment", out var aProp)) aiResult.alignment = aProp.GetString() ?? "Bình thường";
-                    else if (root.TryGetProperty("Alignment", out var aPropCap)) aiResult.alignment = aPropCap.GetString() ?? "Bình thường";
-
-                    if (root.TryGetProperty("softTissue", out var stProp)) aiResult.softTissue = stProp.GetString() ?? "Bình thường";
-                    else if (root.TryGetProperty("SoftTissue", out var stPropCap)) aiResult.softTissue = stPropCap.GetString() ?? "Bình thường";
-                }
-
-                if (aiResult == null)
-                    throw new Exception("Không thể trích xuất kết quả phân tích JSON từ phản hồi của Google Gemini.");
 
                 string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -2125,19 +1918,19 @@ namespace HeThongBenhVien.Controllers
                 string uniqueFileName = "ai_" + Guid.NewGuid().ToString() + "_" + Path.GetFileName(imageFile.FileName);
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                using (var imageStream = imageFile.OpenReadStream())
+                using (var imageStream = new MemoryStream(imageBytes))
                 {
                     using (var image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream))
                     {
-                        if (aiResult.width > 0 && aiResult.height > 0)
+                        if (aiResult.Width > 0 && aiResult.Height > 0)
                         {
-                            bool isThousandScale = aiResult.x > 100 || aiResult.y > 100 || aiResult.width > 100 || aiResult.height > 100;
+                            bool isThousandScale = aiResult.X > 100 || aiResult.Y > 100 || aiResult.Width > 100 || aiResult.Height > 100;
                             double divisor = isThousandScale ? 1000.0 : 100.0;
 
-                            double normX = aiResult.x / divisor;
-                            double normY = aiResult.y / divisor;
-                            double normW = aiResult.width / divisor;
-                            double normH = aiResult.height / divisor;
+                            double normX = aiResult.X / divisor;
+                            double normY = aiResult.Y / divisor;
+                            double normW = aiResult.Width / divisor;
+                            double normH = aiResult.Height / divisor;
 
                             if (normX < 0) normX = 0; if (normX > 1) normX = 1;
                             if (normY < 0) normY = 0; if (normY > 1) normY = 1;
@@ -2158,7 +1951,7 @@ namespace HeThongBenhVien.Controllers
                             {
                                 int fontSize = Math.Max(16, image.Height / 30);
                                 var font = SystemFonts.CreateFont("Arial", fontSize, FontStyle.Bold);
-                                string label = $"{aiResult.finding} - {aiResult.confidence}%";
+                                string label = $"{aiResult.Finding} - {aiResult.Confidence}%";
                                 float textY = Math.Max(5, y - fontSize - 10);
                                 image.Mutate(ctx => ctx.DrawText(label, font, SixLabors.ImageSharp.Color.Red, new PointF(x, textY)));
                             }
@@ -2169,14 +1962,15 @@ namespace HeThongBenhVien.Controllers
                     }
                 }
 
-                string criteriaReport = $"[KẾT QUẢ PHÂN TÍCH X-QUANG AI]\n" +
-                                       $"- Kết luận: {aiResult.finding}\n" +
-                                       $"- Độ tin cậy: {aiResult.confidence}%\n" +
+                string criteriaReport = $"[KẾT QUẢ PHÂN TÍCH HÌNH ẢNH AI]\n" +
+                                       $"- Kết luận: {aiResult.Finding}\n" +
+                                       $"- Độ tin cậy: {aiResult.Confidence}%\n" +
                                        $"- Tiêu chí đánh giá lâm sàng:\n" +
-                                       $"  + Chất lượng hình ảnh: {aiResult.quality}\n" +
-                                       $"  + Tổn thương cấu trúc: {aiResult.lesion}\n" +
-                                       $"  + Trạng thái khớp/vị trí: {aiResult.alignment}\n" +
-                                       $"  + Tình trạng mô mềm: {aiResult.softTissue}";
+                                       $"  + Chất lượng hình ảnh: {aiResult.Quality}\n" +
+                                       $"  + Tổn thương cấu trúc: {aiResult.Lesion}\n" +
+                                       $"  + Trạng thái khớp/vị trí: {aiResult.Alignment}\n" +
+                                       $"  + Tình trạng mô mềm: {aiResult.SoftTissue}\n\n" +
+                                       $"{aiResult.Disclaimer}";
 
                 return Json(new { 
                     success = true, 
@@ -2186,6 +1980,11 @@ namespace HeThongBenhVien.Controllers
             }
             catch (Exception ex)
             {
+                try
+                {
+                    System.IO.File.WriteAllText("c:\\Users\\PC\\Downloads\\HETHONGBENHVIEN\\HeThongBenhVien\\HeThongBenhVien\\wwwroot\\uploads\\error.txt", ex.ToString());
+                }
+                catch { }
                 return Json(new { success = false, message = "Lỗi xử lý ảnh: " + ex.Message });
             }
         }
@@ -2682,18 +2481,29 @@ namespace HeThongBenhVien.Controllers
 
         // 3. Đánh dấu Ưu tiên / Cấp cứu
         [HttpPost]
-        public async Task<IActionResult> ToggleEmergency(int appointmentId)
+        public async Task<IActionResult> ToggleEmergency(int appointmentId, string? emergencyReason)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
             if (appointment != null)
             {
-                if (appointment.Reason.StartsWith("[CẤP CỨU]"))
+                if (appointment.Reason.StartsWith("[CẤP CỨU"))
                 {
-                    appointment.Reason = appointment.Reason.Replace("[CẤP CỨU]", "").Trim();
+                    int index = appointment.Reason.IndexOf(']');
+                    if (index >= 0)
+                    {
+                        appointment.Reason = appointment.Reason.Substring(index + 1).Trim();
+                    }
+                    else
+                    {
+                        appointment.Reason = appointment.Reason.Replace("[CẤP CỨU]", "").Trim();
+                    }
+                    appointment.Status = 1; // Đang chờ
                 }
                 else
                 {
-                    appointment.Reason = "[CẤP CỨU] " + appointment.Reason;
+                    string prefix = string.IsNullOrEmpty(emergencyReason) ? "[CẤP CỨU]" : $"[CẤP CỨU: {emergencyReason}]";
+                    appointment.Reason = prefix + " " + appointment.Reason;
+                    appointment.Status = 6; // Ưu tiên
                 }
                 await _context.SaveChangesAsync();
             }

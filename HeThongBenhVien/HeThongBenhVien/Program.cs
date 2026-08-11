@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<HeThongBenhVien.Services.MedicalAiService>();
+
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -233,6 +235,41 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine("Could not auto-fix table schemas: " + ex.Message);
+    }
+
+    // Rename dummy placeholder patient names to realistic Vietnamese names
+    try
+    {
+        var dummyPatients = db.Patients.ToList();
+        var patientsToRename = dummyPatients.Where(p => 
+            p.FullName != null && (
+            p.FullName.StartsWith("Bệnh nhân tiếp đón", StringComparison.OrdinalIgnoreCase) || 
+            p.FullName.StartsWith("B?nh nhn ti?p dn", StringComparison.OrdinalIgnoreCase) || 
+            p.FullName.Contains("tiếp đón", StringComparison.OrdinalIgnoreCase) || 
+            p.FullName.Contains("ti?p dn", StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+
+        if (patientsToRename.Any())
+        {
+            var firstNames = new[] { "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý" };
+            var middleNames = new[] { "Văn", "Thị", "Hữu", "Đức", "Minh", "Quang", "Anh", "Hoàng", "Ngọc", "Tuấn", "Thanh", "Mạnh", "Kim" };
+            var lastNames = new[] { "Anh", "Dũng", "Hùng", "Hải", "Tuấn", "Nam", "Bình", "Sơn", "Đông", "Lâm", "Hà", "Hương", "Lan", "Mai", "Cúc", "Trúc", "Xuân", "Hạ", "Thu", "Đông", "Vy", "Trang", "Giang", "Phương" };
+            
+            var rng = new Random(54321); // Fixed seed for reproducibility
+            foreach (var p in patientsToRename)
+            {
+                var first = firstNames[rng.Next(firstNames.Length)];
+                var middle = middleNames[rng.Next(middleNames.Length)];
+                var last = lastNames[rng.Next(lastNames.Length)];
+                p.FullName = $"{first} {middle} {last}";
+                db.Patients.Update(p);
+            }
+            db.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Could not rename dummy patients: " + ex.Message);
     }
 
     try

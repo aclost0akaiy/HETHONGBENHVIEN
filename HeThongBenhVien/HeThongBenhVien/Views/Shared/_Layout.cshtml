@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -114,13 +114,36 @@
         </script>
     }
     @{
-        var isHomePage = ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && 
-                         ViewContext.RouteData.Values["Action"]?.ToString() == "Index";
+        var isPatientRole = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("BenhNhan") || User.IsInRole("Patient"));
+        var isDoctorRole = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("BacSi") || User.IsInRole("Doctor"));
+        var isAdminRole = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+
+        string navHomeCtrl = "Home";
+        string navHomeAct = "Index";
+
+        if (isPatientRole)
+        {
+            navHomeCtrl = "Patient";
+            navHomeAct = "Portal";
+        }
+        else if (isDoctorRole)
+        {
+            navHomeCtrl = "Doctor";
+            navHomeAct = "Index";
+        }
+        else if (isAdminRole)
+        {
+            navHomeCtrl = "Admin";
+            navHomeAct = "Index";
+        }
+
+        var isHomePage = ViewContext.RouteData.Values["Controller"]?.ToString() == navHomeCtrl && 
+                         ViewContext.RouteData.Values["Action"]?.ToString() == navHomeAct;
     }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0 py-3">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="@navHomeCtrl" asp-action="@navHomeAct">
                     <i class="fa-solid fa-square-h text-primary fs-3"></i> 
                     QL KCB
                 </a>
@@ -131,7 +154,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 ms-4 align-items-center">
                         <li class="nav-item">
-                            <a class="nav-link @(isHomePage ? "active-link" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link @(isHomePage ? "active-link" : "")" asp-controller="@navHomeCtrl" asp-action="@navHomeAct">Trang chủ</a>
                         </li>
                         @if (User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("BenhNhan") || User.IsInRole("Patient")))
                         {
