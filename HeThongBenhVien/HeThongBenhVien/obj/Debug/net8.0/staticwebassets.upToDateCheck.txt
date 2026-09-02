@@ -66,6 +66,7 @@ wwwroot\uploads\ai_0efabc73-8452-4be2-b7c9-248a0c4e880c_u.jfif
 wwwroot\uploads\ai_0f19fd3c-99b6-45ba-82f2-708136f56251_6.jpeg
 wwwroot\uploads\ai_105c57c4-49e7-4ba5-b168-7e19877decdc_4.jpg
 wwwroot\uploads\ai_227e15ed-367b-4532-8783-13c761470aeb_gãy tay .jfif
+wwwroot\uploads\ai_22cad5e8-30f1-4689-94a5-d5c9c1eefd1a_36.jpg
 wwwroot\uploads\ai_2686c3a7-b08f-45f1-aadb-3db7afa7897b_gãy tay .jfif
 wwwroot\uploads\ai_26a78c8a-a394-4f79-9295-ca3b11151921_8.jpg
 wwwroot\uploads\ai_26ec293a-96c4-4a70-bf27-5f8600fda1aa_gãy tay .jfif

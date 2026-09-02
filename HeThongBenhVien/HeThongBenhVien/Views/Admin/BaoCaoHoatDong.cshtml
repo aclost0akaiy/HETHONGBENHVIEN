@@ -1,143 +1,629 @@
-﻿@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Báo Cáo Phân Tích Chuyên Sâu"; }
+@model HeThongBenhVien.Models.ActivityReportViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Báo Cáo Phân Tích Hoạt Động & Hiệu Suất";
+    var departments = ViewBag.Departments as IEnumerable<HeThongBenhVien.Models.Department> ?? new List<HeThongBenhVien.Models.Department>();
+}
 
 <style>
-    /* Print Styles for PDF Export */
-    @@media print {
-        body * { visibility: hidden; }
-        .sidebar, .navbar, .btn, .d-none.d-print-block { display: none !important; }
-        #printArea, #printArea * { visibility: visible; }
-        #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
-        .glass-card { box-shadow: none !important; border: 1px solid #ddd !important; }
-        /* Add Medical Header specifically for printing */
-        .print-header { display: block !important; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; visibility: visible !important; }
-        .print-header * { visibility: visible; }
+    .activity-header-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        color: #ffffff;
+        border-radius: 18px;
+        padding: 1.75rem 2rem;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
     }
-    
-    .print-header { display: none; }
+
+    .glass-stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .glass-stat-card {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(51, 65, 85, 0.8);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .glass-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .filter-pill-btn {
+        border-radius: 30px;
+        padding: 0.35rem 0.85rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        transition: all 0.2s;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    [data-theme="dark"] .filter-pill-btn {
+        background: #1e293b;
+        border-color: #475569;
+        color: #cbd5e1;
+    }
+
+    .filter-pill-btn.active, .filter-pill-btn:hover {
+        background: #3b82f6 !important;
+        color: #ffffff !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .chart-container-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="dark"] .chart-container-card {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(51, 65, 85, 0.8);
+    }
+
+    .badge-trend-up {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-trend-down {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Loading Spinner Overlay */
+    #activityLoadingOverlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+    }
+    [data-theme="dark"] #activityLoadingOverlay {
+        background: rgba(15, 23, 42, 0.75);
+    }
+
+    /* Strict Print Styles (PDF Export Only) */
+    .print-header-template, .print-signature-template {
+        display: none !important;
+    }
+
+    @@media print {
+        #sidebar, .top-navbar, .filter-toolbar, .no-print { display: none !important; }
+        #main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+        .glass-stat-card, .chart-container-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+        .print-header-template {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 12px;
+        }
+        .print-signature-template {
+            display: block !important;
+            margin-top: 40px;
+            text-align: right;
+            font-style: italic;
+        }
+    }
 </style>
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h2 class="h3 mb-1" style="font-weight:700;">Báo Cáo Phân Tích Chuyên Sâu</h2><p class="text-muted mb-0">Thống kê hiệu suất và tài chính phòng khám</p></div>
-        <button class="btn btn-primary shadow-sm" onclick="window.print()"><i class="fas fa-print me-1"></i> Xuất Báo Cáo PDF</button>
+<div class="container-fluid p-0 position-relative" id="activityContentArea">
+    <!-- Loading Overlay -->
+    <div id="activityLoadingOverlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-2 fw-semibold text-primary">Đang truy vấn dữ liệu hoạt động...</p>
+        </div>
     </div>
 
-    <div id="printArea">
-        <!-- Print Header (Only visible when printing to PDF) -->
-        <div class="print-header">
-            <h2 style="margin:0;">BỆNH VIỆN ĐA KHOA QUỐC TẾ AN KHANG</h2>
-            <p style="margin:5px 0;">Địa chỉ: 123 Đường Y Tế, Quận Trung Tâm, TP.HCM</p>
-            <p style="margin:5px 0;">Điện thoại: 1900 1515 - Email: info@ankhanghospital.vn</p>
-            <h3 style="margin-top:20px; text-transform:uppercase;">BÁO CÁO PHÂN TÍCH HOẠT ĐỘNG CHUYÊN SÂU</h3>
-            <p>Ngày xuất báo cáo: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+    <!-- Print Template Header (Strictly PDF / Print Only) -->
+    <div class="print-header-template">
+        <h2 style="margin:0; font-weight: bold; color: #0f172a;">BỆNH VIỆN ĐA KHOA QUỐC TẾ AN KHANG</h2>
+        <p style="margin:4px 0; font-size: 0.9rem;">Địa chỉ: 123 Đường Y Tế, Quận Trung Tâm, TP. Hồ Chí Minh</p>
+        <p style="margin:4px 0; font-size: 0.9rem;">Hotline: 1900 1515 - Email: info@ankhanghospital.vn</p>
+        <h3 style="margin-top:15px; text-transform:uppercase; font-weight: bold;">BÁO CÁO PHÂN TÍCH HOẠT ĐỘNG & HIỆU SUẤT LÂM SÀNG</h3>
+        <p style="font-size: 0.85rem;">Thời gian xuất báo cáo: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+
+    <!-- Header Banner -->
+    <div class="activity-header-card mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge text-white px-3 py-1.5 rounded-pill" style="background-color: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.8rem;">
+                    <i class="fa-solid fa-chart-pie me-1.5 text-white"></i> Báo Cáo Phân Tích Chuyên Sâu
+                </span>
+                <span class="badge text-white px-3 py-1.5 rounded-pill" style="background-color: rgba(59, 130, 246, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.8rem;" id="activityTimeIndicator">
+                    Khoảng thời gian: 7 ngày gần nhất
+                </span>
+            </div>
+            <h2 class="h3 fw-bold mb-1">Thống Kê Hiệu Suất Hoạt Động & Mô Hình Bệnh Tật 🏥</h2>
+            <p class="mb-0 text-white-50 small">Giám sát tổng thể lượt khám tiếp nhận, cơ cấu bệnh học theo chuẩn ICD-10 và công suất hoạt động các khoa chuyên khoa.</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm" onclick="exportActivityExcel()">
+                <i class="fa-solid fa-file-excel text-success me-1"></i> Xuất Excel
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="window.print()">
+                <i class="fa-solid fa-print me-1"></i> In Báo Cáo PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar Toolbar (Synchronized with Revenue Module) -->
+    <div class="glass-stat-card p-3 mb-4 filter-toolbar">
+        <div class="row g-3 align-items-center">
+            <!-- Period Quick Select Buttons -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+                <label class="form-label small fw-bold text-muted mb-1"><i class="fa-regular fa-calendar me-1"></i>Mốc Thời Gian:</label>
+                <div class="d-flex flex-wrap gap-1.5 align-items-center" id="periodBtnGroup">
+                    <button class="filter-pill-btn" data-period="today">Hôm nay</button>
+                    <button class="filter-pill-btn active" data-period="week">Tuần này (7 ngày)</button>
+                    <button class="filter-pill-btn" data-period="month">Tháng này (30 ngày)</button>
+                    <button class="filter-pill-btn" data-period="year">Năm nay (12 tháng)</button>
+                    <button class="filter-pill-btn" data-period="custom" id="customPeriodToggle">Tuỳ chọn</button>
+                </div>
+            </div>
+
+            <!-- Custom Date Inputs (hidden by default) -->
+            <div class="col-xl-6 col-lg-6 col-md-12 d-none" id="customDateRangeBox">
+                <label class="form-label small fw-bold text-muted mb-1">Từ ngày - Đến ngày:</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" class="form-control" id="customFromDate" value="@ViewBag.CustomFrom">
+                    <span class="input-group-text"><i class="fa-solid fa-arrow-right fs-xs"></i></span>
+                    <input type="date" class="form-control" id="customToDate" value="@ViewBag.CustomTo">
+                    <button class="btn btn-primary" type="button" onclick="applyCustomDateRange()"><i class="fa-solid fa-check"></i></button>
+                </div>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+                <label class="form-label small fw-bold text-muted mb-1"><i class="fa-solid fa-hospital me-1"></i>Khoa / Phòng Lọc:</label>
+                <select class="form-select form-select-sm" id="deptFilter" onchange="triggerFilterChange()">
+                    <option value="">-- Tất cả khoa phòng --</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.Id">@d.DepartmentName</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 4 Operational KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Visits -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Tổng Lượt Tiếp Nhận 👥</p>
+                        <h3 class="fw-bold m-0 text-primary" id="kpiTotalVisits">
+                            @Model.Summary.TotalVisits.ToString("N0") <span class="fs-6 text-muted fw-normal">lượt</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="badge rounded-pill px-2.5 py-1 @(Model.Summary.VisitGrowthPercent >= 0 ? "badge-trend-up" : "badge-trend-down")" id="kpiVisitGrowthBadge">
+                        <i class="fa-solid @(Model.Summary.VisitGrowthPercent >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down") me-1"></i>
+                        <span id="kpiVisitGrowth">@(Model.Summary.VisitGrowthPercent >= 0 ? "+" : "")@Model.Summary.VisitGrowthPercent%</span>
+                    </span>
+                    <span class="small text-muted">so với kỳ trước</span>
+                </div>
+            </div>
         </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-user-injured fa-2x text-primary mb-2"></i><h3 class="fw-bold">@ViewBag.TotalPatients</h3><p class="text-muted mb-0">Tổng Bệnh Nhân</p></div></div>
-            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-calendar-check fa-2x text-success mb-2"></i><h3 class="fw-bold">@ViewBag.TotalAppointments</h3><p class="text-muted mb-0">Lượt Khám Lập</p></div></div>
-            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-file-medical fa-2x text-info mb-2"></i><h3 class="fw-bold">@ViewBag.TotalRecords</h3><p class="text-muted mb-0">Hồ Sơ Đã Xử Lý</p></div></div>
-            <div class="col-md-3"><div class="glass-card p-4 text-center"><i class="fas fa-pills fa-2x text-warning mb-2"></i><h3 class="fw-bold">@ViewBag.TotalMedicines</h3><p class="text-muted mb-0">Loại Thuốc</p></div></div>
+        <!-- Card 2: Completed Records -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Hồ Sơ Hoàn Thành 📋</p>
+                        <h3 class="fw-bold m-0 text-success" id="kpiCompletedRecords">
+                            @Model.Summary.CompletedRecords.ToString("N0") <span class="fs-6 text-muted fw-normal">bệnh án</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-file-circle-check"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="small text-muted">Tỷ lệ hoàn tất xử lý:</span>
+                    <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-2.5 py-1 rounded-pill fw-bold" id="kpiCompletionRate">
+                        @Model.Summary.CompletionRatePercent%
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Chart 1: Disease Pie Chart -->
-            <div class="col-lg-6">
-                <div class="glass-card p-4 h-100">
-                    <h5 class="fw-bold mb-4 text-center"><i class="fas fa-chart-pie text-primary me-2"></i>Tỷ Lệ Bệnh Nhân Theo Loại Bệnh</h5>
-                    <div style="height: 300px; display: flex; justify-content: center;">
-                        <canvas id="diseaseChart"></canvas>
+        <!-- Card 3: Inpatient Admissions -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Bệnh Nhân Nội Trú 🛌</p>
+                        <h3 class="fw-bold m-0 text-warning" id="kpiInpatientCount">
+                            @Model.Summary.InpatientCount.ToString("N0") <span class="fs-6 text-muted fw-normal">ca</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-bed-pulse"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="small text-muted">Tỷ lệ chuyển nhập viện:</span>
+                    <span class="badge bg-warning bg-opacity-20 text-dark border border-warning border-opacity-30 px-2.5 py-1 rounded-pill fw-bold" id="kpiInpatientRate">
+                        @Model.Summary.InpatientRatePercent%
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Avg Processing Time -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Thời Gian Xử Lý TB/Ca ⏱️</p>
+                        <h3 class="fw-bold m-0 text-info" id="kpiAvgProcTime">
+                            @Model.Summary.AvgProcessingTimeMinutes <span class="fs-6 text-muted fw-normal">phút/lượt</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info">
+                        <i class="fa-solid fa-stopwatch"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="small text-muted">Đạt chuẩn y tế ban hành</span>
+                    <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25 px-2.5 py-1 rounded-pill fw-bold">
+                        <i class="fa-solid fa-check me-1"></i>Tối ưu
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row: ICD-10 Disease Classification & Department Performance Dual-Bar -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Standard ICD-10 Disease Model Chart + Legend Table (6 cols) -->
+        <div class="col-lg-6">
+            <div class="chart-container-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Cơ Cấu Bệnh Tật Theo Mã Chuẩn ICD-10</h5>
+                        <p class="text-muted small mb-0">Phân loại mô hình bệnh học lâm sàng (Đã gỡ bỏ nhãn không bệnh / bình thường).</p>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <div style="height: 240px; position: relative;" class="d-flex justify-content-center align-items-center">
+                            <canvas id="diseaseChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr class="border-bottom text-muted">
+                                        <th>Mã ICD & Tên Bệnh</th>
+                                        <th class="text-end">Số Ca (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="icdLegendTableBody">
+                                    <!-- Dynamic ICD legend table rows inserted via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Chart 2: Doctor Revenue Bar Chart -->
-            <div class="col-lg-6">
-                <div class="glass-card p-4 h-100">
-                    <h5 class="fw-bold mb-4 text-center"><i class="fas fa-chart-column text-success me-2"></i>Doanh Thu Phác Đồ Theo Khoa/Phòng</h5>
-                    <div style="height: 300px;">
-                        <canvas id="revenueChart"></canvas>
+        </div>
+
+        <!-- Chart 2: Department Performance Dual-Metric Chart (6 cols) -->
+        <div class="col-lg-6">
+            <div class="chart-container-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-chart-column text-success me-2"></i>Hiệu Suất Tiếp Nhận & Doanh Thu Theo Khoa</h5>
+                        <p class="text-muted small mb-0">Thống kê số lượt tiếp nhận (cột xanh) và chi phí điều trị (cột ngọc) của từng khoa phòng.</p>
                     </div>
+                </div>
+                <div style="height: 290px; position: relative;">
+                    <canvas id="departmentPerformanceChart"></canvas>
                 </div>
             </div>
         </div>
-        
-        <div class="mt-4 text-center d-none print-header" style="display:block !important; border-top: none;">
-            <p style="text-align: right; margin-top: 50px; font-style: italic;">Giám đốc Bệnh viện<br><br><br><br><strong>Ký và ghi rõ họ tên</strong></p>
-        </div>
+    </div>
+
+    <!-- Print Template Signature Block (Strictly PDF / Print Only) -->
+    <div class="print-signature-template">
+        <p style="margin-bottom: 60px;">Tp. Hồ Chí Minh, Ngày ..... Tháng ..... Năm 2026<br><strong>GIÁM ĐỐC BỆNH VIỆN</strong><br>(Ký, đóng dấu và ghi rõ họ tên)</p>
     </div>
 </div>
 
 @section Scripts {
-    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Data from Backend
-        const diseaseLabels = @Html.Raw(ViewBag.DiseaseLabels ?? "[]");
-        const diseaseData = @Html.Raw(ViewBag.DiseaseData ?? "[]");
-        
-        const doctorLabels = @Html.Raw(ViewBag.DoctorLabels ?? "[]");
-        const doctorData = @Html.Raw(ViewBag.DoctorData ?? "[]");
+        // Chart Instance Globals
+        let diseaseChart, departmentPerformanceChart;
 
-        // 1. Render Pie Chart (Disease Stats)
-        const ctxDisease = document.getElementById('diseaseChart').getContext('2d');
-        new Chart(ctxDisease, {
-            type: 'pie',
-            data: {
-                labels: diseaseLabels.length > 0 ? diseaseLabels : ['Chưa có dữ liệu'],
-                datasets: [{
-                    data: diseaseData.length > 0 ? diseaseData : [1],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(255, 206, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.8)',
-                        'rgba(255, 159, 64, 0.8)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right' }
+        // Initial Data from Server
+        let initialData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+
+        $(document).ready(function () {
+            // Period Button Group Handling
+            $('#periodBtnGroup .filter-pill-btn').click(function () {
+                $('#periodBtnGroup .filter-pill-btn').removeClass('active');
+                $(this).addClass('active');
+
+                let period = $(this).data('period');
+                if (period === 'custom') {
+                    $('#customDateRangeBox').removeClass('d-none');
+                } else {
+                    $('#customDateRangeBox').addClass('d-none');
+                    triggerFilterChange();
                 }
-            }
+            });
+
+            // Initialize Dashboard & Charts
+            initCharts(initialData);
+            updateDashboardUI(initialData);
         });
 
-        // 2. Render Bar Chart (Doctor Revenue)
-        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctxRevenue, {
-            type: 'bar',
-            data: {
-                labels: doctorLabels.length > 0 ? doctorLabels : ['Chưa có dữ liệu'],
-                datasets: [{
-                    label: 'Doanh thu (VNĐ)',
-                    data: doctorData.length > 0 ? doctorData : [0],
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString('vi-VN') + ' đ';
-                            }
+        function applyCustomDateRange() {
+            let from = $('#customFromDate').val();
+            let to = $('#customToDate').val();
+            if (!from || !to) {
+                alert('Vui lòng chọn đầy đủ Từ ngày và Đến ngày!');
+                return;
+            }
+            triggerFilterChange();
+        }
+
+        function triggerFilterChange() {
+            let period = $('#periodBtnGroup .filter-pill-btn.active').data('period') || 'week';
+            let fromDate = $('#customFromDate').val();
+            let toDate = $('#customToDate').val();
+            let deptId = $('#deptFilter').val();
+
+            $('#activityLoadingOverlay').css('display', 'flex');
+
+            $.ajax({
+                url: '/Admin/GetActivityReportApi',
+                type: 'GET',
+                data: {
+                    period: period,
+                    customFrom: fromDate,
+                    customTo: toDate,
+                    departmentId: deptId
+                },
+                success: function (data) {
+                    updateDashboardUI(data);
+                    $('#activityLoadingOverlay').hide();
+                },
+                error: function (err) {
+                    console.error('Lỗi khi tải dữ liệu báo cáo hoạt động:', err);
+                    $('#activityLoadingOverlay').hide();
+                }
+            });
+        }
+
+        function updateDashboardUI(data) {
+            if (!data || !data.Summary) return;
+
+            let s = data.Summary;
+            const fmt = num => (num || 0).toLocaleString('vi-VN');
+
+            // 1. Update Operational KPI Cards
+            $('#kpiTotalVisits').html(`${fmt(s.TotalVisits)} <span class="fs-6 text-muted fw-normal">lượt</span>`);
+            
+            let growthBadge = $('#kpiVisitGrowthBadge');
+            growthBadge.removeClass('badge-trend-up badge-trend-down');
+            if (s.VisitGrowthPercent >= 0) {
+                growthBadge.addClass('badge-trend-up').html(`<i class="fa-solid fa-arrow-trend-up me-1"></i>+${s.VisitGrowthPercent}%`);
+            } else {
+                growthBadge.addClass('badge-trend-down').html(`<i class="fa-solid fa-arrow-trend-down me-1"></i>${s.VisitGrowthPercent}%`);
+            }
+
+            $('#kpiCompletedRecords').html(`${fmt(s.CompletedRecords)} <span class="fs-6 text-muted fw-normal">bệnh án</span>`);
+            $('#kpiCompletionRate').text(`${s.CompletionRatePercent}%`);
+
+            $('#kpiInpatientCount').html(`${fmt(s.InpatientCount)} <span class="fs-6 text-muted fw-normal">ca</span>`);
+            $('#kpiInpatientRate').text(`${s.InpatientRatePercent}%`);
+
+            $('#kpiAvgProcTime').html(`${s.AvgProcessingTimeMinutes} <span class="fs-6 text-muted fw-normal">phút/lượt</span>`);
+
+            // Time Range Indicator Banner Text
+            let period = $('#periodBtnGroup .filter-pill-btn.active').data('period');
+            let periodText = 'Khoảng thời gian: 7 ngày gần nhất';
+            if (period === 'today') periodText = 'Khoảng thời gian: Hôm nay';
+            else if (period === 'month') periodText = 'Khoảng thời gian: Tháng này (30 ngày)';
+            else if (period === 'year') periodText = 'Khoảng thời gian: Năm nay (12 tháng)';
+            else if (period === 'custom') {
+                let from = $('#customFromDate').val();
+                let to = $('#customToDate').val();
+                periodText = `Khoảng thời gian: ${from ? formatDateStr(from) : ''} - ${to ? formatDateStr(to) : ''}`;
+            }
+            $('#activityTimeIndicator').text(periodText);
+
+            // 2. Update Charts & ICD Legend Table
+            updateCharts(data);
+            renderIcdLegendTable(data.DiseaseDistribution);
+        }
+
+        function formatDateStr(dStr) {
+            if (!dStr) return '';
+            let d = new Date(dStr);
+            if (isNaN(d.getTime())) return dStr;
+            return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        function initCharts(data) {
+            // 1. ICD-10 Disease Doughnut Chart
+            const ctxDisease = document.getElementById('diseaseChart').getContext('2d');
+            diseaseChart = new Chart(ctxDisease, {
+                type: 'doughnut',
+                data: {
+                    labels: data.DiseaseDistribution.map(x => `${x.IcdCode} - ${x.DiseaseName}`),
+                    datasets: [{
+                        data: data.DiseaseDistribution.map(x => x.CaseCount),
+                        backgroundColor: data.DiseaseDistribution.map(x => x.ColorHex),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '65%'
+                }
+            });
+
+            // 2. Department Performance Dual-Metric Chart (Grouped Bars)
+            const ctxDept = document.getElementById('departmentPerformanceChart').getContext('2d');
+            departmentPerformanceChart = new Chart(ctxDept, {
+                type: 'bar',
+                data: {
+                    labels: data.DepartmentPerformance.map(x => x.DepartmentName),
+                    datasets: [
+                        {
+                            label: 'Lượt Khám (Ca)',
+                            data: data.DepartmentPerformance.map(x => x.VisitCount),
+                            backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            yAxisID: 'yVisits'
+                        },
+                        {
+                            label: 'Doanh Thu Khoa (VNĐ)',
+                            data: data.DepartmentPerformance.map(x => x.TotalRevenue),
+                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            borderColor: '#059669',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            yAxisID: 'yRevenue'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        yVisits: {
+                            type: 'linear', display: true, position: 'left',
+                            title: { display: true, text: 'Số Lượt Khám' },
+                            ticks: { callback: v => v + ' lượt' }
+                        },
+                        yRevenue: {
+                            type: 'linear', display: true, position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Doanh Thu (VNĐ)' },
+                            ticks: { callback: v => v >= 1000000 ? (v / 1000000).toFixed(0) + 'M đ' : v.toLocaleString() + ' đ' }
                         }
                     }
-                },
-                plugins: {
-                    legend: { display: false }
                 }
+            });
+        }
+
+        function updateCharts(data) {
+            // Disease Chart
+            diseaseChart.data.labels = data.DiseaseDistribution.map(x => `${x.IcdCode} - ${x.DiseaseName}`);
+            diseaseChart.data.datasets[0].data = data.DiseaseDistribution.map(x => x.CaseCount);
+            diseaseChart.data.datasets[0].backgroundColor = data.DiseaseDistribution.map(x => x.ColorHex);
+            diseaseChart.update();
+
+            // Department Performance Chart
+            departmentPerformanceChart.data.labels = data.DepartmentPerformance.map(x => x.DepartmentName);
+            departmentPerformanceChart.data.datasets[0].data = data.DepartmentPerformance.map(x => x.VisitCount);
+            departmentPerformanceChart.data.datasets[1].data = data.DepartmentPerformance.map(x => x.TotalRevenue);
+            departmentPerformanceChart.update();
+        }
+
+        function renderIcdLegendTable(list) {
+            let tbody = $('#icdLegendTableBody');
+            tbody.empty();
+
+            if (!list || list.length === 0) {
+                tbody.append(`<tr><td colspan="2" class="text-muted text-center py-2">Không có dữ liệu bệnh học.</td></tr>`);
+                return;
             }
-        });
+
+            list.forEach(item => {
+                tbody.append(`
+                    <tr>
+                        <td class="py-1">
+                            <i class="fa-solid fa-circle me-1.5" style="color: ${item.ColorHex}; font-size: 8px;"></i>
+                            <strong class="text-primary">${item.IcdCode}</strong> - <span class="text-dark">${item.DiseaseName}</span>
+                        </td>
+                        <td class="text-end py-1 fw-bold">
+                            ${item.CaseCount.toLocaleString('vi-VN')} ca <span class="text-muted font-normal">(${item.Percentage}%)</span>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function exportActivityExcel() {
+            let table = document.getElementById("icdLegendTableBody");
+            let html = `
+                <h3>BÁO CÁO PHÂN TÍCH HOẠT ĐỘNG CHUYÊN SÂU</h3>
+                <p>Mô hình Bệnh tật ICD-10 và Hiệu suất Khoa Phòng</p>
+                <table border="1">
+                    <thead><tr><th>Mã ICD</th><th>Tên Bệnh</th><th>Số Ca</th><th>Tỷ Lệ (%)</th></tr></thead>
+                    <tbody>
+            `;
+            initialData.DiseaseDistribution.forEach(item => {
+                html += `<tr><td>${item.IcdCode}</td><td>${item.DiseaseName}</td><td>${item.CaseCount}</td><td>${item.Percentage}%</td></tr>`;
+            });
+            html += `</tbody></table>`;
+
+            let a = document.createElement('a');
+            a.href = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+            a.download = `BaoCaoHoatDong_${new Date().toISOString().slice(0,10)}.xls`;
+            a.click();
+        }
     </script>
 }

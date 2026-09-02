@@ -1,45 +1,1088 @@
-﻿@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Thống Kê Doanh Thu"; }
+@model HeThongBenhVien.Models.RevenueReportViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Báo Cáo Thống Kê Doanh Thu";
+    var departments = ViewBag.Departments as IEnumerable<HeThongBenhVien.Models.Department> ?? new List<HeThongBenhVien.Models.Department>();
+}
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h2 class="h3 mb-1" style="font-weight:700;">Thống Kê Doanh Thu</h2><p class="text-muted mb-0">Phân tích doanh thu và hiệu suất hoạt động</p></div>
+<style>
+    .revenue-header-card {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        color: #ffffff;
+        border-radius: 18px;
+        padding: 1.75rem 2rem;
+        box-shadow: 0 10px 30px rgba(49, 46, 129, 0.25);
+    }
+
+    .glass-stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .glass-stat-card {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(51, 65, 85, 0.8);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .glass-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .filter-pill-btn {
+        border-radius: 30px;
+        padding: 0.35rem 0.85rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        transition: all 0.2s;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    [data-theme="dark"] .filter-pill-btn {
+        background: #1e293b;
+        border-color: #475569;
+        color: #cbd5e1;
+    }
+
+    .filter-pill-btn.active, .filter-pill-btn:hover {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4f46e5 !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .chart-container-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="dark"] .chart-container-card {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(51, 65, 85, 0.8);
+    }
+
+    .progress-custom {
+        height: 10px;
+        border-radius: 20px;
+        background-color: #e2e8f0;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .progress-custom {
+        background-color: #334155;
+    }
+
+    .badge-trend-up {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-trend-down {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+    }
+    .sortable-header:hover {
+        background-color: rgba(99, 102, 241, 0.08) !important;
+    }
+
+    /* Loading Spinner Overlay */
+    #reportLoadingOverlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+    }
+    [data-theme="dark"] #reportLoadingOverlay {
+        background: rgba(15, 23, 42, 0.75);
+    }
+
+    @@media print {
+        #sidebar, .top-navbar, .filter-toolbar, .no-print, .pagination-bar { display: none !important; }
+        #main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+        .glass-stat-card, .chart-container-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+    }
+</style>
+
+<div class="container-fluid p-0 position-relative" id="reportContentArea">
+    <!-- Loading Overlay -->
+    <div id="reportLoadingOverlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-2 fw-semibold text-primary">Đang truy vấn dữ liệu báo cáo...</p>
+        </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-success"><p class="text-muted fw-bold mb-1">Tổng Doanh Thu</p><h3 class="fw-bold m-0 text-success">@(((long)ViewBag.TotalRevenue).ToString("N0")) đ</h3></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-primary"><p class="text-muted fw-bold mb-1">Tổng Hồ Sơ</p><h3 class="fw-bold m-0">@ViewBag.TotalRecords</h3></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-info"><p class="text-muted fw-bold mb-1">Tổng Bệnh Nhân</p><h3 class="fw-bold m-0">@ViewBag.TotalPatients</h3></div></div>
-        <div class="col-md-3"><div class="glass-card p-4 border-start border-4 border-warning"><p class="text-muted fw-bold mb-1">Tổng Lượt Khám</p><h3 class="fw-bold m-0">@ViewBag.TotalAppointments</h3></div></div>
+    <!-- Header Banner -->
+    <div class="revenue-header-card mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge text-white px-3 py-1.5 rounded-pill" style="background-color: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.8rem;">
+                    <i class="fa-solid fa-chart-line me-1.5 text-white"></i> Báo Cáo Quản Trị Tài Chính
+                </span>
+                <span class="badge text-white px-3 py-1.5 rounded-pill" style="background-color: rgba(16, 185, 129, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.8rem;" id="timeRangeIndicator">
+                    Khoảng thời gian: 7 ngày gần nhất
+                </span>
+            </div>
+            <h2 class="h3 fw-bold mb-1">Thống Kê Doanh Thu & Hiệu Suất Tài Chính Bệnh Viện 💰</h2>
+            <p class="mb-0 text-white-50 small">Đồng bộ dữ liệu hóa đơn, tổng doanh thu thực tế, bảo hiểm y tế chi trả và phân tích doanh thu theo chuyên khoa.</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm" onclick="exportToExcel()">
+                <i class="fa-solid fa-file-excel text-success me-1"></i> Xuất Excel
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="window.print()">
+                <i class="fa-solid fa-print me-1"></i> In Báo Cáo PDF
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="exportToCSV()">
+                <i class="fa-solid fa-file-csv text-warning me-1"></i> Xuất CSV
+            </button>
+        </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="glass-card p-4"><h5 class="fw-bold mb-3">Biểu Đồ Doanh Thu 7 Ngày Qua</h5>
-                <canvas id="revenueChart" height="300"></canvas>
+    <!-- Filter Bar Toolbar -->
+    <div class="glass-stat-card p-3 mb-4 filter-toolbar">
+        <div class="row g-3 align-items-center">
+            <!-- Period Quick Select Buttons -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+                <label class="form-label small fw-bold text-muted mb-1"><i class="fa-regular fa-calendar me-1"></i>Mốc Thời Gian:</label>
+                <div class="d-flex flex-wrap gap-1.5 align-items-center" id="periodBtnGroup">
+                    <button class="filter-pill-btn" data-period="today">Hôm nay</button>
+                    <button class="filter-pill-btn active" data-period="week">Tuần này (7 ngày)</button>
+                    <button class="filter-pill-btn" data-period="month">Tháng này (30 ngày)</button>
+                    <button class="filter-pill-btn" data-period="year">Năm nay (12 tháng)</button>
+                    <button class="filter-pill-btn" data-period="custom" id="customPeriodToggle">Tuỳ chọn</button>
+                </div>
+            </div>
+
+            <!-- Custom Date Inputs (hidden by default) -->
+            <div class="col-xl-6 col-lg-6 col-md-12 d-none" id="customDateRangeBox">
+                <label class="form-label small fw-bold text-muted mb-1">Từ ngày - Đến ngày:</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" class="form-control" id="customFromDate" value="@ViewBag.CustomFrom">
+                    <span class="input-group-text"><i class="fa-solid fa-arrow-right fs-xs"></i></span>
+                    <input type="date" class="form-control" id="customToDate" value="@ViewBag.CustomTo">
+                    <button class="btn btn-primary" type="button" onclick="applyCustomDateRange()"><i class="fa-solid fa-check"></i></button>
+                </div>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="col-xl-3 col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1"><i class="fa-solid fa-hospital me-1"></i>Khoa / Phòng:</label>
+                <select class="form-select form-select-sm" id="deptFilter" onchange="triggerFilterChange()">
+                    <option value="">-- Tất cả khoa phòng --</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.Id">@d.DepartmentName</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Patient Type Filter -->
+            <div class="col-xl-3 col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1"><i class="fa-solid fa-user-gear me-1"></i>Hình Thức Khám:</label>
+                <select class="form-select form-select-sm" id="patientTypeFilter" onchange="triggerFilterChange()">
+                    <option value="all">Tất cả (Nội & Ngoại trú)</option>
+                    <option value="outpatient">Chỉ Ngoại trú</option>
+                    <option value="inpatient">Chỉ Nội trú (Giường)</option>
+                </select>
             </div>
         </div>
+    </div>
+
+    <!-- Top KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Revenue (SUM BN Thanh Toán WHERE Status == 'Đã thanh toán') -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-indigo">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Tổng Doanh Thu (Đã Thu) 💰</p>
+                        <h3 class="fw-bold m-0 text-primary" id="kpiTotalRevenue">
+                            @Model.Summary.TotalRevenue.ToString("N0") <span class="fs-6 text-muted fw-normal">đ</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="badge rounded-pill px-2.5 py-1 @(Model.Summary.GrowthDirection == "up" ? "badge-trend-up" : "badge-trend-down")" id="kpiGrowthBadge">
+                        <i class="fa-solid @(Model.Summary.GrowthDirection == "up" ? "fa-arrow-trend-up" : "fa-arrow-trend-down") me-1"></i>
+                        <span id="kpiGrowthRate">@(Model.Summary.GrowthRatePercent >= 0 ? "+" : "")@Model.Summary.GrowthRatePercent%</span>
+                    </span>
+                    <span class="small text-muted" id="kpiGrowthText">so với kỳ trước</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Outpatient vs Inpatient Revenue (Displaying BOTH currency amounts & percentages) -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Ngoại Trú vs Nội Trú 🏥</p>
+                        <div class="d-flex flex-column gap-1">
+                            <div class="small fw-bold text-info">
+                                <i class="fa-solid fa-user-doctor me-1"></i>Ngoại trú: <span id="kpiOutpatientRev">@Model.Summary.OutpatientRevenue.ToString("N0") đ</span> <span class="text-muted font-normal" id="kpiOutpatientPct">(@Model.Summary.OutpatientPercentage%)</span>
+                            </div>
+                            <div class="small fw-bold text-warning">
+                                <i class="fa-solid fa-bed-pulse me-1"></i>Nội trú: <span id="kpiInpatientRev">@Model.Summary.InpatientRevenue.ToString("N0") đ</span> <span class="text-muted font-normal" id="kpiInpatientPct">(@Model.Summary.InpatientPercentage%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info">
+                        <i class="fa-solid fa-hospital-user"></i>
+                    </div>
+                </div>
+
+                <div class="mt-2 pt-2 border-top">
+                    <div class="progress-custom d-flex">
+                        <div class="bg-info" id="barOutpatient" style="width: @Model.Summary.OutpatientPercentage%"></div>
+                        <div class="bg-warning" id="barInpatient" style="width: @Model.Summary.InpatientPercentage%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Total Visits & Average per Visit -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Số Lượt Khám & TB/Lượt 👥</p>
+                        <h3 class="fw-bold m-0 text-success" id="kpiTotalVisits">
+                            @Model.Summary.TotalVisits.ToString("N0") <span class="fs-6 text-muted fw-normal">lượt</span>
+                        </h3>
+                    </div>
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between">
+                    <span class="small fw-semibold text-muted">TB/Lượt khám:</span>
+                    <span class="fw-bold text-dark" id="kpiAvgPerVisit">@Model.Summary.AvgRevenuePerVisit.ToString("N0") đ</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Payment Status Overview -->
+        <div class="col-xl-3 col-md-6">
+            <div class="glass-stat-card border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <p class="text-muted fw-bold small text-uppercase mb-1" style="letter-spacing: 0.5px;">Trạng Thái Thanh Toán 💳</p>
+                        <h4 class="fw-bold m-0 text-success" id="kpiPaidAmount">
+                            @Model.Summary.PaidAmount.ToString("N0") <span class="fs-6 text-muted fw-normal">đ (Đã thu)</span>
+                        </h4>
+                    </div>
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center small">
+                    <span class="text-warning fw-semibold"><i class="fa-solid fa-clock me-1"></i>Chưa thu: <strong id="kpiUnpaidAmount">@Model.Summary.UnpaidAmount.ToString("N0") đ</strong></span>
+                    <span class="text-danger fw-semibold"><i class="fa-solid fa-rotate-left me-1"></i>Hoàn tiền: <strong id="kpiRefundAmount">@Model.Summary.RefundedAmount.ToString("N0") đ</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BHYT Insurance Coverage Info Alert -->
+    <div class="alert alert-primary d-flex align-items-center justify-content-between mb-4 border-0 shadow-sm rounded-4" style="background: rgba(99, 102, 241, 0.08);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="fa-solid fa-id-card fs-5"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold m-0 text-primary">Cơ Chế Hạch Toán Bảo Hiểm Y Tế (BHYT) & Viện Phí</h6>
+                <small class="text-muted">Tổng chi phí phát sinh = Phần BHYT Chi Trả + Phần Bệnh Nhân Thanh Toán (Chuyển khoản QR / Tiền mặt / Thẻ POS)</small>
+            </div>
+        </div>
+        <div class="d-flex gap-3 text-end">
+            <div>
+                <div class="fs-xs text-muted fw-semibold">BHYT CHI TRẢ</div>
+                <div class="fw-bold text-indigo fs-6" id="summaryInsurancePaid">@Model.Summary.TotalInsurancePaid.ToString("N0") đ</div>
+            </div>
+            <div class="vr"></div>
+            <div>
+                <div class="fs-xs text-muted fw-semibold">BN CÙNG CHI TRẢ</div>
+                <div class="fw-bold text-success fs-6" id="summaryPatientPaid">@Model.Summary.TotalPatientPaid.ToString("N0") đ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Timeline Trend & Service Category Breakdown -->
+    <div class="row g-4 mb-4">
+        <!-- Main Timeline Trend Chart (8 cols) -->
+        <div class="col-lg-8">
+            <div class="chart-container-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-chart-area text-primary me-2"></i>Xu Hướng Doanh Thu & Số Lượt Khám Thực Tế</h5>
+                        <p class="text-muted small mb-0">Biểu đồ thể hiện doanh thu BN thanh toán (cột) và số lượt khám phát sinh thực tế (đường) theo thời gian.</p>
+                    </div>
+                </div>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Category Breakdown Doughnut Chart (4 cols) -->
         <div class="col-lg-4">
-            <div class="glass-card p-4"><h5 class="fw-bold mb-3">Biểu Đồ Lượt Khám</h5>
-                <canvas id="visitChart" height="300"></canvas>
+            <div class="chart-container-card h-100">
+                <div class="mb-3 text-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-pie-chart text-success me-2"></i>Doanh Thu Theo Thang Giá Dịch Vụ</h5>
+                    <p class="text-muted small mb-0">Khám bệnh, Xét nghiệm, CLS, Thuốc, Giường, Phẫu thuật...</p>
+                </div>
+                <div style="height: 240px; position: relative;" class="d-flex justify-content-center align-items-center">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="mt-3 pt-2 border-top small" id="categoryLegendList">
+                    <!-- Dynamic legend list inserted via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Department Breakdown & Payment Methods -->
+    <div class="row g-4 mb-4">
+        <!-- Department Breakdown Horizontal Bar Chart (7 cols) -->
+        <div class="col-lg-7">
+            <div class="chart-container-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-hospital text-info me-2"></i>Doanh Thu Phân Bổ Theo Khoa / Phòng</h5>
+                        <p class="text-muted small mb-0">Thống kê doanh thu từ các khoa chuyên khoa với độ lệch tự nhiên giữa các phòng khám.</p>
+                    </div>
+                </div>
+                <div style="height: 290px; position: relative;">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method Breakdown Doughnut Chart (5 cols) -->
+        <div class="col-lg-5">
+            <div class="chart-container-card h-100">
+                <div class="mb-3 text-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-credit-card text-warning me-2"></i>Phương Thức Bệnh Nhân Thanh Toán</h5>
+                    <p class="text-muted small mb-0">Chuyển khoản QR, Tiền mặt, Thẻ POS / Visa</p>
+                </div>
+                <div style="height: 240px; position: relative;" class="d-flex justify-content-center align-items-center">
+                    <canvas id="paymentMethodChart"></canvas>
+                </div>
+                <div class="mt-3 pt-2 border-top small" id="paymentMethodLegendList">
+                    <!-- Dynamic legend list inserted via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Transactions Data Table (11 Columns Mandatory) -->
+    <div class="chart-container-card mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-table-list text-primary me-2"></i>Bảng Chi Tiết Giao Dịch Doanh Thu & Viện Phí</h5>
+                <p class="text-muted small mb-0">Đồng bộ đầy đủ 11 thuộc tính hóa đơn, phân trang, sắp xếp và tìm kiếm thông tin giao dịch.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="width: 260px;">
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0" id="tableSearchInput" placeholder="Tìm tên BN, mã HD, khoa..." onkeyup="onSearchInput()">
+                </div>
+                <select class="form-select form-select-sm" id="pageSizeSelect" onchange="changePageSize()" style="width: 110px;">
+                    <option value="10" selected>10 dòng</option>
+                    <option value="25">25 dòng</option>
+                    <option value="50">50 dòng</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="revenueTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="sortable-header" onclick="sortTable(0)">Thời Gian <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th class="sortable-header" onclick="sortTable(1)">Mã Hóa Đơn <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th class="sortable-header" onclick="sortTable(2)">Bệnh Nhân <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th class="sortable-header" onclick="sortTable(3)">Khoa / Phòng <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th>Tổng Dịch Vụ</th>
+                        <th class="text-end sortable-header" onclick="sortTable(5)">Tổng Chi Phí <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th class="text-end sortable-header" onclick="sortTable(6)">BHYT Chi Trả <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th class="text-end sortable-header" onclick="sortTable(7)">BN Thanh Toán <i class="fa-solid fa-sort text-muted ms-1 fs-xs"></i></th>
+                        <th>Phương Thức</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTableBody">
+                    <!-- Populated dynamically via JS -->
+                </tbody>
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="5" class="text-end">Tổng Cộng Dữ Liệu Đang Hiển Thị:</td>
+                        <td class="text-end text-muted fs-6" id="tableTotalCostSum">0 đ</td>
+                        <td class="text-end text-indigo fs-6" id="tableInsuranceSum">0 đ</td>
+                        <td class="text-end text-success fs-6" id="tablePatientPaidSum">0 đ</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Table Pagination Toolbar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top pagination-bar">
+            <div class="small text-muted" id="paginationInfo">
+                Hiển thị 0 - 0 trong 0 giao dịch
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm m-0" id="paginationControls">
+                    <!-- Dynamic page numbers -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Invoice Detail Modal -->
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-receipt me-2"></i>Chi Tiết Hóa Đơn Viện Phí</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="modalInvoiceContent">
+                <!-- Modal invoice content dynamically filled -->
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="printInvoiceFromModal()"><i class="fa-solid fa-print me-1"></i> In Hóa Đơn</button>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels));
-    var revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartRevenues));
-    var counts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartCounts));
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data State
+        let rawTransactions = [];
+        let filteredTransactions = [];
+        let currentPage = 1;
+        let pageSize = 10;
+        let sortColumn = -1;
+        let sortAsc = true;
 
-    new Chart(document.getElementById('revenueChart'), {
-        type: 'bar', data: { labels: labels, datasets: [{ label: 'Doanh thu (VNĐ)', data: revenues, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 8 }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('vi-VN') + ' đ' } } } }
-    });
-    new Chart(document.getElementById('visitChart'), {
-        type: 'doughnut', data: { labels: labels, datasets: [{ data: counts, backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'] }] },
-        options: { responsive: true }
-    });
-</script>
+        // Chart Instance Globals
+        let timelineChart, categoryChart, departmentChart, paymentMethodChart;
+
+        // Initial Data from Server
+        let initialData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+
+        $(document).ready(function () {
+            // Period Button Group Handling
+            $('#periodBtnGroup .filter-pill-btn').click(function () {
+                $('#periodBtnGroup .filter-pill-btn').removeClass('active');
+                $(this).addClass('active');
+
+                let period = $(this).data('period');
+                if (period === 'custom') {
+                    $('#customDateRangeBox').removeClass('d-none');
+                } else {
+                    $('#customDateRangeBox').addClass('d-none');
+                    triggerFilterChange();
+                }
+            });
+
+            // Initialize Dashboard & Charts
+            initCharts(initialData);
+            updateDashboardUI(initialData);
+        });
+
+        function applyCustomDateRange() {
+            let from = $('#customFromDate').val();
+            let to = $('#customToDate').val();
+            if (!from || !to) {
+                alert('Vui lòng chọn đầy đủ Từ ngày và Đến ngày!');
+                return;
+            }
+            triggerFilterChange();
+        }
+
+        function triggerFilterChange() {
+            let period = $('#periodBtnGroup .filter-pill-btn.active').data('period') || 'week';
+            let fromDate = $('#customFromDate').val();
+            let toDate = $('#customToDate').val();
+            let deptId = $('#deptFilter').val();
+            let pType = $('#patientTypeFilter').val();
+
+            $('#reportLoadingOverlay').css('display', 'flex');
+
+            $.ajax({
+                url: '/Admin/GetRevenueReportApi',
+                type: 'GET',
+                data: {
+                    period: period,
+                    customFrom: fromDate,
+                    customTo: toDate,
+                    departmentId: deptId,
+                    patientType: pType
+                },
+                success: function (data) {
+                    updateDashboardUI(data);
+                    $('#reportLoadingOverlay').hide();
+                },
+                error: function (err) {
+                    console.error('Lỗi khi tải dữ liệu báo cáo:', err);
+                    $('#reportLoadingOverlay').hide();
+                }
+            });
+        }
+
+        function updateDashboardUI(data) {
+            if (!data || !data.Summary) return;
+
+            let s = data.Summary;
+            const fmt = num => (num || 0).toLocaleString('vi-VN');
+
+            // 1. KPI Cards Updates
+            $('#kpiTotalRevenue').html(`${fmt(s.TotalRevenue)} <span class="fs-6 text-muted fw-normal">đ</span>`);
+            
+            let growthBadge = $('#kpiGrowthBadge');
+            growthBadge.removeClass('badge-trend-up badge-trend-down');
+            if (s.GrowthDirection === 'up') {
+                growthBadge.addClass('badge-trend-up').html(`<i class="fa-solid fa-arrow-trend-up me-1"></i>+${s.GrowthRatePercent}%`);
+            } else {
+                growthBadge.addClass('badge-trend-down').html(`<i class="fa-solid fa-arrow-trend-down me-1"></i>${s.GrowthRatePercent}%`);
+            }
+            $('#kpiGrowthText').text(`so với kỳ trước (${fmt(s.PreviousPeriodRevenue)} đ)`);
+
+            // Outpatient vs Inpatient Card (Dual figures)
+            $('#kpiOutpatientRev').text(`${fmt(s.OutpatientRevenue)} đ`);
+            $('#kpiOutpatientPct').text(`(${s.OutpatientPercentage}%)`);
+            $('#kpiInpatientRev').text(`${fmt(s.InpatientRevenue)} đ`);
+            $('#kpiInpatientPct').text(`(${s.InpatientPercentage}%)`);
+            $('#barOutpatient').css('width', `${s.OutpatientPercentage}%`);
+            $('#barInpatient').css('width', `${s.InpatientPercentage}%`);
+
+            // Visits & ARPU
+            $('#kpiTotalVisits').html(`${fmt(s.TotalVisits)} <span class="fs-6 text-muted fw-normal">lượt</span>`);
+            $('#kpiAvgPerVisit').text(`${fmt(s.AvgRevenuePerVisit)} đ`);
+
+            // Payment Statuses
+            $('#kpiPaidAmount').html(`${fmt(s.PaidAmount)} <span class="fs-6 text-muted fw-normal">đ (Đã thu)</span>`);
+            $('#kpiUnpaidAmount').text(`${fmt(s.UnpaidAmount)} đ`);
+            $('#kpiRefundAmount').text(`${fmt(s.RefundedAmount)} đ`);
+
+            // Insurance Summary Alert
+            $('#summaryInsurancePaid').text(`${fmt(s.TotalInsurancePaid)} đ`);
+            $('#summaryPatientPaid').text(`${fmt(s.TotalPatientPaid)} đ`);
+
+            // Time Range Indicator Banner Text Fix
+            let period = $('#periodBtnGroup .filter-pill-btn.active').data('period');
+            let periodText = 'Khoảng thời gian: 7 ngày gần nhất';
+            if (period === 'today') periodText = 'Khoảng thời gian: Hôm nay';
+            else if (period === 'month') periodText = 'Khoảng thời gian: Tháng này (30 ngày)';
+            else if (period === 'year') periodText = 'Khoảng thời gian: Năm nay (12 tháng)';
+            else if (period === 'custom') {
+                let from = $('#customFromDate').val();
+                let to = $('#customToDate').val();
+                periodText = `Khoảng thời gian: ${from ? formatDateStr(from) : ''} - ${to ? formatDateStr(to) : ''}`;
+            }
+            $('#timeRangeIndicator').text(periodText);
+
+            // 2. Charts Updates
+            updateCharts(data);
+            renderLegends(data);
+
+            // 3. Transactions Table Updates
+            rawTransactions = data.RecentTransactions || [];
+            filteredTransactions = [...rawTransactions];
+            currentPage = 1;
+            renderTable();
+        }
+
+        function formatDateStr(dStr) {
+            if (!dStr) return '';
+            let d = new Date(dStr);
+            if (isNaN(d.getTime())) return dStr;
+            return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        function formatDateTimeStr(dtStr) {
+            if (!dtStr) return '';
+            let d = new Date(dtStr);
+            if (isNaN(d.getTime())) return dtStr;
+            let timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+            let dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            return `${dateStr} ${timeStr}`;
+        }
+
+        // ==========================================
+        // CHART INITIALIZATION & UPDATES
+        // ==========================================
+        function initCharts(data) {
+            // 1. Timeline Mixed Chart
+            const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+            timelineChart = new Chart(ctxTimeline, {
+                type: 'bar',
+                data: {
+                    labels: data.TimeSeries.map(x => x.Label),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'BN Thanh Toán (VNĐ)',
+                            data: data.TimeSeries.map(x => x.Revenue),
+                            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                            borderColor: '#4f46e5',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Số Lượt Khám (Ca)',
+                            data: data.TimeSeries.map(x => x.VisitCount),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            type: 'linear', display: true, position: 'left',
+                            ticks: { callback: v => v >= 1000000 ? (v / 1000000).toFixed(1) + 'M đ' : v.toLocaleString() + ' đ' }
+                        },
+                        y1: {
+                            type: 'linear', display: true, position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { callback: v => v + ' lượt' }
+                        }
+                    }
+                }
+            });
+
+            // 2. Category Doughnut Chart
+            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: data.ServiceCategories.map(x => x.CategoryName),
+                    datasets: [{
+                        data: data.ServiceCategories.map(x => x.Revenue),
+                        backgroundColor: data.ServiceCategories.map(x => x.ColorHex),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '68%'
+                }
+            });
+
+            // 3. Department Horizontal Bar Chart
+            const ctxDepartment = document.getElementById('departmentChart').getContext('2d');
+            departmentChart = new Chart(ctxDepartment, {
+                type: 'bar',
+                data: {
+                    labels: data.DepartmentRevenues.map(x => x.DepartmentName),
+                    datasets: [{
+                        label: 'Doanh Thu Khoa (VNĐ)',
+                        data: data.DepartmentRevenues.map(x => x.Revenue),
+                        backgroundColor: 'rgba(6, 182, 212, 0.75)',
+                        borderColor: '#0284c7',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { callback: v => v >= 1000000 ? (v / 1000000).toFixed(1) + 'M đ' : v.toLocaleString() + ' đ' } }
+                    }
+                }
+            });
+
+            // 4. Payment Method Chart
+            const ctxPayment = document.getElementById('paymentMethodChart').getContext('2d');
+            paymentMethodChart = new Chart(ctxPayment, {
+                type: 'doughnut',
+                data: {
+                    labels: data.PaymentMethods.map(x => x.MethodName),
+                    datasets: [{
+                        data: data.PaymentMethods.map(x => x.Revenue),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            // Timeline
+            timelineChart.data.labels = data.TimeSeries.map(x => x.Label);
+            timelineChart.data.datasets[0].data = data.TimeSeries.map(x => x.Revenue);
+            timelineChart.data.datasets[1].data = data.TimeSeries.map(x => x.VisitCount);
+            timelineChart.update();
+
+            // Categories
+            categoryChart.data.labels = data.ServiceCategories.map(x => x.CategoryName);
+            categoryChart.data.datasets[0].data = data.ServiceCategories.map(x => x.Revenue);
+            categoryChart.update();
+
+            // Department
+            departmentChart.data.labels = data.DepartmentRevenues.map(x => x.DepartmentName);
+            departmentChart.data.datasets[0].data = data.DepartmentRevenues.map(x => x.Revenue);
+            departmentChart.update();
+
+            // Payment Methods
+            paymentMethodChart.data.labels = data.PaymentMethods.map(x => x.MethodName);
+            paymentMethodChart.data.datasets[0].data = data.PaymentMethods.map(x => x.Revenue);
+            paymentMethodChart.update();
+        }
+
+        function renderLegends(data) {
+            // Service Category Legends
+            let catHtml = '';
+            data.ServiceCategories.forEach(c => {
+                catHtml += `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span><i class="fa-solid fa-circle me-1.5" style="color:${c.ColorHex}; font-size:9px;"></i>${c.CategoryName}</span>
+                        <span class="fw-bold">${(c.Revenue || 0).toLocaleString('vi-VN')} đ <span class="text-muted font-normal">(${c.Percentage}%)</span></span>
+                    </div>
+                `;
+            });
+            $('#categoryLegendList').html(catHtml);
+
+            // Payment Method Legends
+            let payHtml = '';
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6'];
+            data.PaymentMethods.forEach((p, idx) => {
+                payHtml += `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span><i class="fa-solid fa-circle me-1.5" style="color:${colors[idx % colors.length]}; font-size:9px;"></i>${p.MethodName}</span>
+                        <span class="fw-bold">${(p.Revenue || 0).toLocaleString('vi-VN')} đ <span class="text-muted font-normal">(${p.Percentage}%)</span></span>
+                    </div>
+                `;
+            });
+            $('#paymentMethodLegendList').html(payHtml);
+        }
+
+        // ==========================================
+        // DATA TABLE, PAGINATION & SORTING
+        // ==========================================
+        function onSearchInput() {
+            let term = $('#tableSearchInput').val().toLowerCase();
+            if (!term) {
+                filteredTransactions = [...rawTransactions];
+            } else {
+                filteredTransactions = rawTransactions.filter(t => 
+                    (t.RecordCode && t.RecordCode.toLowerCase().includes(term)) ||
+                    (t.PatientName && t.PatientName.toLowerCase().includes(term)) ||
+                    (t.PatientCode && t.PatientCode.toLowerCase().includes(term)) ||
+                    (t.DepartmentName && t.DepartmentName.toLowerCase().includes(term)) ||
+                    (t.ServicesSummary && t.ServicesSummary.toLowerCase().includes(term))
+                );
+            }
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePageSize() {
+            pageSize = parseInt($('#pageSizeSelect').val()) || 10;
+            currentPage = 1;
+            renderTable();
+        }
+
+        function sortTable(colIndex) {
+            if (sortColumn === colIndex) {
+                sortAsc = !sortAsc;
+            } else {
+                sortColumn = colIndex;
+                sortAsc = true;
+            }
+
+            filteredTransactions.sort((a, b) => {
+                let valA, valB;
+                if (colIndex === 0) { valA = new Date(a.TransactionDate); valB = new Date(b.TransactionDate); }
+                else if (colIndex === 1) { valA = a.RecordCode; valB = b.RecordCode; }
+                else if (colIndex === 2) { valA = a.PatientName; valB = b.PatientName; }
+                else if (colIndex === 3) { valA = a.DepartmentName; valB = b.DepartmentName; }
+                else if (colIndex === 5) { valA = a.TotalCost; valB = b.TotalCost; }
+                else if (colIndex === 6) { valA = a.InsurancePaid; valB = b.InsurancePaid; }
+                else if (colIndex === 7) { valA = a.PatientPaid; valB = b.PatientPaid; }
+                else return 0;
+
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            let tbody = $('#transactionTableBody');
+            tbody.empty();
+
+            if (!filteredTransactions || filteredTransactions.length === 0) {
+                tbody.append(`<tr><td colspan="11" class="text-center py-4 text-muted"><i class="fa-solid fa-folder-open fa-2x mb-2"></i><p class="mb-0">Không tìm thấy giao dịch nào phù hợp.</p></td></tr>`);
+                $('#tableTotalCostSum').text('0 đ');
+                $('#tableInsuranceSum').text('0 đ');
+                $('#tablePatientPaidSum').text('0 đ');
+                $('#paginationInfo').text('Hiển thị 0 - 0 trong 0 giao dịch');
+                $('#paginationControls').empty();
+                return;
+            }
+
+            let totalItems = filteredTransactions.length;
+            let totalPages = Math.ceil(totalItems / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            let startIndex = (currentPage - 1) * pageSize;
+            let endIndex = Math.min(startIndex + pageSize, totalItems);
+            let pageItems = filteredTransactions.slice(startIndex, endIndex);
+
+            let totalCostSum = 0;
+            let insuranceSum = 0;
+            let patientPaidSum = 0;
+
+            filteredTransactions.forEach(t => {
+                totalCostSum += (t.TotalCost || 0);
+                insuranceSum += (t.InsurancePaid || 0);
+                if (t.Status === 'Đã thanh toán') {
+                    patientPaidSum += (t.PatientPaid || 0);
+                }
+            });
+
+            pageItems.forEach(t => {
+                tbody.append(`
+                    <tr>
+                        <td class="small font-monospace">${formatDateTimeStr(t.TransactionDate)}</td>
+                        <td class="fw-bold text-primary">${t.RecordCode}</td>
+                        <td>
+                            <div class="fw-bold text-dark">${t.PatientName}</div>
+                            <span class="fs-xs text-muted font-monospace"><i class="fa-solid fa-id-card me-1"></i>${t.PatientCode || 'N/A'}</span>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${t.DepartmentName}</span></td>
+                        <td class="small" style="max-width: 180px;"><span class="text-truncate d-inline-block mw-100" title="${t.ServicesSummary}">${t.ServicesSummary}</span></td>
+                        <td class="fw-semibold text-end">${(t.TotalCost || 0).toLocaleString('vi-VN')} đ</td>
+                        <td class="fw-semibold text-end text-indigo">${(t.InsurancePaid || 0).toLocaleString('vi-VN')} đ</td>
+                        <td class="fw-bold text-end text-success">${(t.PatientPaid || 0).toLocaleString('vi-VN')} đ</td>
+                        <td><i class="fa-solid fa-wallet text-muted me-1"></i><span class="small">${t.PaymentMethod}</span></td>
+                        <td><span class="badge ${t.StatusBadge}">${t.Status}</span></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill py-0 px-2" onclick="viewInvoiceDetail('${t.RecordCode}')" title="Xem Chi Tiết">
+                                <i class="fa-solid fa-eye fs-xs"></i> Chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            $('#tableTotalCostSum').text(`${totalCostSum.toLocaleString('vi-VN')} đ`);
+            $('#tableInsuranceSum').text(`${insuranceSum.toLocaleString('vi-VN')} đ`);
+            $('#tablePatientPaidSum').text(`${patientPaidSum.toLocaleString('vi-VN')} đ`);
+
+            $('#paginationInfo').text(`Hiển thị ${startIndex + 1} - ${endIndex} trong ${totalItems} giao dịch`);
+
+            // Build Pagination Controls
+            let pagHtml = '';
+            pagHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPage - 1})">«</a></li>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    pagHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i}</a></li>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    pagHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+            
+            pagHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPage + 1})">»</a></li>`;
+            $('#paginationControls').html(pagHtml);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+        }
+
+        // ==========================================
+        // INVOICE DETAIL MODAL & PRINTING
+        // ==========================================
+        let selectedInvoice = null;
+
+        function viewInvoiceDetail(recordCode) {
+            selectedInvoice = rawTransactions.find(t => t.RecordCode === recordCode);
+            if (!selectedInvoice) return;
+
+            let t = selectedInvoice;
+            const fmt = num => (num || 0).toLocaleString('vi-VN');
+
+            let html = `
+                <div class="row g-3 mb-3 border-bottom pb-3">
+                    <div class="col-6">
+                        <div class="text-muted fs-xs uppercase fw-bold">MÃ HÓA ĐƠN</div>
+                        <div class="fs-5 fw-bold text-primary">${t.RecordCode}</div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="text-muted fs-xs uppercase fw-bold">THỜI GIAN PHÁT HÀNH</div>
+                        <div class="fw-semibold">${formatDateTimeStr(t.TransactionDate)}</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-user me-1 text-primary"></i>Thông Tin Bệnh Nhân</h6>
+                            <p class="mb-1"><strong>Họ tên:</strong> ${t.PatientName}</p>
+                            <p class="mb-1"><strong>Mã BN:</strong> ${t.PatientCode || 'N/A'}</p>
+                            <p class="mb-0"><strong>Phân loại:</strong> <span class="badge ${t.PatientType === 'Nội trú' ? 'bg-warning text-dark' : 'bg-info'}">${t.PatientType}</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-hospital me-1 text-info"></i>Thông Tin Khám / Chữa Bệnh</h6>
+                            <p class="mb-1"><strong>Khoa phòng:</strong> ${t.DepartmentName}</p>
+                            <p class="mb-1"><strong>Phương thức:</strong> ${t.PaymentMethod}</p>
+                            <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge ${t.StatusBadge}">${t.Status}</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Danh Mục Dịch Vụ 指定</th>
+                                <th class="text-end">Đơn Giá Mới (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Khám Chuyên Khoa</td>
+                                <td class="text-end">150.000 đ</td>
+                            </tr>
+                            ${t.ServicesSummary.includes('Xét nghiệm') ? '<tr><td>Xét nghiệm Sinh hóa & Cận lâm sàng (CLS)</td><td class="text-end">350.000 đ</td></tr>' : ''}
+                            ${t.ServicesSummary.includes('Thuốc') ? '<tr><td>Thuốc Kê Đơn & VTYT Điều Trị</td><td class="text-end">450.000 đ</td></tr>' : ''}
+                            ${t.ServicesSummary.includes('Giường') ? '<tr><td>Giường Bệnh Nội Trú</td><td class="text-end">450.000 đ/ngày</td></tr>' : ''}
+                            ${t.ServicesSummary.includes('Phẫu thuật') ? '<tr><td>Phẫu Thuật / Thủ Thuật Y Khoa</td><td class="text-end">4.500.000 đ</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-3 rounded-3" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Tổng Chi Phí Phát Sinh:</span>
+                        <strong class="fs-6">${fmt(t.TotalCost)} đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 text-indigo">
+                        <span>Phần Bảo Hiểm Y Tế (BHYT) Chi Trả:</span>
+                        <strong>- ${fmt(t.InsurancePaid)} đ</strong>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between text-success">
+                        <span class="fw-bold fs-6">Bệnh Nhân Thực Thanh Toán:</span>
+                        <strong class="fs-5">${fmt(t.PatientPaid)} đ</strong>
+                    </div>
+                </div>
+            `;
+
+            $('#modalInvoiceContent').html(html);
+            let modal = new bootstrap.Modal(document.getElementById('invoiceDetailModal'));
+            modal.show();
+        }
+
+        function printInvoiceFromModal() {
+            window.print();
+        }
+
+        // Export Helpers
+        function exportToExcel() {
+            let table = document.getElementById("revenueTable");
+            let a = document.createElement('a');
+            a.href = 'data:application/vnd.ms-excel,' + encodeURIComponent(table.outerHTML);
+            a.download = `BaoCaoDoanhThu_${new Date().toISOString().slice(0,10)}.xls`;
+            a.click();
+        }
+
+        function exportToCSV() {
+            let csv = [];
+            let rows = document.querySelectorAll("#revenueTable tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText.trim().replace(/"/g, '""') + '"');
+                csv.push(row.join(","));
+            }
+            let csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+            let downloadLink = document.createElement("a");
+            downloadLink.download = `BaoCaoDoanhThu_${new Date().toISOString().slice(0,10)}.csv`;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.click();
+        }
+    </script>
 }
