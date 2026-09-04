@@ -51,6 +51,27 @@ using (var scope = app.Services.CreateScope())
     {
         // Auto-fix schema for Email, SDT, PatientCode in Users table in case they recreated from old BenhVien.sql
         db.Database.ExecuteSqlRaw(@"
+            -- Auto-fix Medicines schema (ActiveIngredient, Dosage, DosageForm, BatchNumber)
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'ActiveIngredient' AND Object_ID = Object_ID(N'Medicines'))
+            BEGIN
+                ALTER TABLE Medicines ADD ActiveIngredient NVARCHAR(200) NULL;
+            END
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Dosage' AND Object_ID = Object_ID(N'Medicines'))
+            BEGIN
+                ALTER TABLE Medicines ADD Dosage NVARCHAR(100) NULL;
+            END
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'DosageForm' AND Object_ID = Object_ID(N'Medicines'))
+            BEGIN
+                ALTER TABLE Medicines ADD DosageForm NVARCHAR(100) NULL;
+            END
+            IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'BatchNumber' AND Object_ID = Object_ID(N'Medicines'))
+            BEGIN
+                ALTER TABLE Medicines ADD BatchNumber NVARCHAR(50) NULL;
+            END
+
+            -- Remove consumable medical supplies (Vật tư y tế tiêu hao) from pharmacy inventory
+            DELETE FROM Medicines WHERE Category LIKE N'%Vật tư%' OR Category LIKE N'%tiêu hao%' OR Name LIKE N'%Bơm%' OR Name LIKE N'%bông%';
+
             IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Email' AND Object_ID = Object_ID(N'Users'))
             BEGIN
                 ALTER TABLE Users ADD Email NVARCHAR(100) NULL;
@@ -311,6 +332,29 @@ using (var scope = app.Services.CreateScope())
             });
             db.SaveChanges();
         }
+
+        // Tạo tài khoản Chuyên viên / Dược sĩ Quản lý Kho Dược trong SQL Server
+        var existingKhoDuoc = db.Users.FirstOrDefault(u => u.Username == "khoduoc");
+        if (existingKhoDuoc == null)
+        {
+            db.Users.Add(new User
+            {
+                Username = "khoduoc",
+                Password = "123",
+                Role = "Pharmacy",
+                FullName = "Dược sĩ Trưởng Kho Dược",
+                Email = "khoduoc@benhvien.com",
+                SDT = "0908889999"
+            });
+            db.SaveChanges();
+        }
+        else
+        {
+            existingKhoDuoc.Password = "123";
+            existingKhoDuoc.Role = "Pharmacy";
+            db.Users.Update(existingKhoDuoc);
+            db.SaveChanges();
+        }
     }
     catch (Exception)
     {
@@ -545,6 +589,242 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine("Could not seed Feedbacks data: " + ex.Message);
+    }
+
+    // Seed / Enrich Medicines Data according to Dược HIS Standards (TC01 - TC07)
+    try
+    {
+        // Delete consumables if any remain
+        var consumables = db.Medicines.Where(m => m.Category.Contains("Vật tư") || m.Category.Contains("tiêu hao") || m.Name.Contains("Bơm") || m.Name.Contains("bông")).ToList();
+        if (consumables.Any())
+        {
+            db.Medicines.RemoveRange(consumables);
+            db.SaveChanges();
+        }
+
+        if (!db.Medicines.Any(m => !string.IsNullOrEmpty(m.ActiveIngredient)))
+        {
+            // Clear existing basic records to ensure full standard medicine structure
+            var oldMedicines = db.Medicines.ToList();
+            if (oldMedicines.Any())
+            {
+                db.Medicines.RemoveRange(oldMedicines);
+                db.SaveChanges();
+            }
+
+            var now = DateTime.Now;
+
+            var medicines = new Medicine[]
+            {
+                // TC01 & TC04: Paracetamol Active Ingredient - Multiple Brand names & FEFO Batches
+                new Medicine {
+                    Name = "Panadol Extra (Lô cận hạn FEFO 10/2026)",
+                    ActiveIngredient = "Paracetamol",
+                    Dosage = "500mg",
+                    DosageForm = "Viên nén bao phim",
+                    BatchNumber = "L2026-B02",
+                    Category = "Thuốc thường",
+                    Unit = "Hộp",
+                    Price = 45000,
+                    StockQuantity = 45, // TC06 Low stock (<=100)
+                    MinStock = 100,
+                    Manufacturer = "GSK (GlaxoSmithKline)",
+                    ExpiryDate = new DateTime(2026, 10, 31, 23, 59, 59), // TC04 FEFO priority batch (exp 10/2026)
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Panadol Extra (Lô mới 01/2027)",
+                    ActiveIngredient = "Paracetamol",
+                    Dosage = "500mg",
+                    DosageForm = "Viên nén bao phim",
+                    BatchNumber = "L2027-A01",
+                    Category = "Thuốc thường",
+                    Unit = "Hộp",
+                    Price = 45000,
+                    StockQuantity = 500,
+                    MinStock = 100,
+                    Manufacturer = "GSK (GlaxoSmithKline)",
+                    ExpiryDate = new DateTime(2027, 1, 31, 23, 59, 59), // TC04 FEFO secondary batch (exp 01/2027)
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Efferalgan 500mg",
+                    ActiveIngredient = "Paracetamol",
+                    Dosage = "500mg",
+                    DosageForm = "Viên sủi",
+                    BatchNumber = "EFF-2027-05",
+                    Category = "Thuốc thường",
+                    Unit = "Hộp",
+                    Price = 52000,
+                    StockQuantity = 180,
+                    MinStock = 100,
+                    Manufacturer = "UPSA SAS",
+                    ExpiryDate = new DateTime(2027, 8, 31, 23, 59, 59),
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Hapacol 250mg",
+                    ActiveIngredient = "Paracetamol",
+                    Dosage = "250mg",
+                    DosageForm = "Gói cốm pha uống",
+                    BatchNumber = "HAP-2026-11",
+                    Category = "Thuốc thường",
+                    Unit = "Gói",
+                    Price = 4000,
+                    StockQuantity = 85, // TC06 Low stock
+                    MinStock = 100,
+                    Manufacturer = "Dược Hậu Giang (DHG)",
+                    ExpiryDate = new DateTime(2026, 11, 30, 23, 59, 59),
+                    IsActive = true
+                },
+
+                // Thuốc tiêm & Hóa chất điều trị (TC02 & TC03 Test Cases Expiry checks)
+                new Medicine {
+                    Name = "Atropin Sulphat",
+                    ActiveIngredient = "Atropin (sulfat)",
+                    Dosage = "0.25mg/ml",
+                    DosageForm = "Dung dịch tiêm",
+                    BatchNumber = "A001-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Ống",
+                    Price = 12000,
+                    StockQuantity = 320,
+                    MinStock = 100,
+                    Manufacturer = "Dược Phẩm Trung Ương 1",
+                    ExpiryDate = new DateTime(2027, 5, 31, 23, 59, 59),
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Vinphyton (Vitamin K1)",
+                    ActiveIngredient = "Phytomenadion (vitamin K1)",
+                    Dosage = "10mg/ml",
+                    DosageForm = "Dung dịch tiêm",
+                    BatchNumber = "A412-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Ống",
+                    Price = 18000,
+                    StockQuantity = 150,
+                    MinStock = 100,
+                    Manufacturer = "Dược Vĩnh Phúc (VINPHACO)",
+                    ExpiryDate = new DateTime(2026, 12, 31, 23, 59, 59), // TC03 MM/YYYY 12/2026
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Nước cất ống nhựa 5ml",
+                    ActiveIngredient = "Nước cất pha tiêm",
+                    Dosage = "5ml",
+                    DosageForm = "Dung dịch tiêm",
+                    BatchNumber = "A847-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Ống",
+                    Price = 3000,
+                    StockQuantity = 1200,
+                    MinStock = 100,
+                    Manufacturer = "Dược Hà Tây",
+                    ExpiryDate = new DateTime(2028, 2, 28, 23, 59, 59),
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Vacxin OPV (Bại liệt)",
+                    ActiveIngredient = "Poliovirus Type 1,2,3",
+                    Dosage = "2 liều/liều",
+                    DosageForm = "Dung dịch uống",
+                    BatchNumber = "VAC002-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Liều",
+                    Price = 65000,
+                    StockQuantity = 20, // TC06 Low stock
+                    MinStock = 100,
+                    Manufacturer = "VABIOTECH",
+                    ExpiryDate = new DateTime(2026, 9, 30, 23, 59, 59), // Cận hạn 1 tháng
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Vacxin DPT (Bạch hầu, Ho gà, Uốn ván)",
+                    ActiveIngredient = "Diphtheria, Pertussis, Tetanus toxoid",
+                    Dosage = "0.5ml",
+                    DosageForm = "Hỗn dịch tiêm",
+                    BatchNumber = "VXDPT-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Liều",
+                    Price = 85000,
+                    StockQuantity = 20, // TC06 Low stock
+                    MinStock = 100,
+                    Manufacturer = "IVAC",
+                    ExpiryDate = new DateTime(2026, 11, 30, 23, 59, 59),
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Vacxin BCG (Phòng Lao)",
+                    ActiveIngredient = "Bacillus Calmette-Guérin",
+                    Dosage = "0.1ml",
+                    DosageForm = "Bột đông khô tiêm",
+                    BatchNumber = "VXBCG-2025",
+                    Category = "Thuốc tiêm",
+                    Unit = "Ống",
+                    Price = 40000,
+                    StockQuantity = 10, // TC02 & TC03: Hết hạn để test khóa
+                    MinStock = 100,
+                    Manufacturer = "IVAC",
+                    ExpiryDate = now.AddDays(-15), // TC02 Expired (Khóa)
+                    IsActive = false
+                },
+                new Medicine {
+                    Name = "Vacxin uốn ván (AT)",
+                    ActiveIngredient = "Tetanus toxoid",
+                    Dosage = "0.5ml",
+                    DosageForm = "Dung dịch tiêm",
+                    BatchNumber = "VXUV-2026",
+                    Category = "Thuốc tiêm",
+                    Unit = "Liều",
+                    Price = 35000,
+                    StockQuantity = 20, // TC06 Low stock
+                    MinStock = 100,
+                    Manufacturer = "IVAC",
+                    ExpiryDate = new DateTime(2027, 4, 30, 23, 59, 59),
+                    IsActive = true
+                },
+
+                // Kháng sinh & Thuốc chuyên khoa khác
+                new Medicine {
+                    Name = "Clavamox 625mg",
+                    ActiveIngredient = "Amoxicillin + Clavulanic acid",
+                    Dosage = "500mg/125mg",
+                    DosageForm = "Viên nén bao phim",
+                    BatchNumber = "CLV-2027-02",
+                    Category = "Kháng sinh",
+                    Unit = "Hộp",
+                    Price = 125000,
+                    StockQuantity = 210,
+                    MinStock = 100,
+                    Manufacturer = "Lek Pharmaceuticals",
+                    ExpiryDate = new DateTime(2027, 6, 30, 23, 59, 59),
+                    IsActive = true
+                },
+                new Medicine {
+                    Name = "Ciprobay 500mg",
+                    ActiveIngredient = "Ciprofloxacin",
+                    Dosage = "500mg",
+                    DosageForm = "Viên nén bao phim",
+                    BatchNumber = "CIP-2025-10",
+                    Category = "Kháng sinh",
+                    Unit = "Hộp",
+                    Price = 180000,
+                    StockQuantity = 5, // TC02 Expired test case
+                    MinStock = 100,
+                    Manufacturer = "Bayer Healthcare",
+                    ExpiryDate = now.AddDays(-60), // TC02 Expired
+                    IsActive = false
+                }
+            };
+
+            db.Medicines.AddRange(medicines);
+            db.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Could not seed Medicines data: " + ex.Message);
     }
 }
 

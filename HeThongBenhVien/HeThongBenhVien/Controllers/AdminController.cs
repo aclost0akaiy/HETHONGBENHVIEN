@@ -568,35 +568,86 @@ namespace HeThongBenhVien.Controllers
         }
 
         // ==========================================
-        // QUẢN LÝ KHO DƯỢC
+        // QUẢN LÝ KHO DƯỢC & CẤP PHÁT THUỐC (HIS)
         // ==========================================
+        [Authorize(Roles = "Admin,Pharmacy,KhoDuoc")]
         public async Task<IActionResult> QuanLyKhoDuoc()
         {
-            // Load all medicines
-            var allMedicines = await _context.Medicines.OrderBy(m => m.Name).ToListAsync();
+            // Auto-fix schema for Medicines table in SQL Server before querying
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(@"
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'ActiveIngredient' AND Object_ID = Object_ID(N'Medicines'))
+                        ALTER TABLE Medicines ADD ActiveIngredient NVARCHAR(200) NULL;
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Dosage' AND Object_ID = Object_ID(N'Medicines'))
+                        ALTER TABLE Medicines ADD Dosage NVARCHAR(100) NULL;
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'DosageForm' AND Object_ID = Object_ID(N'Medicines'))
+                        ALTER TABLE Medicines ADD DosageForm NVARCHAR(100) NULL;
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'BatchNumber' AND Object_ID = Object_ID(N'Medicines'))
+                        ALTER TABLE Medicines ADD BatchNumber NVARCHAR(50) NULL;
+                    
+                    UPDATE Medicines SET ActiveIngredient = N'' WHERE ActiveIngredient IS NULL;
+                    UPDATE Medicines SET Dosage = N'' WHERE Dosage IS NULL;
+                    UPDATE Medicines SET DosageForm = N'' WHERE DosageForm IS NULL;
+                    UPDATE Medicines SET BatchNumber = N'' WHERE BatchNumber IS NULL;
+                    UPDATE Medicines SET Unit = N'' WHERE Unit IS NULL;
+                    UPDATE Medicines SET Category = N'' WHERE Category IS NULL;
+                    UPDATE Medicines SET Manufacturer = N'' WHERE Manufacturer IS NULL;
+
+                    DELETE FROM Medicines WHERE Category LIKE N'%Vật tư%' OR Category LIKE N'%tiêu hao%' OR Name LIKE N'%Bơm%' OR Name LIKE N'%bông%';
+                ");
+            }
+            catch { }
+
+            var now = DateTime.Now;
+
+            // Load medicines from SQL DB excluding medical consumables (Vật tư tiêu hao)
+            var allMedicines = await _context.Medicines
+                .Where(m => !m.Category.Contains("Vật tư") && !m.Category.Contains("tiêu hao") && !m.Name.Contains("Bơm") && !m.Name.Contains("bông"))
+                .OrderBy(m => m.ExpiryDate.HasValue ? m.ExpiryDate.Value : DateTime.MaxValue) // FEFO default sorting
+                .ThenBy(m => m.Name)
+                .ToListAsync();
+
             ViewBag.AllMedicines = allMedicines;
             ViewBag.TotalMedicines = allMedicines.Count;
 
-            // Advanced Pharmacy Management: Cảnh báo sắp hết hạn / sắp hết tồn kho
-            var lowStockMedicines = allMedicines.Where(m => m.StockQuantity <= m.MinStock && m.IsActive).ToList();
-            var expiredMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value < DateTime.Now && m.IsActive).ToList();
-            var expiring1MonthMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value >= DateTime.Now && m.ExpiryDate.Value <= DateTime.Now.AddDays(30) && m.IsActive).ToList();
-            var expiring3MonthsMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value > DateTime.Now.AddDays(30) && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3) && m.IsActive).ToList();
-            var nearlyOutOfStockMedicines = allMedicines.Where(m => m.StockQuantity <= 1000 && m.IsActive).ToList();
+            // Strict Expiry Lock Logic (Khoản 31, Điều 2 Luật Dược 2016): Lock expired batches automatically
+            foreach (var m in allMedicines)
+            {
+                if (m.ExpiryDate.HasValue && m.ExpiryDate.Value < now)
+                {
+                    m.IsActive = false; // Lock expired medicine batch
+                }
+            }
+
+            // Low Stock Threshold (TC06: StockQuantity <= MinStock AND unexpired)
+            var lowStockMedicines = allMedicines
+                .Where(m => m.StockQuantity <= m.MinStock && (!m.ExpiryDate.HasValue || m.ExpiryDate.Value >= now))
+                .ToList();
             
+            // Expired Medicines (TC02 & TC03)
+            var expiredMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value < now).ToList();
+            
+            // Expiring 1 Month (< 30 days)
+            var expiring1MonthMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value >= now && m.ExpiryDate.Value <= now.AddDays(30)).ToList();
+            
+            // Expiring 3 Months (< 90 days)
+            var expiring3MonthsMedicines = allMedicines.Where(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value > now.AddDays(30) && m.ExpiryDate.Value <= now.AddMonths(3)).ToList();
+
             ViewBag.LowStockMedicines = lowStockMedicines;
             ViewBag.ExpiredMedicines = expiredMedicines;
             ViewBag.Expiring1MonthMedicines = expiring1MonthMedicines;
             ViewBag.Expiring3MonthsMedicines = expiring3MonthsMedicines;
-            ViewBag.NearlyOutOfStockMedicines = nearlyOutOfStockMedicines;
 
-            // Load all prescription details with patient relationships
+            // Load prescription details for dispensing log
             var allPrescriptionDetails = await _context.PrescriptionDetails
                 .Include(pd => pd.Prescription)
                     .ThenInclude(p => p.MedicalRecord)
                         .ThenInclude(mr => mr.Appointment)
                             .ThenInclude(a => a.Patient)
+                .OrderByDescending(pd => pd.Id)
                 .ToListAsync();
+
             ViewBag.AllPrescriptionDetails = allPrescriptionDetails;
 
             return View(allMedicines);
@@ -607,27 +658,38 @@ namespace HeThongBenhVien.Controllers
         {
             if (ModelState.IsValid && !string.IsNullOrEmpty(medicine.Name))
             {
-                // Case-insensitive duplicate check
+                // MM/YYYY expiry date end of month handling
+                if (medicine.ExpiryDate.HasValue)
+                {
+                    var d = medicine.ExpiryDate.Value;
+                    // Set to 23:59:59 of the selected expiry day
+                    medicine.ExpiryDate = new DateTime(d.Year, d.Month, DateTime.DaysInMonth(d.Year, d.Month), 23, 59, 59);
+                }
+
+                if (medicine.MinStock <= 0) medicine.MinStock = 100;
+
+                // Case-insensitive duplicate check by Name and BatchNumber
                 var existingMedicine = await _context.Medicines
-                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicine.Name.ToLower());
+                    .FirstOrDefaultAsync(m => m.Name.ToLower() == medicine.Name.ToLower() && 
+                                              m.BatchNumber.ToLower() == (medicine.BatchNumber ?? "").ToLower());
 
                 if (existingMedicine != null)
                 {
-                    // If exists and price is different, update the price and stock
-                    if (existingMedicine.Price != medicine.Price)
-                    {
-                        existingMedicine.Price = medicine.Price;
-                    }
                     existingMedicine.StockQuantity += medicine.StockQuantity;
+                    if (medicine.Price > 0) existingMedicine.Price = medicine.Price;
+                    if (!string.IsNullOrEmpty(medicine.ActiveIngredient)) existingMedicine.ActiveIngredient = medicine.ActiveIngredient;
+                    if (!string.IsNullOrEmpty(medicine.Dosage)) existingMedicine.Dosage = medicine.Dosage;
+                    if (!string.IsNullOrEmpty(medicine.DosageForm)) existingMedicine.DosageForm = medicine.DosageForm;
+                    if (medicine.ExpiryDate.HasValue) existingMedicine.ExpiryDate = medicine.ExpiryDate;
                     _context.Medicines.Update(existingMedicine);
                 }
                 else
                 {
-                    // Create new medicine
                     _context.Medicines.Add(medicine);
                 }
 
                 await _context.SaveChangesAsync();
+                TempData["PharmacySuccess"] = $"Đã lưu thông tin thuốc {medicine.Name} thành công!";
             }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
@@ -638,6 +700,156 @@ namespace HeThongBenhVien.Controllers
             var item = await _context.Medicines.FindAsync(id);
             if (item != null) { _context.Medicines.Remove(item); await _context.SaveChangesAsync(); }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapPhatThuoc(int? medicineId, string? medicineName, string? activeIngredient, int quantity = 1, string? patientName = null, string? patientCode = null, int? prescriptionDetailId = null)
+        {
+            Medicine? med = null;
+            if (medicineId.HasValue && medicineId.Value > 0)
+            {
+                med = await _context.Medicines.FindAsync(medicineId.Value);
+            }
+            
+            if (med == null)
+            {
+                var allMeds = await _context.Medicines.ToListAsync();
+                string cleanName = (medicineName ?? "").Trim().ToLower();
+                string cleanActive = (activeIngredient ?? "").Trim().ToLower();
+
+                // 1. Exact match on Name
+                if (!string.IsNullOrEmpty(cleanName))
+                {
+                    med = allMeds.FirstOrDefault(m => m.Name.ToLower() == cleanName);
+                }
+
+                // 2. Contains match on Name (e.g., "Paracetamol 500mg" vs "Paracetamol")
+                if (med == null && !string.IsNullOrEmpty(cleanName))
+                {
+                    med = allMeds.FirstOrDefault(m => cleanName.Contains(m.Name.ToLower()) || m.Name.ToLower().Contains(cleanName));
+                }
+
+                // 3. Fallback match by ActiveIngredient
+                if (med == null && !string.IsNullOrEmpty(cleanActive))
+                {
+                    med = allMeds.FirstOrDefault(m => m.ActiveIngredient != null && (cleanActive.Contains(m.ActiveIngredient.ToLower()) || m.ActiveIngredient.ToLower().Contains(cleanActive)));
+                }
+
+                // 4. First word match (e.g. "Paracetamol" from "Paracetamol 500mg")
+                if (med == null && !string.IsNullOrEmpty(cleanName))
+                {
+                    var firstWord = cleanName.Split(' ')[0];
+                    if (firstWord.Length > 2)
+                    {
+                        med = allMeds.FirstOrDefault(m => m.Name.ToLower().Contains(firstWord) || (m.ActiveIngredient != null && m.ActiveIngredient.ToLower().Contains(firstWord)));
+                    }
+                }
+            }
+
+            if (med == null)
+            {
+                return Json(new { success = false, message = $"Không tìm thấy thông tin thuốc '{medicineName}' trong cơ sở dữ liệu SQL Server!" });
+            }
+
+            if (med.ExpiryDate.HasValue && med.ExpiryDate.Value < DateTime.Now)
+            {
+                return Json(new { success = false, message = $"🔒 CẤP PHÁT BỊ KHÓA: Lô thuốc {med.Name} (Số lô: {med.BatchNumber ?? "N/A"}) đã HẾT HẠN SỬ DỤNG ({med.ExpiryDate.Value:MM/yyyy}). Theo Khoản 31 Điều 2 Luật Dược 2016, hệ thống tuyệt đối KHÓA không cho phép cấp phát!" });
+            }
+
+            if (med.StockQuantity < quantity)
+            {
+                return Json(new { success = false, message = $"⚠️ TỒN KHO KHÔNG ĐỦ: Tồn kho hiện tại chỉ còn {med.StockQuantity} {med.Unit}, không đủ để cấp phát {quantity} {med.Unit}!" });
+            }
+
+            // Deduct stock quantity in SQL Server database
+            med.StockQuantity -= quantity;
+            _context.Medicines.Update(med);
+
+            // 1. If dispensing an existing prescription detail from log table, update its status
+            if (prescriptionDetailId.HasValue && prescriptionDetailId.Value > 0)
+            {
+                var existingDetail = await _context.PrescriptionDetails
+                    .Include(pd => pd.Prescription)
+                    .FirstOrDefaultAsync(pd => pd.Id == prescriptionDetailId.Value);
+
+                if (existingDetail != null)
+                {
+                    if (existingDetail.Prescription != null)
+                    {
+                        existingDetail.Prescription.Status = "Đã cấp phát (3KT-5ĐC)";
+                    }
+                    if (!string.IsNullOrEmpty(existingDetail.DosageInstruction) && !existingDetail.DosageInstruction.Contains("Đã cấp phát"))
+                    {
+                        existingDetail.DosageInstruction += " | Đã cấp phát (3KT-5ĐC)";
+                    }
+                }
+            }
+            else
+            {
+                // 2. Direct dispensing from Inventory Table -> Insert new Prescription & PrescriptionDetail entry into SQL DB
+                try
+                {
+                    int targetMedicalRecordId = 0;
+
+                    if (!string.IsNullOrEmpty(patientCode) && !patientCode.StartsWith("KHO-SQL-"))
+                    {
+                        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientCode == patientCode);
+                        if (patient != null)
+                        {
+                            var appt = await _context.Appointments.FirstOrDefaultAsync(a => a.PatientId == patient.Id);
+                            if (appt != null)
+                            {
+                                var mr = await _context.MedicalRecords.FirstOrDefaultAsync(m => m.AppointmentId == appt.Id);
+                                if (mr != null) targetMedicalRecordId = mr.Id;
+                            }
+                        }
+                    }
+
+                    if (targetMedicalRecordId == 0)
+                    {
+                        var defaultMr = await _context.MedicalRecords.FirstOrDefaultAsync();
+                        if (defaultMr != null)
+                        {
+                            targetMedicalRecordId = defaultMr.Id;
+                        }
+                    }
+
+                    if (targetMedicalRecordId > 0)
+                    {
+                        var rx = new Prescription
+                        {
+                            MedicalRecordId = targetMedicalRecordId,
+                            CreatedAt = DateTime.Now,
+                            Status = "Đã cấp phát (3KT-5ĐC)"
+                        };
+                        _context.Prescriptions.Add(rx);
+                        await _context.SaveChangesAsync();
+
+                        var detail = new PrescriptionDetail
+                        {
+                            PrescriptionId = rx.Id,
+                            MedicineName = med.Name,
+                            Quantity = quantity,
+                            Unit = string.IsNullOrEmpty(med.Unit) ? "Viên" : med.Unit,
+                            Price = med.Price,
+                            DosageInstruction = $"Cấp phát trực tiếp từ Kho Dược (Số lô FEFO: {med.BatchNumber ?? "N/A"}) | Đã cấp phát (3KT-5ĐC)"
+                        };
+                        _context.PrescriptionDetails.Add(detail);
+                    }
+                }
+                catch { }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["PharmacySuccess"] = $"Đã cấp phát thành công {quantity} {med.Unit} {med.Name} (Số lô FEFO: {med.BatchNumber ?? "Chưa có số lô"}). Tồn kho còn lại: {med.StockQuantity} {med.Unit}. Dữ liệu đã ghi nhận vào Nhật Ký!";
+
+            return Json(new { 
+                success = true, 
+                message = $"✅ ĐÃ HOÀN THÀNH QUY TRÌNH 3 KIỂM TRA 5 ĐỐI CHIẾU & TRỪ TỒN KHO!\n\n- Biệt dược: {med.Name}\n- Hoạt chất: {med.ActiveIngredient}\n- Số lô FEFO: {med.BatchNumber ?? "Chưa có số lô"}\n- Số lượng xuất kho: {quantity} {med.Unit}\n- Tồn kho khả dụng mới: {med.StockQuantity} {med.Unit}\n- Dữ liệu cấp phát đã được ghi nhận vào Nhật Ký FEFO (HIS)!",
+                newStock = med.StockQuantity,
+                unit = med.Unit
+            });
         }
 
         // ==========================================

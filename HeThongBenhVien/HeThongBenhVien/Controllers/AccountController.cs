@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +24,7 @@ namespace HeThongBenhVien.Controllers
             {
                 if (User.IsInRole("Admin")) return RedirectToAction("Dashboard", "Admin");
                 if (User.IsInRole("Doctor")) return RedirectToAction("Dashboard", "Doctor");
+                if (User.IsInRole("Pharmacy") || User.IsInRole("KhoDuoc")) return RedirectToAction("QuanLyKhoDuoc", "Admin");
                 if (User.IsInRole("BenhNhan") || User.IsInRole("Patient")) return RedirectToAction("Portal", "Patient");
             }
             return View();
@@ -70,6 +71,8 @@ namespace HeThongBenhVien.Controllers
 
                     if (user.Role == "Admin")
                         return RedirectToAction("Dashboard", "Admin");
+                    else if (user.Role == "Pharmacy" || user.Role == "KhoDuoc")
+                        return RedirectToAction("QuanLyKhoDuoc", "Admin");
                     else if (user.Role == "Doctor")
                     {
                         if (user.Username == "bs_kedon")

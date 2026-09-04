@@ -1,15 +1,14 @@
 @model IEnumerable<HeThongBenhVien.Models.Medicine>
 @{ 
     Layout = "~/Views/Shared/_AdminLayout.cshtml"; 
-    ViewData["Title"] = "Quản Lý Kho Dược"; 
+    ViewData["Title"] = "Quản Lý Kho Dược & Cấp Phát Thuốc (HIS)"; 
 }
 
 <style>
     .alert-scroll-container {
-        max-height: 180px;
+        max-height: 160px;
         overflow-y: auto;
-        padding-right: 10px;
-        margin-top: 10px;
+        padding-right: 6px;
     }
     .alert-scroll-container::-webkit-scrollbar,
     .table-scroll-container::-webkit-scrollbar {
@@ -22,377 +21,830 @@
     }
     .alert-scroll-container::-webkit-scrollbar-thumb,
     .table-scroll-container::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.15);
+        background-color: rgba(0, 0, 0, 0.2);
         border-radius: 10px;
-    }
-    .alert-scroll-container::-webkit-scrollbar-thumb:hover,
-    .table-scroll-container::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(0, 0, 0, 0.3);
     }
     
     #medicineTable thead th {
         position: sticky;
         top: 0;
-        background-color: #f8fafc !important;
+        background-color: #f1f5f9 !important;
         z-index: 2;
-        box-shadow: inset 0 -2px 0 #e2e8f0;
+        box-shadow: inset 0 -2px 0 #cbd5e1;
+    }
+    .badge-fefo {
+        background-color: #0284c7;
+        color: white;
+        font-size: 0.72rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    .badge-expired {
+        background-color: #dc2626;
+        color: white;
+        font-size: 0.72rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 700;
     }
 </style>
 
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1" style="font-weight:700;">Quản Lý Kho Dược</h2>
-            <p class="text-muted mb-0">Quản lý thuốc, tồn kho và nhập xuất kho dược phẩm</p>
+    @if (TempData["PharmacySuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 border-start border-4 border-success mb-3" role="alert">
+            <i class="fas fa-check-circle me-2 text-success"></i><strong>Thành công:</strong> @TempData["PharmacySuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-            <i class="fas fa-plus me-1"></i> Thêm Thuốc
-        </button>
+    }
+
+    <!-- Header Page -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h2 class="h3 mb-0 fw-bold text-dark">Quản Lý Kho Dược & Cấp Phát Thuốc</h2>
+                <span class="badge bg-primary px-2.5 py-1.5 rounded-pill" style="font-size: 0.75rem;">Phân Hệ HIS Tích Hợp</span>
+            </div>
+            <p class="text-muted mb-0 small">Quản lý bóc tách theo Hoạt chất, Biệt dược, Số lô, Hạn dùng & Chốt chặn 3 kiểm tra 5 đối chiếu</p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <button class="btn btn-outline-info shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#flowchartModal">
+                <i class="fas fa-project-diagram me-1"></i> Quy Trình HIS (FEFO)
+            </button>
+            <button class="btn btn-outline-primary shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#posterModal">
+                <i class="fas fa-clipboard-check me-1"></i> Quy Chuẩn 3KT - 5ĐC
+            </button>
+            <button class="btn btn-primary shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="fas fa-plus me-1"></i> Thêm Thuốc Mới
+            </button>
+        </div>
     </div>
 
+    <!-- Alert Banner Thống Nhất Quy Định Pháp Lý Dược -->
+    <div class="alert alert-primary bg-white shadow-sm border-0 border-start border-4 border-primary p-3 mb-4 rounded-3">
+        <div class="d-flex align-items-start gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-circle fs-4 d-none d-sm-block">
+                <i class="fas fa-shield-virus"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="fw-bold text-dark mb-1"><i class="fas fa-gavel text-primary me-2"></i>Quy Định Pháp Lý & Vận Hành Dược Lâm Sàng (HIS)</h6>
+                <div class="row g-2 small text-secondary">
+                    <div class="col-md-6">
+                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Khoản 31, Điều 2 Luật Dược 2016:</strong> Thuốc quá hạn 01 ngày tuyệt đối bị KHÓA, không được phép kê đơn hoặc cấp phát.
+                    </div>
+                    <div class="col-md-6">
+                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Cơ chế xuất kho FEFO:</strong> Tự động gán và xuất lô có hạn sử dụng gần nhất trước.
+                    </div>
+                    <div class="col-md-6">
+                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Quy tắc hạn dùng MM/YYYY:</strong> Hạn 12/2026 tính đến 23:59:59 ngày 31/12/2026. Tự động khóa lúc 00:00:00 ngày 01/01/2027.
+                    </div>
+                    <div class="col-md-6">
+                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Quy chuẩn VBHN 07/VBHN-BYT:</strong> Bắt buộc chốt chặn 3 kiểm tra, 5 đối chiếu trước khi trừ tồn và cấp phát.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Summary Alert Cards -->
     <div class="row g-3 mb-4">
-        <!-- Cột 1: Cảnh báo Tồn Kho / Sắp Hết -->
+        <!-- Cột 1: Cảnh báo Tồn Kho Sắp Hết (≤ 100) - CHỈ ĐẾM THUỐC CÒN HẠN (Requirement 5) -->
         <div class="col-xl-3 col-md-6 col-12">
-            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
-                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Tồn Kho Sắp Hết</h6>
-                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
-                    @{
-                        var hasNearlyOut = ViewBag.NearlyOutOfStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.NearlyOutOfStockMedicines).Any();
-                        var hasLowStock = ViewBag.LowStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any();
-                    }
-                    @if (hasNearlyOut || hasLowStock)
-                    {
-                        <ul class="mb-0 ps-3 small text-dark">
-                            @if (hasLowStock)
-                            {
+            <div class="card shadow-sm border-0 border-top border-4 border-danger h-100 mb-0" style="background-color: #fff8f8;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-danger mb-0 small"><i class="fa-solid fa-triangle-exclamation me-1.5"></i>Tồn Thấp (≤ 100 - Còn hạn)</h6>
+                        <span class="badge bg-danger rounded-pill">@(ViewBag.LowStockMedicines != null ? ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Count : 0) loại</span>
+                    </div>
+                    <div class="alert-scroll-container flex-grow-1">
+                        @if (ViewBag.LowStockMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any())
+                        {
+                            <ul class="mb-0 ps-3 small text-dark">
                                 @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines)
                                 {
-                                    <li><strong class="text-danger">@m.Name</strong> - Chỉ còn: <span class="badge bg-danger">@m.StockQuantity</span> (Tối thiểu: @m.MinStock)</li>
+                                    <li class="mb-1">
+                                        <strong class="text-danger">@m.Name</strong><br />
+                                        <span class="text-muted" style="font-size: 0.78rem;">Lô: @(string.IsNullOrEmpty(m.BatchNumber) ? "N/A" : m.BatchNumber) | Còn: </span>
+                                        <span class="badge bg-danger px-1.5 py-0.5">@m.StockQuantity @m.Unit</span>
+                                    </li>
                                 }
-                            }
-                            @if (hasNearlyOut)
-                            {
-                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.NearlyOutOfStockMedicines)
-                                {
-                                    if (hasLowStock && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Any(l => l.Id == m.Id)) { continue; }
-                                    <li><strong>@m.Name</strong> - Còn lại: <span class="badge bg-warning text-dark">@m.StockQuantity</span></li>
-                                }
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Tồn kho ổn định.</p>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Cột 2: Cảnh báo Hết Hạn SD -->
-        <div class="col-xl-3 col-md-6 col-12">
-            <div class="alert alert-danger shadow-sm border-0 border-top border-4 border-danger h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fff8f8;">
-                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-circle-exclamation me-2"></i>Đã Hết Hạn Sử Dụng</h6>
-                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
-                    @if (ViewBag.ExpiredMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines).Any())
-                    {
-                        <ul class="mb-0 ps-3 small text-dark">
-                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines)
-                            {
-                                var daysAgo = (DateTime.Now - m.ExpiryDate!.Value).Days;
-                                <li><strong>@m.Name</strong> <span class="badge bg-danger ms-1">Quá @daysAgo ngày</span></li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc hết hạn.</p>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Cột 3: Cận Hạn (1 Tháng) -->
-        <div class="col-xl-3 col-md-6 col-12">
-            <div class="alert alert-warning shadow-sm border-0 border-top border-4 border-warning h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #fffbeb; border-color: #f59e0b !important;">
-                <h6 class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i>Cận Hạn (1 Tháng)</h6>
-                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
-                    @if (ViewBag.Expiring1MonthMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines).Any())
-                    {
-                        <ul class="mb-0 ps-3 small text-dark">
-                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines)
-                            {
-                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
-                                <li><strong>@m.Name</strong> <span class="badge bg-warning text-dark ms-1">Còn @daysLeft ngày</span></li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 1T.</p>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Cột 4: Cận Hạn (3 Tháng) -->
-        <div class="col-xl-3 col-md-6 col-12">
-            <div class="alert alert-info shadow-sm border-0 border-top border-4 border-info h-100 mb-0 d-flex flex-column" role="alert" style="background-color: #f0f9ff; border-color: #0ea5e9 !important;">
-                <h6 class="fw-bold text-info-emphasis mb-2"><i class="fa-solid fa-calendar-day me-2"></i>Cận Hạn (3 Tháng)</h6>
-                <div class="alert-scroll-container flex-grow-1" style="max-height: 180px; overflow-y: auto;">
-                    @if (ViewBag.Expiring3MonthsMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines).Any())
-                    {
-                        <ul class="mb-0 ps-3 small text-dark">
-                            @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines)
-                            {
-                                var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
-                                <li><strong>@m.Name</strong> <span class="badge bg-info text-white ms-1">Còn @daysLeft ngày</span></li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc cận hạn 3T.</p>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="glass-card p-3 border-start border-4 border-primary">
-                <p class="text-muted fw-bold mb-1 small">Tổng Loại Thuốc</p>
-                <h3 class="fw-bold m-0">@(Model != null ? Model.Count() : 0)</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-3 border-start border-4 border-success">
-                <p class="text-muted fw-bold mb-1 small">Tổng Tồn Kho</p>
-                <h3 class="fw-bold m-0 text-success">@(Model != null ? Model.Sum(m => m.StockQuantity) : 0)</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-3 border-start border-4 border-danger">
-                <p class="text-muted fw-bold mb-1 small">Sắp Hết Thuốc (Tồn ≤ 1000)</p>
-                <h3 class="fw-bold m-0 text-danger">@(Model != null ? Model.Count(m => m.StockQuantity <= 1000) : 0)</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card p-3 border-start border-4 border-warning">
-                <p class="text-muted fw-bold mb-1 small">Thuốc Sắp Hết Hạn / 3 Tháng</p>
-                <h3 class="fw-bold m-0 text-warning">@(Model != null ? Model.Count(m => m.ExpiryDate.HasValue && m.ExpiryDate.Value <= DateTime.Now.AddMonths(3)) : 0)</h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- Danh sách tất cả loại thuốc -->
-    <div class="glass-card p-4 mb-4">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <h5 class="fw-bold text-dark mb-0">Danh Sách Tất Cả Loại Thuốc Trong Hệ Thống</h5>
-            
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <!-- Dropdown chọn hiện dòng -->
-                <div class="d-flex align-items-center gap-2">
-                    <span class="small text-muted text-nowrap">Hiển thị</span>
-                    <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto; min-width: 85px; border-radius: 6px;">
-                        <option value="10">10</option>
-                        <option value="25" selected>25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="all">Tất cả</option>
-                    </select>
-                    <span class="small text-muted text-nowrap">dòng</span>
-                </div>
-                
-                <!-- Thanh tìm kiếm -->
-                <div class="position-relative">
-                    <input type="text" id="tableSearchInput" class="form-control form-control-sm ps-5" placeholder="Tìm kiếm thuốc..." style="width: 250px; border-radius: 6px;">
-                    <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%);"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Thanh cuộn lên xuống container -->
-        <div class="table-scroll-container border rounded-3 overflow-hidden shadow-sm" style="max-height: 520px; overflow-y: auto;">
-            <table class="table table-hover align-middle mb-0" id="medicineTable" style="border-collapse: separate; border-spacing: 0;">
-                <thead class="table-light sticky-top" style="z-index: 10; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                    <tr class="text-uppercase text-secondary fw-bold" style="font-size: 0.78rem; letter-spacing: 0.5px;">
-                        <th class="ps-4 py-3" style="min-width: 180px;">Tên Thuốc</th>
-                        <th class="py-3 text-center" style="min-width: 110px;">Danh Mục</th>
-                        <th class="py-3 text-center" style="min-width: 80px;">Đơn Vị</th>
-                        <th class="py-3 text-end" style="min-width: 120px;">Giá Bán</th>
-                        <th class="py-3 text-center" style="min-width: 100px;">Tồn Kho</th>
-                        <th class="py-3 text-center" style="min-width: 160px;">Hạn Sử Dụng</th>
-                        <th class="py-3 text-start" style="min-width: 130px;">Nhà Sản Xuất</th>
-                        <th class="py-3 text-center pe-4" style="width: 75px;">Xóa</th>
-                    </tr>
-                </thead>
-                <tbody style="font-size: 0.9rem;">
-                @if(Model != null && Model.Any()){ foreach(var item in Model){
-                <tr style="vertical-align: middle;">
-                    <td class="ps-4 py-3 fw-bold text-dark" style="min-width: 180px;">@item.Name</td>
-                    <td class="text-center py-3" style="white-space: nowrap;"><span class="badge bg-info bg-opacity-10 text-info px-2.5 py-1.5 rounded-pill fw-semibold" style="font-size: 0.78rem;">@item.Category</span></td>
-                    <td class="text-center py-3 text-secondary" style="white-space: nowrap;">@item.Unit</td>
-                    <td class="text-end py-3 fw-bold" style="white-space: nowrap; color: #059669 !important; font-size: 0.95rem;">@item.Price.ToString("N0") đ</td>
-                    <td class="text-center py-3" style="white-space: nowrap;">
-                        @if(item.StockQuantity <= item.MinStock){<span class="badge bg-danger px-2.5 py-1.5 rounded-pill">@item.StockQuantity ⚠️</span>}
-                        else{<span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1.5 rounded-pill fw-bold" style="color: #10b981 !important; background-color: rgba(16, 185, 129, 0.12) !important;">@item.StockQuantity</span>}
-                    </td>
-                    <td class="text-center py-3" style="white-space: nowrap;">
-                        @if (item.ExpiryDate.HasValue)
-                        {
-                            <span class="fw-medium me-1">@item.ExpiryDate.Value.ToString("dd/MM/yyyy")</span>
-                            if (item.ExpiryDate.Value < DateTime.Now)
-                            {
-                                <span class="badge bg-danger text-white px-2 py-1" style="font-size: 10.5px; border-radius: 4px;">Hết hạn</span>
-                            }
-                            else if (item.ExpiryDate.Value <= DateTime.Now.AddDays(30))
-                            {
-                                <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 10.5px; border-radius: 4px;">Cận hạn (1T)</span>
-                            }
-                            else if (item.ExpiryDate.Value <= DateTime.Now.AddMonths(3))
-                            {
-                                <span class="badge bg-info text-white px-2 py-1" style="font-size: 10.5px; border-radius: 4px;">Cận hạn (3T)</span>
-                            }
+                            </ul>
                         }
                         else
                         {
-                            <span class="text-muted">N/A</span>
+                            <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Tất cả tồn kho an toàn (>100).</p>
                         }
-                    </td>
-                    <td class="text-start py-3 text-secondary" style="font-size: 0.85rem;">@item.Manufacturer</td>
-                    <td class="text-center py-3 pe-4" style="white-space: nowrap;">
-                        <form asp-action="XoaThuoc" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@item.Id"/>
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" onclick="return confirm('Xác nhận xóa?');" title="Xóa thuốc">
-                                <i class="fas fa-trash-can" style="font-size: 0.85rem;"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                }}else{
-                <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-pills fa-3x mb-3"></i><p>Chưa có thuốc nào trong kho.</p></td></tr>
-                }
-                </tbody>
-            </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Pagination controls and info -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
-            <div id="paginationInfo" class="small text-muted fw-semibold"></div>
-            <nav>
-                <ul id="paginationContainer" class="pagination pagination-sm mb-0 gap-1"></ul>
-            </nav>
+        <!-- Cột 2: Thuốc Đã Hết Hạn - Đã Khóa (TC02 & TC03) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="card shadow-sm border-0 border-top border-4 border-dark h-100 mb-0" style="background-color: #f8fafc;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0 small"><i class="fa-solid fa-lock me-1.5 text-danger"></i>Đã Khóa Do Hết Hạn</h6>
+                        <span class="badge bg-dark rounded-pill">@(ViewBag.ExpiredMedicines != null ? ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines).Count : 0) lô</span>
+                    </div>
+                    <div class="alert-scroll-container flex-grow-1">
+                        @if (ViewBag.ExpiredMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines).Any())
+                        {
+                            <ul class="mb-0 ps-3 small text-dark">
+                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.ExpiredMedicines)
+                                {
+                                    <li class="mb-1">
+                                        <strong class="text-decoration-line-through text-secondary">@m.Name</strong>
+                                        <span class="badge bg-danger ms-1" style="font-size: 10px;">🔒 KHÓA</span><br />
+                                        <span class="text-muted" style="font-size: 0.78rem;">Hạn: @(m.ExpiryDate.HasValue ? m.ExpiryDate.Value.ToString("MM/yyyy") : "N/A")</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có thuốc quá hạn.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 3: Cận Hạn 1 Tháng (< 30 ngày) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="card shadow-sm border-0 border-top border-4 border-warning h-100 mb-0" style="background-color: #fffbeb;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-warning-emphasis mb-0 small"><i class="fa-solid fa-clock-rotate-left me-1.5"></i>Cận Hạn (1 Tháng)</h6>
+                        <span class="badge bg-warning text-dark rounded-pill">@(ViewBag.Expiring1MonthMedicines != null ? ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines).Count : 0) lô</span>
+                    </div>
+                    <div class="alert-scroll-container flex-grow-1">
+                        @if (ViewBag.Expiring1MonthMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines).Any())
+                        {
+                            <ul class="mb-0 ps-3 small text-dark">
+                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring1MonthMedicines)
+                                {
+                                    var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                    <li class="mb-1">
+                                        <strong>@m.Name</strong><br />
+                                        <span class="text-muted" style="font-size: 0.78rem;">Hạn: @m.ExpiryDate.Value.ToString("MM/yyyy") | </span><span class="badge bg-warning text-dark">Còn @daysLeft ngày</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có lô cận hạn 1T.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 4: Cận Hạn 3 Tháng (Điều Phối FEFO) -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="card shadow-sm border-0 border-top border-4 border-info h-100 mb-0" style="background-color: #f0f9ff;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-info-emphasis mb-0 small"><i class="fa-solid fa-calendar-day me-1.5"></i>Cận Hạn (3 Tháng - FEFO)</h6>
+                        <span class="badge bg-info text-white rounded-pill">@(ViewBag.Expiring3MonthsMedicines != null ? ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines).Count : 0) lô</span>
+                    </div>
+                    <div class="alert-scroll-container flex-grow-1">
+                        @if (ViewBag.Expiring3MonthsMedicines != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines).Any())
+                        {
+                            <ul class="mb-0 ps-3 small text-dark">
+                                @foreach (var m in (List<HeThongBenhVien.Models.Medicine>)ViewBag.Expiring3MonthsMedicines)
+                                {
+                                    var daysLeft = (m.ExpiryDate!.Value - DateTime.Now).Days;
+                                    <li class="mb-1">
+                                        <strong>@m.Name</strong><br />
+                                        <span class="text-muted" style="font-size: 0.78rem;">Hạn: @m.ExpiryDate.Value.ToString("MM/yyyy") | </span><span class="badge bg-info text-white">Ưu tiên xuất</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Không có lô cận hạn 3T.</p>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Danh sách thuốc từ đơn thuốc -->
-    <div class="glass-card p-4">
-        <div class="d-flex justify-content-between mb-3">
-            <h5 class="fw-bold text-dark">Lịch Sử Cấp Phát (Đơn Thuốc)</h5>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Bệnh Nhân</th>
-                        <th>Tên Thuốc</th>
-                        <th>Số Lượng</th>
-                        <th>Đơn Vị</th>
-                        <th>Đơn Giá (đ)</th>
-                        <th>Thành Tiền (đ)</th>
-                        <th>Hướng Dùng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (ViewBag.AllPrescriptionDetails != null && ((List<HeThongBenhVien.Models.PrescriptionDetail>)ViewBag.AllPrescriptionDetails).Any())
+    <!-- Main Inventory Section -->
+    <div class="card shadow-sm border-0 mb-4 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1"><i class="fas fa-boxes-stacked text-primary me-2"></i>Danh Mục Kho Dược Lâm Sàng</h5>
+                    <p class="text-muted small mb-0">Tìm kiếm theo Hoạt chất hoặc Biệt dược (TC01) • Tự động lọc bỏ vật tư tiêu hao (TC05)</p>
+                </div>
+                
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Dropdown Chọn Danh Mục -->
+                    <select id="categorySelect" class="form-select form-select-sm" style="width: auto; min-width: 140px;">
+                        <option value="">-- Tất cả nhóm thuốc --</option>
+                        <option value="Thuốc thường">Thuốc thường</option>
+                        <option value="Thuốc tiêm">Thuốc tiêm</option>
+                        <option value="Kháng sinh">Kháng sinh</option>
+                        <option value="Giảm đau">Giảm đau</option>
+                        <option value="Tim mạch">Tim mạch</option>
+                        <option value="Tiêu hóa">Tiêu hóa</option>
+                        <option value="Hô hấp">Hô hấp</option>
+                        <option value="Vitamin">Vitamin</option>
+                    </select>
+
+                    <!-- Dropdown Chọn Trạng Thái Tồn/Hạn -->
+                    <select id="statusSelect" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="low">⚠️ Tồn kho thấp (≤ 100)</option>
+                        <option value="expired">🔒 Đã khóa (Hết hạn)</option>
+                        <option value="expiring">⚡ Cận hạn (FEFO)</option>
+                        <option value="active">✅ Đang cho phép kê đơn</option>
+                    </select>
+
+                    <!-- Dropdown Chọn Hiển thị dòng -->
+                    <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
+                        <option value="10">10 dòng</option>
+                        <option value="25" selected>25 dòng</option>
+                        <option value="50">50 dòng</option>
+                        <option value="100">100 dòng</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                    
+                    <!-- Search Box: Hoạt chất hoặc Biệt dược (TC01) -->
+                    <div class="position-relative">
+                        <input type="text" id="tableSearchInput" class="form-control form-control-sm ps-5" placeholder="Tìm Hoạt chất / Biệt dược..." style="width: 260px; border-radius: 6px;">
+                        <i class="fas fa-search position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%);"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-scroll-container border rounded-3 overflow-hidden shadow-sm" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-hover align-middle mb-0" id="medicineTable" style="border-collapse: separate; border-spacing: 0;">
+                    <thead class="table-light sticky-top">
+                        <tr class="text-uppercase text-secondary fw-bold" style="font-size: 0.76rem; letter-spacing: 0.5px;">
+                            <th class="ps-3 py-3 text-center" style="width: 50px;">STT</th>
+                            <th class="py-3" style="min-width: 110px;">Mã / Số Lô</th>
+                            <th class="py-3" style="min-width: 180px;">Tên Biệt Dược</th>
+                            <th class="py-3" style="min-width: 160px;">Hoạt Chất</th>
+                            <th class="py-3 text-center" style="min-width: 100px;">Hàm Lượng</th>
+                            <th class="py-3 text-center" style="min-width: 120px;">Dạng Bào Chế</th>
+                            <th class="py-3 text-center" style="min-width: 80px;">ĐVT</th>
+                            <th class="py-3 text-end" style="min-width: 110px;">Đơn Giá (Thực tế)</th>
+                            <th class="py-3 text-center" style="min-width: 110px;">SL Tồn Kho</th>
+                            <th class="py-3 text-center" style="min-width: 120px;">Hạn Dùng (MM/YY)</th>
+                            <th class="py-3 text-center" style="min-width: 150px;">Trạng Thái / FEFO</th>
+                            <th class="py-3 text-center pe-3" style="width: 110px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.88rem;">
+                    @if (Model != null && Model.Any())
                     {
-                        @foreach (var detail in (List<HeThongBenhVien.Models.PrescriptionDetail>)ViewBag.AllPrescriptionDetails)
+                        int stt = 1;
+                        foreach (var item in Model)
                         {
-                            <tr>
-                                <td class="fw-bold">
-                                    @detail.Prescription?.MedicalRecord?.Appointment?.Patient?.FullName<br />
-                                    <small class="text-muted">BN: @detail.Prescription?.MedicalRecord?.Appointment?.Patient?.PatientCode</small>
+                            bool isExpired = item.ExpiryDate.HasValue && item.ExpiryDate.Value < DateTime.Now;
+                            bool isExpiring1M = item.ExpiryDate.HasValue && !isExpired && item.ExpiryDate.Value <= DateTime.Now.AddDays(30);
+                            bool isExpiring3M = item.ExpiryDate.HasValue && !isExpired && item.ExpiryDate.Value <= DateTime.Now.AddMonths(3);
+                            bool isLowStock = item.StockQuantity <= item.MinStock;
+
+                            <tr style="vertical-align: middle;" 
+                                data-name="@item.Name" 
+                                data-active="@item.ActiveIngredient" 
+                                data-category="@item.Category" 
+                                data-status="@(isExpired ? "expired" : (isExpiring1M || isExpiring3M ? "expiring" : (isLowStock ? "low" : "active")))">
+                                
+                                <td class="text-center ps-3 py-3 text-muted">@(stt++)</td>
+                                
+                                <!-- Số Lô -->
+                                <td class="py-3">
+                                    <span class="badge bg-secondary bg-opacity-15 text-dark font-monospace" style="font-size: 0.8rem;">
+                                        <i class="fas fa-barcode me-1 text-muted"></i>@(string.IsNullOrEmpty(item.BatchNumber) ? "N/A" : item.BatchNumber)
+                                    </span>
                                 </td>
-                                <td>@detail.MedicineName</td>
-                                <td class="text-center">@detail.Quantity</td>
-                                <td>@detail.Unit</td>
-                                <td class="text-end">@string.Format("{0:N0}", detail.Price)</td>
-                                <td class="text-end fw-bold">@string.Format("{0:N0}", detail.Price * detail.Quantity)</td>
-                                <td><small>@detail.DosageInstruction</small></td>
+
+                                <!-- Tên Biệt Dược -->
+                                <td class="py-3 font-weight-bold">
+                                    <span class="fw-bold text-dark">@item.Name</span><br />
+                                    <small class="text-muted"><i class="fas fa-industry me-1"></i>@item.Manufacturer</small>
+                                </td>
+
+                                <!-- Hoạt Chất (TC01) -->
+                                <td class="py-3">
+                                    <span class="fw-semibold text-primary" style="background-color: rgba(14, 165, 233, 0.08); padding: 2px 8px; border-radius: 4px;">
+                                        @item.ActiveIngredient
+                                    </span>
+                                </td>
+
+                                <!-- Hàm Lượng -->
+                                <td class="text-center py-3">
+                                    <span class="badge bg-light text-dark border">@item.Dosage</span>
+                                </td>
+
+                                <!-- Dạng Bào Chế -->
+                                <td class="text-center py-3 text-secondary">@item.DosageForm</td>
+
+                                <!-- ĐVT -->
+                                <td class="text-center py-3 fw-medium">@item.Unit</td>
+
+                                <!-- Đơn Giá thực tế (Requirement 4) -->
+                                <td class="text-end py-3 fw-bold text-success" style="font-size: 0.92rem;">
+                                    @item.Price.ToString("N0") đ
+                                </td>
+
+                                <!-- Tồn Kho (TC06: <=100) -->
+                                <td class="text-center py-3">
+                                    @if (isLowStock)
+                                    {
+                                        <span class="badge bg-danger px-2.5 py-1.5 rounded-pill shadow-sm" title="Số lượng tồn kho thấp dưới mức an toàn (≤ 100)">
+                                            ⚠️ @item.StockQuantity @item.Unit
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1.5 rounded-pill fw-bold">
+                                            @item.StockQuantity @item.Unit
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Hạn Dùng MM/YYYY (TC03) -->
+                                <td class="text-center py-3">
+                                    @if (item.ExpiryDate.HasValue)
+                                    {
+                                        <div class="fw-bold @(isExpired ? "text-danger" : "text-dark")">
+                                            @item.ExpiryDate.Value.ToString("MM/yyyy")
+                                        </div>
+                                        <small class="text-muted" style="font-size: 10.5px;">(Đến 23:59:59)</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+
+                                <!-- Trạng Thái / FEFO (TC02, TC04) -->
+                                <td class="text-center py-3">
+                                    @if (isExpired)
+                                    {
+                                        <span class="badge-expired shadow-sm">
+                                            <i class="fas fa-lock me-1"></i>🔒 KHÓA (HẾT HẠN)
+                                        </span>
+                                    }
+                                    else if (isExpiring1M)
+                                    {
+                                        <span class="badge bg-warning text-dark fw-bold px-2 py-1">
+                                            ⚡ FEFO CẬN HẠN 1T
+                                        </span>
+                                    }
+                                    else if (isExpiring3M)
+                                    {
+                                        <span class="badge-fefo">
+                                            ⚡ FEFO ƯU TIÊN XUẤT
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="fas fa-check me-1"></i>Cho phép kê đơn
+                                        </span>
+                                    }
+                                </td>
+
+                                <!-- Thao tác: CHẶN CẤP PHÁT NẾU THUỐC HẾT HẠN (Requirement 1) -->
+                                <td class="text-center py-3 pe-3">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        @if (isExpired)
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary rounded-circle p-0 d-inline-flex align-items-center justify-content-center disabled" 
+                                                    style="width: 30px; height: 30px; opacity: 0.4;" 
+                                                    disabled
+                                                    title="🔒 Thuốc đã HẾT HẠN SỬ DỤNG - Tuyệt đối khóa cấp phát theo Luật Dược 2016">
+                                                <i class="fas fa-lock text-danger" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary rounded-circle p-0 d-inline-flex align-items-center justify-content-center" 
+                                                    style="width: 30px; height: 30px;"
+                                                    onclick="openCheckModal(@item.Id, '@item.Name', '@item.ActiveIngredient', '@item.Dosage', '@item.DosageForm', '@(item.BatchNumber ?? "")', '@(item.ExpiryDate.HasValue ? item.ExpiryDate.Value.ToString("MM/yyyy") : "N/A")', '@item.Unit', false, @item.StockQuantity)"
+                                                    title="Kiểm tra đối chiếu 3KT 5ĐC">
+                                                <i class="fas fa-clipboard-check" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                        }
+                                        
+                                        <form asp-action="XoaThuoc" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center" 
+                                                    style="width: 30px; height: 30px;" 
+                                                    onclick="return confirm('Xác nhận xóa thuốc này khỏi kho?');" 
+                                                    title="Xóa thuốc">
+                                                <i class="fas fa-trash-can" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">Không có đơn thuốc nào trong hệ thống.</td>
+                            <td colspan="12" class="text-center py-5 text-muted">
+                                <i class="fas fa-pills fa-3x mb-3 text-secondary"></i>
+                                <p class="mb-0">Chưa có dữ liệu thuốc nào trong cơ sở dữ liệu SQL Server.</p>
+                            </td>
                         </tr>
                     }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination info -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3 pt-3 border-top">
+                <div id="paginationInfo" class="small text-muted fw-semibold"></div>
+                <nav>
+                    <ul id="paginationContainer" class="pagination pagination-sm mb-0 gap-1"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Lịch Sử Cấp Phát Thuốc & BỔ SUNG SỐ LÔ & HẠN DÙNG FEFO ĐỀ XUẤT (Requirement 6 & Requirement 1) -->
+    <div class="card shadow-sm border-0 mb-4 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1"><i class="fas fa-hand-holding-medical text-primary me-2"></i>Nhật Ký Cấp Phát Thuốc & Điều Phối Lô FEFO (HIS)</h5>
+                    <p class="text-muted small mb-0">Hiển thị Số lô & Hạn dùng đề xuất theo nguyên tắc FEFO • Chốt chặn 3 kiểm tra, 5 đối chiếu (VBHN 07/VBHN-BYT)</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="text-uppercase text-secondary fw-bold" style="font-size: 0.76rem;">
+                            <th>Bệnh Nhân (Mã BN)</th>
+                            <th>Biệt Dược Đơn Kê</th>
+                            <th class="text-center">Số Lô Đề Xuất (FEFO)</th>
+                            <th class="text-center">Hạn Dùng FEFO</th>
+                            <th class="text-center">Số Lượng</th>
+                            <th class="text-center">ĐVT</th>
+                            <th class="text-end">Đơn Giá Thực Tế</th>
+                            <th class="text-end">Thành Tiền</th>
+                            <th class="text-center">Trạng Thái & Thao Tác (3KT 5ĐC)</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.88rem;">
+                        @if (ViewBag.AllPrescriptionDetails != null && ((List<HeThongBenhVien.Models.Medicine>)ViewBag.AllMedicines != null))
+                        {
+                            var medList = (List<HeThongBenhVien.Models.Medicine>)ViewBag.AllMedicines;
+                            var detailsList = (List<HeThongBenhVien.Models.PrescriptionDetail>)ViewBag.AllPrescriptionDetails;
+
+                            if (detailsList.Any())
+                            {
+                                foreach (var detail in detailsList)
+                                {
+                                    var patientName = detail.Prescription?.MedicalRecord?.Appointment?.Patient?.FullName ?? "Bệnh nhân ngoại trú";
+                                    var patientCode = detail.Prescription?.MedicalRecord?.Appointment?.Patient?.PatientCode ?? "BN-HIS-2026";
+                                    
+                                    // Match FEFO proposed batch from available medicines in SQL
+                                    var cleanDetailName = (detail.MedicineName ?? "").Trim().ToLower();
+                                    var firstWord = cleanDetailName.Split(' ')[0];
+
+                                    var matchedMed = medList.FirstOrDefault(m => 
+                                        m.Name.ToLower() == cleanDetailName || 
+                                        cleanDetailName.Contains(m.Name.ToLower()) || 
+                                        m.Name.ToLower().Contains(cleanDetailName) ||
+                                        (!string.IsNullOrEmpty(m.ActiveIngredient) && cleanDetailName.Contains(m.ActiveIngredient.ToLower())) ||
+                                        (firstWord.Length > 2 && m.Name.ToLower().Contains(firstWord))
+                                    );
+                                    
+                                    string fefoBatch = matchedMed != null && !string.IsNullOrEmpty(matchedMed.BatchNumber) ? matchedMed.BatchNumber : "N/A (Chưa nhập số lô)";
+                                    string fefoExpiry = matchedMed != null && matchedMed.ExpiryDate.HasValue ? matchedMed.ExpiryDate.Value.ToString("MM/yyyy") : "N/A";
+                                    string activeIngr = matchedMed != null && !string.IsNullOrEmpty(matchedMed.ActiveIngredient) ? matchedMed.ActiveIngredient : detail.MedicineName;
+                                    string dosageStr = matchedMed != null && !string.IsNullOrEmpty(matchedMed.Dosage) ? matchedMed.Dosage : "";
+                                    int stockAvailable = matchedMed != null ? matchedMed.StockQuantity : 0;
+                                    
+                                    bool isPrescriptionExpired = matchedMed != null && matchedMed.ExpiryDate.HasValue && matchedMed.ExpiryDate.Value < DateTime.Now;
+                                    bool isAlreadyDispensed = (detail.Prescription != null && detail.Prescription.Status.Contains("Đã cấp phát")) || (detail.DosageInstruction != null && detail.DosageInstruction.Contains("Đã cấp phát"));
+
+                                    <tr>
+                                        <td class="fw-bold">
+                                            <span class="text-dark">@patientName</span><br />
+                                            <small class="text-primary font-monospace">Mã BN: @patientCode</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-dark">@detail.MedicineName</strong><br />
+                                            <small class="text-muted"><i class="fas fa-vial me-1 text-info"></i>Hoạt chất: @activeIngr</small>
+                                        </td>
+                                        
+                                        <!-- Số Lô FEFO Đề xuất (Requirement 6) -->
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary bg-opacity-15 text-dark font-monospace px-2 py-1" style="font-size: 0.82rem;">
+                                                <i class="fas fa-barcode me-1 text-primary"></i>@fefoBatch
+                                            </span>
+                                        </td>
+
+                                        <!-- Hạn dùng FEFO Đề xuất (Requirement 6) -->
+                                        <td class="text-center">
+                                            @if (isPrescriptionExpired)
+                                            {
+                                                <span class="badge bg-danger text-white px-2 py-1 fw-bold">
+                                                    🔒 HẾT HẠN (@fefoExpiry)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info text-white px-2 py-1 fw-bold">
+                                                    ⚡ Hạn FEFO: @fefoExpiry
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td class="text-center fw-bold">@detail.Quantity</td>
+                                        <td class="text-center">@detail.Unit</td>
+                                        <td class="text-end fw-semibold">@detail.Price.ToString("N0") đ</td>
+                                        <td class="text-end fw-bold text-success">@((detail.Price * detail.Quantity).ToString("N0")) đ</td>
+
+                                        <!-- Nút Thao tác & Chặn cấp phát nếu hết hạn (Requirement 1) -->
+                                        <td class="text-center">
+                                            @if (isPrescriptionExpired)
+                                            {
+                                                <button class="btn btn-sm btn-danger px-3 rounded-pill shadow-sm disabled" disabled title="Lô thuốc quá hạn - Tuyệt đối KHÓA không cho phép cấp phát theo Luật Dược 2016!">
+                                                    <i class="fas fa-lock me-1"></i> 🔒 ĐÃ KHÓA (KHÔNG ĐƯỢC CẤP)
+                                                </button>
+                                            }
+                                            else if (isAlreadyDispensed)
+                                            {
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 0.78rem;">
+                                                    <i class="fas fa-check-circle me-1"></i> Đã Cấp Phát (3KT-5ĐC)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-primary px-3 rounded-pill shadow-sm"
+                                                        onclick="openDispenseCheckModal(@(matchedMed != null ? matchedMed.Id : 0), '@patientName', '@patientCode', '@detail.MedicineName', '@activeIngr', '@dosageStr', '@fefoBatch', '@fefoExpiry', '@detail.Quantity', '@detail.Unit', '@detail.DosageInstruction', false, @stockAvailable, @detail.Id)">
+                                                    <i class="fas fa-check-double me-1"></i> Cấp Phát (3KT-5ĐC)
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center py-4 text-muted">Chưa có đơn thuốc cấp phát nào trong nhật ký.</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL 1: THÊM THUỐC MỚI (Requirement 3: Chuẩn hóa ExpiryDate MM/YYYY 23:59:59) -->
+<!-- ========================================== -->
 <div class="modal fade" id="addModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Thêm Thuốc Mới</h5>
+                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2"></i>Thêm Thuốc Mới Vào Kho Dược</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="ThemThuoc" method="post">
                 @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tên Thuốc</label>
-                            <input name="Name" class="form-control" required/>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Tên Biệt Dược *</label>
+                            <input name="Name" class="form-control" placeholder="Vd: Panadol Extra, Efferalgan..." required/>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Danh Mục</label>
-                            <select name="Category" class="form-select">
-                                <option>Kháng sinh</option><option>Giảm đau</option>
-                                <option>Tim mạch</option><option>Tiêu hóa</option>
-                                <option>Hô hấp</option><option>Vitamin</option><option>Khác</option>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-primary">Tên Hoạt Chất (TC01) *</label>
+                            <input name="ActiveIngredient" class="form-control" placeholder="Vd: Paracetamol, Atropin..." required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Hàm Lượng *</label>
+                            <input name="Dosage" class="form-control" placeholder="Vd: 500mg, 10mg/ml..." required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Dạng Bào Chế *</label>
+                            <input name="DosageForm" class="form-control" placeholder="Vd: Viên nén, Dung dịch tiêm..." required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Số Lô Quản Lý *</label>
+                            <input name="BatchNumber" class="form-control font-monospace" placeholder="Vd: L2026-B02" required/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Nhóm Thuốc (Loại bỏ hoàn toàn vật tư tiêu hao) *</label>
+                            <select name="Category" class="form-select" required>
+                                <option value="Thuốc thường">Thuốc thường</option>
+                                <option value="Thuốc tiêm">Thuốc tiêm</option>
+                                <option value="Kháng sinh">Kháng sinh</option>
+                                <option value="Giảm đau">Giảm đau</option>
+                                <option value="Tim mạch">Tim mạch</option>
+                                <option value="Tiêu hóa">Tiêu hóa</option>
+                                <option value="Hô hấp">Hô hấp</option>
+                                <option value="Vitamin">Vitamin</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Đơn Vị</label>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">Đơn Vị Tính *</label>
                             <select name="Unit" class="form-select">
-                                <option>Viên</option><option>Hộp</option>
-                                <option>Chai</option><option>Ống</option><option>Gói</option>
+                                <option value="Viên">Viên</option>
+                                <option value="Hộp">Hộp</option>
+                                <option value="Ống">Ống</option>
+                                <option value="Liều">Liều</option>
+                                <option value="Gói">Gói</option>
+                                <option value="Chai">Chai</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Giá (VNĐ)</label>
-                            <input name="Price" type="number" class="form-control" required/>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">Đơn Giá Thực Tế (VNĐ) *</label>
+                            <input name="Price" type="number" class="form-control" placeholder="Vd: 2500" required/>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Số Lượng</label>
-                            <input name="StockQuantity" type="number" class="form-control" value="0"/>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Số Lượng Nhập *</label>
+                            <input name="StockQuantity" type="number" class="form-control" value="100" required/>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Tồn Kho Tối Thiểu</label>
-                            <input name="MinStock" type="number" class="form-control" value="10"/>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Tồn Tối Thiểu (Mức an toàn TC06)</label>
+                            <input name="MinStock" type="number" class="form-control" value="100"/>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Hạn Sử Dụng</label>
-                            <input name="ExpiryDate" type="date" class="form-control"/>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-danger">Hạn Sử Dụng (MM/YYYY) *</label>
+                            <input name="ExpiryDate" type="date" class="form-control" required/>
+                            <small class="text-muted" style="font-size: 10.5px;"><i class="fas fa-info-circle me-1"></i>Hệ thống tự động quy đổi về 23:59:59 ngày cuối tháng</small>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold">Nhà Sản Xuất</label>
-                            <input name="Manufacturer" class="form-control"/>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small">Hãng / Nhà Sản Xuất *</label>
+                            <input name="Manufacturer" class="form-control" placeholder="Vd: GSK, Dược Hậu Giang, Bayer..." required/>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-1"></i> Lưu Thuốc Vào SQL</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 2: CHỐT CHẶN 3 KIỂM TRA 5 ĐỐI CHIẾU (Requirement 2: Không checked mặc định, nút Xác nhận bị disabled cho tới khi tick đủ) -->
+<!-- ========================================== -->
+<div class="modal fade" id="doiChieuModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-clipboard-check me-2"></i>Quy Chuẩn "3 Kiểm Tra, 5 Đối Chiếu" (VBHN 07/VBHN-BYT)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <strong>Yêu cầu Dược sĩ đối chiếu thủ công (Requirement 2):</strong> Bạn phải đối chiếu thực tế và tích đủ 5 đối chiếu + 3 kiểm tra thì nút <strong>Xác Nhận Cấp Phát</strong> mới được kích hoạt!
+                </div>
+
+                <div class="row g-3">
+                    <!-- Cột 1: Thông tin người bệnh & Thuốc -->
+                    <div class="col-md-6 border-end">
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user-check me-1"></i>1. Thông Tin Đơn Cấp Phát</h6>
+                        <table class="table table-sm table-borderless mb-2">
+                            <tr><td class="text-muted" style="width: 130px;">Người bệnh:</td><td class="fw-bold" id="modalPatientName">---</td></tr>
+                            <tr><td class="text-muted">Mã bệnh nhân:</td><td class="fw-bold font-monospace text-primary" id="modalPatientCode">---</td></tr>
+                            <tr><td class="text-muted">Biệt dược:</td><td class="fw-bold text-dark" id="modalMedName">---</td></tr>
+                            <tr><td class="text-muted">Hoạt chất:</td><td class="fw-semibold text-info" id="modalActiveIngredient">---</td></tr>
+                            <tr><td class="text-muted">Hàm lượng:</td><td id="modalDosage">---</td></tr>
+                            <tr><td class="text-muted">Số lô FEFO:</td><td class="font-monospace fw-bold text-success" id="modalBatch">---</td></tr>
+                            <tr><td class="text-muted">Hạn sử dụng:</td><td class="fw-bold" id="modalExpiry">---</td></tr>
+                            <tr><td class="text-muted">Tồn kho SQL:</td><td class="fw-bold text-primary" id="modalCurrentStock">---</td></tr>
+                        </table>
+
+                        <!-- Tùy chọn Số lượng xuất cấp phát thuốc -->
+                        <div class="p-3 bg-light rounded-3 border">
+                            <label for="modalDispenseQuantityInput" class="form-label fw-bold text-dark small mb-1">
+                                <i class="fas fa-cubes text-primary me-1"></i> Chọn Số Lượng Thuốc Xuất Cấp Phát *
+                            </label>
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" onclick="changeModalQuantity(-1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="modalDispenseQuantityInput" class="form-control text-center fw-bold text-primary fs-5" min="1" value="1" onchange="syncModalQuantityInput()" oninput="syncModalQuantityInput()">
+                                <button class="btn btn-outline-secondary" type="button" onclick="changeModalQuantity(1)"><i class="fas fa-plus"></i></button>
+                                <span class="input-group-text fw-bold" id="modalDispenseUnit">Viên</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                                <small class="text-muted" id="modalDispenseTotalHint" style="font-size: 11px;">Tổng xuất: 1 Viên</small>
+                                <small class="fw-bold" id="modalRemainingStockInfo" style="font-size: 12px;"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột 2: Danh mục đối chiếu - KHÔNG CHECKED MẶC ĐỊNH (Requirement 2) -->
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-success mb-0"><i class="fas fa-tasks me-1"></i>2. Bảng Tích Xác Nhận Dược Sĩ</h6>
+                            <button type="button" class="btn btn-sm btn-outline-success px-2.5 py-1 rounded-pill fw-bold shadow-sm" onclick="checkAllDoiChieuItems()" title="Tích chọn nhanh tất cả 5 đối chiếu & 3 kiểm tra">
+                                <i class="fas fa-check-double me-1"></i> Tích Nhanh Tất Cả
+                            </button>
+                        </div>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input check-item" type="checkbox" id="chk1" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small" for="chk1">
+                                <strong>Đối chiếu 1:</strong> Đúng tên người bệnh & Mã bệnh nhân
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input check-item" type="checkbox" id="chk2" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small" for="chk2">
+                                <strong>Đối chiếu 2:</strong> Đúng Tên biệt dược & Hoạt chất
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input check-item" type="checkbox" id="chk3" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small" for="chk3">
+                                <strong>Đối chiếu 3:</strong> Đúng Hàm lượng & Liều dùng
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input check-item" type="checkbox" id="chk4" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small" for="chk4">
+                                <strong>Đối chiếu 4:</strong> Đúng Đường dùng & Dạng bào chế
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input check-item" type="checkbox" id="chk5" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small" for="chk5">
+                                <strong>Đối chiếu 5:</strong> Đúng Số lô & Hạn sử dụng còn hiệu lực
+                            </label>
+                        </div>
+
+                        <hr class="my-2" />
+                        <div class="form-check">
+                            <input class="form-check-input check-item" type="checkbox" id="chk3Check" onchange="validateDoiChieuForm()">
+                            <label class="form-check-label small fw-bold text-primary" for="chk3Check">
+                                Đã hoàn thành 3 kiểm tra định danh & nhãn thuốc
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                
+                <!-- Nút Xác Nhận Cấp Phát: VÔ HIỆU HÓA MẶC ĐỊNH (Requirement 2) -->
+                <button type="button" id="btnConfirmDispense" class="btn btn-success px-4 disabled" disabled onclick="confirmDispenseSuccess()">
+                    <i class="fas fa-check-circle me-1"></i> Xác Nhận Cấp Phát & Trừ Tồn Kho
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 3: SƠ ĐỒ QUY TRÌNH KHO DƯỢC HIS -->
+<!-- ========================================== -->
+<div class="modal fade" id="flowchartModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-sitemap me-2"></i>Sơ Đồ Quy Trình Quản Lý Kho Dược & Cấp Phát FEFO (HIS)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <img src="~/images/kho_duoc_process_flowchart.png" class="img-fluid rounded border shadow-sm mb-3" alt="Sơ đồ quy trình kho dược" />
+                <div class="alert alert-info text-start small mb-0">
+                    <strong>Tóm tắt luồng nghiệp vụ:</strong> Bác sĩ kê đơn ➔ Hệ thống HIS tự động lọc lô thuốc còn hạn & điều phối lô FEFO ➔ Thu ngân xác nhận ➔ Dược sĩ chốt 3 kiểm tra 5 đối chiếu ➔ Tự động trừ tồn kho khả dụng & in phiếu hướng dẫn sử dụng cho bệnh nhân.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL 4: HƯỚNG DẪN 3 KIỂM TRA 5 ĐỐI CHIẾU POSTER -->
+<!-- ========================================== -->
+<div class="modal fade" id="posterModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-medical me-2"></i>Quy Chuẩn Bộ Y Tế: 3 Kiểm Tra, 5 Đối Chiếu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <img src="~/images/3_kiem_tra_5_doi_chieu_guide.png" class="img-fluid rounded border shadow-sm mb-3" alt="Quy chuẩn 3 kiểm tra 5 đối chiếu" />
+            </div>
         </div>
     </div>
 </div>
@@ -408,6 +860,8 @@
             let filteredRows = [...originalRows];
             
             const searchInput = document.getElementById("tableSearchInput");
+            const categorySelect = document.getElementById("categorySelect");
+            const statusSelect = document.getElementById("statusSelect");
             const pageSizeSelect = document.getElementById("pageSizeSelect");
             const paginationInfo = document.getElementById("paginationInfo");
             const paginationContainer = document.getElementById("paginationContainer");
@@ -417,18 +871,25 @@
             
             function updateTable() {
                 const query = searchInput.value.toLowerCase().trim();
+                const selectedCat = categorySelect.value;
+                const selectedStatus = statusSelect.value;
                 
-                // Filter rows
-                if (query === "") {
-                    filteredRows = [...originalRows];
-                } else {
-                    filteredRows = originalRows.filter(row => {
-                        const name = row.cells[0]?.textContent.toLowerCase() || "";
-                        const category = row.cells[1]?.textContent.toLowerCase() || "";
-                        const manufacturer = row.cells[6]?.textContent.toLowerCase() || "";
-                        return name.includes(query) || category.includes(query) || manufacturer.includes(query);
-                    });
-                }
+                // Filter rows based on search (Hoạt chất / Biệt dược), category and status
+                filteredRows = originalRows.filter(row => {
+                    if (!row.dataset.name) return true; // Empty state row
+
+                    const name = (row.dataset.name || "").toLowerCase();
+                    const active = (row.dataset.active || "").toLowerCase();
+                    const category = row.dataset.category || "";
+                    const status = row.dataset.status || "";
+
+                    // TC01: Search by Brand name OR Active Ingredient
+                    const matchesQuery = (query === "") || name.includes(query) || active.includes(query);
+                    const matchesCategory = (selectedCat === "") || category === selectedCat;
+                    const matchesStatus = (selectedStatus === "") || status === selectedStatus;
+
+                    return matchesQuery && matchesCategory && matchesStatus;
+                });
                 
                 // Handle pagination size
                 const val = pageSizeSelect.value;
@@ -441,35 +902,30 @@
                 const totalRows = filteredRows.length;
                 const totalPages = Math.ceil(totalRows / pageSize) || 1;
                 
-                if (currentPage > totalPages) {
-                    currentPage = totalPages;
-                }
-                if (currentPage < 1) {
-                    currentPage = 1;
-                }
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
                 
                 const startIndex = (currentPage - 1) * pageSize;
                 const endIndex = Math.min(startIndex + pageSize, totalRows);
                 
-                // Show/hide rows
-                originalRows.forEach(row => {
-                    row.style.display = "none";
-                });
+                // Hide all rows first
+                originalRows.forEach(row => row.style.display = "none");
                 
+                // Show filtered paginated rows
                 for (let i = startIndex; i < endIndex; i++) {
                     if (filteredRows[i]) {
                         filteredRows[i].style.display = "";
                     }
                 }
                 
-                // Update pagination info
+                // Update pagination text
                 if (totalRows === 0) {
                     paginationInfo.textContent = "Hiển thị 0 đến 0 trong số 0 sản phẩm";
                 } else {
-                    paginationInfo.textContent = `Hiển thị ${startIndex + 1} đến ${endIndex} trong số ${totalRows} thuốc`;
+                    paginationInfo.textContent = `Hiển thị ${startIndex + 1} đến ${endIndex} trong số ${totalRows} loại thuốc (HIS SQL Data)`;
                 }
                 
-                // Build pagination buttons
+                // Build pagination controls
                 paginationContainer.innerHTML = "";
                 
                 // Prev button
@@ -484,8 +940,7 @@
                 }
                 paginationContainer.appendChild(prevLi);
                 
-                // Page numbers
-                // We show max 5 page buttons around the current page
+                // Page Numbers
                 let startPage = Math.max(1, currentPage - 2);
                 let endPage = Math.min(totalPages, startPage + 4);
                 if (endPage - startPage < 4) {
@@ -517,18 +972,241 @@
             }
             
             // Event listeners
-            searchInput.addEventListener("input", () => {
-                currentPage = 1;
-                updateTable();
-            });
-            
-            pageSizeSelect.addEventListener("change", () => {
-                currentPage = 1;
-                updateTable();
-            });
+            searchInput.addEventListener("input", () => { currentPage = 1; updateTable(); });
+            categorySelect.addEventListener("change", () => { currentPage = 1; updateTable(); });
+            statusSelect.addEventListener("change", () => { currentPage = 1; updateTable(); });
+            pageSizeSelect.addEventListener("change", () => { currentPage = 1; updateTable(); });
             
             // Initial call
             updateTable();
         });
+
+        let currentDispenseMedId = null;
+        let currentDispenseMedName = null;
+        let currentDispenseActiveIngredient = null;
+        let currentDispenseQuantity = 1;
+        let currentDispenseStockQuantity = 0;
+        let currentDispenseUnitName = "Viên";
+
+        // Reset and Validate checkboxes in 3KT-5ĐC modal (Requirement 2)
+        function resetDoiChieuCheckboxes() {
+            const ids = ["chk1", "chk2", "chk3", "chk4", "chk5", "chk3Check"];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+            const btn = document.getElementById("btnConfirmDispense");
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add("disabled");
+                btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Xác Nhận Cấp Phát & Trừ Tồn Kho';
+            }
+        }
+
+        // Tích nhanh tất cả 5 đối chiếu + 3 kiểm tra
+        function checkAllDoiChieuItems() {
+            const ids = ["chk1", "chk2", "chk3", "chk4", "chk5", "chk3Check"];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = true;
+            });
+            validateDoiChieuForm();
+        }
+
+        // Validate if ALL checkboxes are checked AND quantity is valid
+        function validateDoiChieuForm() {
+            const ids = ["chk1", "chk2", "chk3", "chk4", "chk5", "chk3Check"];
+            const allChecked = ids.every(id => {
+                const el = document.getElementById(id);
+                return el && el.checked;
+            });
+
+            const isQuantityValid = (currentDispenseStockQuantity - currentDispenseQuantity) >= 0;
+            
+            const btn = document.getElementById("btnConfirmDispense");
+            if (btn) {
+                const canSubmit = allChecked && isQuantityValid;
+                btn.disabled = !canSubmit;
+                if (canSubmit) {
+                    btn.classList.remove("disabled");
+                } else {
+                    btn.classList.add("disabled");
+                }
+            }
+        }
+
+        function changeModalQuantity(delta) {
+            const input = document.getElementById("modalDispenseQuantityInput");
+            if (!input) return;
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            input.value = val;
+            syncModalQuantityInput();
+        }
+
+        function syncModalQuantityInput() {
+            const input = document.getElementById("modalDispenseQuantityInput");
+            if (!input) return;
+            let val = parseInt(input.value);
+            if (isNaN(val) || val < 1) val = 1;
+            currentDispenseQuantity = val;
+            
+            const hint = document.getElementById("modalDispenseTotalHint");
+            const unit = currentDispenseUnitName || "Viên";
+            if (hint) {
+                hint.textContent = `Tổng xuất: ${val} ${unit}`;
+            }
+
+            const remainingInfo = document.getElementById("modalRemainingStockInfo");
+            const remainingStock = currentDispenseStockQuantity - val;
+
+            if (remainingInfo) {
+                if (remainingStock >= 0) {
+                    remainingInfo.innerHTML = `<i class="fas fa-boxes text-success me-1"></i>Tồn kho còn lại: <span class="badge bg-success text-white px-2 py-1 fs-6">${remainingStock} ${unit}</span>`;
+                } else {
+                    remainingInfo.innerHTML = `<i class="fas fa-exclamation-triangle text-danger me-1"></i><span class="text-danger fw-bold">Vượt quá tồn kho (${currentDispenseStockQuantity} ${unit})</span>`;
+                }
+            }
+
+            validateDoiChieuForm();
+        }
+
+        let currentDispensePrescriptionDetailId = 0;
+
+        // Open 3KT 5ĐC check modal for individual medicine (Requirement 1: Check expiry)
+        function openCheckModal(medId, medName, activeIngredient, dosage, form, batch, expiry, unit, isExpired, stockQuantity) {
+            if (isExpired) {
+                alert("⚠️ KHÓA CẤP PHÁT: Lô thuốc " + medName + " đã HẾT HẠN SỬ DỤNG (" + expiry + "). Theo Khoản 31 Điều 2 Luật Dược 2016, hệ thống tuyệt đối KHÓA không cho phép mở đối chiếu cấp phát!");
+                return;
+            }
+
+            currentDispenseMedId = medId;
+            currentDispenseMedName = medName;
+            currentDispenseActiveIngredient = activeIngredient;
+            currentDispenseQuantity = 1;
+            currentDispenseStockQuantity = parseInt(stockQuantity) || 0;
+            currentDispenseUnitName = unit || "Viên";
+            currentDispensePrescriptionDetailId = 0;
+
+            resetDoiChieuCheckboxes();
+            document.getElementById("modalPatientName").textContent = "Kho Dược Lâm Sàng (Xuất kho SQL)";
+            document.getElementById("modalPatientCode").textContent = "KHO-SQL-" + medId;
+            document.getElementById("modalMedName").textContent = medName;
+            document.getElementById("modalActiveIngredient").textContent = activeIngredient;
+            document.getElementById("modalDosage").textContent = dosage + (form ? " (" + form + ")" : "");
+            document.getElementById("modalBatch").textContent = batch || "N/A";
+            document.getElementById("modalExpiry").textContent = expiry || "N/A";
+            document.getElementById("modalCurrentStock").textContent = currentDispenseStockQuantity + " " + currentDispenseUnitName;
+            
+            const qtyInput = document.getElementById("modalDispenseQuantityInput");
+            if (qtyInput) qtyInput.value = 1;
+            const unitSpan = document.getElementById("modalDispenseUnit");
+            if (unitSpan) unitSpan.textContent = currentDispenseUnitName;
+            syncModalQuantityInput();
+            
+            var modal = new bootstrap.Modal(document.getElementById('doiChieuModal'));
+            modal.show();
+        }
+
+        // Open 3KT 5ĐC check modal for prescription dispensing (Requirement 1 & Requirement 6)
+        function openDispenseCheckModal(medId, patientName, patientCode, medName, activeIngr, dosageStr, batch, expiry, qty, unit, instruction, isExpired, stockQuantity, detailId) {
+            if (isExpired) {
+                alert("⚠️ KHÓA CẤP PHÁT: Thuốc " + medName + " đã HẾT HẠN SỬ DỤNG. Theo Khoản 31 Điều 2 Luật Dược 2016, hệ thống tuyệt đối KHÓA không cho phép cấp phát!");
+                return;
+            }
+
+            currentDispenseMedId = medId;
+            currentDispenseMedName = medName;
+            currentDispenseActiveIngredient = activeIngr;
+            currentDispenseQuantity = parseInt(qty) || 1;
+            currentDispenseStockQuantity = parseInt(stockQuantity) || 0;
+            currentDispenseUnitName = unit || "Viên";
+            currentDispensePrescriptionDetailId = detailId || 0;
+
+            resetDoiChieuCheckboxes();
+            document.getElementById("modalPatientName").textContent = patientName;
+            document.getElementById("modalPatientCode").textContent = patientCode;
+            document.getElementById("modalMedName").textContent = medName;
+            document.getElementById("modalActiveIngredient").textContent = activeIngr;
+            document.getElementById("modalDosage").textContent = dosageStr + (instruction ? " | HDSD: " + instruction : "");
+            document.getElementById("modalBatch").textContent = batch || "N/A";
+            document.getElementById("modalExpiry").textContent = expiry || "N/A";
+            document.getElementById("modalCurrentStock").textContent = currentDispenseStockQuantity + " " + currentDispenseUnitName;
+
+            const qtyInput = document.getElementById("modalDispenseQuantityInput");
+            if (qtyInput) qtyInput.value = currentDispenseQuantity;
+            const unitSpan = document.getElementById("modalDispenseUnit");
+            if (unitSpan) unitSpan.textContent = currentDispenseUnitName;
+            syncModalQuantityInput();
+
+            var modal = new bootstrap.Modal(document.getElementById('doiChieuModal'));
+            modal.show();
+        }
+
+        function confirmDispenseSuccess() {
+            const btn = document.getElementById("btnConfirmDispense");
+            if (!btn || btn.disabled) return;
+
+            // Sync quantity from input field
+            syncModalQuantityInput();
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý cấp phát & trừ kho...';
+
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : '';
+
+            const pName = document.getElementById("modalPatientName")?.textContent || "";
+            const pCode = document.getElementById("modalPatientCode")?.textContent || "";
+
+            const formData = new FormData();
+            if (currentDispenseMedId && currentDispenseMedId > 0) {
+                formData.append("medicineId", currentDispenseMedId);
+            }
+            if (currentDispenseMedName) {
+                formData.append("medicineName", currentDispenseMedName);
+            }
+            if (currentDispenseActiveIngredient) {
+                formData.append("activeIngredient", currentDispenseActiveIngredient);
+            }
+            formData.append("quantity", currentDispenseQuantity);
+            formData.append("patientName", pName);
+            formData.append("patientCode", pCode);
+
+            if (currentDispensePrescriptionDetailId && currentDispensePrescriptionDetailId > 0) {
+                formData.append("prescriptionDetailId", currentDispensePrescriptionDetailId);
+            }
+
+            if (token) {
+                formData.append("__RequestVerificationToken", token);
+            }
+
+            fetch('/Admin/CapPhatThuoc', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                var modalEl = document.getElementById('doiChieuModal');
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Xác Nhận Cấp Phát & Trừ Tồn Kho';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Có lỗi kết nối khi xác nhận cấp phát! Vui lòng thử lại.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Xác Nhận Cấp Phát & Trừ Tồn Kho';
+            });
+        }
     </script>
 }
