@@ -1,40 +1,47 @@
-$sql = @"
-USE QuanLyBenhVienDb;
+$connStr = "Server=DESKTOP-DFA7S8M\SQLEXPRESS;Database=QuanLyBenhVienDb;Integrated Security=True;TrustServerCertificate=True"
+$conn = New-Object System.Data.SqlClient.SqlConnection($connStr)
+$conn.Open()
 
--- Clean up bogus row 29 if exists
-DELETE FROM Medicines WHERE Name = N'Thuốc hạ sốt' AND ActiveIngredient = N'111';
+# Delete bogus test rows
+$cmdDel = $conn.CreateCommand()
+$cmdDel.CommandText = "DELETE FROM Medicines WHERE Name = '1' OR ActiveIngredient = '111' OR Manufacturer = '1'"
+$cmdDel.ExecuteNonQuery()
 
--- Insert standard Medicines into SQL Server DB if they do not exist
-IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Vitamin C%')
-BEGIN
-    INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-    VALUES (N'Vitamin C 1000mg', N'Acid Ascorbic (Vitamin C)', N'1000mg', N'Lọ', N'L2026-VITC', 85000, N'Lọ', N'Vitamin', 50, 10, N'Dược Hậu Giang (DHG)', '2028-10-31 23:59:59', 1);
-END;
+# Parameterized insertions to avoid any encoding / font issues
+function Add-Medicine {
+    param($Name, $ActiveIngredient, $Dosage, $DosageForm, $BatchNumber, $Price, $Unit, $Category, $StockQuantity, $MinStock, $Manufacturer, $ExpiryDate)
+    
+    $checkCmd = $conn.CreateCommand()
+    $checkCmd.CommandText = "SELECT COUNT(*) FROM Medicines WHERE Name = @Name AND BatchNumber = @BatchNumber"
+    $checkCmd.Parameters.AddWithValue("@Name", $Name) | Out-Null
+    $checkCmd.Parameters.AddWithValue("@BatchNumber", $BatchNumber) | Out-Null
+    $count = [int]$checkCmd.ExecuteScalar()
 
-IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Amlodipine%')
-BEGIN
-    INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-    VALUES (N'Amlodipine 5mg', N'Amlodipine besylate', N'5mg', N'Viên nén', N'L2026-AML', 60000, N'Viên', N'Tim mạch', 200, 30, N'Stada Vietnam', '2027-08-31 23:59:59', 1);
-END;
+    if ($count -eq 0) {
+        $insCmd = $conn.CreateCommand()
+        $insCmd.CommandText = "INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, PurchasePrice, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive) VALUES (@Name, @ActiveIngredient, @Dosage, @DosageForm, @BatchNumber, @Price, @PurchasePrice, @Unit, @Category, @StockQuantity, @MinStock, @Manufacturer, @ExpiryDate, 1)"
+        $insCmd.Parameters.AddWithValue("@Name", $Name) | Out-Null
+        $insCmd.Parameters.AddWithValue("@ActiveIngredient", $ActiveIngredient) | Out-Null
+        $insCmd.Parameters.AddWithValue("@Dosage", $Dosage) | Out-Null
+        $insCmd.Parameters.AddWithValue("@DosageForm", $DosageForm) | Out-Null
+        $insCmd.Parameters.AddWithValue("@BatchNumber", $BatchNumber) | Out-Null
+        $insCmd.Parameters.AddWithValue("@Price", $Price) | Out-Null
+        $insCmd.Parameters.AddWithValue("@PurchasePrice", ($Price * 0.7)) | Out-Null
+        $insCmd.Parameters.AddWithValue("@Unit", $Unit) | Out-Null
+        $insCmd.Parameters.AddWithValue("@Category", $Category) | Out-Null
+        $insCmd.Parameters.AddWithValue("@StockQuantity", $StockQuantity) | Out-Null
+        $insCmd.Parameters.AddWithValue("@MinStock", $MinStock) | Out-Null
+        $insCmd.Parameters.AddWithValue("@Manufacturer", $Manufacturer) | Out-Null
+        $insCmd.Parameters.AddWithValue("@ExpiryDate", [DateTime]::Parse($ExpiryDate)) | Out-Null
+        $insCmd.ExecuteNonQuery()
+    }
+}
 
-IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Omeprazole%')
-BEGIN
-    INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-    VALUES (N'Omeprazole 20mg', N'Omeprazole', N'20mg', N'Viên nang', N'L2026-OMP', 8000, N'Viên', N'Tiêu hóa', 150, 20, N'Mekophar', '2027-11-30 23:59:59', 1);
-END;
+Add-Medicine "Vitamin C 1000mg" "Acid Ascorbic (Vitamin C)" "1000mg" "Viên sủi" "L2026-VITC" 85000 "Lọ" "Vitamin" 50 10 "Dược Hậu Giang (DHG)" "2028-10-31 23:59:59"
+Add-Medicine "Amlodipine 5mg" "Amlodipine besylate" "5mg" "Viên nén" "L2026-AML" 60000 "Viên" "Tim mạch" 200 30 "Stada Vietnam" "2027-08-31 23:59:59"
+Add-Medicine "Omeprazole 20mg" "Omeprazole" "20mg" "Viên nang" "L2026-OMP" 8000 "Viên" "Tiêu hóa" 150 20 "Mekophar" "2027-11-30 23:59:59"
+Add-Medicine "Cefuroxime 500mg" "Cefuroxime axetil" "500mg" "Viên nén bao phim" "L2026-CEF" 15000 "Viên" "Kháng sinh" 80 100 "Imexpharm" "2027-09-30 23:59:59"
+Add-Medicine "Paracetamol 500mg" "Paracetamol" "500mg" "Viên nén" "L2026-B02" 2500 "Viên" "Giảm đau" 100 20 "Dược Hậu Giang" "2026-10-31 23:59:59"
 
-IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Cefuroxime%')
-BEGIN
-    INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-    VALUES (N'Cefuroxime 500mg', N'Cefuroxime axetil', N'500mg', N'Viên nén bao phim', N'L2026-CEF', 15000, N'Viên', N'Kháng sinh', 80, 100, N'Imexpharm', '2027-09-30 23:59:59', 1);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Paracetamol%' AND BatchNumber = N'L2026-B02')
-BEGIN
-    INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive)
-    VALUES (N'Paracetamol 500mg', N'Paracetamol', N'500mg', N'Viên nén', N'L2026-B02', 2500, N'Viên', N'Giảm đau', 100, 20, N'Dược Hậu Giang', '2026-10-31 23:59:59', 1);
-END;
-"@
-
-Invoke-Sqlcmd -ServerInstance 'DESKTOP-DFA7S8M\SQLEXPRESS' -Database 'QuanLyBenhVienDb' -Query $sql
-Write-Host "Inserted SQL Medicines successfully!"
+$conn.Close()
+Write-Host "Inserted SQL Medicines cleanly without encoding errors!"

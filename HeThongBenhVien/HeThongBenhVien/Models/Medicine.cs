@@ -24,7 +24,9 @@ namespace HeThongBenhVien.Models
         [StringLength(50)]
         public string? BatchNumber { get; set; } = string.Empty; // Số lô (e.g., L240101, LO-2026A)
 
-        public decimal Price { get; set; }
+        public decimal Price { get; set; } // Giá bán
+
+        public decimal PurchasePrice { get; set; } = 0; // Giá mua
 
         [StringLength(50)]
         public string? Unit { get; set; } = string.Empty; // Viên, Hộp, Chai, Ống...
@@ -40,6 +42,9 @@ namespace HeThongBenhVien.Models
         public string? Manufacturer { get; set; } = string.Empty; // Nhà sản xuất / Hãng sản xuất
 
         public DateTime? ExpiryDate { get; set; } // Hạn sử dụng
+
+        [StringLength(300)]
+        public string? Usage { get; set; } = string.Empty; // Cách dùng (e.g. (Uống), Ngày 02 lần, mỗi lần 01 viên)
 
         public bool IsActive { get; set; } = true;
     }

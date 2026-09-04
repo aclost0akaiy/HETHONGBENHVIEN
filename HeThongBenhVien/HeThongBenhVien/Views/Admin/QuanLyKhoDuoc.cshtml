@@ -58,62 +58,55 @@
         </div>
     }
 
-    <!-- Header Page -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <h2 class="h3 mb-0 fw-bold text-dark">Quản Lý Kho Dược & Cấp Phát Thuốc</h2>
-                <span class="badge bg-primary px-2.5 py-1.5 rounded-pill" style="font-size: 0.75rem;">Phân Hệ HIS Tích Hợp</span>
-            </div>
-            <p class="text-muted mb-0 small">Quản lý bóc tách theo Hoạt chất, Biệt dược, Số lô, Hạn dùng & Chốt chặn 3 kiểm tra 5 đối chiếu</p>
+    <!-- Header Page (Reference Sample Style) -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="javascript:history.back()" class="text-dark me-1 text-decoration-none fs-4 fw-bold" title="Quay lại">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h2 class="h3 mb-0 fw-bold" style="color: #4f46e5;">Thuốc</h2>
+            <span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1.5 rounded-pill ms-2" style="font-size: 0.75rem;">Phân Hệ HIS Tích Hợp</span>
         </div>
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <button class="btn btn-outline-info shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#flowchartModal">
-                <i class="fas fa-project-diagram me-1"></i> Quy Trình HIS (FEFO)
-            </button>
-            <button class="btn btn-outline-primary shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#posterModal">
-                <i class="fas fa-clipboard-check me-1"></i> Quy Chuẩn 3KT - 5ĐC
-            </button>
-            <button class="btn btn-primary shadow-sm btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-                <i class="fas fa-plus me-1"></i> Thêm Thuốc Mới
-            </button>
-        </div>
+        <p class="text-secondary mb-0" style="font-size: 0.95rem;">
+            Đây là nơi bạn quản lý kho Thuốc, danh sách này sẽ ánh xạ đến phần kê đơn của bạn, Tồn kho thay đổi dựa theo số lượng nhập và đơn thuốc của bạn.
+        </p>
     </div>
 
-    <!-- Alert Banner Thống Nhất Quy Định Pháp Lý Dược -->
+    <!-- Alert Banner Thống Nhất Quy Định Pháp Lý Dược & Dynamic Cards Collapsible/Summary -->
     <div class="alert alert-primary bg-white shadow-sm border-0 border-start border-4 border-primary p-3 mb-4 rounded-3">
-        <div class="d-flex align-items-start gap-3">
-            <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-circle fs-4 d-none d-sm-block">
-                <i class="fas fa-shield-virus"></i>
-            </div>
-            <div class="flex-grow-1">
-                <h6 class="fw-bold text-dark mb-1"><i class="fas fa-gavel text-primary me-2"></i>Quy Định Pháp Lý & Vận Hành Dược Lâm Sàng (HIS)</h6>
-                <div class="row g-2 small text-secondary">
-                    <div class="col-md-6">
-                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Khoản 31, Điều 2 Luật Dược 2016:</strong> Thuốc quá hạn 01 ngày tuyệt đối bị KHÓA, không được phép kê đơn hoặc cấp phát.
-                    </div>
-                    <div class="col-md-6">
-                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Cơ chế xuất kho FEFO:</strong> Tự động gán và xuất lô có hạn sử dụng gần nhất trước.
-                    </div>
-                    <div class="col-md-6">
-                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Quy tắc hạn dùng MM/YYYY:</strong> Hạn 12/2026 tính đến 23:59:59 ngày 31/12/2026. Tự động khóa lúc 00:00:00 ngày 01/01/2027.
-                    </div>
-                    <div class="col-md-6">
-                        <i class="fas fa-check-circle text-success me-1"></i> <strong>Quy chuẩn VBHN 07/VBHN-BYT:</strong> Bắt buộc chốt chặn 3 kiểm tra, 5 đối chiếu trước khi trừ tồn và cấp phát.
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-circle fs-4 d-none d-sm-block">
+                    <i class="fas fa-shield-virus"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-1"><i class="fas fa-gavel text-primary me-2"></i>Quy Định Pháp Lý & Vận Hành Dược Lâm Sàng (HIS)</h6>
+                    <div class="d-flex flex-wrap gap-3 small text-secondary">
+                        <span><i class="fas fa-check-circle text-success me-1"></i> <strong>Luật Dược 2016:</strong> Thuốc quá hạn bị KHÓA.</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i> <strong>Xuất kho FEFO:</strong> Xuất lô hạn gần trước.</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i> <strong>Chốt chặn 3KT-5ĐC:</strong> Kiểm tra trước khi cấp phát.</span>
                     </div>
                 </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#flowchartModal">
+                    <i class="fas fa-project-diagram me-1"></i> Quy Trình HIS
+                </button>
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#posterModal">
+                    <i class="fas fa-clipboard-check me-1"></i> 3KT - 5ĐC
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 4 Summary Alert Cards -->
     <div class="row g-3 mb-4">
-        <!-- Cột 1: Cảnh báo Tồn Kho Sắp Hết (≤ 100) - CHỈ ĐẾM THUỐC CÒN HẠN (Requirement 5) -->
+        <!-- Cột 1: Cảnh báo Tồn Kho Sắp Hết -->
         <div class="col-xl-3 col-md-6 col-12">
             <div class="card shadow-sm border-0 border-top border-4 border-danger h-100 mb-0" style="background-color: #fff8f8;">
                 <div class="card-body p-3 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-bold text-danger mb-0 small"><i class="fa-solid fa-triangle-exclamation me-1.5"></i>Tồn Thấp (≤ 100 - Còn hạn)</h6>
+                        <h6 class="fw-bold text-danger mb-0 small"><i class="fa-solid fa-triangle-exclamation me-1.5"></i>Tồn Thấp (≤ 100)</h6>
                         <span class="badge bg-danger rounded-pill">@(ViewBag.LowStockMedicines != null ? ((List<HeThongBenhVien.Models.Medicine>)ViewBag.LowStockMedicines).Count : 0) loại</span>
                     </div>
                     <div class="alert-scroll-container flex-grow-1">
@@ -139,7 +132,7 @@
             </div>
         </div>
 
-        <!-- Cột 2: Thuốc Đã Hết Hạn - Đã Khóa (TC02 & TC03) -->
+        <!-- Cột 2: Thuốc Đã Hết Hạn -->
         <div class="col-xl-3 col-md-6 col-12">
             <div class="card shadow-sm border-0 border-top border-4 border-dark h-100 mb-0" style="background-color: #f8fafc;">
                 <div class="card-body p-3 d-flex flex-column">
@@ -170,7 +163,7 @@
             </div>
         </div>
 
-        <!-- Cột 3: Cận Hạn 1 Tháng (< 30 ngày) -->
+        <!-- Cột 3: Cận Hạn 1 Tháng -->
         <div class="col-xl-3 col-md-6 col-12">
             <div class="card shadow-sm border-0 border-top border-4 border-warning h-100 mb-0" style="background-color: #fffbeb;">
                 <div class="card-body p-3 d-flex flex-column">
@@ -201,7 +194,7 @@
             </div>
         </div>
 
-        <!-- Cột 4: Cận Hạn 3 Tháng (Điều Phối FEFO) -->
+        <!-- Cột 4: Cận Hạn 3 Tháng (FEFO) -->
         <div class="col-xl-3 col-md-6 col-12">
             <div class="card shadow-sm border-0 border-top border-4 border-info h-100 mb-0" style="background-color: #f0f9ff;">
                 <div class="card-body p-3 d-flex flex-column">
@@ -233,72 +226,86 @@
         </div>
     </div>
 
-    <!-- Main Inventory Section -->
+    <!-- Main Inventory Section (Reference Screenshot Matching Layout) -->
     <div class="card shadow-sm border-0 mb-4 rounded-3">
         <div class="card-body p-4">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-                <div>
-                    <h5 class="fw-bold text-dark mb-1"><i class="fas fa-boxes-stacked text-primary me-2"></i>Danh Mục Kho Dược Lâm Sàng</h5>
-                    <p class="text-muted small mb-0">Tìm kiếm theo Hoạt chất hoặc Biệt dược (TC01) • Tự động lọc bỏ vật tư tiêu hao (TC05)</p>
+            <!-- Top Toolbar matching sample: Search on left, Bulk Delete, Export, Import, Thêm mới, Refresh on right -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <!-- Search Box -->
+                <div class="d-flex align-items-center gap-3 flex-grow-1" style="max-width: 600px;">
+                    <div class="position-relative flex-grow-1">
+                        <input type="text" id="tableSearchInput" class="form-control form-control-lg ps-5 bg-light border-0" placeholder="Tìm kiếm..." style="font-size: 0.95rem; border-radius: 8px;">
+                        <i class="fas fa-search position-absolute text-muted" style="left: 16px; top: 50%; transform: translateY(-50%); font-size: 1rem;"></i>
+                    </div>
+
+                    <!-- Bulk Delete Form (Red Button: 🗑 Xóa X dòng đã chọn) -->
+                    <form id="bulkDeleteForm" asp-action="XoaNhieuThuoc" method="post" class="d-inline" style="display: none !important;">
+                        @Html.AntiForgeryToken()
+                        <div id="bulkDeleteInputs"></div>
+                        <button type="submit" class="btn btn-link text-danger fw-bold text-decoration-none p-0 d-inline-flex align-items-center gap-1.5" style="font-size: 0.92rem; white-space: nowrap;" onclick="return confirm('Bạn có chắc chắn muốn xóa các dòng đã chọn khỏi kho?');">
+                            <i class="fas fa-trash-alt"></i> Xóa <span id="selectedCountText">0</span> dòng đã chọn
+                        </button>
+                    </form>
                 </div>
-                
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <!-- Dropdown Chọn Danh Mục -->
-                    <select id="categorySelect" class="form-select form-select-sm" style="width: auto; min-width: 140px;">
-                        <option value="">-- Tất cả nhóm thuốc --</option>
-                        <option value="Thuốc thường">Thuốc thường</option>
-                        <option value="Thuốc tiêm">Thuốc tiêm</option>
-                        <option value="Kháng sinh">Kháng sinh</option>
+
+                <!-- Right Control Buttons -->
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <!-- Category & Status Filters -->
+                    <select id="categorySelect" class="form-select form-select-sm border-light bg-light" style="width: auto; min-width: 130px;">
+                        <option value="">Tất cả nhóm</option>
                         <option value="Giảm đau">Giảm đau</option>
+                        <option value="Kháng sinh">Kháng sinh</option>
                         <option value="Tim mạch">Tim mạch</option>
                         <option value="Tiêu hóa">Tiêu hóa</option>
-                        <option value="Hô hấp">Hô hấp</option>
                         <option value="Vitamin">Vitamin</option>
                     </select>
 
-                    <!-- Dropdown Chọn Trạng Thái Tồn/Hạn -->
-                    <select id="statusSelect" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        <option value="low">⚠️ Tồn kho thấp (≤ 100)</option>
-                        <option value="expired">🔒 Đã khóa (Hết hạn)</option>
-                        <option value="expiring">⚡ Cận hạn (FEFO)</option>
-                        <option value="active">✅ Đang cho phép kê đơn</option>
+                    <select id="statusSelect" class="form-select form-select-sm border-light bg-light" style="width: auto; min-width: 140px;">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="low">Tồn kho thấp</option>
+                        <option value="expired">Đã khóa (Hết hạn)</option>
+                        <option value="expiring">Cận hạn (FEFO)</option>
                     </select>
 
-                    <!-- Dropdown Chọn Hiển thị dòng -->
-                    <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                        <option value="10">10 dòng</option>
-                        <option value="25" selected>25 dòng</option>
-                        <option value="50">50 dòng</option>
-                        <option value="100">100 dòng</option>
-                        <option value="all">Tất cả</option>
-                    </select>
-                    
-                    <!-- Search Box: Hoạt chất hoặc Biệt dược (TC01) -->
-                    <div class="position-relative">
-                        <input type="text" id="tableSearchInput" class="form-control form-control-sm ps-5" placeholder="Tìm Hoạt chất / Biệt dược..." style="width: 260px; border-radius: 6px;">
-                        <i class="fas fa-search position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%);"></i>
-                    </div>
+                    <!-- Export Link -->
+                    <button type="button" class="btn btn-link text-decoration-none text-success fw-medium p-0 d-inline-flex align-items-center gap-1" onclick="alert('Xuất danh sách kho Thuốc ra tập tin Excel!')">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+
+                    <!-- Import Link -->
+                    <button type="button" class="btn btn-link text-decoration-none text-danger fw-medium p-0 d-inline-flex align-items-center gap-1" onclick="alert('Nhập danh sách kho Thuốc từ tập tin Excel!')">
+                        <i class="fas fa-file-import"></i> Import
+                    </button>
+
+                    <!-- Thêm Mới Pill Button (Blue gradient style) -->
+                    <button class="btn btn-primary px-3.5 py-1.5 rounded-pill shadow-sm fw-medium d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addModal" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none;">
+                        Thêm mới
+                    </button>
+
+                    <!-- Refresh Icon Button -->
+                    <button type="button" class="btn btn-light rounded-circle p-0 d-inline-flex align-items-center justify-content-center border-0 shadow-sm" style="width: 36px; height: 36px;" onclick="window.location.reload();" title="Làm mới dữ liệu">
+                        <i class="fas fa-sync-alt text-secondary"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- Table Container -->
-            <div class="table-scroll-container border rounded-3 overflow-hidden shadow-sm" style="max-height: 540px; overflow-y: auto;">
+            <!-- Table Container (Exact matching reference sample columns) -->
+            <div class="table-scroll-container border rounded-3 overflow-hidden shadow-sm" style="max-height: 560px; overflow-y: auto;">
                 <table class="table table-hover align-middle mb-0" id="medicineTable" style="border-collapse: separate; border-spacing: 0;">
                     <thead class="table-light sticky-top">
-                        <tr class="text-uppercase text-secondary fw-bold" style="font-size: 0.76rem; letter-spacing: 0.5px;">
-                            <th class="ps-3 py-3 text-center" style="width: 50px;">STT</th>
-                            <th class="py-3" style="min-width: 110px;">Mã / Số Lô</th>
-                            <th class="py-3" style="min-width: 180px;">Tên Biệt Dược</th>
-                            <th class="py-3" style="min-width: 160px;">Hoạt Chất</th>
-                            <th class="py-3 text-center" style="min-width: 100px;">Hàm Lượng</th>
-                            <th class="py-3 text-center" style="min-width: 120px;">Dạng Bào Chế</th>
-                            <th class="py-3 text-center" style="min-width: 80px;">ĐVT</th>
-                            <th class="py-3 text-end" style="min-width: 110px;">Đơn Giá (Thực tế)</th>
-                            <th class="py-3 text-center" style="min-width: 110px;">SL Tồn Kho</th>
-                            <th class="py-3 text-center" style="min-width: 120px;">Hạn Dùng (MM/YY)</th>
-                            <th class="py-3 text-center" style="min-width: 150px;">Trạng Thái / FEFO</th>
-                            <th class="py-3 text-center pe-3" style="width: 110px;">Thao Tác</th>
+                        <tr class="text-secondary fw-bold" style="font-size: 0.82rem; background-color: #f8fafc;">
+                            <th class="ps-3 py-3 text-center" style="width: 40px;">
+                                <input type="checkbox" id="selectAllCheckbox" class="form-check-input" />
+                            </th>
+                            <th class="py-3 text-center" style="width: 60px;">STT</th>
+                            <th class="py-3" style="min-width: 220px;">Tên thuốc</th>
+                            <th class="py-3" style="min-width: 140px;">Dạng bào chế</th>
+                            <th class="py-3" style="min-width: 80px;">ĐVT</th>
+                            <th class="py-3 text-end" style="min-width: 110px;">Tồn kho <i class="fas fa-sort text-muted ms-1" style="font-size: 11px;"></i></th>
+                            <th class="py-3 text-end" style="min-width: 110px;">Giá mua</th>
+                            <th class="py-3 text-end" style="min-width: 110px;">Giá bán</th>
+                            <th class="py-3 text-center" style="min-width: 120px;">Hạn dùng <i class="fas fa-sort text-muted ms-1" style="font-size: 11px;"></i></th>
+                            <th class="py-3 text-center pe-3" style="width: 80px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody style="font-size: 0.88rem;">
@@ -313,138 +320,74 @@
                             bool isLowStock = item.StockQuantity <= item.MinStock;
 
                             <tr style="vertical-align: middle;" 
+                                data-id="@item.Id"
                                 data-name="@item.Name" 
                                 data-active="@item.ActiveIngredient" 
                                 data-category="@item.Category" 
                                 data-status="@(isExpired ? "expired" : (isExpiring1M || isExpiring3M ? "expiring" : (isLowStock ? "low" : "active")))">
                                 
-                                <td class="text-center ps-3 py-3 text-muted">@(stt++)</td>
+                                <!-- Checkbox -->
+                                <td class="text-center ps-3 py-3">
+                                    <input type="checkbox" class="form-check-input row-checkbox" data-id="@item.Id" />
+                                </td>
+
+                                <!-- STT -->
+                                <td class="text-center py-3 text-secondary fw-medium">@(stt++)</td>
                                 
-                                <!-- Số Lô -->
+                                <!-- Tên Thuốc (With ActiveIngredient underneath if present) -->
                                 <td class="py-3">
-                                    <span class="badge bg-secondary bg-opacity-15 text-dark font-monospace" style="font-size: 0.8rem;">
-                                        <i class="fas fa-barcode me-1 text-muted"></i>@(string.IsNullOrEmpty(item.BatchNumber) ? "N/A" : item.BatchNumber)
-                                    </span>
-                                </td>
-
-                                <!-- Tên Biệt Dược -->
-                                <td class="py-3 font-weight-bold">
-                                    <span class="fw-bold text-dark">@item.Name</span><br />
-                                    <small class="text-muted"><i class="fas fa-industry me-1"></i>@item.Manufacturer</small>
-                                </td>
-
-                                <!-- Hoạt Chất (TC01) -->
-                                <td class="py-3">
-                                    <span class="fw-semibold text-primary" style="background-color: rgba(14, 165, 233, 0.08); padding: 2px 8px; border-radius: 4px;">
-                                        @item.ActiveIngredient
-                                    </span>
-                                </td>
-
-                                <!-- Hàm Lượng -->
-                                <td class="text-center py-3">
-                                    <span class="badge bg-light text-dark border">@item.Dosage</span>
+                                    <div class="fw-bold text-dark" style="font-size: 0.92rem;">@item.Name</div>
+                                    @if (!string.IsNullOrEmpty(item.ActiveIngredient))
+                                    {
+                                        <div class="text-muted small" style="font-size: 0.8rem;">@item.ActiveIngredient</div>
+                                    }
                                 </td>
 
                                 <!-- Dạng Bào Chế -->
-                                <td class="text-center py-3 text-secondary">@item.DosageForm</td>
+                                <td class="py-3 text-secondary">@(string.IsNullOrEmpty(item.DosageForm) ? "" : item.DosageForm)</td>
 
                                 <!-- ĐVT -->
-                                <td class="text-center py-3 fw-medium">@item.Unit</td>
+                                <td class="py-3 text-secondary">@item.Unit</td>
 
-                                <!-- Đơn Giá thực tế (Requirement 4) -->
-                                <td class="text-end py-3 fw-bold text-success" style="font-size: 0.92rem;">
+                                <!-- Tồn Kho (Formatted e.g. 95, 1.264) -->
+                                <td class="text-end py-3 font-monospace fw-semibold text-dark">
+                                    @item.StockQuantity.ToString("N0")
+                                </td>
+
+                                <!-- Giá Mua -->
+                                <td class="text-end py-3 text-secondary">
+                                    @(item.PurchasePrice > 0 ? item.PurchasePrice.ToString("N0") + " đ" : "0 đ")
+                                </td>
+
+                                <!-- Giá Bán -->
+                                <td class="text-end py-3 fw-medium text-dark">
                                     @item.Price.ToString("N0") đ
                                 </td>
 
-                                <!-- Tồn Kho (TC06: <=100) -->
-                                <td class="text-center py-3">
-                                    @if (isLowStock)
-                                    {
-                                        <span class="badge bg-danger px-2.5 py-1.5 rounded-pill shadow-sm" title="Số lượng tồn kho thấp dưới mức an toàn (≤ 100)">
-                                            ⚠️ @item.StockQuantity @item.Unit
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1.5 rounded-pill fw-bold">
-                                            @item.StockQuantity @item.Unit
-                                        </span>
-                                    }
+                                <!-- Hạn Dùng (Formatted dd/MM/yyyy e.g. 31/12/2025) -->
+                                <td class="text-center py-3 text-dark">
+                                    @(item.ExpiryDate.HasValue ? item.ExpiryDate.Value.ToString("dd/MM/yyyy") : "N/A")
                                 </td>
 
-                                <!-- Hạn Dùng MM/YYYY (TC03) -->
-                                <td class="text-center py-3">
-                                    @if (item.ExpiryDate.HasValue)
-                                    {
-                                        <div class="fw-bold @(isExpired ? "text-danger" : "text-dark")">
-                                            @item.ExpiryDate.Value.ToString("MM/yyyy")
-                                        </div>
-                                        <small class="text-muted" style="font-size: 10.5px;">(Đến 23:59:59)</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
-                                </td>
-
-                                <!-- Trạng Thái / FEFO (TC02, TC04) -->
-                                <td class="text-center py-3">
-                                    @if (isExpired)
-                                    {
-                                        <span class="badge-expired shadow-sm">
-                                            <i class="fas fa-lock me-1"></i>🔒 KHÓA (HẾT HẠN)
-                                        </span>
-                                    }
-                                    else if (isExpiring1M)
-                                    {
-                                        <span class="badge bg-warning text-dark fw-bold px-2 py-1">
-                                            ⚡ FEFO CẬN HẠN 1T
-                                        </span>
-                                    }
-                                    else if (isExpiring3M)
-                                    {
-                                        <span class="badge-fefo">
-                                            ⚡ FEFO ƯU TIÊN XUẤT
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
-                                            <i class="fas fa-check me-1"></i>Cho phép kê đơn
-                                        </span>
-                                    }
-                                </td>
-
-                                <!-- Thao tác: CHẶN CẤP PHÁT NẾU THUỐC HẾT HẠN (Requirement 1) -->
+                                <!-- Thao tác (Delete Trash Icon + 3KT-5ĐC check) -->
                                 <td class="text-center py-3 pe-3">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        @if (isExpired)
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        @if (!isExpired)
                                         {
-                                            <button class="btn btn-sm btn-outline-secondary rounded-circle p-0 d-inline-flex align-items-center justify-content-center disabled" 
-                                                    style="width: 30px; height: 30px; opacity: 0.4;" 
-                                                    disabled
-                                                    title="🔒 Thuốc đã HẾT HẠN SỬ DỤNG - Tuyệt đối khóa cấp phát theo Luật Dược 2016">
-                                                <i class="fas fa-lock text-danger" style="font-size: 0.8rem;"></i>
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-sm btn-outline-primary rounded-circle p-0 d-inline-flex align-items-center justify-content-center" 
-                                                    style="width: 30px; height: 30px;"
-                                                    onclick="openCheckModal(@item.Id, '@item.Name', '@item.ActiveIngredient', '@item.Dosage', '@item.DosageForm', '@(item.BatchNumber ?? "")', '@(item.ExpiryDate.HasValue ? item.ExpiryDate.Value.ToString("MM/yyyy") : "N/A")', '@item.Unit', false, @item.StockQuantity)"
-                                                    title="Kiểm tra đối chiếu 3KT 5ĐC">
-                                                <i class="fas fa-clipboard-check" style="font-size: 0.8rem;"></i>
+                                            <button class="btn btn-link text-primary p-0 border-0" 
+                                                    onclick="openCheckModal(@item.Id, '@item.Name', '@item.ActiveIngredient', '@item.Dosage', '@item.DosageForm', '@(item.BatchNumber ?? "")', '@(item.ExpiryDate.HasValue ? item.ExpiryDate.Value.ToString("dd/MM/yyyy") : "N/A")', '@item.Unit', false, @item.StockQuantity)"
+                                                    title="Kiểm tra 3KT-5ĐC">
+                                                <i class="fas fa-clipboard-check"></i>
                                             </button>
                                         }
                                         
                                         <form asp-action="XoaThuoc" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@item.Id"/>
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center" 
-                                                    style="width: 30px; height: 30px;" 
-                                                    onclick="return confirm('Xác nhận xóa thuốc này khỏi kho?');" 
-                                                    title="Xóa thuốc">
-                                                <i class="fas fa-trash-can" style="font-size: 0.8rem;"></i>
+                                            <button type="submit" class="btn btn-link text-secondary text-hover-danger p-0 border-0" 
+                                                    onclick="return confirm('Xác nhận xóa sản phẩm này khỏi kho?');" 
+                                                    title="Xóa sản phẩm">
+                                                <i class="fas fa-trash-alt text-muted" style="font-size: 0.9rem;"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -455,9 +398,9 @@
                     else
                     {
                         <tr>
-                            <td colspan="12" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="fas fa-pills fa-3x mb-3 text-secondary"></i>
-                                <p class="mb-0">Chưa có dữ liệu thuốc nào trong cơ sở dữ liệu SQL Server.</p>
+                                <p class="mb-0">Chưa có dữ liệu kho Thuốc nào trong hệ thống.</p>
                             </td>
                         </tr>
                     }
@@ -465,12 +408,23 @@
                 </table>
             </div>
 
-            <!-- Pagination info -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3 pt-3 border-top">
-                <div id="paginationInfo" class="small text-muted fw-semibold"></div>
-                <nav>
-                    <ul id="paginationContainer" class="pagination pagination-sm mb-0 gap-1"></ul>
-                </nav>
+            <!-- Pagination Container Matching Reference Sample (< 1 > 10 / trang v) -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3 pt-3">
+                <div id="paginationInfo" class="small text-muted fw-medium"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <nav>
+                        <ul id="paginationContainer" class="pagination pagination-sm mb-0 gap-1"></ul>
+                    </nav>
+                    <div class="d-flex align-items-center gap-1 small text-muted">
+                        <select id="pageSizeSelect" class="form-select form-select-sm" style="width: 105px;">
+                            <option value="10" selected>10 / trang</option>
+                            <option value="25">25 / trang</option>
+                            <option value="50">50 / trang</option>
+                            <option value="100">100 / trang</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -612,89 +566,149 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL 1: THÊM THUỐC MỚI (Requirement 3: Chuẩn hóa ExpiryDate MM/YYYY 23:59:59) -->
+<!-- MODAL 1: THÊM SẢN PHẨM MỚI (TẠO PHIẾU NHẬP REFERENCED DESIGN) -->
 <!-- ========================================== -->
 <div class="modal fade" id="addModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2"></i>Thêm Thuốc Mới Vào Kho Dược</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-1" style="font-size: 1.25rem;">Thêm Mới Sản Phẩm Kho</h5>
+                    <p class="text-secondary small mb-0" style="font-size: 0.84rem;">
+                        Sản phẩm sẽ được thêm trực tiếp vào kho. Nếu sản phẩm đã có (trùng tên và số lô), hệ thống sẽ cộng dồn số lượng.
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="ThemThuoc" method="post">
+            <form asp-action="ThemThuoc" method="post" id="formThemMoi">
                 @Html.AntiForgeryToken()
+                <input type="hidden" name="Category" id="categoryInput" value="Thuốc thường" />
+
                 <div class="modal-body p-4">
-                    <div class="row g-3">
+                    <!-- 1. Tên sản phẩm / Tên thuốc -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark mb-1">
+                            <span class="text-danger">*</span> Tên thuốc
+                        </label>
+                        <input name="Name" class="form-control form-control-lg bg-light border-0" placeholder="Nhập tên thuốc (Vd: Efferalgan 500mg, Paracetamol 500mg...)" style="font-size: 0.92rem;" required />
+                    </div>
+
+                    <!-- 2. Hoạt chất -->
+                    <div class="mb-3" id="groupActiveIngredient">
+                        <label class="form-label fw-bold small text-dark mb-1">Hoạt chất</label>
+                        <input name="ActiveIngredient" id="inputActiveIngredient" class="form-control bg-light border-0" placeholder="Nhập hoạt chất (Vd: Paracetamol, Atropin...)" style="font-size: 0.9rem;" />
+                    </div>
+
+                    <!-- 3. Hàm lượng -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark mb-1">Hàm lượng / Quy cách</label>
+                        <input name="Dosage" class="form-control bg-light border-0" placeholder="Chọn hoặc nhập hàm lượng (Vd: 500mg, 10mg/ml...)" style="font-size: 0.9rem;" />
+                    </div>
+
+                    <!-- 5. Dạng bào chế & Đơn vị tính -->
+                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small">Tên Biệt Dược *</label>
-                            <input name="Name" class="form-control" placeholder="Vd: Panadol Extra, Efferalgan..." required/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-primary">Tên Hoạt Chất (TC01) *</label>
-                            <input name="ActiveIngredient" class="form-control" placeholder="Vd: Paracetamol, Atropin..." required/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Hàm Lượng *</label>
-                            <input name="Dosage" class="form-control" placeholder="Vd: 500mg, 10mg/ml..." required/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Dạng Bào Chế *</label>
-                            <input name="DosageForm" class="form-control" placeholder="Vd: Viên nén, Dung dịch tiêm..." required/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Số Lô Quản Lý *</label>
-                            <input name="BatchNumber" class="form-control font-monospace" placeholder="Vd: L2026-B02" required/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Nhóm Thuốc (Loại bỏ hoàn toàn vật tư tiêu hao) *</label>
-                            <select name="Category" class="form-select" required>
-                                <option value="Thuốc thường">Thuốc thường</option>
-                                <option value="Thuốc tiêm">Thuốc tiêm</option>
-                                <option value="Kháng sinh">Kháng sinh</option>
-                                <option value="Giảm đau">Giảm đau</option>
-                                <option value="Tim mạch">Tim mạch</option>
-                                <option value="Tiêu hóa">Tiêu hóa</option>
-                                <option value="Hô hấp">Hô hấp</option>
-                                <option value="Vitamin">Vitamin</option>
+                            <label class="form-label fw-bold small text-dark mb-1">Dạng bào chế</label>
+                            <select name="DosageForm" class="form-select bg-light border-0" style="font-size: 0.9rem;">
+                                <option value="">Chọn dạng bào chế</option>
+                                <option value="Viên sủi">Viên sủi</option>
+                                <option value="Viên nén">Viên nén</option>
+                                <option value="Viên nang">Viên nang</option>
+                                <option value="Dung dịch tiêm">Dung dịch tiêm</option>
+                                <option value="Ống">Ống</option>
+                                <option value="Chai">Chai</option>
+                                <option value="Lọ">Lọ</option>
+                                <option value="Bộ">Bộ</option>
+                                <option value="Gói">Gói</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold small">Đơn Vị Tính *</label>
-                            <select name="Unit" class="form-select">
-                                <option value="Viên">Viên</option>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Đơn vị tính
+                            </label>
+                            <select name="Unit" class="form-select bg-light border-0" style="font-size: 0.9rem;" required>
+                                <option value="">Chọn đơn vị</option>
+                                <option value="Viên" selected>Viên</option>
+                                <option value="Cái">Cái</option>
+                                <option value="Bộ">Bộ</option>
                                 <option value="Hộp">Hộp</option>
                                 <option value="Ống">Ống</option>
-                                <option value="Liều">Liều</option>
                                 <option value="Gói">Gói</option>
                                 <option value="Chai">Chai</option>
+                                <option value="Lọ">Lọ</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold small">Đơn Giá Thực Tế (VNĐ) *</label>
-                            <input name="Price" type="number" class="form-control" placeholder="Vd: 2500" required/>
+                    </div>
+
+                    <!-- 6. Số lượng & Hạn sử dụng -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Số lượng
+                            </label>
+                            <input name="StockQuantity" type="number" class="form-control bg-light border-0" placeholder="Nhập số lượng" value="100" style="font-size: 0.9rem;" required />
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Số Lượng Nhập *</label>
-                            <input name="StockQuantity" type="number" class="form-control" value="100" required/>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Hạn sử dụng
+                            </label>
+                            <input name="ExpiryDate" type="date" class="form-control bg-light border-0" style="font-size: 0.9rem;" required />
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small">Tồn Tối Thiểu (Mức an toàn TC06)</label>
-                            <input name="MinStock" type="number" class="form-control" value="100"/>
+                    </div>
+
+                    <!-- 7. Cách dùng -->
+                    <div class="mb-3" id="groupUsage">
+                        <label class="form-label fw-bold small text-dark mb-1">Cách dùng</label>
+                        <input name="Usage" id="inputUsage" class="form-control bg-light border-0" placeholder="(Uống), Ngày 02 lần, mỗi lần 01 viên" style="font-size: 0.9rem;" />
+                    </div>
+
+                    <!-- 8. Giá mua vào & Giá bán ra -->
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Giá mua vào (VNĐ)
+                            </label>
+                            <input name="PurchasePrice" type="number" class="form-control bg-light border-0 font-monospace" placeholder="1,000" style="font-size: 0.9rem;" required />
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold small text-danger">Hạn Sử Dụng (MM/YYYY) *</label>
-                            <input name="ExpiryDate" type="date" class="form-control" required/>
-                            <small class="text-muted" style="font-size: 10.5px;"><i class="fas fa-info-circle me-1"></i>Hệ thống tự động quy đổi về 23:59:59 ngày cuối tháng</small>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Giá bán ra (VNĐ)
+                            </label>
+                            <input name="Price" type="number" class="form-control bg-light border-0 font-monospace" placeholder="1,500" style="font-size: 0.9rem;" required />
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-bold small">Hãng / Nhà Sản Xuất *</label>
-                            <input name="Manufacturer" class="form-control" placeholder="Vd: GSK, Dược Hậu Giang, Bayer..." required/>
+                    </div>
+                    <small class="text-muted d-block mb-3" style="font-size: 0.78rem;">
+                        Giá bán này được áp dụng khi kê đơn hoặc khi sử dụng trong dịch vụ, thủ thuật. Dùng để tính tổng chi phí phiên khám, để trống sẽ không tính.
+                    </small>
+
+                    <!-- 9. Số lô & Hãng sản xuất -->
+                    <div class="row g-3 mb-1">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Số Lô Quản Lý
+                            </label>
+                            <input name="BatchNumber" class="form-control bg-light border-0 font-monospace" placeholder="Vd: L2026-B01" value="L2026-B01" style="font-size: 0.9rem;" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <span class="text-danger">*</span> Hãng / Nhà Sản Xuất
+                            </label>
+                            <input name="Manufacturer" class="form-control bg-light border-0" placeholder="Vd: UPSA France, Vinahankook..." style="font-size: 0.9rem;" required />
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
-                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-1"></i> Lưu Thuốc Vào SQL</button>
+
+                <!-- Modal Footer Action Buttons (Matching Screenshot 3 design) -->
+                <div class="modal-footer bg-light border-top-0 px-4 py-3 rounded-bottom-4 d-flex justify-content-start gap-2">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm font-weight-medium" style="background-color: #2563eb; border: none;">
+                        <i class="fas fa-check me-1"></i> Đồng ý
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-medium">
+                        Làm mới
+                    </button>
+                    <button type="button" class="btn btn-light px-3 py-2 rounded-3 text-secondary" data-bs-dismiss="modal">
+                        Hủy
+                    </button>
                 </div>
             </form>
         </div>
@@ -979,7 +993,70 @@
             
             // Initial call
             updateTable();
+
+            // Bulk Delete & Row Checkbox Selection Logic (Reference Screenshot 1 Matching)
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+            const bulkDeleteForm = document.getElementById("bulkDeleteForm");
+            const selectedCountText = document.getElementById("selectedCountText");
+            const bulkDeleteInputs = document.getElementById("bulkDeleteInputs");
+
+            function updateBulkDeleteUI() {
+                const checkedBoxes = document.querySelectorAll(".row-checkbox:checked");
+                const count = checkedBoxes.length;
+
+                // Toggle row selection background highlight (tinted soft green/teal matching sample image)
+                document.querySelectorAll("#medicineTable tbody tr").forEach(row => {
+                    const cb = row.querySelector(".row-checkbox");
+                    if (cb && cb.checked) {
+                        row.classList.add("bg-success", "bg-opacity-10");
+                    } else {
+                        row.classList.remove("bg-success", "bg-opacity-10");
+                    }
+                });
+
+                if (count > 0) {
+                    if (selectedCountText) selectedCountText.textContent = count;
+                    if (bulkDeleteForm) bulkDeleteForm.style.setProperty("display", "inline-flex", "important");
+
+                    // Populate hidden inputs
+                    if (bulkDeleteInputs) {
+                        bulkDeleteInputs.innerHTML = "";
+                        checkedBoxes.forEach(cb => {
+                            const id = cb.dataset.id;
+                            if (id) {
+                                const input = document.createElement("input");
+                                input.type = "hidden";
+                                input.name = "ids";
+                                input.value = id;
+                                bulkDeleteInputs.appendChild(input);
+                            }
+                        });
+                    }
+                } else {
+                    if (bulkDeleteForm) bulkDeleteForm.style.setProperty("display", "none", "important");
+                    if (bulkDeleteInputs) bulkDeleteInputs.innerHTML = "";
+                }
+            }
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener("change", function () {
+                    const visibleCheckboxes = document.querySelectorAll("#medicineTable tbody tr:not([style*='display: none']) .row-checkbox");
+                    visibleCheckboxes.forEach(cb => {
+                        cb.checked = selectAllCheckbox.checked;
+                    });
+                    updateBulkDeleteUI();
+                });
+            }
+
+            table.addEventListener("change", function (e) {
+                if (e.target && e.target.classList.contains("row-checkbox")) {
+                    updateBulkDeleteUI();
+                }
+            });
         });
+
+        // Empty product type handler reserved for legacy hooks if needed
+        function handleProductTypeChange(type) {}
 
         let currentDispenseMedId = null;
         let currentDispenseMedName = null;

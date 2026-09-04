@@ -578,32 +578,70 @@ namespace HeThongBenhVien.Controllers
             {
                 await _context.Database.ExecuteSqlRawAsync(@"
                     IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'ActiveIngredient' AND Object_ID = Object_ID(N'Medicines'))
-                        ALTER TABLE Medicines ADD ActiveIngredient NVARCHAR(200) NULL;
+                        EXEC(N'ALTER TABLE Medicines ADD ActiveIngredient NVARCHAR(200) NULL');
                     IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Dosage' AND Object_ID = Object_ID(N'Medicines'))
-                        ALTER TABLE Medicines ADD Dosage NVARCHAR(100) NULL;
+                        EXEC(N'ALTER TABLE Medicines ADD Dosage NVARCHAR(100) NULL');
                     IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'DosageForm' AND Object_ID = Object_ID(N'Medicines'))
-                        ALTER TABLE Medicines ADD DosageForm NVARCHAR(100) NULL;
+                        EXEC(N'ALTER TABLE Medicines ADD DosageForm NVARCHAR(100) NULL');
                     IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'BatchNumber' AND Object_ID = Object_ID(N'Medicines'))
-                        ALTER TABLE Medicines ADD BatchNumber NVARCHAR(50) NULL;
+                        EXEC(N'ALTER TABLE Medicines ADD BatchNumber NVARCHAR(50) NULL');
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'PurchasePrice' AND Object_ID = Object_ID(N'Medicines'))
+                        EXEC(N'ALTER TABLE Medicines ADD PurchasePrice DECIMAL(18,2) NOT NULL DEFAULT 0');
+                    IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Usage' AND Object_ID = Object_ID(N'Medicines'))
+                        EXEC(N'ALTER TABLE Medicines ADD Usage NVARCHAR(300) NULL');
                     
-                    UPDATE Medicines SET ActiveIngredient = N'' WHERE ActiveIngredient IS NULL;
-                    UPDATE Medicines SET Dosage = N'' WHERE Dosage IS NULL;
-                    UPDATE Medicines SET DosageForm = N'' WHERE DosageForm IS NULL;
-                    UPDATE Medicines SET BatchNumber = N'' WHERE BatchNumber IS NULL;
-                    UPDATE Medicines SET Unit = N'' WHERE Unit IS NULL;
-                    UPDATE Medicines SET Category = N'' WHERE Category IS NULL;
-                    UPDATE Medicines SET Manufacturer = N'' WHERE Manufacturer IS NULL;
+                    EXEC(N'UPDATE Medicines SET ActiveIngredient = N'''' WHERE ActiveIngredient IS NULL');
+                    EXEC(N'UPDATE Medicines SET Dosage = N'''' WHERE Dosage IS NULL');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N'''' WHERE DosageForm IS NULL');
+                    EXEC(N'UPDATE Medicines SET BatchNumber = N'''' WHERE BatchNumber IS NULL');
+                    EXEC(N'UPDATE Medicines SET Unit = N'''' WHERE Unit IS NULL');
+                    EXEC(N'UPDATE Medicines SET Category = N'''' WHERE Category IS NULL');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N'''' WHERE Manufacturer IS NULL');
+                    EXEC(N'UPDATE Medicines SET Usage = N'''' WHERE Usage IS NULL');
+                    EXEC(N'UPDATE Medicines SET PurchasePrice = Price * 0.7 WHERE PurchasePrice = 0 AND Price > 0');
 
-                    DELETE FROM Medicines WHERE Category LIKE N'%Vật tư%' OR Category LIKE N'%tiêu hao%' OR Name LIKE N'%Bơm%' OR Name LIKE N'%bông%';
+                    -- Clean up any existing medical supply (Vật tư y tế) items from DB
+                    EXEC(N'DELETE FROM Medicines WHERE Category LIKE N''%Vật tư%'' OR Category LIKE N''%tiêu hao%'' OR Name LIKE N''%Bơm tiêm%'' OR Name LIKE N''%Bông%'' OR Name = N''1'' OR ActiveIngredient = N''111'';');
+
+                    -- Automatic cleanup of any corrupted/mojibake text in Medicines table
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Viên nén'' WHERE DosageForm LIKE N''%Vi%n%n%'' OR DosageForm LIKE N''%nAcn%'' OR DosageForm LIKE N''%n%n%'';');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Viên nén bao phim'' WHERE DosageForm LIKE N''%bao phim%'';');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Viên nang'' WHERE DosageForm LIKE N''%nang%'';');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Viên sủi'' WHERE DosageForm LIKE N''%s%i%'' OR DosageForm LIKE N''%s?i%'';');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Dung dịch tiêm'' WHERE DosageForm LIKE N''%ti%m%'' AND DosageForm LIKE N''%Dung%'';');
+                    EXEC(N'UPDATE Medicines SET DosageForm = N''Gói cốm pha uống'' WHERE DosageForm LIKE N''%pha u%'';');
+
+                    EXEC(N'UPDATE Medicines SET Unit = N''Viên'' WHERE Unit LIKE N''%Vi%n%'' OR Unit LIKE N''%ViA%'';');
+                    EXEC(N'UPDATE Medicines SET Unit = N''Lọ'' WHERE Unit LIKE N''%L%o%'' OR Unit LIKE N''%L%?%'';');
+                    EXEC(N'UPDATE Medicines SET Unit = N''Gói'' WHERE Unit LIKE N''%G%i%'';');
+                    EXEC(N'UPDATE Medicines SET Unit = N''Ống'' WHERE Unit LIKE N''%ng%'';');
+
+                    EXEC(N'UPDATE Medicines SET Category = N''Giảm đau'' WHERE Category LIKE N''%Gi%m%'' OR Category LIKE N''%au%'';');
+                    EXEC(N'UPDATE Medicines SET Category = N''Kháng sinh'' WHERE Category LIKE N''%Kh%ng%'' OR Category LIKE N''%sinh%'';');
+                    EXEC(N'UPDATE Medicines SET Category = N''Tim mạch'' WHERE Category LIKE N''%Tim%'';');
+                    EXEC(N'UPDATE Medicines SET Category = N''Tiêu hóa'' WHERE Category LIKE N''%Ti%u%'';');
+                    EXEC(N'UPDATE Medicines SET Category = N''Thuốc tiêm'' WHERE Category LIKE N''%ti%m%'';');
+                    EXEC(N'UPDATE Medicines SET Category = N''Thuốc thường'' WHERE Category LIKE N''%thu%ng%'';');
+
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''Dược Hậu Giang'' WHERE Manufacturer LIKE N''%H%u Giang%'' OR Manufacturer LIKE N''%H-u Giang%'';');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''Stada Vietnam'' WHERE Name LIKE N''%Amlodipine%'';');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''Mekophar'' WHERE Name LIKE N''%Omeprazole%'';');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''Imexpharm'' WHERE Name LIKE N''%Cefuroxime%'';');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''UPSA SAS'' WHERE Name LIKE N''%Efferalgan%'';');
+                    EXEC(N'UPDATE Medicines SET Manufacturer = N''GSK'' WHERE Name LIKE N''%Panadol%'';');
+
+                    IF NOT EXISTS (SELECT 1 FROM Medicines WHERE Name LIKE N'%Efferalgan 500mg%')
+                    BEGIN
+                        EXEC(N'INSERT INTO Medicines (Name, ActiveIngredient, Dosage, DosageForm, BatchNumber, PurchasePrice, Price, Unit, Category, StockQuantity, MinStock, Manufacturer, ExpiryDate, IsActive) VALUES (N''Efferalgan 500mg'', N''Paracetamol'', N''500mg'', N''Viên sủi'', N''L2029-EFF'', 1000, 1500, N''Viên'', N''Giảm đau'', 1264, 50, N''UPSA France'', ''2029-12-31 23:59:59'', 1)');
+                    END;
                 ");
             }
             catch { }
 
             var now = DateTime.Now;
 
-            // Load medicines from SQL DB excluding medical consumables (Vật tư tiêu hao)
+            // Load medicines & supplies from SQL DB
             var allMedicines = await _context.Medicines
-                .Where(m => !m.Category.Contains("Vật tư") && !m.Category.Contains("tiêu hao") && !m.Name.Contains("Bơm") && !m.Name.Contains("bông"))
                 .OrderBy(m => m.ExpiryDate.HasValue ? m.ExpiryDate.Value : DateTime.MaxValue) // FEFO default sorting
                 .ThenBy(m => m.Name)
                 .ToListAsync();
@@ -677,9 +715,11 @@ namespace HeThongBenhVien.Controllers
                 {
                     existingMedicine.StockQuantity += medicine.StockQuantity;
                     if (medicine.Price > 0) existingMedicine.Price = medicine.Price;
+                    if (medicine.PurchasePrice > 0) existingMedicine.PurchasePrice = medicine.PurchasePrice;
                     if (!string.IsNullOrEmpty(medicine.ActiveIngredient)) existingMedicine.ActiveIngredient = medicine.ActiveIngredient;
                     if (!string.IsNullOrEmpty(medicine.Dosage)) existingMedicine.Dosage = medicine.Dosage;
                     if (!string.IsNullOrEmpty(medicine.DosageForm)) existingMedicine.DosageForm = medicine.DosageForm;
+                    if (!string.IsNullOrEmpty(medicine.Usage)) existingMedicine.Usage = medicine.Usage;
                     if (medicine.ExpiryDate.HasValue) existingMedicine.ExpiryDate = medicine.ExpiryDate;
                     _context.Medicines.Update(existingMedicine);
                 }
@@ -689,7 +729,7 @@ namespace HeThongBenhVien.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["PharmacySuccess"] = $"Đã lưu thông tin thuốc {medicine.Name} thành công!";
+                TempData["PharmacySuccess"] = $"Đã lưu thông tin {medicine.Name} thành công!";
             }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
@@ -699,6 +739,22 @@ namespace HeThongBenhVien.Controllers
         {
             var item = await _context.Medicines.FindAsync(id);
             if (item != null) { _context.Medicines.Remove(item); await _context.SaveChangesAsync(); }
+            return RedirectToAction(nameof(QuanLyKhoDuoc));
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> XoaNhieuThuoc(List<int> ids)
+        {
+            if (ids != null && ids.Any())
+            {
+                var items = await _context.Medicines.Where(m => ids.Contains(m.Id)).ToListAsync();
+                if (items.Any())
+                {
+                    _context.Medicines.RemoveRange(items);
+                    await _context.SaveChangesAsync();
+                    TempData["PharmacySuccess"] = $"Đã xóa {items.Count} dòng sản phẩm khỏi kho thành công!";
+                }
+            }
             return RedirectToAction(nameof(QuanLyKhoDuoc));
         }
 
