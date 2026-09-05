@@ -50,27 +50,36 @@
 
     .filter-pill-btn {
         border-radius: 30px;
-        padding: 0.35rem 0.85rem;
+        padding: 0.38rem 0.95rem;
         font-weight: 600;
-        font-size: 0.82rem;
-        transition: all 0.2s;
+        font-size: 0.85rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid #cbd5e1;
         background: #ffffff;
-        color: #475569;
+        color: #0f172a;
         white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
     [data-theme="dark"] .filter-pill-btn {
         background: #1e293b;
         border-color: #475569;
-        color: #cbd5e1;
+        color: #f8fafc;
     }
 
-    .filter-pill-btn.active, .filter-pill-btn:hover {
-        background: #4f46e5 !important;
-        color: #ffffff !important;
-        border-color: #4f46e5 !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    .filter-pill-btn:hover {
+        background: #f8fafc !important;
+        color: #000000 !important;
+        border-color: #64748b !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-pill-btn.active {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #0f172a !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
     }
 
     .chart-container-card {
@@ -167,13 +176,13 @@
         </div>
         <div class="d-flex gap-2 no-print">
             <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm" onclick="exportToExcel()">
-                <i class="fa-solid fa-file-excel text-success me-1"></i> Xuất Excel
+                <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
             </button>
-            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="window.print()">
+            <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm" onclick="window.print()">
                 <i class="fa-solid fa-print me-1"></i> In Báo Cáo PDF
             </button>
-            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="exportToCSV()">
-                <i class="fa-solid fa-file-csv text-warning me-1"></i> Xuất CSV
+            <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm" onclick="exportToCSV()">
+                <i class="fa-solid fa-file-csv me-1"></i> Xuất CSV
             </button>
         </div>
     </div>

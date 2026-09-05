@@ -114,146 +114,109 @@ html, body, div, p, span, th, td, h1, h2, h3, h4, h5, h6, input, select, textare
 .badge-hoan-thanh { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
 .badge-nhap-vien { background-color: #f8fafc !important; color: #0f172a !important; border: 1px solid #e2e8f0 !important; }
 
-/* Custom Action Buttons trong bảng */
-.btn-circle-action {
-    width: 36px !important;
-    height: 36px !important;
+/* =============================================
+   Thống nhất Giao diện Nút bấm Trắng - Chữ Đen Chuyên Nghiệp (Monochrome Professional Buttons)
+   ============================================= */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.btn-light,
+.btn-dark,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+.btn-soft-primary,
+.btn-soft-success,
+.btn-soft-info,
+.btn-soft-warning,
+.btn-soft-danger,
+.btn-soft-secondary,
+.filter-pill-btn {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 0.38rem 0.95rem !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Hover state: Nút trắng chữ đen, viền đậm nhè nhẹ */
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-success:hover,
+.btn-danger:hover,
+.btn-warning:hover,
+.btn-info:hover,
+.btn-light:hover,
+.btn-dark:hover,
+.btn-soft-primary:hover,
+.btn-soft-success:hover,
+.btn-soft-info:hover,
+.btn-soft-warning:hover,
+.btn-soft-danger:hover,
+.btn-soft-secondary:hover,
+.filter-pill-btn:hover {
+    background-color: #f8fafc !important;
+    color: #000000 !important;
+    border-color: #64748b !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Active / Selected State: Nút trắng chữ đen viền đen dày nổi bật */
+.btn.active,
+.btn:active,
+.btn-primary.active,
+.btn-soft-primary.active,
+.btn-soft-success.active,
+.btn-soft-info.active,
+.btn-soft-warning.active,
+.btn-soft-danger.active,
+.btn-soft-secondary.active,
+.filter-pill-btn.active {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #0f172a !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Biểu tượng FontAwesome trong nút luôn dùng màu chữ của nút */
+.btn i, .filter-pill-btn i, .btn-soft-primary i, .btn-soft-success i, .btn-soft-info i, .btn-soft-warning i, .btn-soft-danger i, .btn-soft-secondary i {
+    color: inherit !important;
+}
+
+/* Action buttons tròn trong bảng */
+.btn-circle-action, .btn-circle-warning, .btn-circle-info, .btn-circle-primary {
+    width: 34px !important;
+    height: 34px !important;
     padding: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
-    transition: all 0.2s ease-in-out !important;
-    border: 1px solid transparent !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    transition: all 0.2s ease !important;
     text-decoration: none !important;
 }
 
-.btn-circle-action:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.08) !important;
-}
-
-/* Circle warning / call button */
-.btn-circle-warning {
-    background-color: #fffbeb !important;
-    border-color: #fef08a !important;
-    color: #d97706 !important;
-}
-.btn-circle-warning:hover {
-    background-color: #fef3c7 !important;
-    border-color: #fde047 !important;
-    color: #b45309 !important;
-}
-
-/* Circle info / view button */
-.btn-circle-info {
-    background-color: #f0fdfa !important;
-    border-color: #ccfbf1 !important;
-    color: #0d9488 !important;
-}
-.btn-circle-info:hover {
-    background-color: #ccfbf1 !important;
-    border-color: #99f6e4 !important;
-    color: #0f766e !important;
-}
-
-/* Circle primary / edit button */
-.btn-circle-primary {
-    background-color: #eff6ff !important;
-    border-color: #dbeafe !important;
-    color: #2563eb !important;
-}
-.btn-circle-primary:hover {
-    background-color: #dbeafe !important;
-    border-color: #bfdbfe !important;
-    color: #1d4ed8 !important;
-}
-
-/* =============================================
-   Soft Button Styles (Professional & Soft Palette)
-   ============================================= */
-.btn-soft-primary, .btn-soft-success, .btn-soft-info, .btn-soft-warning, .btn-soft-danger, .btn-soft-secondary {
-    width: auto !important;
-    height: auto !important;
-    border-radius: 50px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 6px 16px !important;
-    white-space: nowrap !important;
-    font-weight: 600 !important;
-}
-
-.btn-soft-primary {
-    background-color: #eff6ff !important;
-    color: #1d4ed8 !important;
-    border: 1px solid #bfdbfe !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-primary:hover, .btn-soft-primary.active {
-    background-color: #dbeafe !important;
-    color: #1e40af !important;
-    border-color: #93c5fd !important;
-}
-
-.btn-soft-success {
-    background-color: #dcfce7 !important;
-    color: #15803d !important;
-    border: 1px solid #bbf7d0 !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-success:hover, .btn-soft-success.active {
-    background-color: #bbf7d0 !important;
-    color: #166534 !important;
-    border-color: #86efac !important;
-}
-
-.btn-soft-info {
-    background-color: #ecfeff !important;
-    color: #0891b2 !important;
-    border: 1px solid #cffafe !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-info:hover, .btn-soft-info.active {
-    background-color: #cffafe !important;
-    color: #0e7490 !important;
-    border-color: #67e8f9 !important;
-}
-
-.btn-soft-warning {
-    background-color: #fffbeb !important;
-    color: #b45309 !important;
-    border: 1px solid #fde047 !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-warning:hover, .btn-soft-warning.active {
-    background-color: #fef3c7 !important;
-    color: #92400e !important;
-    border-color: #facc15 !important;
-}
-
-.btn-soft-danger {
-    background-color: #fef2f2 !important;
-    color: #b91c1c !important;
-    border: 1px solid #fca5a5 !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-danger:hover, .btn-soft-danger.active {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border-color: #f87171 !important;
-}
-
-.btn-soft-secondary {
+.btn-circle-action:hover, .btn-circle-warning:hover, .btn-circle-info:hover, .btn-circle-primary:hover {
     background-color: #f8fafc !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-    transition: all 0.2s ease !important;
-}
-.btn-soft-secondary:hover, .btn-soft-secondary.active {
-    background-color: #f1f5f9 !important;
-    color: #334155 !important;
-    border-color: #cbd5e1 !important;
+    border-color: #64748b !important;
+    color: #000000 !important;
+    transform: scale(1.06) !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08) !important;
 }
 
 /* =============================================

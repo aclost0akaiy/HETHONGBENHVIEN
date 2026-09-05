@@ -89,10 +89,10 @@
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#flowchartModal">
+                <button class="btn btn-light btn-sm fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#flowchartModal">
                     <i class="fas fa-project-diagram me-1"></i> Quy Trình HIS
                 </button>
-                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#posterModal">
+                <button class="btn btn-light btn-sm fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#posterModal">
                     <i class="fas fa-clipboard-check me-1"></i> 3KT - 5ĐC
                 </button>
             </div>
@@ -267,19 +267,19 @@
                         <option value="expiring">Cận hạn (FEFO)</option>
                     </select>
 
-                    <!-- Export Link -->
-                    <button type="button" class="btn btn-link text-decoration-none text-success fw-medium p-0 d-inline-flex align-items-center gap-1" onclick="alert('Xuất danh sách kho Thuốc ra tập tin Excel!')">
-                        <i class="fas fa-file-export"></i> Export
+                    <!-- Export Button -->
+                    <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm d-inline-flex align-items-center gap-1" onclick="alert('Xuất danh sách kho Thuốc ra tập tin Excel!')">
+                        <i class="fas fa-file-export me-1"></i> Export
                     </button>
 
-                    <!-- Import Link -->
-                    <button type="button" class="btn btn-link text-decoration-none text-danger fw-medium p-0 d-inline-flex align-items-center gap-1" onclick="alert('Nhập danh sách kho Thuốc từ tập tin Excel!')">
-                        <i class="fas fa-file-import"></i> Import
+                    <!-- Import Button -->
+                    <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm d-inline-flex align-items-center gap-1" onclick="alert('Nhập danh sách kho Thuốc từ tập tin Excel!')">
+                        <i class="fas fa-file-import me-1"></i> Import
                     </button>
 
-                    <!-- Thêm Mới Pill Button (Blue gradient style) -->
-                    <button class="btn btn-primary px-3.5 py-1.5 rounded-pill shadow-sm fw-medium d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addModal" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none;">
-                        Thêm mới
+                    <!-- Thêm Mới Pill Button -->
+                    <button class="btn btn-light px-3.5 py-1.5 rounded-pill shadow-sm fw-bold d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addModal">
+                        <i class="fas fa-plus me-1"></i> Thêm mới
                     </button>
 
                     <!-- Refresh Icon Button -->
@@ -698,12 +698,12 @@
                     </div>
                 </div>
 
-                <!-- Modal Footer Action Buttons (Matching Screenshot 3 design) -->
+                <!-- Modal Footer Action Buttons -->
                 <div class="modal-footer bg-light border-top-0 px-4 py-3 rounded-bottom-4 d-flex justify-content-start gap-2">
-                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm font-weight-medium" style="background-color: #2563eb; border: none;">
+                    <button type="submit" class="btn btn-light px-4 py-2 rounded-3 shadow-sm fw-bold">
                         <i class="fas fa-check me-1"></i> Đồng ý
                     </button>
-                    <button type="reset" class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-medium">
+                    <button type="reset" class="btn btn-light px-4 py-2 rounded-3 fw-medium">
                         Làm mới
                     </button>
                     <button type="button" class="btn btn-light px-3 py-2 rounded-3 text-secondary" data-bs-dismiss="modal">
